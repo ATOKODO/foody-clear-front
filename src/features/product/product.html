@@ -1,1 +1,167 @@
-<p>product works!</p>
+<div style="max-width: 960px; margin: 24px auto; font-family: system-ui, Arial;">
+  <h2>Tester API — Products</h2>
+
+  <!-- Base URL -->
+  <div style="margin: 8px 0 16px;">
+    <label>
+      Base URL :
+      <input
+        type="text"
+        [value]="baseUrl" (input)="baseUrl" (change)="onBaseUrlChange()"
+        style="width: 100%; padding: 8px; margin-top: 4px;"
+        placeholder="http://localhost:3000"
+      />
+    </label>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" style="display: grid; gap: 12px;">
+    <div style="display: grid; grid-template-columns: 160px 1fr 1fr; gap: 12px;">
+      <div>
+        <label>id (GET/PATCH/DELETE)</label>
+        <input type="number" formControlName="id" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>name *</label>
+        <input type="text" formControlName="name" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>barcode</label>
+        <input type="text" formControlName="barcode" style="width: 100%; padding: 8px;" />
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+      <div>
+        <label>categoryId (nullable)</label>
+        <input type="number" formControlName="categoryId" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>tagIds (CSV)</label>
+        <input type="text" formControlName="tagIdsStr" placeholder="ex: 2,5" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>genericProductId (nullable)</label>
+        <input type="number" formControlName="genericProductId" style="width: 100%; padding: 8px;" />
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+      <div>
+        <label>unitType *</label>
+        <input type="text" formControlName="unitType" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>quantityPerUnit *</label>
+        <input type="number" formControlName="quantityPerUnit" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>quantityUnit *</label>
+        <input type="text" formControlName="quantityUnit" style="width: 100%; padding: 8px;" />
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+      <div>
+        <label>price</label>
+        <input type="number" step="0.01" formControlName="price" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>url</label>
+        <input type="url" formControlName="url" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>memo</label>
+        <input type="text" formControlName="memo" style="width: 100%; padding: 8px;" />
+      </div>
+    </div>
+
+    <!-- NutritionValuesCreated (POST) -->
+    <fieldset style="border:1px solid #ddd; border-radius:8px; padding:12px;">
+      <legend style="padding:0 6px;">nutritionValuesCreated (POST)</legend>
+      <div formArrayName="nutritionValuesCreated">
+        <div *ngFor="let group of nvCreatedFA.controls; let i = index" [formGroupName]="i"
+             style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 8px; align-items:end; margin-bottom:8px;">
+          <div>
+            <label>label</label>
+            <input type="text" formControlName="label" style="width: 100%; padding: 8px;" />
+          </div>
+          <div>
+            <label>amount</label>
+            <input type="number" formControlName="amount" style="width: 100%; padding: 8px;" />
+          </div>
+          <div>
+            <label>unit</label>
+            <input type="text" formControlName="unit" style="width: 100%; padding: 8px;" />
+          </div>
+          <div>
+            <label>per</label>
+            <input type="number" formControlName="per" style="width: 100%; padding: 8px;" />
+          </div>
+          <button type="button" (click)="removeNvCreated(i)">🗑️</button>
+        </div>
+      </div>
+      <button type="button" (click)="addNvCreated()">+ Ajouter une NV (POST)</button>
+    </fieldset>
+
+    <!-- NutritionValuesUpdated (PATCH) -->
+    <fieldset style="border:1px solid #ddd; border-radius:8px; padding:12px; margin-top:8px;">
+      <legend style="padding:0 6px;">nutritionValuesUpdated (PATCH)</legend>
+      <div formArrayName="nutritionValuesUpdated">
+        <div *ngFor="let group of nvUpdatedFA.controls; let i = index" [formGroupName]="i"
+             style="display:grid; grid-template-columns: 80px 2fr 1fr 1fr 1fr auto; gap: 8px; align-items:end; margin-bottom:8px;">
+          <div>
+            <label>id (optionnel)</label>
+            <input type="number" formControlName="id" style="width: 100%; padding: 8px;" />
+          </div>
+          <div>
+            <label>label</label>
+            <input type="text" formControlName="label" style="width: 100%; padding: 8px;" />
+          </div>
+          <div>
+            <label>amount</label>
+            <input type="number" formControlName="amount" style="width: 100%; padding: 8px;" />
+          </div>
+          <div>
+            <label>unit</label>
+            <input type="text" formControlName="unit" style="width: 100%; padding: 8px;" />
+          </div>
+          <div>
+            <label>per</label>
+            <input type="number" formControlName="per" style="width: 100%; padding: 8px;" />
+          </div>
+          <button type="button" (click)="removeNvUpdated(i)">🗑️</button>
+        </div>
+      </div>
+      <button type="button" (click)="addNvUpdated()">+ Ajouter une NV (PATCH)</button>
+      <div style="color:#666; font-size:12px; margin-top:6px;">
+        • Avec <code>id</code> ⇒ update ; sans <code>id</code> ⇒ create ;<br>
+        • Si tu n’envoies pas <code>nutritionValuesUpdated</code>, rien n’est modifié (patch partiel) ;
+      </div>
+    </fieldset>
+
+    <!-- Actions -->
+    <div style="display:flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+      <button type="button" (click)="fillDemoCreate()">Exemple Create</button>
+      <button type="button" (click)="fillDemoUpdate()">Exemple Update</button>
+
+      <button type="button" (click)="create()">Create (POST)</button>
+      <button type="button" (click)="getOne()">Get (GET /:id)</button>
+      <button type="button" (click)="getAll()">GetAll (GET)</button>
+      <button type="button" (click)="update()">Update (PATCH)</button>
+      <button type="button" (click)="delete()">Delete (DELETE)</button>
+
+      <button type="button" (click)="clear()">Clear</button>
+    </div>
+  </form>
+
+  <!-- État & Résultat -->
+  <div style="margin-top: 16px;">
+    <span *ngIf="loading">⏳ Loading...</span>
+    <span *ngIf="lastError" style="color:#b00020;">💥 {{ lastError | json }}</span>
+  </div>
+
+  <h3 style="margin-top: 16px;">Dernière réponse</h3>
+  <pre style="background:#f6f8fa; padding: 12px; border-radius: 8px; overflow:auto;">
+{{ lastResponse | json }}
+  </pre>
+</div>
