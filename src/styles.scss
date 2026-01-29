@@ -3,9 +3,9 @@
 @use "tailwindcss";
 
 html {
-  color-scheme: light dark;
+  color-scheme: light;
   @include mat.theme((
-    color: mat.$violet-palette,
+    color: mat.$spring-green-palette,
     typography: Roboto,
     density: 0
   ));

@@ -61,22 +61,22 @@ export class ProductService {
   }
 
   create(dto: CreateProductDto): Observable<Product> {
-    return this.http.post<Product>(`${this.baseUrl}/products`, dto);
+    return this.http.post<Product>(`${this.baseUrl}/product`, dto);
   }
 
   findAll(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.baseUrl}/products`);
+    return this.http.get<Product[]>(`${this.baseUrl}/product`);
   }
 
   findOne(id: number): Observable<Product> {
-    return this.http.get<Product>(`${this.baseUrl}/products/${id}`);
+    return this.http.get<Product>(`${this.baseUrl}/product/${id}`);
   }
 
   update(id: number, dto: UpdateProductDto): Observable<Product> {
-    return this.http.patch<Product>(`${this.baseUrl}/products/${id}`, dto);
+    return this.http.patch<Product>(`${this.baseUrl}/product/${id}`, dto);
   }
 
   remove(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/products/${id}`);
+    return this.http.delete<void>(`${this.baseUrl}/product/${id}`);
   }
 }
