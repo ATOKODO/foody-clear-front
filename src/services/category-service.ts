@@ -31,22 +31,22 @@ export class CategoryService {
   }
 
   create(dto: CreateCategoryDto): Observable<Category> {
-    return this.http.post<Category>(`${this.baseUrl}/categories`, dto);
+    return this.http.post<Category>(`${this.baseUrl}/category`, dto);
   }
 
   findAll(): Observable<Category[]> {
-    return this.http.get<Category[]>(`${this.baseUrl}/categories`);
+    return this.http.get<Category[]>(`${this.baseUrl}/category`);
   }
 
   findOne(id: number): Observable<Category> {
-    return this.http.get<Category>(`${this.baseUrl}/categories/${id}`);
+    return this.http.get<Category>(`${this.baseUrl}/category/${id}`);
   }
 
   update(id: number, dto: UpdateCategoryDto): Observable<Category> {
-    return this.http.patch<Category>(`${this.baseUrl}/categories/${id}`, dto);
+    return this.http.patch<Category>(`${this.baseUrl}/category/${id}`, dto);
   }
 
   remove(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/categories/${id}`);
+    return this.http.delete<void>(`${this.baseUrl}/category/${id}`);
   }
 }

@@ -1,1 +1,69 @@
-<p>category works!</p>
+<div style="max-width: 720px; margin: 24px auto; font-family: system-ui, Arial;">
+  <h2>Tester API — Categories</h2>
+
+  <!-- Base URL -->
+  <div style="margin: 8px 0 16px;">
+    <label>
+      Base URL :
+      <input
+        type="text"
+        [value]="baseUrl"
+        (input)="baseUrl"
+        (change)="onBaseUrlChange()"
+        style="width: 100%; padding: 8px; margin-top: 4px;"
+        placeholder="http://localhost:3000"
+      />
+    </label>
+  </div>
+
+  <!-- Formulaire -->
+  <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" style="display: grid; gap: 12px;">
+    <div>
+      <label>id (pour GET/PATCH/DELETE)</label>
+      <input type="number" formControlName="id" style="width: 100%; padding: 8px;" />
+    </div>
+
+    <div>
+      <label>name</label>
+      <input type="text" formControlName="name" style="width: 100%; padding: 8px;" />
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+      <div>
+        <label>warnBeforeDays</label>
+        <input type="number" formControlName="warnBeforeDays" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>recentlyExpiredDays</label>
+        <input type="number" formControlName="recentlyExpiredDays" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>minQuantity</label>
+        <input type="number" formControlName="minQuantity" style="width: 100%; padding: 8px;" />
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+      <button type="button" (click)="fillDemoCreate()">Exemple (remplir)</button>
+      <button type="button" (click)="create()">Create (POST)</button>
+      <button type="button" (click)="getOne()">Get (GET /:id)</button>
+      <button type="button" (click)="getAll()">GetAll (GET)</button>
+      <button type="button" (click)="update()">Update (PATCH)</button>
+      <button type="button" (click)="delete()">Delete (DELETE)</button>
+      <button type="button" (click)="clear()">Clear</button>
+    </div>
+  </form>
+
+  <!-- État -->
+  <div style="margin-top: 16px;">
+    <span *ngIf="loading">⏳ Loading...</span>
+    <span *ngIf="lastError" style="color: #b00020;">💥 {{ lastError | json }}</span>
+  </div>
+
+  <!-- Résultat -->
+  <h3 style="margin-top: 16px;">Dernière réponse</h3>
+  <pre style="background:#f6f8fa; padding: 12px; border-radius: 8px; overflow:auto;">
+{{ lastResponse | json }}
+  </pre>
+</div>
