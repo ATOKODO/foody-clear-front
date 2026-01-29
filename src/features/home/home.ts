@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import {Router} from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -10,12 +10,15 @@ import {Router} from '@angular/router';
 export class Home {
   private router = inject(Router);
 
-  goToProduct(){
+  goToProduct() {
     this.router.navigate(['/product']);
   }
 
-    goToCategory(){
+  goToCategory() {
     this.router.navigate(['/category']);
   }
 
+  goToTag() {
+    this.router.navigate(['/tag']);
+  }
 }

@@ -24,22 +24,22 @@ export class TagService {
   }
 
   create(dto: CreateTagDto): Observable<Tag> {
-    return this.http.post<Tag>(`${this.baseUrl}/tags`, dto);
+    return this.http.post<Tag>(`${this.baseUrl}/tag`, dto);
   }
 
   findAll(): Observable<Tag[]> {
-    return this.http.get<Tag[]>(`${this.baseUrl}/tags`);
+    return this.http.get<Tag[]>(`${this.baseUrl}/tag`);
   }
 
   findOne(id: number): Observable<Tag> {
-    return this.http.get<Tag>(`${this.baseUrl}/tags/${id}`);
+    return this.http.get<Tag>(`${this.baseUrl}/tag/${id}`);
   }
 
   update(id: number, dto: UpdateTagDto): Observable<Tag> {
-    return this.http.patch<Tag>(`${this.baseUrl}/tags/${id}`, dto);
+    return this.http.patch<Tag>(`${this.baseUrl}/tag/${id}`, dto);
   }
 
   remove(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/tags/${id}`);
+    return this.http.delete<void>(`${this.baseUrl}/tag/${id}`);
   }
 }
