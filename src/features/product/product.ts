@@ -34,7 +34,9 @@ export class Product implements OnInit {
       barcode: this.fb.control<string | null>(null),
 
       categoryId: this.fb.control<number | null>(null),
-      tagIdsStr: this.fb.control<string | null>(null), // CSV -> [number, number]
+      tagIdsStr: this.fb.control<string | null>(null), // CSV -> [number, number]1
+      tagIdsToAdd: this.fb.control<string | null>(null),
+      tagIdsToRemove: this.fb.control<string | null>(null),
       genericProductId: this.fb.control<number | null>(null),
 
       unitType: this.fb.control<string>('', {
@@ -176,7 +178,11 @@ export class Product implements OnInit {
     if (v.barcode !== null) dto.barcode = v.barcode;
     if (v.categoryId !== null) dto.categoryId = v.categoryId; // null pour détacher si validation OK
     const tagIds = this.parseCsvIds(v.tagIdsStr ?? undefined);
+    const tagIdsToAdd = this.parseCsvIds(v.tagIdsToAdd ?? undefined);
+    const tagIdsToRemove = this.parseCsvIds(v.tagIdsToRemove ?? undefined);
     if (tagIds !== undefined) dto.tagIds = tagIds; // sémantique “remplacement” si présent
+    if (tagIdsToAdd !== undefined) dto.tagIdsToAdd = tagIdsToAdd; // sémantique “remplacement” si présent
+    if (tagIdsToRemove !== undefined) dto.tagIdsToRemove = tagIdsToRemove; // sémantique “remplacement” si présent
     if (v.genericProductId !== null) dto.genericProductId = v.genericProductId;
 
     if (v.unitType && v.unitType.trim() !== '')

@@ -29,9 +29,13 @@ export interface CreateProductDto {
   nutritionValuesCreated?: NutritionValueCreated[];
 }
 
-export interface UpdateProductDto extends Partial<Omit<CreateProductDto, 'nutritionValuesCreated'>> {
+export interface UpdateProductDto extends Partial<
+  Omit<CreateProductDto, 'nutritionValuesCreated'>
+> {
   // PATCH partiel : on n’envoie que ce qu’on modifie
   nutritionValuesUpdated?: NutritionValueUpdated[];
+  tagIdsToAdd?: any[];
+  tagIdsToRemove?: any[];
 }
 
 export interface Product {
