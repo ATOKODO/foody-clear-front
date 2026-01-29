@@ -21,4 +21,8 @@ export class Home {
   goToTag() {
     this.router.navigate(['/tag']);
   }
+
+  goToGenericProduct() {
+    this.router.navigate(['/generic-product']);
+  }
 }
