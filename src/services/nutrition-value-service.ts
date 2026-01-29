@@ -1,8 +1,54 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
+export interface NutritionValue {
+  id: number;
+  label: string;
+  amount: number;
+  unit: string;  // ex: "g", "kcal"
+  per: number;   // ex: 100
+  product?: any; // selon ta réponse API
+  productId?: number;
+}
+
+export interface CreateNutritionValueDto {
+  label: string;
+  amount: number;
+  unit: string;
+  per: number;
+  productId: number; // requis pour l’endpoint dédié
+}
+
+export type UpdateNutritionValueDto = Partial<CreateNutritionValueDto>;
+
+@Injectable({ providedIn: 'root' })
 export class NutritionValueService {
-  
+  baseUrl = 'http://localhost:3000';
+
+  constructor(private http: HttpClient) {}
+
+  setBaseUrl(url: string) {
+    this.baseUrl = url.replace(/\/$/, '');
+  }
+
+  create(dto: CreateNutritionValueDto): Observable<NutritionValue> {
+    return this.http.post<NutritionValue>(`${this.baseUrl}/nutrition-value`, dto);
+  }
+
+  findAll(): Observable<NutritionValue[]> {
+    return this.http.get<NutritionValue[]>(`${this.baseUrl}/nutrition-value`);
+  }
+
+  findOne(id: number): Observable<NutritionValue> {
+    return this.http.get<NutritionValue>(`${this.baseUrl}/nutrition-value/${id}`);
+  }
+
+  update(id: number, dto: UpdateNutritionValueDto): Observable<NutritionValue> {
+    return this.http.patch<NutritionValue>(`${this.baseUrl}/nutrition-value/${id}`, dto);
+  }
+
+  remove(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/nutrition-value/${id}`);
+  }
 }
