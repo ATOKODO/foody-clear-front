@@ -14,4 +14,8 @@ export class Home {
     this.router.navigate(['/product']);
   }
 
+    goToCategory(){
+    this.router.navigate(['/category']);
+  }
+
 }
