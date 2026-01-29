@@ -25,4 +25,8 @@ export class Home {
   goToGenericProduct() {
     this.router.navigate(['/generic-product']);
   }
+
+  goToNutritionValue() {
+    this.router.navigate(['/nutrition-value']);
+  }
 }
