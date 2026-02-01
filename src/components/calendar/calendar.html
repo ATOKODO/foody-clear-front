@@ -63,7 +63,7 @@
         *ngFor="let month of yearMonths"
         (click)="onMonthClick(month)"
         class="rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer">
-        <h3 class="text-sm font-semibold text-gray-900 mb-3 capitalize">{{ month.name }}</h3>
+        <h3 class="text-sm font-semibold mb-3 capitalize">{{ month.name }}</h3>
         
         <!-- Mini grid -->
         <div class="grid grid-cols-7 gap-1">
@@ -80,23 +80,23 @@
     </div>
     
     <!-- Month View -->
-    <div *ngIf="currentView === 'month' && !loading" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div *ngIf="currentView === 'month' && !loading" class="rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <!-- Weekday headers -->
-      <div class="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
+      <div class="grid grid-cols-7 border-b border-gray-200">
         <div 
           *ngFor="let weekday of WEEKDAY_NAMES"
-          class="py-3 text-center text-sm font-semibold text-gray-700">
+          class="py-3 text-center text-sm font-semibold">
           {{ weekday }}
         </div>
       </div>
       
       <!-- Days grid -->
       <div class="grid grid-cols-7 auto-rows-fr min-h-[600px]">
-        <div 
+        <div
           *ngFor="let day of monthDays"
           (click)="onDayClick(day)"
-          [class.bg-gray-50]="!day.isCurrentMonth"
-          [class.bg-blue-50]="day.isToday && day.isCurrentMonth"
+          [ngClass]="{'bg-gray-200 dark:bg-gray-600' : !day.isCurrentMonth}"
+          [class.bg-red-600]="day.isToday && day.isCurrentMonth"
           [class.cursor-pointer]="day.isCurrentMonth"
           class="border-r border-b border-gray-200 p-2 hover:bg-gray-50 transition-colors min-h-[100px]">
           
@@ -104,8 +104,8 @@
             <!-- Day number -->
             <div class="flex items-center justify-between mb-2">
               <span 
-                [class.text-gray-400]="!day.isCurrentMonth"
-                [class.text-gray-900]="day.isCurrentMonth && !day.isToday"
+                [class.opacity-50]="!day.isCurrentMonth"
+                [class.opacity-100]="day.isCurrentMonth && !day.isToday"
                 [class.text-blue-600]="day.isToday"
                 [class.font-bold]="day.isToday"
                 class="text-sm">

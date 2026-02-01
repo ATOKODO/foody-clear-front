@@ -1,12 +1,15 @@
-
-@use '@angular/material' as mat;
+@use "@angular/material" as mat;
 @use "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 html {
-  color-scheme: light;
-  @include mat.theme((
-    color: mat.$spring-green-palette,
-    typography: Roboto,
-    density: 0
-  ));
+  color-scheme: dark;
+  @include mat.theme(
+    (
+      color: mat.$spring-green-palette,
+      typography: Roboto,
+      density: 0,
+    )
+  );
 }
