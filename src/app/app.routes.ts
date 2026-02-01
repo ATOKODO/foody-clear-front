@@ -5,6 +5,7 @@ import { Category } from '../features/category/category';
 import { Tag } from '../features/tag/tag';
 import { GenericProduct } from '../features/generic-product/generic-product';
 import { NutritionValues } from '../features/nutrition-value/nutrition-value';
+import { Calendar } from '../components/calendar/calendar';
 
 export const routes: Routes = [
     {path: 'home', component: Home},
@@ -13,4 +14,5 @@ export const routes: Routes = [
     {path: 'generic-product', component: GenericProduct},
     {path: 'tag', component: Tag},
     {path: 'nutrition-value', component: NutritionValues},
+    {path: 'calendar', component: Calendar},
 ];
