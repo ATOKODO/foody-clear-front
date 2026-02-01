@@ -1,32 +1,32 @@
 <!-- calendar-container.component.html -->
-<div class="h-screen flex flex-col bg-gray-50">
+<div class="h-screen flex flex-col">
   <!-- Header -->
-  <header class="bg-white shadow-sm border-b border-gray-200 px-4 py-3">
+  <header class="shadow-sm border-b border-gray-200 px-4 py-3">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <!-- Navigation -->
       <div class="flex items-center gap-3">
         <button 
           (click)="goToToday()"
-          class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
           Aujourd'hui
         </button>
         
         <div class="flex items-center gap-2">
           <button 
             (click)="navigate('prev')"
-            class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
           </button>
           
-          <h2 class="text-lg font-semibold text-gray-900 min-w-[200px] text-center">
+          <h2 class="text-lg font-semibold min-w-[200px] text-center">
             {{ currentViewLabel }}
           </h2>
           
           <button 
             (click)="navigate('next')"
-            class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+            class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
@@ -35,14 +35,14 @@
       </div>
       
       <!-- View Switcher -->
-      <div class="flex gap-1 bg-gray-100 p-1 rounded-lg">
+      <div class="flex gap-1 bg-gray-600 p-1 rounded-lg">
         <button 
           *ngFor="let view of VIEWS"
           (click)="switchView(view)"
-          [class.bg-white]="currentView === view"
+          [class.bg-black]="currentView === view"
           [class.shadow-sm]="currentView === view"
-          [class.text-gray-900]="currentView === view"
-          [class.text-gray-600]="currentView !== view"
+          [class.text-gray-100]="currentView === view"
+          [class.text-gray-400]="currentView !== view"
           class="px-4 py-2 text-sm font-medium rounded-md transition-all capitalize">
           {{ view === 'year' ? 'Année' : view === 'month' ? 'Mois' : view === 'week' ? 'Semaine' : 'Jour' }}
         </button>
@@ -62,7 +62,7 @@
       <div 
         *ngFor="let month of yearMonths"
         (click)="onMonthClick(month)"
-        class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer">
+        class="rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer">
         <h3 class="text-sm font-semibold text-gray-900 mb-3 capitalize">{{ month.name }}</h3>
         
         <!-- Mini grid -->
