@@ -214,7 +214,7 @@
           <div 
             *ngFor="let hour of dayHours"
             (click)="onHourClick(hour)"
-            class="h-20 border-b border-gray-200 hover:bg-blue-50 cursor-pointer transition-colors p-2">
+            class="h-20 border-b border-gray-200 hover:bg-blue-50 dark:hover:bg-red-900 cursor-pointer transition-colors p-2">
             
             <div 
               *ngIf="hour.assignment"
