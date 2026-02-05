@@ -98,7 +98,7 @@
           [ngClass]="{'bg-gray-200 dark:bg-gray-600' : !day.isCurrentMonth}"
           [class.bg-red-600]="day.isToday && day.isCurrentMonth"
           [class.cursor-pointer]="day.isCurrentMonth"
-          class="border-r border-b border-gray-200 p-2 hover:bg-gray-50 transition-colors min-h-[100px]">
+          class="border-r border-b border-gray-200 p-2 hover:bg-gray-50 dark:hover:bg-blue-900 transition-colors min-h-[100px]">
           
           <div class="flex flex-col h-full">
             <!-- Day number -->
@@ -140,7 +140,7 @@
     </div>
     
     <!-- Week View -->
-    <div *ngIf="currentView === 'week' && !loading" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div *ngIf="currentView === 'week' && !loading" class="rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <!-- Time column + days -->
       <div class="flex">
         <!-- Time labels -->
@@ -148,7 +148,7 @@
           <div class="h-12 border-b border-gray-200"></div>
           <div *ngFor="let hour of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]" 
                class="h-16 border-b border-gray-200 flex items-start justify-end pr-2 pt-1">
-            <span class="text-xs text-gray-500">{{ hour.toString().padStart(2, '0') }}:00</span>
+            <span class="text-xs">{{ hour.toString().padStart(2, '0') }}:00</span>
           </div>
         </div>
         
@@ -157,11 +157,11 @@
           <div class="grid grid-cols-7 min-w-[700px]">
             <!-- Day headers -->
             <div *ngFor="let day of weekDays" class="border-r border-b border-gray-200 h-12 flex flex-col items-center justify-center">
-              <span class="text-xs text-gray-600">{{ day.dateObj.toFormat('EEE', { locale: 'fr' }) }}</span>
+              <span class="text-xs">{{ day.dateObj.toFormat('EEE', { locale: 'fr' }) }}</span>
               <span 
                 [class.bg-blue-600]="day.isToday"
                 [class.text-white]="day.isToday"
-                [class.text-gray-900]="!day.isToday"
+                [ngClass]="{'text-gray-900 dark:text-gray-300' : !day.isToday}"
                 class="text-sm font-semibold mt-1 w-7 h-7 flex items-center justify-center rounded-full">
                 {{ day.dayNumber }}
               </span>
@@ -173,7 +173,7 @@
                 <div 
                   *ngFor="let hour of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]"
                   (click)="onHourClick({ hour: hour, label: hour + ':00' })"
-                  class="h-16 border-b border-gray-200 hover:bg-blue-50 cursor-pointer transition-colors p-1">
+                  class="h-16 border-b border-gray-200 hover:bg-blue-50 dark:hover:bg-blue-800 cursor-pointer transition-colors p-1">
                   
                   <!-- Mock assignment at specific hours -->
                   <div 
@@ -194,9 +194,9 @@
     </div>
     
     <!-- Day View -->
-    <div *ngIf="currentView === 'day' && !loading" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden max-w-2xl mx-auto">
+    <div *ngIf="currentView === 'day' && !loading" class="rounded-lg shadow-sm border border-gray-200 overflow-hidden max-w-2xl mx-auto">
       <div class="p-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">
+        <h3 class="text-lg font-semibold">
           {{ currentDate.toFormat('EEEE d LLLL', { locale: 'fr' }) }}
         </h3>
       </div>
@@ -205,7 +205,7 @@
         <!-- Time column -->
         <div class="w-20 flex-shrink-0 border-r border-gray-200">
           <div *ngFor="let hour of dayHours" class="h-20 border-b border-gray-200 flex items-start justify-end pr-3 pt-2">
-            <span class="text-sm text-gray-600">{{ hour.label }}</span>
+            <span class="text-sm">{{ hour.label }}</span>
           </div>
         </div>
         
