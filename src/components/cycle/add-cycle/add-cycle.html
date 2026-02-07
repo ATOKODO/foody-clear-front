@@ -1,1 +1,72 @@
-<p>add-cycle works!</p>
+<section class="mx-auto max-w-4xl px-4 py-10 text-gray-900 dark:text-gray-100">
+  <h2 class="mb-6 text-xl font-medium">Ajouter un Cycle</h2>
+
+  <form [formGroup]="form" class="space-y-5">
+    <div class="grid gap-4 md:grid-cols-12">
+      <mat-form-field appearance="fill" class="fc-field md:col-span-8">
+        <mat-label>Titre</mat-label>
+        <input matInput formControlName="titre" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="fc-field md:col-span-4">
+        <mat-label>Couleur</mat-label>
+        <mat-select formControlName="couleur">
+          <mat-select-trigger>
+            <span
+              class="inline-flex h-4 w-24 rounded-full align-middle"
+              [style.backgroundColor]="couleurSelectionnee"
+              aria-hidden="true"></span>
+          </mat-select-trigger>
+
+          <mat-option *ngFor="let option of colorOptions" [value]="option.value">
+            <span class="inline-flex items-center gap-3">
+              <span
+                class="inline-flex h-3 w-8 rounded-full"
+                [style.backgroundColor]="option.value"
+                aria-hidden="true"></span>
+              <span>{{ option.label }}</span>
+            </span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))_auto] md:items-center">
+      <mat-form-field appearance="fill" class="fc-field">
+        <mat-label>Proteines</mat-label>
+        <input matInput type="number" formControlName="proteines" min="0" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="fc-field">
+        <mat-label>Glucides</mat-label>
+        <input matInput type="number" formControlName="glucides" min="0" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="fc-field">
+        <mat-label>Lipides</mat-label>
+        <input matInput type="number" formControlName="lipides" min="0" />
+      </mat-form-field>
+
+      <p class="pl-2 text-3xl font-light text-gray-800 dark:text-gray-200 md:pb-6">
+        par jours
+      </p>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-12 md:items-start">
+      <mat-form-field appearance="fill" class="fc-field md:col-span-4">
+        <mat-label>Nombre</mat-label>
+        <input matInput type="number" formControlName="nombre" min="0" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="fc-field md:col-span-8">
+        <mat-label>Type de duree</mat-label>
+        <mat-select formControlName="typeDuree">
+          <mat-option *ngFor="let option of durationOptions" [value]="option.value">
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+        <mat-hint>Jour / Semaine / Mois</mat-hint>
+      </mat-form-field>
+    </div>
+  </form>
+</section>
