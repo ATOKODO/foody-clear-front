@@ -1,1 +1,66 @@
-<p>slot-list works!</p>
+<section
+  class="slot-list"
+  [class.is-multi]="isMultiSelectMode"
+  [class.is-select]="isSingleSelectMode || isMultiSelectMode"
+  aria-label="Liste des slots">
+  <div class="sl-header" *ngIf="hasItems">
+    <span class="sl-empty-head" *ngIf="isMultiSelectMode" aria-hidden="true"></span>
+    <span>Slot</span>
+    <span>Proteine</span>
+    <span>Glucide</span>
+    <span>Lipide</span>
+  </div>
+
+  <div class="sl-body" *ngIf="hasItems; else emptyState">
+    <div
+      class="sl-row"
+      *ngFor="let item of resolvedSlots; let i = index; trackBy: trackById"
+      [class.is-active]="isRowActive(item, i)"
+      [attr.tabindex]="isSingleSelectMode ? 0 : null"
+      [attr.role]="isSingleSelectMode ? 'button' : null"
+      (click)="onRowClick(item)"
+      (keydown)="onRowKeydown($event, item)">
+      <div class="sl-check" *ngIf="isMultiSelectMode" (click)="$event.stopPropagation()">
+        <input
+          type="checkbox"
+          [checked]="isSelected(item.id)"
+          [attr.aria-label]="'Selectionner ' + item.title"
+          (change)="onCheckboxChange(item, $any($event.target).checked)" />
+      </div>
+
+      <div class="sl-cell sl-main">
+        <span class="sl-mobile-label">Slot</span>
+        <span>{{ item.title }}</span>
+      </div>
+
+      <div class="sl-cell">
+        <span class="sl-mobile-label">Proteine</span>
+        <span>{{ item.protein }}</span>
+      </div>
+
+      <div class="sl-cell">
+        <span class="sl-mobile-label">Glucide</span>
+        <span>{{ item.carbs }}</span>
+      </div>
+
+      <div class="sl-cell">
+        <span class="sl-mobile-label">Lipide</span>
+        <span>{{ item.fat }}</span>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyState>
+    <p class="sl-empty">Aucun slot disponible.</p>
+  </ng-template>
+
+  <div class="sl-add-wrap" *ngIf="isManageMode">
+    <button type="button" class="icon-btn add-btn" aria-label="Ajouter un slot" (click)="onAddClick()">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M11 5h2v14h-2z" />
+        <path d="M5 11h14v2H5z" />
+        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Z" />
+      </svg>
+    </button>
+  </div>
+</section>
