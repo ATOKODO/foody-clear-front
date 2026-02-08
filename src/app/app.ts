@@ -31,4 +31,28 @@ export class App {
   goToNutritionValue() {
     this.router.navigate(['/nutrition-value']);
   }
+
+  goToInventory() {
+    this.router.navigate(['/inventory']);
+  }
+
+  goToInputDay() {
+    this.router.navigate(['/input-day']);
+  }
+
+  goToCycle() {
+    this.router.navigate(['/cycle']);
+  }
+
+  goToDaySet() {
+    this.router.navigate(['/day-set']);
+  }
+
+  goToSlot() {
+    this.router.navigate(['/slot']);
+  }
+
+  goToCalendar() {
+    this.router.navigate(['/calendar']);
+  }
 }
