@@ -1,0 +1,87 @@
+<div style="max-width: 840px; margin: 24px auto; font-family: system-ui, Arial;">
+  <h2>Tester API - Inventory</h2>
+
+  <div style="margin: 8px 0 16px;">
+    <label>
+      Base URL :
+      <input
+        type="text"
+        [ngModel]="baseUrl"
+        (ngModelChange)="baseUrl = $event; onBaseUrlChange()"
+        [ngModelOptions]="{ standalone: true }"
+        style="width: 100%; padding: 8px; margin-top: 4px;"
+        placeholder="http://localhost:3000"
+      />
+    </label>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" style="display: grid; gap: 12px;">
+    <div style="display: grid; grid-template-columns: 180px 1fr; gap: 12px;">
+      <div>
+        <label>id (GET/PATCH/DELETE)</label>
+        <input type="number" formControlName="id" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>name</label>
+        <input type="text" formControlName="name" style="width: 100%; padding: 8px;" />
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+      <div>
+        <label>productIds (CSV) for create</label>
+        <input
+          type="text"
+          formControlName="productIdsStr"
+          placeholder="ex: 1,2,3"
+          style="width: 100%; padding: 8px;"
+        />
+      </div>
+
+      <div>
+        <label>productIds (CSV) for add</label>
+        <input
+          type="text"
+          formControlName="addProductIdsStr"
+          placeholder="ex: 4,5"
+          style="width: 100%; padding: 8px;"
+        />
+      </div>
+
+      <div>
+        <label>productIds (CSV) for remove</label>
+        <input
+          type="text"
+          formControlName="removeProductIdsStr"
+          placeholder="ex: 2"
+          style="width: 100%; padding: 8px;"
+        />
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+      <button type="button" (click)="fillDemoCreate()">Exemple (remplir)</button>
+
+      <button type="button" (click)="create()">Create (POST)</button>
+      <button type="button" (click)="getOne()">Get (GET /:id)</button>
+      <button type="button" (click)="getAll()">GetAll (GET)</button>
+      <button type="button" (click)="getProducts()">GetProducts (GET /:id/products)</button>
+      <button type="button" (click)="update()">Update (PATCH /:id)</button>
+      <button type="button" (click)="addProducts()">AddProducts (PATCH /:id/products/add)</button>
+      <button type="button" (click)="removeProducts()">RemoveProducts (PATCH /:id/products/remove)</button>
+      <button type="button" (click)="delete()">Delete (DELETE)</button>
+
+      <button type="button" (click)="clear()">Clear</button>
+    </div>
+  </form>
+
+  <div style="margin-top: 16px;">
+    <span *ngIf="loading">Loading...</span>
+    <span *ngIf="lastError" style="color: #b00020;">{{ lastError | json }}</span>
+  </div>
+
+  <h3 style="margin-top: 16px;">Derniere reponse</h3>
+  <pre style="background: #f6f8fa; padding: 12px; border-radius: 8px; overflow: auto;">
+{{ lastResponse | json }}
+  </pre>
+</div>
