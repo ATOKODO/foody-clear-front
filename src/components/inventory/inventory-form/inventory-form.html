@@ -1,1 +1,31 @@
-<p>inventory-form works!</p>
+<section class="inventory-form" aria-label="Ajouter ou modifier un inventory">
+  <div class="if-head">
+    <h2>{{ heading }}</h2>
+    <button type="button" class="menu-btn" aria-label="Plus d'options" (click)="onMenuClick()">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="6" cy="12" r="2" />
+        <circle cx="12" cy="12" r="2" />
+        <circle cx="18" cy="12" r="2" />
+      </svg>
+    </button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="if-form">
+    <label class="if-field">
+      <span>Nom</span>
+      <input type="text" formControlName="name" placeholder="Stock principal" />
+    </label>
+
+    <label class="if-field">
+      <span>Product IDs (CSV)</span>
+      <input type="text" formControlName="productIdsCsv" placeholder="1,2,3" />
+      <small *ngIf="form.controls.productIdsCsv.errors?.['invalidIds']" class="if-error">
+        Utilise uniquement des IDs entiers positifs (ex: 1,2,3)
+      </small>
+    </label>
+
+    <button type="submit" class="submit-btn">
+      Valider
+    </button>
+  </form>
+</section>

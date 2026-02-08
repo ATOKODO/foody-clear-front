@@ -1,1 +1,54 @@
-<p>inventory-list works!</p>
+<section
+  class="inventory-list"
+  [class.is-multi]="isMultiSelectMode"
+  [class.is-select]="isSingleSelectMode || isMultiSelectMode"
+  aria-label="Liste des inventories">
+  <div class="il-header" *ngIf="hasItems">
+    <span class="il-empty-head" *ngIf="isMultiSelectMode" aria-hidden="true"></span>
+    <span>Inventory</span>
+    <span>Produits</span>
+  </div>
+
+  <div class="il-body" *ngIf="hasItems; else emptyState">
+    <div
+      class="il-row"
+      *ngFor="let item of resolvedInventories; let i = index; trackBy: trackById"
+      [class.is-active]="isRowActive(item, i)"
+      [attr.tabindex]="isSingleSelectMode ? 0 : null"
+      [attr.role]="isSingleSelectMode ? 'button' : null"
+      (click)="onRowClick(item)"
+      (keydown)="onRowKeydown($event, item)">
+      <div class="il-check" *ngIf="isMultiSelectMode" (click)="$event.stopPropagation()">
+        <input
+          type="checkbox"
+          [checked]="isSelected(item.id)"
+          [attr.aria-label]="'Selectionner ' + item.name"
+          (change)="onCheckboxChange(item, $any($event.target).checked)" />
+      </div>
+
+      <div class="il-cell il-main">
+        <span class="il-mobile-label">Inventory</span>
+        <span>{{ item.name }}</span>
+      </div>
+
+      <div class="il-cell">
+        <span class="il-mobile-label">Produits</span>
+        <span>{{ item.productCount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyState>
+    <p class="il-empty">Aucun inventory disponible.</p>
+  </ng-template>
+
+  <div class="il-add-wrap" *ngIf="isManageMode">
+    <button type="button" class="icon-btn add-btn" aria-label="Ajouter un inventory" (click)="onAddClick()">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M11 5h2v14h-2z" />
+        <path d="M5 11h14v2H5z" />
+        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Z" />
+      </svg>
+    </button>
+  </div>
+</section>
