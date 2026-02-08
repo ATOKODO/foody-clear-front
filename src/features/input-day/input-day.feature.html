@@ -1,1 +1,100 @@
-<p>input-day works!</p>
+<div style="max-width: 980px; margin: 24px auto; font-family: system-ui, Arial;">
+  <h2>Tester API - InputDay</h2>
+
+  <div style="margin: 8px 0 16px;">
+    <label>
+      Base URL :
+      <input
+        type="text"
+        [ngModel]="baseUrl"
+        (ngModelChange)="baseUrl = $event; onBaseUrlChange()"
+        [ngModelOptions]="{ standalone: true }"
+        style="width: 100%; padding: 8px; margin-top: 4px;"
+        placeholder="http://localhost:3000"
+      />
+    </label>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" style="display: grid; gap: 12px;">
+    <div style="display: grid; grid-template-columns: 180px 1fr; gap: 12px;">
+      <div>
+        <label>dateLocal (YYYY-MM-DD)</label>
+        <input type="text" formControlName="dateLocal" placeholder="2026-02-08" style="width: 100%; padding: 8px;" />
+      </div>
+      <div>
+        <label>timezone</label>
+        <input type="text" formControlName="timezone" placeholder="UTC" style="width: 100%; padding: 8px;" />
+      </div>
+    </div>
+
+    <fieldset style="border: 1px solid #ddd; border-radius: 8px; padding: 12px;">
+      <legend>Item simple</legend>
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
+        <div>
+          <label>productId</label>
+          <input type="number" formControlName="productId" style="width: 100%; padding: 8px;" />
+        </div>
+        <div>
+          <label>qty</label>
+          <input type="number" formControlName="qty" step="0.01" style="width: 100%; padding: 8px;" />
+        </div>
+        <div>
+          <label>slotId (optionnel)</label>
+          <input type="number" formControlName="slotId" style="width: 100%; padding: 8px;" />
+        </div>
+        <div>
+          <label>slotKey (optionnel)</label>
+          <input type="text" formControlName="slotKey" style="width: 100%; padding: 8px;" />
+        </div>
+        <div style="display: flex; align-items: end;">
+          <button type="button" (click)="createItem()" style="width: 100%;">Create Item</button>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset style="border: 1px solid #ddd; border-radius: 8px; padding: 12px;">
+      <legend>Items bulk</legend>
+      <div>
+        <label>bulkItemsJson (tableau JSON)</label>
+        <textarea formControlName="bulkItemsJson" rows="4" style="width: 100%; padding: 8px;"></textarea>
+      </div>
+      <div style="margin-top: 8px;">
+        <button type="button" (click)="createBulk()">Create Items Bulk</button>
+      </div>
+    </fieldset>
+
+    <fieldset style="border: 1px solid #ddd; border-radius: 8px; padding: 12px;">
+      <legend>Update / Delete item</legend>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+        <div>
+          <label>itemId</label>
+          <input type="number" formControlName="itemId" style="width: 100%; padding: 8px;" />
+        </div>
+        <div>
+          <label>updateQty</label>
+          <input type="number" formControlName="updateQty" step="0.01" style="width: 100%; padding: 8px;" />
+        </div>
+        <div style="display: flex; align-items: end; gap: 8px;">
+          <button type="button" (click)="updateQty()">Update Qty</button>
+          <button type="button" (click)="removeItem()">Delete Item</button>
+        </div>
+      </div>
+    </fieldset>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+      <button type="button" (click)="fillDemo()">Exemple (remplir)</button>
+      <button type="button" (click)="loadDay()">Get InputDay</button>
+      <button type="button" (click)="clear()">Clear</button>
+    </div>
+  </form>
+
+  <div style="margin-top: 16px;">
+    <span *ngIf="loading">Loading...</span>
+    <span *ngIf="lastError" style="color: #b00020;">{{ lastError | json }}</span>
+  </div>
+
+  <h3 style="margin-top: 16px;">Derniere reponse</h3>
+  <pre style="background: #f6f8fa; padding: 12px; border-radius: 8px; overflow: auto;">
+{{ lastResponse | json }}
+  </pre>
+</div>

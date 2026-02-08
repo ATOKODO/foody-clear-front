@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { InputDayFeature } from './input-day.feature';
 
@@ -8,9 +10,9 @@ describe('InputDayFeature', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InputDayFeature]
-    })
-    .compileComponents();
+      imports: [InputDayFeature],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(InputDayFeature);
     component = fixture.componentInstance;

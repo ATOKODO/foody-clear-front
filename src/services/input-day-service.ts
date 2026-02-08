@@ -1,0 +1,51 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import {
+  CreateInputDayItemsDto,
+  InputDayItemCommand,
+  InputDayResponse,
+  UpdateInputDayItemDto,
+} from '../interfaces/input-day.interface';
+
+@Injectable({ providedIn: 'root' })
+export class InputDayService {
+  baseUrl = 'http://localhost:3000';
+
+  constructor(private http: HttpClient) {}
+
+  setBaseUrl(url: string) {
+    this.baseUrl = url.replace(/\/$/, '');
+  }
+
+  getInputDay(dateLocal: string, timezone?: string): Observable<InputDayResponse> {
+    let params = new HttpParams();
+    if (timezone && timezone.trim() !== '') {
+      params = params.set('timezone', timezone.trim());
+    }
+
+    return this.http.get<InputDayResponse>(`${this.baseUrl}/input-days/${dateLocal}`, {
+      params,
+    });
+  }
+
+  createItem(dateLocal: string, dto: InputDayItemCommand): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/input-days/${dateLocal}/items`, dto);
+  }
+
+  createItems(dateLocal: string, dto: CreateInputDayItemsDto): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/input-days/${dateLocal}/items/bulk`, dto);
+  }
+
+  updateItemQty(
+    dateLocal: string,
+    itemId: number,
+    dto: UpdateInputDayItemDto,
+  ): Observable<unknown> {
+    return this.http.patch(`${this.baseUrl}/input-days/${dateLocal}/items/${itemId}`, dto);
+  }
+
+  removeItem(dateLocal: string, itemId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/input-days/${dateLocal}/items/${itemId}`);
+  }
+}

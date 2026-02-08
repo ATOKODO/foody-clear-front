@@ -7,6 +7,7 @@ import { GenericProduct } from '../features/generic-product/generic-product';
 import { NutritionValues } from '../features/nutrition-value/nutrition-value';
 import { Inventory } from '../features/inventory/inventory';
 import { CycleFeature } from '../features/cycle/cycle.feature';
+import { InputDayFeature } from '../features/input-day/input-day.feature';
 import { Calendar } from '../components/calendar/calendar';
 
 export const routes: Routes = [
@@ -18,5 +19,6 @@ export const routes: Routes = [
     {path: 'nutrition-value', component: NutritionValues},
     {path: 'inventory', component: Inventory},
     {path: 'cycle', component: CycleFeature},
+    {path: 'input-day', component: InputDayFeature},
     {path: 'calendar', component: Calendar},
 ];
