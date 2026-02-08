@@ -1,14 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { TypeDuree } from '../form-cycle/form-cycle';
 
-interface CycleItem {
-  id: string;
-  startDate: string;
-  name: string;
-  protein: number;
+export interface CycleListItem {
+  id: number;
+  title: string;
+  color: string;
+  proteins: number;
   carbs: number;
-  fat: number;
-  selected?: boolean;
+  lipids: number;
+  durationCount: number;
+  durationType: TypeDuree;
 }
 
 @Component({
@@ -18,43 +20,31 @@ interface CycleItem {
   styleUrl: './list-cycle.scss',
 })
 export class ListCycle {
-  readonly cycles: CycleItem[] = [
-    {
-      id: '1',
-      startDate: '01/01/2024',
-      name: 'Prise de masse',
-      protein: 50,
-      carbs: 120,
-      fat: 30,
-      selected: true,
-    },
-    {
-      id: '2',
-      startDate: '01/01/2024',
-      name: 'Seche',
-      protein: 50,
-      carbs: 120,
-      fat: 30,
-    },
-    {
-      id: '3',
-      startDate: '01/01/2024',
-      name: 'Maintien',
-      protein: 50,
-      carbs: 150,
-      fat: 30,
-    },
-  ];
+  @Input() cycles: CycleListItem[] = [];
+  @Input() activeCycleId: number | null = null;
+  @Input() showAddButton = true;
 
-  onEdit(cycle: CycleItem): void {
-    console.log('Edit cycle:', cycle);
+  @Output() readonly addRequested = new EventEmitter<void>();
+  @Output() readonly editRequested = new EventEmitter<CycleListItem>();
+  @Output() readonly deleteRequested = new EventEmitter<CycleListItem>();
+
+  isActive(cycle: CycleListItem, index: number): boolean {
+    if (this.activeCycleId !== null) {
+      return cycle.id === this.activeCycleId;
+    }
+
+    return index === 0;
   }
 
-  onDelete(cycle: CycleItem): void {
-    console.log('Delete cycle:', cycle);
+  onEdit(cycle: CycleListItem): void {
+    this.editRequested.emit(cycle);
+  }
+
+  onDelete(cycle: CycleListItem): void {
+    this.deleteRequested.emit(cycle);
   }
 
   onAddCycle(): void {
-    console.log('Add cycle');
+    this.addRequested.emit();
   }
 }

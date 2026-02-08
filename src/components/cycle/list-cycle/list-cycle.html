@@ -1,6 +1,6 @@
 <section class="list-cycle" aria-label="Liste des cycles">
   <div class="lc-header" aria-hidden="true">
-    <div class="lc-date-head">Date de debut</div>
+    <div class="lc-date-head">Duree</div>
     <div class="lc-values-head">
       <span>Cycle</span>
       <span>Proteine</span>
@@ -10,22 +10,22 @@
     <div></div>
   </div>
 
-  <div class="lc-body">
-    <div class="lc-row" *ngFor="let cycle of cycles" [class.is-active]="cycle.selected">
+  <div class="lc-body" *ngIf="cycles.length > 0; else emptyState">
+    <div class="lc-row" *ngFor="let cycle of cycles; let i = index" [class.is-active]="isActive(cycle, i)">
       <div class="lc-date">
-        <span class="lc-mobile-label">Date de debut</span>
-        <span>{{ cycle.startDate }}</span>
+        <span class="lc-mobile-label">Duree</span>
+        <span>{{ cycle.durationCount }} {{ cycle.durationType }}</span>
       </div>
 
       <div class="lc-values">
         <div class="lc-cell lc-cycle-name">
           <span class="lc-mobile-label">Cycle</span>
-          <span>{{ cycle.name }}</span>
+          <span>{{ cycle.title }}</span>
         </div>
 
         <div class="lc-cell">
           <span class="lc-mobile-label">Proteine</span>
-          <span>{{ cycle.protein }}</span>
+          <span>{{ cycle.proteins }}</span>
         </div>
 
         <div class="lc-cell">
@@ -35,7 +35,7 @@
 
         <div class="lc-cell">
           <span class="lc-mobile-label">Lipide</span>
-          <span>{{ cycle.fat }}</span>
+          <span>{{ cycle.lipids }}</span>
         </div>
       </div>
 
@@ -55,7 +55,11 @@
     </div>
   </div>
 
-  <div class="lc-add-wrap">
+  <ng-template #emptyState>
+    <p class="lc-empty">Aucun cycle disponible.</p>
+  </ng-template>
+
+  <div class="lc-add-wrap" *ngIf="showAddButton">
     <button type="button" class="icon-btn add-btn" aria-label="Ajouter un cycle" (click)="onAddCycle()">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M11 5h2v14h-2z" />

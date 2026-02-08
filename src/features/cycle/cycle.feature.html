@@ -1,0 +1,46 @@
+<section class="mx-auto max-w-6xl px-4 py-6 text-gray-900">
+  <h2 class="mb-4 text-2xl font-semibold">Gestion des Cycles</h2>
+
+  <div class="mb-4 grid gap-2 sm:grid-cols-[140px_1fr] sm:items-center">
+    <label class="text-sm font-medium">Base URL</label>
+    <input
+      type="text"
+      class="w-full rounded border border-gray-300 px-3 py-2"
+      [ngModel]="baseUrl"
+      (ngModelChange)="baseUrl = $event; onBaseUrlChange()"
+      [ngModelOptions]="{ standalone: true }"
+      placeholder="http://localhost:3000" />
+  </div>
+
+  <div class="mb-3 flex items-center gap-3 text-sm text-gray-600">
+    <span *ngIf="loading">Chargement...</span>
+    <span *ngIf="saving">Sauvegarde...</span>
+    <span *ngIf="lastError" class="text-red-700">Erreur: {{ lastError | json }}</span>
+  </div>
+
+  <app-list-cycle
+    [cycles]="cycleListItems"
+    [activeCycleId]="selectedCycleId"
+    [showAddButton]="true"
+    (addRequested)="onAddRequested()"
+    (editRequested)="onEditRequested($event)"
+    (deleteRequested)="onDeleteRequested($event)">
+  </app-list-cycle>
+
+  <section *ngIf="formVisible" class="mt-8 rounded border border-gray-200 bg-white">
+    <app-form-cycle
+      [mode]="formMode"
+      [cycle]="formInitialValue"
+      (submitted)="onFormSubmitted($event)">
+    </app-form-cycle>
+
+    <div class="flex justify-center pb-6">
+      <button
+        type="button"
+        class="rounded-full border border-gray-400 px-6 py-2 text-sm"
+        (click)="onCancelForm()">
+        Annuler
+      </button>
+    </div>
+  </section>
+</section>
