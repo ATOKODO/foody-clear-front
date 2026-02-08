@@ -1,1 +1,40 @@
-<p>day-set-form works!</p>
+<section class="day-set-form" aria-label="Ajouter ou modifier un day set">
+  <div class="dsf-head">
+    <h2>{{ heading }}</h2>
+    <button type="button" class="menu-btn" aria-label="Plus d'options" (click)="onMenuClick()">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="6" cy="12" r="2" />
+        <circle cx="12" cy="12" r="2" />
+        <circle cx="18" cy="12" r="2" />
+      </svg>
+    </button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="dsf-form">
+    <label class="dsf-field dsf-field-title">
+      <span>Titre</span>
+      <input type="text" formControlName="title" placeholder="Lundi" />
+    </label>
+
+    <div class="dsf-macros">
+      <label class="dsf-field">
+        <span>Prot</span>
+        <input type="number" min="0" formControlName="protein" placeholder="0" />
+      </label>
+
+      <label class="dsf-field">
+        <span>Glu</span>
+        <input type="number" min="0" formControlName="carbs" placeholder="0" />
+      </label>
+
+      <label class="dsf-field">
+        <span>Lip</span>
+        <input type="number" min="0" formControlName="fat" placeholder="0" />
+      </label>
+    </div>
+
+    <button type="submit" class="submit-btn">
+      Valider
+    </button>
+  </form>
+</section>
