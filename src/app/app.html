@@ -1,7 +1,9 @@
-
-
-<main class="main h-12 bg-red-900">
-TOOL BAR
-</main>
+<div class="flex gap-2 h-12 bg-gray-500 place-items-center">
+    <button class="ml-5" (click)="goToProduct()">Product</button>
+    <button (click)="goToCategory()">Category</button>
+    <button (click)="goToTag()">Tag</button>
+    <button (click)="goToGenericProduct()">Generic Product</button>
+    <button (click)="goToNutritionValue()">Nutrition Value</button>
+</div>
 
 <router-outlet />

@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -9,4 +9,26 @@ import { RouterOutlet } from '@angular/router';
 })
 export class App {
   protected title = 'foody-clear-front';
+
+    private router = inject(Router);
+
+  goToProduct() {
+    this.router.navigate(['/product']);
+  }
+
+  goToCategory() {
+    this.router.navigate(['/category']);
+  }
+
+  goToTag() {
+    this.router.navigate(['/tag']);
+  }
+
+  goToGenericProduct() {
+    this.router.navigate(['/generic-product']);
+  }
+
+  goToNutritionValue() {
+    this.router.navigate(['/nutrition-value']);
+  }
 }
