@@ -1,11 +1,35 @@
 import { Component, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormControlName, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { ProductService, CreateProductDto, UpdateProductDto, NutritionValueCreated, NutritionValueUpdated } from '../../services/product-service';
 import { CommonModule, JsonPipe } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
   selector: 'app-product',
-  imports: [JsonPipe, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    JsonPipe,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatProgressBarModule,
+  ],
   templateUrl: './product.html',
   styleUrl: './product.scss',
 })
