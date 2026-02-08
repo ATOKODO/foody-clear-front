@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AddCycle } from './add-cycle';
+import { FormCycle } from './form-cycle';
 
-describe('AddCycle', () => {
-  let component: AddCycle;
-  let fixture: ComponentFixture<AddCycle>;
+describe('FormCycle', () => {
+  let component: FormCycle;
+  let fixture: ComponentFixture<FormCycle>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AddCycle],
+      imports: [FormCycle],
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(AddCycle);
+    fixture = TestBed.createComponent(FormCycle);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -55,3 +55,4 @@ describe('AddCycle', () => {
     expect(nativeElement.querySelectorAll('mat-select').length).toBe(2);
   });
 });
+

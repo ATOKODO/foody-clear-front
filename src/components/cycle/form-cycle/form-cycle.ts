@@ -8,7 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 type TypeDuree = 'jour' | 'semaine' | 'mois';
 
 @Component({
-  selector: 'app-add-cycle',
+  selector: 'app-form-cycle',
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -16,10 +16,10 @@ type TypeDuree = 'jour' | 'semaine' | 'mois';
     MatInputModule,
     MatSelectModule,
   ],
-  templateUrl: './add-cycle.html',
-  styleUrl: './add-cycle.scss',
+  templateUrl: './form-cycle.html',
+  styleUrl: './form-cycle.scss',
 })
-export class AddCycle {
+export class FormCycle {
   private readonly fb = inject(FormBuilder);
 
   readonly colorOptions = [
@@ -54,3 +54,4 @@ export class AddCycle {
   }
 
 }
+
