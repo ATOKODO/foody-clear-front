@@ -1,7 +1,7 @@
 <section class="mx-auto max-w-4xl px-4 py-10 text-gray-900 dark:text-gray-100">
-  <h2 class="mb-6 text-xl font-medium">Ajouter un Cycle</h2>
+  <h2 class="mb-6 text-xl font-medium">{{ heading }}</h2>
 
-  <form [formGroup]="form" class="space-y-5">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
     <div class="grid gap-4 md:grid-cols-12">
       <mat-form-field appearance="fill" class="fc-field md:col-span-8">
         <mat-label>Titre</mat-label>
@@ -67,6 +67,14 @@
         </mat-select>
         <mat-hint>Jour / Semaine / Mois</mat-hint>
       </mat-form-field>
+    </div>
+
+    <div class="flex justify-center pt-2">
+      <button
+        type="submit"
+        class="rounded-full bg-black px-8 py-2 text-white transition-opacity hover:opacity-90">
+        Valider
+      </button>
     </div>
   </form>
 </section>

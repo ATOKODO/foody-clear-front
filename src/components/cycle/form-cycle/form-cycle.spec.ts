@@ -33,6 +33,62 @@ describe('FormCycle', () => {
     });
   });
 
+  it('should patch values in edit mode when cycle is provided', () => {
+    fixture.componentRef.setInput('mode', 'edit');
+    fixture.componentRef.setInput('cycle', {
+      titre: 'Seche',
+      couleur: '#22c55e',
+      proteines: 180,
+      glucides: 120,
+      lipides: 60,
+      nombre: 4,
+      typeDuree: 'semaine',
+    });
+    fixture.detectChanges();
+
+    expect(component.form.getRawValue()).toEqual({
+      titre: 'Seche',
+      couleur: '#22c55e',
+      proteines: 180,
+      glucides: 120,
+      lipides: 60,
+      nombre: 4,
+      typeDuree: 'semaine',
+    });
+  });
+
+  it('should emit submitted payload with mode and form value', () => {
+    const emitted: Array<unknown> = [];
+    component.submitted.subscribe((payload) => emitted.push(payload));
+
+    component.form.setValue({
+      titre: 'Prise de masse',
+      couleur: '#f97316',
+      proteines: 200,
+      glucides: 300,
+      lipides: 70,
+      nombre: 6,
+      typeDuree: 'jour',
+    });
+
+    component.onSubmit();
+
+    expect(emitted).toEqual([
+      {
+        mode: 'add',
+        value: {
+          titre: 'Prise de masse',
+          couleur: '#f97316',
+          proteines: 200,
+          glucides: 300,
+          lipides: 70,
+          nombre: 6,
+          typeDuree: 'jour',
+        },
+      },
+    ]);
+  });
+
   it('should render all key wireframe labels', () => {
     const text = fixture.nativeElement.textContent;
 
@@ -55,4 +111,3 @@ describe('FormCycle', () => {
     expect(nativeElement.querySelectorAll('mat-select').length).toBe(2);
   });
 });
-

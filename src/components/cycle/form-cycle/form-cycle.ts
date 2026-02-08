@@ -1,11 +1,31 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 
-type TypeDuree = 'jour' | 'semaine' | 'mois';
+export type TypeDuree = 'jour' | 'semaine' | 'mois';
+export type CycleFormMode = 'add' | 'edit';
+
+export interface CycleFormValue {
+  titre: string;
+  couleur: string;
+  proteines: number;
+  glucides: number;
+  lipides: number;
+  nombre: number;
+  typeDuree: TypeDuree;
+}
 
 @Component({
   selector: 'app-form-cycle',
@@ -19,8 +39,16 @@ type TypeDuree = 'jour' | 'semaine' | 'mois';
   templateUrl: './form-cycle.html',
   styleUrl: './form-cycle.scss',
 })
-export class FormCycle {
+export class FormCycle implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
+
+  @Input() mode: CycleFormMode = 'add';
+  @Input() cycle: Partial<CycleFormValue> | null = null;
+
+  @Output() readonly submitted = new EventEmitter<{
+    mode: CycleFormMode;
+    value: CycleFormValue;
+  }>();
 
   readonly colorOptions = [
     { label: 'Rouge', value: '#ff5b5b' },
@@ -45,6 +73,20 @@ export class FormCycle {
     typeDuree: ['jour' as TypeDuree],
   });
 
+  ngOnInit(): void {
+    this.applyInputState();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['mode'] || changes['cycle']) {
+      this.applyInputState();
+    }
+  }
+
+  get heading(): string {
+    return this.mode === 'edit' ? 'Modifier un Cycle' : 'Ajouter un Cycle';
+  }
+
   get couleurSelectionnee(): string {
     return (
       this.colorOptions.find(
@@ -53,5 +95,42 @@ export class FormCycle {
     );
   }
 
-}
+  onSubmit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
+    this.submitted.emit({
+      mode: this.mode,
+      value: this.form.getRawValue(),
+    });
+  }
+
+  private applyInputState(): void {
+    const defaults: CycleFormValue = {
+      titre: '',
+      couleur: this.colorOptions[0].value,
+      proteines: 0,
+      glucides: 0,
+      lipides: 0,
+      nombre: 0,
+      typeDuree: 'jour',
+    };
+
+    if (this.mode === 'edit' && this.cycle) {
+      this.form.reset({
+        titre: this.cycle.titre ?? defaults.titre,
+        couleur: this.cycle.couleur ?? defaults.couleur,
+        proteines: this.cycle.proteines ?? defaults.proteines,
+        glucides: this.cycle.glucides ?? defaults.glucides,
+        lipides: this.cycle.lipides ?? defaults.lipides,
+        nombre: this.cycle.nombre ?? defaults.nombre,
+        typeDuree: this.cycle.typeDuree ?? defaults.typeDuree,
+      });
+      return;
+    }
+
+    this.form.reset(defaults);
+  }
+}
