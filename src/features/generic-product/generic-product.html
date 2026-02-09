@@ -1,63 +1,81 @@
-<div style="max-width: 720px; margin: 24px auto; font-family: system-ui, Arial;">
-  <h2>Tester API — Generic Products</h2>
-
-  <!-- Base URL -->
-  <div style="margin: 8px 0 16px;">
-    <label>
-      Base URL :
-      <input
-        type="text"
-        [value]="baseUrl"
-        (input)="baseUrl"
-        style="width: 100%; padding: 8px; margin-top: 4px;"
-        placeholder="http://localhost:3000"
-      />
-    </label>
-  </div>
-
-  <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" style="display: grid; gap: 12px;">
-    <div>
-      <label>id (GET/PATCH/DELETE)</label>
-      <input type="number" formControlName="id" style="width: 100%; padding: 8px;" />
+<section class="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+  <mat-card class="overflow-hidden rounded-2xl">
+    <div class="bg-slate-900 px-6 py-5 text-white">
+      <h2 class="text-xl font-semibold">Generic Products API Tester</h2>
+      <p class="mt-1 text-sm text-slate-300">
+        Interface Material + Tailwind pour tester les endpoints generic-products.
+      </p>
     </div>
 
-    <div>
-      <label>name *</label>
-      <input type="text" formControlName="name" style="width: 100%; padding: 8px;" />
-    </div>
+    <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" class="space-y-6 p-4 sm:p-6">
+      <mat-card appearance="outlined" class="rounded-xl">
+        <mat-card-content class="pt-4">
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Base URL</mat-label>
+            <input
+              matInput
+              type="text"
+              [(ngModel)]="baseUrl"
+              [ngModelOptions]="{ standalone: true }"
+              placeholder="http://localhost:3000" />
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-      <div>
-        <label>minQuantityUnit *</label>
-        <input type="number" formControlName="minQuantityUnit" style="width: 100%; padding: 8px;" />
+      <mat-card appearance="outlined" class="rounded-xl">
+        <mat-card-header>
+          <mat-card-title>Generic Product</mat-card-title>
+          <mat-card-subtitle>Champs principaux</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-2">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>id (GET/PATCH/DELETE)</mat-label>
+              <input matInput type="number" formControlName="id" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-2">
+              <mat-label>name *</mat-label>
+              <input matInput type="text" formControlName="name" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>minQuantityUnit *</mat-label>
+              <input matInput type="number" formControlName="minQuantityUnit" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>minQuantityMetric *</mat-label>
+              <input matInput type="number" formControlName="minQuantityMetric" />
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-divider />
+
+      <div class="flex flex-wrap gap-2">
+        <button mat-stroked-button type="button" (click)="fillDemoCreate()">Exemple (remplir)</button>
+        <button mat-raised-button color="primary" type="button" (click)="create()">Create (POST)</button>
+        <button mat-raised-button color="primary" type="button" (click)="getOne()">Get (GET /:id)</button>
+        <button mat-raised-button color="primary" type="button" (click)="getAll()">GetAll (GET)</button>
+        <button mat-raised-button color="accent" type="button" (click)="update()">Update (PATCH)</button>
+        <button mat-raised-button color="warn" type="button" (click)="delete()">Delete (DELETE)</button>
+        <button mat-button type="button" (click)="clear()">Clear</button>
       </div>
-      <div>
-        <label>minQuantityMetric *</label>
-        <input type="number" formControlName="minQuantityMetric" style="width: 100%; padding: 8px;" />
-      </div>
-    </div>
+    </form>
 
-    <!-- Actions -->
-    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
-      <button type="button" (click)="fillDemoCreate()">Exemple (remplir)</button>
-      <button type="button" (click)="create()">Create (POST)</button>
-      <button type="button" (click)="getOne()">Get (GET /:id)</button>
-      <button type="button" (click)="getAll()">GetAll (GET)</button>
-      <button type="button" (click)="update()">Update (PATCH)</button>
-      <button type="button" (click)="delete()">Delete (DELETE)</button>
-      <button type="button" (click)="clear()">Clear</button>
-    </div>
-  </form>
+    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
-  <!-- État -->
-  <div style="margin-top: 16px;">
-    <span *ngIf="loading">⏳ Loading...</span>
-    <span *ngIf="lastError" style="color: #b00020;">💥 {{ lastError | json }}</span>
-  </div>
+    <div class="space-y-3 p-4 sm:p-6">
+      <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        {{ lastError | json }}
+      </p>
 
-  <!-- Résultat -->
-  <h3 style="margin-top: 16px;">Dernière réponse</h3>
-  <pre style="background:#f6f8fa; padding: 12px; border-radius: 8px; overflow:auto;">
+      <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
+      <pre class="max-h-96 overflow-auto rounded-lg bg-slate-100 p-4 text-xs text-slate-800">
 {{ lastResponse | json }}
-  </pre>
-</div>
+      </pre>
+    </div>
+  </mat-card>
+</section>
