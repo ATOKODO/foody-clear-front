@@ -12,10 +12,27 @@ import {
   UpdateCategoryDto,
 } from '../../services/category-service';
 import { CommonModule, JsonPipe } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
   selector: 'app-category',
-  imports: [JsonPipe, FormsModule, ReactiveFormsModule, CommonModule],
+  imports: [
+    JsonPipe,
+    FormsModule,
+    ReactiveFormsModule,
+    CommonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatProgressBarModule,
+  ],
   templateUrl: './category.html',
   styleUrl: './category.scss',
 })
