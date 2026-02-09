@@ -19,10 +19,26 @@ import { CommonModule, JsonPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
+
+type ProductTableRow = {
+  id: number;
+  name: string;
+  barcode: string;
+  unit: string;
+  price: string;
+  tags: string;
+  nutritionValues: Array<{
+    label: string;
+    amount: string;
+    unit: string;
+    per: string;
+  }>;
+};
 
 @Component({
   selector: 'app-product',
@@ -34,6 +50,7 @@ import { MatTableModule } from '@angular/material/table';
     MatButtonModule,
     MatCardModule,
     MatDividerModule,
+    MatExpansionModule,
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
@@ -43,14 +60,7 @@ import { MatTableModule } from '@angular/material/table';
   styleUrl: './product.scss',
 })
 export class Product implements OnInit {
-  readonly productTableColumns = [
-    'id',
-    'name',
-    'barcode',
-    'unit',
-    'price',
-    'tags',
-  ];
+  readonly nutritionValueColumns = ['label', 'amount', 'unit', 'per'];
 
   form: FormGroup = new FormGroup({});
   baseUrl: string | '' = '';
@@ -58,6 +68,7 @@ export class Product implements OnInit {
   lastResponse: unknown = null;
   lastError: unknown = null;
   loading = false;
+  productTableRows: ProductTableRow[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -114,21 +125,31 @@ export class Product implements OnInit {
     return this.form.get('nutritionValuesUpdated') as FormArray;
   }
 
-  get productTableRows(): Array<{
-    id: number;
-    name: string;
-    barcode: string;
-    unit: string;
-    price: string;
-    tags: string;
-  }> {
-    return this.extractProductsFromResponse(this.lastResponse).map((product) => ({
+  trackByProductId(_: number, row: ProductTableRow): number {
+    return row.id;
+  }
+
+  private buildProductTableRows(value: unknown): ProductTableRow[] {
+    return this.extractProductsFromResponse(value).map((product) => ({
       id: product.id,
       name: product.name,
       barcode: product.barcode ?? '-',
       unit: `${product.quantityPerUnit} ${product.quantityUnit}`,
       price: product.price == null ? '-' : String(product.price),
       tags: Array.isArray(product.tags) ? String(product.tags.length) : '-',
+      nutritionValues: Array.isArray(product.nutritionValues)
+        ? product.nutritionValues
+            .filter(
+              (item): item is Record<string, unknown> =>
+                !!item && typeof item === 'object',
+            )
+            .map((item) => ({
+              label: typeof item['label'] === 'string' ? item['label'] : '-',
+              amount: item['amount'] == null ? '-' : String(item['amount']),
+              unit: typeof item['unit'] === 'string' ? item['unit'] : '-',
+              per: item['per'] == null ? '-' : String(item['per']),
+            }))
+        : [],
     }));
   }
 
@@ -303,6 +324,7 @@ export class Product implements OnInit {
 
   private setResult(resp: unknown) {
     this.lastResponse = resp;
+    this.productTableRows = this.buildProductTableRows(resp);
     this.lastError = null;
     this.loading = false;
   }
@@ -449,6 +471,7 @@ export class Product implements OnInit {
     });
     this.nvCreatedFA.clear();
     this.nvUpdatedFA.clear();
+    this.productTableRows = [];
     this.lastResponse = null;
     this.lastError = null;
   }

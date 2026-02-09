@@ -228,42 +228,59 @@
 
     <div class="px-4 pb-2 sm:px-6" *ngIf="productTableRows.length > 0">
       <h3 class="mb-2 text-base font-semibold text-slate-900">Resultats (GET / GETALL)</h3>
-      <div class="overflow-x-auto rounded-lg border border-slate-200">
-        <table mat-table [dataSource]="productTableRows" class="w-full">
-          <ng-container matColumnDef="id">
-            <th mat-header-cell *matHeaderCellDef>ID</th>
-            <td mat-cell *matCellDef="let row">{{ row.id }}</td>
-          </ng-container>
+      <mat-accordion class="space-y-2">
+        <mat-expansion-panel *ngFor="let row of productTableRows; trackBy: trackByProductId">
+          <mat-expansion-panel-header [collapsedHeight]="'96px'" [expandedHeight]="'96px'" class="!px-4">
+            <mat-panel-title>
+              <div class="w-full">
+                <p class="mb-2 truncate pr-4 text-sm font-semibold text-slate-900">
+                  {{ row.name }}
+                </p>
+                <div class="grid grid-cols-2 gap-2 text-xs font-medium text-slate-700 sm:grid-cols-3 lg:grid-cols-5">
+                  <span class="rounded-md bg-slate-100 px-2 py-1">ID: {{ row.id }}</span>
+                  <span class="rounded-md bg-slate-100 px-2 py-1">Barcode: {{ row.barcode }}</span>
+                  <span class="rounded-md bg-slate-100 px-2 py-1">Unit: {{ row.unit }}</span>
+                  <span class="rounded-md bg-slate-100 px-2 py-1">Price: {{ row.price }}</span>
+                  <span class="rounded-md bg-slate-100 px-2 py-1">Tags: {{ row.tags }}</span>
+                </div>
+              </div>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
 
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Name</th>
-            <td mat-cell *matCellDef="let row">{{ row.name }}</td>
-          </ng-container>
+          <div *ngIf="row.nutritionValues.length > 0; else noNvBlock" class="overflow-x-auto rounded-lg border border-slate-200">
+            <table mat-table [dataSource]="row.nutritionValues" class="w-full">
+              <ng-container matColumnDef="label">
+                <th mat-header-cell *matHeaderCellDef>Label</th>
+                <td mat-cell *matCellDef="let nv">{{ nv.label }}</td>
+              </ng-container>
 
-          <ng-container matColumnDef="barcode">
-            <th mat-header-cell *matHeaderCellDef>Barcode</th>
-            <td mat-cell *matCellDef="let row">{{ row.barcode }}</td>
-          </ng-container>
+              <ng-container matColumnDef="amount">
+                <th mat-header-cell *matHeaderCellDef>Amount</th>
+                <td mat-cell *matCellDef="let nv">{{ nv.amount }}</td>
+              </ng-container>
 
-          <ng-container matColumnDef="unit">
-            <th mat-header-cell *matHeaderCellDef>Unit</th>
-            <td mat-cell *matCellDef="let row">{{ row.unit }}</td>
-          </ng-container>
+              <ng-container matColumnDef="unit">
+                <th mat-header-cell *matHeaderCellDef>Unit</th>
+                <td mat-cell *matCellDef="let nv">{{ nv.unit }}</td>
+              </ng-container>
 
-          <ng-container matColumnDef="price">
-            <th mat-header-cell *matHeaderCellDef>Price</th>
-            <td mat-cell *matCellDef="let row">{{ row.price }}</td>
-          </ng-container>
+              <ng-container matColumnDef="per">
+                <th mat-header-cell *matHeaderCellDef>Per</th>
+                <td mat-cell *matCellDef="let nv">{{ nv.per }}</td>
+              </ng-container>
 
-          <ng-container matColumnDef="tags">
-            <th mat-header-cell *matHeaderCellDef>Tags</th>
-            <td mat-cell *matCellDef="let row">{{ row.tags }}</td>
-          </ng-container>
+              <tr mat-header-row *matHeaderRowDef="nutritionValueColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: nutritionValueColumns"></tr>
+            </table>
+          </div>
 
-          <tr mat-header-row *matHeaderRowDef="productTableColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: productTableColumns"></tr>
-        </table>
-      </div>
+          <ng-template #noNvBlock>
+            <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              No NV
+            </p>
+          </ng-template>
+        </mat-expansion-panel>
+      </mat-accordion>
     </div>
 
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
