@@ -9,10 +9,27 @@ import {
 } from '@angular/forms';
 import { InputDayService } from '../../services/input-day-service';
 import { InputDayItemCommand } from '../../interfaces/input-day.interface';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
   selector: 'app-input-day',
-  imports: [JsonPipe, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    JsonPipe,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatProgressBarModule,
+  ],
   templateUrl: './input-day.feature.html',
   styleUrl: './input-day.feature.scss',
 })

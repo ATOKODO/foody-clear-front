@@ -1,100 +1,150 @@
-<div style="max-width: 980px; margin: 24px auto; font-family: system-ui, Arial;">
-  <h2>Tester API - InputDay</h2>
-
-  <div style="margin: 8px 0 16px;">
-    <label>
-      Base URL :
-      <input
-        type="text"
-        [ngModel]="baseUrl"
-        (ngModelChange)="baseUrl = $event; onBaseUrlChange()"
-        [ngModelOptions]="{ standalone: true }"
-        style="width: 100%; padding: 8px; margin-top: 4px;"
-        placeholder="http://localhost:3000"
-      />
-    </label>
-  </div>
-
-  <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" style="display: grid; gap: 12px;">
-    <div style="display: grid; grid-template-columns: 180px 1fr; gap: 12px;">
-      <div>
-        <label>dateLocal (YYYY-MM-DD)</label>
-        <input type="text" formControlName="dateLocal" placeholder="2026-02-08" style="width: 100%; padding: 8px;" />
-      </div>
-      <div>
-        <label>timezone</label>
-        <input type="text" formControlName="timezone" placeholder="UTC" style="width: 100%; padding: 8px;" />
-      </div>
+<section class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+  <mat-card class="overflow-hidden rounded-2xl">
+    <div class="bg-slate-900 px-6 py-5 text-white">
+      <h2 class="text-xl font-semibold">InputDay API Tester</h2>
+      <p class="mt-1 text-sm text-slate-300">
+        Interface Material + Tailwind pour tester les endpoints input-day.
+      </p>
     </div>
 
-    <fieldset style="border: 1px solid #ddd; border-radius: 8px; padding: 12px;">
-      <legend>Item simple</legend>
-      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
-        <div>
-          <label>productId</label>
-          <input type="number" formControlName="productId" style="width: 100%; padding: 8px;" />
-        </div>
-        <div>
-          <label>qty</label>
-          <input type="number" formControlName="qty" step="0.01" style="width: 100%; padding: 8px;" />
-        </div>
-        <div>
-          <label>slotId (optionnel)</label>
-          <input type="number" formControlName="slotId" style="width: 100%; padding: 8px;" />
-        </div>
-        <div>
-          <label>slotKey (optionnel)</label>
-          <input type="text" formControlName="slotKey" style="width: 100%; padding: 8px;" />
-        </div>
-        <div style="display: flex; align-items: end;">
-          <button type="button" (click)="createItem()" style="width: 100%;">Create Item</button>
-        </div>
+    <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" class="space-y-6 p-4 sm:p-6">
+      <mat-card appearance="outlined" class="rounded-xl">
+        <mat-card-content class="pt-4">
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Base URL</mat-label>
+            <input
+              matInput
+              type="text"
+              [(ngModel)]="baseUrl"
+              [ngModelOptions]="{ standalone: true }"
+              (change)="onBaseUrlChange()"
+              placeholder="http://localhost:3000" />
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="rounded-xl">
+        <mat-card-header>
+          <mat-card-title>Contexte du jour</mat-card-title>
+          <mat-card-subtitle>date + timezone</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-2">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>dateLocal (YYYY-MM-DD)</mat-label>
+              <input matInput type="text" formControlName="dateLocal" placeholder="2026-02-08" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>timezone</mat-label>
+              <input matInput type="text" formControlName="timezone" placeholder="UTC" />
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div class="grid gap-6 xl:grid-cols-2">
+        <mat-card appearance="outlined" class="rounded-xl">
+          <mat-card-header>
+            <mat-card-title>Item simple</mat-card-title>
+            <mat-card-subtitle>Creation unitaire</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content class="space-y-3 pt-2">
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>productId</mat-label>
+                <input matInput type="number" formControlName="productId" />
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>qty</mat-label>
+                <input matInput type="number" step="0.01" formControlName="qty" />
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>slotId (optionnel)</mat-label>
+                <input matInput type="number" formControlName="slotId" />
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>slotKey (optionnel)</mat-label>
+                <input matInput type="text" formControlName="slotKey" />
+              </mat-form-field>
+            </div>
+
+            <button mat-raised-button color="primary" type="button" (click)="createItem()">
+              Create Item
+            </button>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card appearance="outlined" class="rounded-xl">
+          <mat-card-header>
+            <mat-card-title>Items bulk</mat-card-title>
+            <mat-card-subtitle>Creation multiple via JSON</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content class="space-y-3 pt-2">
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>bulkItemsJson (tableau JSON)</mat-label>
+              <textarea matInput rows="6" formControlName="bulkItemsJson"></textarea>
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" type="button" (click)="createBulk()">
+              Create Items Bulk
+            </button>
+          </mat-card-content>
+        </mat-card>
       </div>
-    </fieldset>
 
-    <fieldset style="border: 1px solid #ddd; border-radius: 8px; padding: 12px;">
-      <legend>Items bulk</legend>
-      <div>
-        <label>bulkItemsJson (tableau JSON)</label>
-        <textarea formControlName="bulkItemsJson" rows="4" style="width: 100%; padding: 8px;"></textarea>
+      <mat-card appearance="outlined" class="rounded-xl">
+        <mat-card-header>
+          <mat-card-title>Update / Delete item</mat-card-title>
+          <mat-card-subtitle>Operations sur un item</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-2">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>itemId</mat-label>
+              <input matInput type="number" formControlName="itemId" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>updateQty</mat-label>
+              <input matInput type="number" step="0.01" formControlName="updateQty" />
+            </mat-form-field>
+
+            <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-2">
+              <button mat-raised-button color="accent" type="button" (click)="updateQty()">
+                Update Qty
+              </button>
+              <button mat-raised-button color="warn" type="button" (click)="removeItem()">
+                Delete Item
+              </button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-divider />
+
+      <div class="flex flex-wrap gap-2">
+        <button mat-stroked-button type="button" (click)="fillDemo()">Exemple (remplir)</button>
+        <button mat-raised-button color="primary" type="button" (click)="loadDay()">Get InputDay</button>
+        <button mat-button type="button" (click)="clear()">Clear</button>
       </div>
-      <div style="margin-top: 8px;">
-        <button type="button" (click)="createBulk()">Create Items Bulk</button>
-      </div>
-    </fieldset>
+    </form>
 
-    <fieldset style="border: 1px solid #ddd; border-radius: 8px; padding: 12px;">
-      <legend>Update / Delete item</legend>
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-        <div>
-          <label>itemId</label>
-          <input type="number" formControlName="itemId" style="width: 100%; padding: 8px;" />
-        </div>
-        <div>
-          <label>updateQty</label>
-          <input type="number" formControlName="updateQty" step="0.01" style="width: 100%; padding: 8px;" />
-        </div>
-        <div style="display: flex; align-items: end; gap: 8px;">
-          <button type="button" (click)="updateQty()">Update Qty</button>
-          <button type="button" (click)="removeItem()">Delete Item</button>
-        </div>
-      </div>
-    </fieldset>
+    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
-    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
-      <button type="button" (click)="fillDemo()">Exemple (remplir)</button>
-      <button type="button" (click)="loadDay()">Get InputDay</button>
-      <button type="button" (click)="clear()">Clear</button>
-    </div>
-  </form>
+    <div class="space-y-3 p-4 sm:p-6">
+      <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        {{ lastError | json }}
+      </p>
 
-  <div style="margin-top: 16px;">
-    <span *ngIf="loading">Loading...</span>
-    <span *ngIf="lastError" style="color: #b00020;">{{ lastError | json }}</span>
-  </div>
-
-  <h3 style="margin-top: 16px;">Derniere reponse</h3>
-  <pre style="background: #f6f8fa; padding: 12px; border-radius: 8px; overflow: auto;">
+      <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
+      <pre class="max-h-96 overflow-auto rounded-lg bg-slate-100 p-4 text-xs text-slate-800">
 {{ lastResponse | json }}
-  </pre>
-</div>
+      </pre>
+    </div>
+  </mat-card>
+</section>
