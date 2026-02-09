@@ -69,6 +69,7 @@ export class Product implements OnInit {
   lastError: unknown = null;
   loading = false;
   productTableRows: ProductTableRow[] = [];
+  expandedProductId: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -127,6 +128,10 @@ export class Product implements OnInit {
 
   trackByProductId(_: number, row: ProductTableRow): number {
     return row.id;
+  }
+
+  onToggleProductPanel(productId: number): void {
+    this.expandedProductId = this.expandedProductId === productId ? null : productId;
   }
 
   private buildProductTableRows(value: unknown): ProductTableRow[] {
@@ -325,6 +330,7 @@ export class Product implements OnInit {
   private setResult(resp: unknown) {
     this.lastResponse = resp;
     this.productTableRows = this.buildProductTableRows(resp);
+    this.expandedProductId = null;
     this.lastError = null;
     this.loading = false;
   }
@@ -472,6 +478,7 @@ export class Product implements OnInit {
     this.nvCreatedFA.clear();
     this.nvUpdatedFA.clear();
     this.productTableRows = [];
+    this.expandedProductId = null;
     this.lastResponse = null;
     this.lastError = null;
   }
