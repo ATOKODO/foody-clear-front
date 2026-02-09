@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { TypeDuree } from '../form-cycle/form-cycle';
 
 export interface CycleListItem {
@@ -15,7 +17,7 @@ export interface CycleListItem {
 
 @Component({
   selector: 'app-list-cycle',
-  imports: [CommonModule],
+  imports: [CommonModule, MatButtonModule, MatCardModule],
   templateUrl: './list-cycle.html',
   styleUrl: './list-cycle.scss',
 })
