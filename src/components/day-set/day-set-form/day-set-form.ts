@@ -10,6 +10,9 @@ import {
   inject,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 export type DaySetFormMode = 'add' | 'edit';
 
@@ -22,7 +25,13 @@ export interface DaySetFormValue {
 
 @Component({
   selector: 'app-day-set-form',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+  ],
   templateUrl: './day-set-form.html',
   styleUrl: './day-set-form.scss',
 })

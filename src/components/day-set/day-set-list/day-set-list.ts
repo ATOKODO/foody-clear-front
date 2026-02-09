@@ -8,6 +8,10 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTableModule } from '@angular/material/table';
 
 export type DaySetListMode = 'manage' | 'select-single' | 'select-multi';
 
@@ -21,7 +25,13 @@ export interface DaySetListItem {
 
 @Component({
   selector: 'app-day-set-list',
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatTableModule,
+  ],
   templateUrl: './day-set-list.html',
   styleUrl: './day-set-list.scss',
 })
@@ -86,6 +96,12 @@ export class DaySetList implements OnInit, OnChanges {
 
   get hasItems(): boolean {
     return this.resolvedDaySets.length > 0;
+  }
+
+  get displayedColumns(): string[] {
+    return this.isMultiSelectMode
+      ? ['select', 'title', 'protein', 'carbs', 'fat']
+      : ['title', 'protein', 'carbs', 'fat'];
   }
 
   trackById(_: number, item: DaySetListItem): string {

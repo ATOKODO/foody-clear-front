@@ -1,40 +1,36 @@
-<section class="day-set-form" aria-label="Ajouter ou modifier un day set">
-  <div class="dsf-head">
-    <h2>{{ heading }}</h2>
-    <button type="button" class="menu-btn" aria-label="Plus d'options" (click)="onMenuClick()">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="6" cy="12" r="2" />
-        <circle cx="12" cy="12" r="2" />
-        <circle cx="18" cy="12" r="2" />
-      </svg>
-    </button>
+<section class="mx-auto max-w-4xl px-4 py-8 text-gray-900" aria-label="Ajouter ou modifier un day set">
+  <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
+    <h2 class="text-xl font-medium">{{ heading }}</h2>
+    <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="dsf-form">
-    <label class="dsf-field dsf-field-title">
-      <span>Titre</span>
-      <input type="text" formControlName="title" placeholder="Lundi" />
-    </label>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
+    <mat-form-field appearance="fill" class="dsf-field w-full">
+      <mat-label>Titre</mat-label>
+      <input matInput type="text" formControlName="title" placeholder="Lundi" />
+    </mat-form-field>
 
-    <div class="dsf-macros">
-      <label class="dsf-field">
-        <span>Prot</span>
-        <input type="number" min="0" formControlName="protein" placeholder="0" />
-      </label>
+    <div class="grid gap-4 md:grid-cols-3">
+      <mat-form-field appearance="fill" class="dsf-field w-full">
+        <mat-label>Proteine</mat-label>
+        <input matInput type="number" min="0" formControlName="protein" />
+      </mat-form-field>
 
-      <label class="dsf-field">
-        <span>Glu</span>
-        <input type="number" min="0" formControlName="carbs" placeholder="0" />
-      </label>
+      <mat-form-field appearance="fill" class="dsf-field w-full">
+        <mat-label>Glucide</mat-label>
+        <input matInput type="number" min="0" formControlName="carbs" />
+      </mat-form-field>
 
-      <label class="dsf-field">
-        <span>Lip</span>
-        <input type="number" min="0" formControlName="fat" placeholder="0" />
-      </label>
+      <mat-form-field appearance="fill" class="dsf-field w-full">
+        <mat-label>Lipide</mat-label>
+        <input matInput type="number" min="0" formControlName="fat" />
+      </mat-form-field>
     </div>
 
-    <button type="submit" class="submit-btn">
-      Valider
-    </button>
+    <div class="flex justify-center pt-2">
+      <button mat-raised-button color="primary" type="submit" class="rounded-full px-8">
+        Valider
+      </button>
+    </div>
   </form>
 </section>
