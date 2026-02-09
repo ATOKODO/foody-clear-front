@@ -23,7 +23,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { MetaService, QuantityUnitMeta } from '../../services/meta-service';
 
 type ProductTableRow = {
   id: number;
@@ -54,6 +56,7 @@ type ProductTableRow = {
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    MatSelectModule,
     MatTableModule,
   ],
   templateUrl: './product.html',
@@ -70,13 +73,16 @@ export class Product implements OnInit {
   loading = false;
   productTableRows: ProductTableRow[] = [];
   expandedProductId: number | null = null;
+  quantityUnitOptions: QuantityUnitMeta[] = [];
 
   constructor(
     private fb: FormBuilder,
     private productSrv: ProductService,
+    private metaSrv: MetaService,
   ) {}
   ngOnInit(): void {
     this.baseUrl = this.productSrv.baseUrl;
+    this.metaSrv.setBaseUrl(this.baseUrl);
     // Champs scalaires + 2 FormArray pour NV (create / update)
     this.form = this.fb.group({
       id: this.fb.control<number | null>(null),
@@ -112,11 +118,15 @@ export class Product implements OnInit {
       nutritionValuesCreated: this.fb.array<FormArray>([]),
       nutritionValuesUpdated: this.fb.array<FormArray>([]),
     });
+
+    this.loadQuantityUnits();
   }
 
   // -------- Helpers UI --------
   onBaseUrlChange() {
     this.productSrv.setBaseUrl(this.baseUrl);
+    this.metaSrv.setBaseUrl(this.baseUrl);
+    this.loadQuantityUnits();
   }
 
   get nvCreatedFA(): FormArray {
@@ -216,6 +226,25 @@ export class Product implements OnInit {
       .map((s) => Number(s))
       .filter((n) => !Number.isNaN(n));
     return ids.length ? ids : [];
+  }
+
+  private loadQuantityUnits(): void {
+    this.metaSrv.getQuantityUnits().subscribe({
+      next: (units) => {
+        this.quantityUnitOptions = units;
+
+        const currentUnit = (this.form.value['quantityUnit'] ?? '')
+          .toString()
+          .trim();
+        const existsInOptions = units.some((unit) => unit.value === currentUnit);
+        if ((!existsInOptions || currentUnit === '') && units.length > 0) {
+          this.form.patchValue({ quantityUnit: units[0].value });
+        }
+      },
+      error: () => {
+        this.quantityUnitOptions = [];
+      },
+    });
   }
 
   private extractProductsFromResponse(value: unknown): ProductApiModel[] {
