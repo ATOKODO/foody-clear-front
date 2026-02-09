@@ -7,7 +7,14 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ProductService, CreateProductDto, UpdateProductDto, NutritionValueCreated, NutritionValueUpdated } from '../../services/product-service';
+import {
+  ProductService,
+  CreateProductDto,
+  UpdateProductDto,
+  NutritionValueCreated,
+  NutritionValueUpdated,
+  Product as ProductApiModel,
+} from '../../services/product-service';
 import { CommonModule, JsonPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -15,6 +22,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({
   selector: 'app-product',
@@ -29,11 +37,21 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    MatTableModule,
   ],
   templateUrl: './product.html',
   styleUrl: './product.scss',
 })
 export class Product implements OnInit {
+  readonly productTableColumns = [
+    'id',
+    'name',
+    'barcode',
+    'unit',
+    'price',
+    'tags',
+  ];
+
   form: FormGroup = new FormGroup({});
   baseUrl: string | '' = '';
 
@@ -96,6 +114,24 @@ export class Product implements OnInit {
     return this.form.get('nutritionValuesUpdated') as FormArray;
   }
 
+  get productTableRows(): Array<{
+    id: number;
+    name: string;
+    barcode: string;
+    unit: string;
+    price: string;
+    tags: string;
+  }> {
+    return this.extractProductsFromResponse(this.lastResponse).map((product) => ({
+      id: product.id,
+      name: product.name,
+      barcode: product.barcode ?? '-',
+      unit: `${product.quantityPerUnit} ${product.quantityUnit}`,
+      price: product.price == null ? '-' : String(product.price),
+      tags: Array.isArray(product.tags) ? String(product.tags.length) : '-',
+    }));
+  }
+
   addNvCreated() {
     this.nvCreatedFA.push(
       this.fb.group({
@@ -154,6 +190,43 @@ export class Product implements OnInit {
       .map((s) => Number(s))
       .filter((n) => !Number.isNaN(n));
     return ids.length ? ids : [];
+  }
+
+  private extractProductsFromResponse(value: unknown): ProductApiModel[] {
+    if (Array.isArray(value)) {
+      return value.filter((item): item is ProductApiModel => this.isProductLike(item));
+    }
+
+    if (this.isProductLike(value)) {
+      return [value];
+    }
+
+    if (value && typeof value === 'object') {
+      const payload = (value as Record<string, unknown>)['data'];
+
+      if (Array.isArray(payload)) {
+        return payload.filter((item): item is ProductApiModel => this.isProductLike(item));
+      }
+
+      if (this.isProductLike(payload)) {
+        return [payload];
+      }
+    }
+
+    return [];
+  }
+
+  private isProductLike(value: unknown): value is ProductApiModel {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const maybe = value as Partial<ProductApiModel>;
+    return (
+      typeof maybe.id === 'number' &&
+      typeof maybe.name === 'string' &&
+      typeof maybe.quantityUnit === 'string'
+    );
   }
 
   private pickCreatePayload(): CreateProductDto {
