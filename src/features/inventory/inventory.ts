@@ -13,10 +13,27 @@ import {
   UpdateInventoryDto,
   UpdateInventoryProductsDto,
 } from '../../interfaces/inventory.interface';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
   selector: 'app-inventory',
-  imports: [JsonPipe, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    JsonPipe,
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatDividerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatProgressBarModule,
+  ],
   templateUrl: './inventory.html',
   styleUrl: './inventory.scss',
 })
