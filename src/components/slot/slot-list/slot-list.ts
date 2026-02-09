@@ -8,6 +8,10 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTableModule } from '@angular/material/table';
 
 export type SlotListMode = 'manage' | 'select-single' | 'select-multi';
 
@@ -21,7 +25,13 @@ export interface SlotListItem {
 
 @Component({
   selector: 'app-slot-list',
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatTableModule,
+  ],
   templateUrl: './slot-list.html',
   styleUrl: './slot-list.scss',
 })
@@ -86,6 +96,12 @@ export class SlotList implements OnInit, OnChanges {
 
   get hasItems(): boolean {
     return this.resolvedSlots.length > 0;
+  }
+
+  get displayedColumns(): string[] {
+    return this.isMultiSelectMode
+      ? ['select', 'title', 'protein', 'carbs', 'fat']
+      : ['title', 'protein', 'carbs', 'fat'];
   }
 
   trackById(_: number, item: SlotListItem): string {

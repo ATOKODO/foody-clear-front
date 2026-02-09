@@ -1,66 +1,75 @@
-<section
-  class="slot-list"
-  [class.is-multi]="isMultiSelectMode"
-  [class.is-select]="isSingleSelectMode || isMultiSelectMode"
-  aria-label="Liste des slots">
-  <div class="sl-header" *ngIf="hasItems">
-    <span class="sl-empty-head" *ngIf="isMultiSelectMode" aria-hidden="true"></span>
-    <span>Slot</span>
-    <span>Proteine</span>
-    <span>Glucide</span>
-    <span>Lipide</span>
-  </div>
+<section class="mx-auto w-full max-w-6xl px-4 py-6" aria-label="Liste des slots">
+  <mat-card class="overflow-hidden rounded-2xl">
+    <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-6">
+      <h2 class="text-base font-semibold text-slate-900">Slots</h2>
 
-  <div class="sl-body" *ngIf="hasItems; else emptyState">
-    <div
-      class="sl-row"
-      *ngFor="let item of resolvedSlots; let i = index; trackBy: trackById"
-      [class.is-active]="isRowActive(item, i)"
-      [attr.tabindex]="isSingleSelectMode ? 0 : null"
-      [attr.role]="isSingleSelectMode ? 'button' : null"
-      (click)="onRowClick(item)"
-      (keydown)="onRowKeydown($event, item)">
-      <div class="sl-check" *ngIf="isMultiSelectMode" (click)="$event.stopPropagation()">
-        <input
-          type="checkbox"
-          [checked]="isSelected(item.id)"
-          [attr.aria-label]="'Selectionner ' + item.title"
-          (change)="onCheckboxChange(item, $any($event.target).checked)" />
-      </div>
+      <button
+        *ngIf="isManageMode"
+        mat-raised-button
+        color="primary"
+        type="button"
+        class="add-btn"
+        (click)="onAddClick()">
+        Ajouter
+      </button>
+    </div>
 
-      <div class="sl-cell sl-main">
-        <span class="sl-mobile-label">Slot</span>
-        <span>{{ item.title }}</span>
-      </div>
+    <div class="p-3 sm:p-4" *ngIf="hasItems; else emptyState">
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table mat-table [dataSource]="resolvedSlots" class="slot-table w-full">
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
+            <td mat-cell *matCellDef="let item" class="w-14" (click)="$event.stopPropagation()">
+              <mat-checkbox
+                [checked]="isSelected(item.id)"
+                [attr.aria-label]="'Selectionner ' + item.title"
+                (click)="$event.stopPropagation()"
+                (change)="onCheckboxChange(item, $event.checked)">
+              </mat-checkbox>
+            </td>
+          </ng-container>
 
-      <div class="sl-cell">
-        <span class="sl-mobile-label">Proteine</span>
-        <span>{{ item.protein }}</span>
-      </div>
+          <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef>Slot</th>
+            <td mat-cell *matCellDef="let item">{{ item.title }}</td>
+          </ng-container>
 
-      <div class="sl-cell">
-        <span class="sl-mobile-label">Glucide</span>
-        <span>{{ item.carbs }}</span>
-      </div>
+          <ng-container matColumnDef="protein">
+            <th mat-header-cell *matHeaderCellDef>Proteine</th>
+            <td mat-cell *matCellDef="let item">{{ item.protein }}</td>
+          </ng-container>
 
-      <div class="sl-cell">
-        <span class="sl-mobile-label">Lipide</span>
-        <span>{{ item.fat }}</span>
+          <ng-container matColumnDef="carbs">
+            <th mat-header-cell *matHeaderCellDef>Glucide</th>
+            <td mat-cell *matCellDef="let item">{{ item.carbs }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="fat">
+            <th mat-header-cell *matHeaderCellDef>Lipide</th>
+            <td mat-cell *matCellDef="let item">{{ item.fat }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let item; let i = index; columns: displayedColumns"
+            [class.sl-active]="isRowActive(item, i)"
+            [class.sl-selectable]="isSingleSelectMode || isMultiSelectMode"
+            [attr.tabindex]="isSingleSelectMode ? 0 : null"
+            [attr.role]="isSingleSelectMode ? 'button' : null"
+            (click)="onRowClick(item)"
+            (keydown)="onRowKeydown($event, item)">
+          </tr>
+        </table>
       </div>
     </div>
-  </div>
+  </mat-card>
 
   <ng-template #emptyState>
-    <p class="sl-empty">Aucun slot disponible.</p>
+    <mat-card appearance="outlined" class="rounded-xl">
+      <mat-card-content class="p-4 text-sm text-slate-600">
+        Aucun slot disponible.
+      </mat-card-content>
+    </mat-card>
   </ng-template>
-
-  <div class="sl-add-wrap" *ngIf="isManageMode">
-    <button type="button" class="icon-btn add-btn" aria-label="Ajouter un slot" (click)="onAddClick()">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M11 5h2v14h-2z" />
-        <path d="M5 11h14v2H5z" />
-        <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16Z" />
-      </svg>
-    </button>
-  </div>
 </section>

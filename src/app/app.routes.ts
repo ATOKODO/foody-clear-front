@@ -10,7 +10,7 @@ import { CycleFeature } from '../features/cycle/cycle.feature';
 import { InputDayFeature } from '../features/input-day/input-day.feature';
 import { Calendar } from '../components/calendar/calendar';
 import { DaySetFeature } from '../features/day-set/day-set.feature';
-import { SlotList } from '../components/slot/slot-list/slot-list';
+import { SlotFeature } from '../features/slot/slot.feature';
 
 export const routes: Routes = [
     {path: 'home', component: Home},
@@ -23,6 +23,6 @@ export const routes: Routes = [
     {path: 'cycle', component: CycleFeature},
     {path: 'input-day', component: InputDayFeature},
     {path: 'day-set', component: DaySetFeature},
-    {path: 'slot', component: SlotList},
+    {path: 'slot', component: SlotFeature},
     {path: 'calendar', component: Calendar},
 ];
