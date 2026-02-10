@@ -4,10 +4,10 @@ import { Observable } from 'rxjs';
 
 // --- Types côté front pour tes tests ---
 export interface NutritionValueCreated {
-  label: string;
+  nutritionKey: string;
   amount: number;
   unit: string;
-  per: number;
+  reference: string;
 }
 
 export interface NutritionValueUpdated extends Partial<NutritionValueCreated> {
@@ -34,8 +34,8 @@ export interface UpdateProductDto extends Partial<
 > {
   // PATCH partiel : on n’envoie que ce qu’on modifie
   nutritionValuesUpdated?: NutritionValueUpdated[];
-  tagIdsToAdd?: any[];
-  tagIdsToRemove?: any[];
+  tagIdsToAdd?: number[];
+  tagIdsToRemove?: number[];
 }
 
 export interface Product {
@@ -47,7 +47,7 @@ export interface Product {
   genericProduct?: any | null;
   unitType: string;
   quantityPerUnit: number;
-  quantityUnit: string;
+  quantityUnit: string | null;
   price?: number | null;
   url?: string | null;
   memo?: string | null;

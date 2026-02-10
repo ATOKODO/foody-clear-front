@@ -140,8 +140,15 @@
               [formGroupName]="i"
               class="grid gap-3 rounded-xl border border-slate-200 p-3 sm:grid-cols-2 lg:grid-cols-3">
               <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-3">
-                <mat-label>label</mat-label>
-                <input matInput type="text" formControlName="label" />
+                <mat-label>nutritionKey</mat-label>
+                <mat-select formControlName="nutritionKey" (selectionChange)="onCreatedNutritionKeyChange(i)">
+                  <mat-option *ngFor="let nutritionKey of nutritionKeyOptions" [value]="nutritionKey.value">
+                    {{ nutritionKey.label }} ({{ nutritionKey.value }})
+                  </mat-option>
+                </mat-select>
+                <mat-hint *ngIf="nutritionKeyOptions.length === 0">
+                  No nutrition keys loaded
+                </mat-hint>
               </mat-form-field>
 
               <mat-form-field appearance="fill" class="w-full">
@@ -151,20 +158,24 @@
 
               <mat-form-field appearance="fill" class="w-full">
                 <mat-label>unit</mat-label>
-                <input matInput type="text" formControlName="unit" />
+                <mat-select formControlName="unit">
+                  <mat-option *ngFor="let unit of getNutritionUnitsForCreated(i)" [value]="unit">
+                    {{ unit }}
+                  </mat-option>
+                </mat-select>
               </mat-form-field>
 
-              <div class="flex flex-col gap-2 sm:col-span-2 lg:col-span-3">
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>perUnit</mat-label>
-                  <input matInput type="number" formControlName="per" />
-                </mat-form-field>
-                <button
-                  mat-stroked-button
-                  color="warn"
-                  type="button"
-                  class="self-start whitespace-nowrap"
-                  (click)="removeNvCreated(i)">
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>reference</mat-label>
+                <mat-select formControlName="reference">
+                  <mat-option *ngFor="let reference of nutritionReferenceOptions" [value]="reference.value">
+                    {{ reference.label }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <div class="flex items-end sm:col-span-2 lg:col-span-3">
+                <button mat-stroked-button color="warn" type="button" (click)="removeNvCreated(i)">
                   Supprimer
                 </button>
               </div>
@@ -192,8 +203,15 @@
               </mat-form-field>
 
               <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-3">
-                <mat-label>label</mat-label>
-                <input matInput type="text" formControlName="label" />
+                <mat-label>nutritionKey</mat-label>
+                <mat-select formControlName="nutritionKey" (selectionChange)="onUpdatedNutritionKeyChange(i)">
+                  <mat-option *ngFor="let nutritionKey of nutritionKeyOptions" [value]="nutritionKey.value">
+                    {{ nutritionKey.label }} ({{ nutritionKey.value }})
+                  </mat-option>
+                </mat-select>
+                <mat-hint *ngIf="nutritionKeyOptions.length === 0">
+                  No nutrition keys loaded
+                </mat-hint>
               </mat-form-field>
 
               <mat-form-field appearance="fill" class="w-full">
@@ -203,20 +221,24 @@
 
               <mat-form-field appearance="fill" class="w-full">
                 <mat-label>unit</mat-label>
-                <input matInput type="text" formControlName="unit" />
+                <mat-select formControlName="unit">
+                  <mat-option *ngFor="let unit of getNutritionUnitsForUpdated(i)" [value]="unit">
+                    {{ unit }}
+                  </mat-option>
+                </mat-select>
               </mat-form-field>
 
-              <div class="flex flex-col gap-2 sm:col-span-2 lg:col-span-3">
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>perUnit</mat-label>
-                  <input matInput type="number" formControlName="per" />
-                </mat-form-field>
-                <button
-                  mat-stroked-button
-                  color="warn"
-                  type="button"
-                  class="self-start whitespace-nowrap"
-                  (click)="removeNvUpdated(i)">
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>reference</mat-label>
+                <mat-select formControlName="reference">
+                  <mat-option *ngFor="let reference of nutritionReferenceOptions" [value]="reference.value">
+                    {{ reference.label }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <div class="flex items-end sm:col-span-2 lg:col-span-3">
+                <button mat-stroked-button color="warn" type="button" (click)="removeNvUpdated(i)">
                   Supprimer
                 </button>
               </div>
@@ -254,23 +276,25 @@
       <mat-accordion class="space-y-2">
         <mat-expansion-panel
           *ngFor="let row of productTableRows; trackBy: trackByProductId"
-          [expanded]="expandedProductId === row.id">
+          [expanded]="expandedProductId === row.id"
+          (opened)="expandedProductId = row.id"
+          (closed)="expandedProductId = null">
           <mat-expansion-panel-header
             [collapsedHeight]="'96px'"
             [expandedHeight]="'96px'"
-            class="!px-4"
-            (click)="onToggleProductPanel(row.id)">
+            class="!px-4">
             <mat-panel-title>
               <div class="w-full">
                 <p class="mb-2 truncate pr-4 text-sm font-semibold text-slate-900">
                   {{ row.name }}
                 </p>
-                <div class="grid grid-cols-2 gap-2 text-xs font-medium text-slate-700 sm:grid-cols-3 lg:grid-cols-5">
+                <div class="grid grid-cols-2 gap-2 text-xs font-medium text-slate-700 sm:grid-cols-3 lg:grid-cols-6">
                   <span class="rounded-md bg-slate-100 px-2 py-1">ID: {{ row.id }}</span>
                   <span class="rounded-md bg-slate-100 px-2 py-1">Barcode: {{ row.barcode }}</span>
                   <span class="rounded-md bg-slate-100 px-2 py-1">Unit: {{ row.unit }}</span>
                   <span class="rounded-md bg-slate-100 px-2 py-1">Price: {{ row.price }}</span>
                   <span class="rounded-md bg-slate-100 px-2 py-1">Tags: {{ row.tags }}</span>
+                  <span class="rounded-md bg-slate-100 px-2 py-1">NV: {{ row.nutritionValues.length }}</span>
                 </div>
               </div>
             </mat-panel-title>
@@ -278,9 +302,14 @@
 
           <div *ngIf="row.nutritionValues.length > 0; else noNvBlock" class="overflow-x-auto rounded-lg border border-slate-200">
             <table mat-table [dataSource]="row.nutritionValues" class="w-full">
-              <ng-container matColumnDef="label">
-                <th mat-header-cell *matHeaderCellDef>Label</th>
-                <td mat-cell *matCellDef="let nv">{{ nv.label }}</td>
+              <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef>ID</th>
+                <td mat-cell *matCellDef="let nv">{{ nv.id }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="nutritionKey">
+                <th mat-header-cell *matHeaderCellDef>NutritionKey</th>
+                <td mat-cell *matCellDef="let nv">{{ nv.nutritionKey }}</td>
               </ng-container>
 
               <ng-container matColumnDef="amount">
@@ -293,9 +322,9 @@
                 <td mat-cell *matCellDef="let nv">{{ nv.unit }}</td>
               </ng-container>
 
-              <ng-container matColumnDef="per">
-                <th mat-header-cell *matHeaderCellDef>Per</th>
-                <td mat-cell *matCellDef="let nv">{{ nv.per }}</td>
+              <ng-container matColumnDef="reference">
+                <th mat-header-cell *matHeaderCellDef>Reference</th>
+                <td mat-cell *matCellDef="let nv">{{ nv.reference }}</td>
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="nutritionValueColumns"></tr>

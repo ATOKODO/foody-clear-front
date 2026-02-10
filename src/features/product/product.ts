@@ -25,7 +25,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
-import { MetaService, QuantityUnitMeta } from '../../services/meta-service';
+import {
+  MetaService,
+  NutritionKeyMeta,
+  QuantityUnitMeta,
+} from '../../services/meta-service';
 
 type ProductTableRow = {
   id: number;
@@ -35,10 +39,11 @@ type ProductTableRow = {
   price: string;
   tags: string;
   nutritionValues: Array<{
-    label: string;
+    id: string;
+    nutritionKey: string;
     amount: string;
     unit: string;
-    per: string;
+    reference: string;
   }>;
 };
 
@@ -63,7 +68,11 @@ type ProductTableRow = {
   styleUrl: './product.scss',
 })
 export class Product implements OnInit {
-  readonly nutritionValueColumns = ['label', 'amount', 'unit', 'per'];
+  readonly nutritionValueColumns = ['id', 'nutritionKey', 'amount', 'unit', 'reference'];
+  readonly nutritionReferenceOptions = [
+    { value: 'PER_100G', label: 'PER_100G' },
+    { value: 'PER_100ML', label: 'PER_100ML' },
+  ];
 
   form: FormGroup = new FormGroup({});
   baseUrl: string | '' = '';
@@ -74,6 +83,7 @@ export class Product implements OnInit {
   productTableRows: ProductTableRow[] = [];
   expandedProductId: number | null = null;
   quantityUnitOptions: QuantityUnitMeta[] = [];
+  nutritionKeyOptions: NutritionKeyMeta[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -120,6 +130,7 @@ export class Product implements OnInit {
     });
 
     this.loadQuantityUnits();
+    this.loadNutritionKeys();
   }
 
   // -------- Helpers UI --------
@@ -127,6 +138,7 @@ export class Product implements OnInit {
     this.productSrv.setBaseUrl(this.baseUrl);
     this.metaSrv.setBaseUrl(this.baseUrl);
     this.loadQuantityUnits();
+    this.loadNutritionKeys();
   }
 
   get nvCreatedFA(): FormArray {
@@ -140,16 +152,15 @@ export class Product implements OnInit {
     return row.id;
   }
 
-  onToggleProductPanel(productId: number): void {
-    this.expandedProductId = this.expandedProductId === productId ? null : productId;
-  }
-
   private buildProductTableRows(value: unknown): ProductTableRow[] {
     return this.extractProductsFromResponse(value).map((product) => ({
       id: product.id,
       name: product.name,
       barcode: product.barcode ?? '-',
-      unit: `${product.quantityPerUnit} ${product.quantityUnit}`,
+      unit:
+        product.quantityPerUnit == null && product.quantityUnit == null
+          ? '-'
+          : `${product.quantityPerUnit ?? '-'} ${product.quantityUnit ?? ''}`.trim(),
       price: product.price == null ? '-' : String(product.price),
       tags: Array.isArray(product.tags) ? String(product.tags.length) : '-',
       nutritionValues: Array.isArray(product.nutritionValues)
@@ -159,62 +170,121 @@ export class Product implements OnInit {
                 !!item && typeof item === 'object',
             )
             .map((item) => ({
-              label: typeof item['label'] === 'string' ? item['label'] : '-',
+              id: item['id'] == null ? '-' : String(item['id']),
+              nutritionKey:
+                typeof item['nutritionKey'] === 'string'
+                  ? item['nutritionKey']
+                  : typeof item['label'] === 'string'
+                    ? item['label']
+                    : '-',
               amount: item['amount'] == null ? '-' : String(item['amount']),
               unit: typeof item['unit'] === 'string' ? item['unit'] : '-',
-              per: item['per'] == null ? '-' : String(item['per']),
+              reference:
+                typeof item['reference'] === 'string'
+                  ? item['reference']
+                  : item['per'] == null
+                    ? '-'
+                    : String(item['per']),
             }))
         : [],
     }));
   }
 
   addNvCreated() {
+    const defaultNutritionKey = this.nutritionKeyOptions[0]?.value ?? '';
+    const allowedUnits = this.getAllowedUnitsByNutritionKey(defaultNutritionKey);
+    const defaultUnit = allowedUnits[0] ?? '';
+    const defaultReference = this.nutritionReferenceOptions[0]?.value ?? '';
+
     this.nvCreatedFA.push(
       this.fb.group({
-        label: this.fb.control<string>('', {
+        nutritionKey: this.fb.control<string>(defaultNutritionKey, {
           nonNullable: true,
           validators: [Validators.required],
         }),
         amount: this.fb.control<number | null>(null, {
           validators: [Validators.required],
         }),
-        unit: this.fb.control<string>('', {
+        unit: this.fb.control<string>(defaultUnit, {
           nonNullable: true,
           validators: [Validators.required],
         }),
-        per: this.fb.control<number | null>(null, {
+        reference: this.fb.control<string>(defaultReference, {
+          nonNullable: true,
           validators: [Validators.required],
         }),
       }),
     );
+
+    this.onCreatedNutritionKeyChange(this.nvCreatedFA.length - 1);
   }
   removeNvCreated(i: number) {
     this.nvCreatedFA.removeAt(i);
   }
 
   addNvUpdated() {
+    const defaultNutritionKey = this.nutritionKeyOptions[0]?.value ?? '';
+    const allowedUnits = this.getAllowedUnitsByNutritionKey(defaultNutritionKey);
+    const defaultUnit = allowedUnits[0] ?? '';
+    const defaultReference = this.nutritionReferenceOptions[0]?.value ?? '';
+
     this.nvUpdatedFA.push(
       this.fb.group({
         id: this.fb.control<number | null>(null), // si rempli -> update, sinon -> create
-        label: this.fb.control<string>('', {
+        nutritionKey: this.fb.control<string>(defaultNutritionKey, {
           nonNullable: true,
           validators: [Validators.required],
         }),
         amount: this.fb.control<number | null>(null, {
           validators: [Validators.required],
         }),
-        unit: this.fb.control<string>('', {
+        unit: this.fb.control<string>(defaultUnit, {
           nonNullable: true,
           validators: [Validators.required],
         }),
-        per: this.fb.control<number | null>(null, {
+        reference: this.fb.control<string>(defaultReference, {
+          nonNullable: true,
           validators: [Validators.required],
         }),
       }),
     );
+
+    this.onUpdatedNutritionKeyChange(this.nvUpdatedFA.length - 1);
   }
   removeNvUpdated(i: number) {
     this.nvUpdatedFA.removeAt(i);
+  }
+
+  getNutritionUnitsForCreated(index: number): string[] {
+    const group = this.nvCreatedFA.at(index);
+    const nutritionKey = group?.value?.['nutritionKey'];
+    return this.getAllowedUnitsByNutritionKey(
+      typeof nutritionKey === 'string' ? nutritionKey : '',
+    );
+  }
+
+  getNutritionUnitsForUpdated(index: number): string[] {
+    const group = this.nvUpdatedFA.at(index);
+    const nutritionKey = group?.value?.['nutritionKey'];
+    return this.getAllowedUnitsByNutritionKey(
+      typeof nutritionKey === 'string' ? nutritionKey : '',
+    );
+  }
+
+  onCreatedNutritionKeyChange(index: number): void {
+    const group = this.nvCreatedFA.at(index) as FormGroup | null;
+    if (!group) {
+      return;
+    }
+    this.syncNutritionUnitForGroup(group);
+  }
+
+  onUpdatedNutritionKeyChange(index: number): void {
+    const group = this.nvUpdatedFA.at(index) as FormGroup | null;
+    if (!group) {
+      return;
+    }
+    this.syncNutritionUnitForGroup(group);
   }
 
   private parseCsvIds(csv: string | null | undefined): number[] | undefined {
@@ -226,6 +296,18 @@ export class Product implements OnInit {
       .map((s) => Number(s))
       .filter((n) => !Number.isNaN(n));
     return ids.length ? ids : [];
+  }
+
+  private loadNutritionKeys(): void {
+    this.metaSrv.getNutritionKeys().subscribe({
+      next: (keys) => {
+        this.nutritionKeyOptions = keys;
+        this.syncNutritionUnitsForAllGroups();
+      },
+      error: () => {
+        this.nutritionKeyOptions = [];
+      },
+    });
   }
 
   private loadQuantityUnits(): void {
@@ -247,6 +329,60 @@ export class Product implements OnInit {
     });
   }
 
+  private getAllowedUnitsByNutritionKey(nutritionKey: string): string[] {
+    const key = nutritionKey.trim();
+    if (key === '') {
+      return [];
+    }
+
+    return this.nutritionKeyOptions.find((item) => item.value === key)?.allowedUnits ?? [];
+  }
+
+  private syncNutritionUnitsForAllGroups(): void {
+    for (let i = 0; i < this.nvCreatedFA.length; i += 1) {
+      this.onCreatedNutritionKeyChange(i);
+    }
+
+    for (let i = 0; i < this.nvUpdatedFA.length; i += 1) {
+      this.onUpdatedNutritionKeyChange(i);
+    }
+  }
+
+  private syncNutritionUnitForGroup(group: FormGroup): void {
+    const nutritionKeyControl = group.get('nutritionKey');
+    const nutritionKey = nutritionKeyControl?.value;
+    let selectedNutritionKey = typeof nutritionKey === 'string' ? nutritionKey : '';
+    if (selectedNutritionKey.trim() === '' && this.nutritionKeyOptions.length > 0) {
+      selectedNutritionKey = this.nutritionKeyOptions[0].value;
+      nutritionKeyControl?.setValue(selectedNutritionKey);
+    }
+
+    const allowedUnits = this.getAllowedUnitsByNutritionKey(selectedNutritionKey);
+    const unitControl = group.get('unit');
+    const currentUnit = unitControl?.value;
+    const currentUnitValue = typeof currentUnit === 'string' ? currentUnit : '';
+    const referenceControl = group.get('reference');
+    const currentReference = referenceControl?.value;
+    const currentReferenceValue =
+      typeof currentReference === 'string' ? currentReference.trim() : '';
+
+    if (
+      unitControl &&
+      allowedUnits.length > 0 &&
+      !allowedUnits.includes(currentUnitValue)
+    ) {
+      unitControl.setValue(allowedUnits[0]);
+    }
+
+    if (
+      referenceControl &&
+      currentReferenceValue === '' &&
+      this.nutritionReferenceOptions.length > 0
+    ) {
+      referenceControl.setValue(this.nutritionReferenceOptions[0].value);
+    }
+  }
+
   private extractProductsFromResponse(value: unknown): ProductApiModel[] {
     if (Array.isArray(value)) {
       return value.filter((item): item is ProductApiModel => this.isProductLike(item));
@@ -257,14 +393,17 @@ export class Product implements OnInit {
     }
 
     if (value && typeof value === 'object') {
-      const payload = (value as Record<string, unknown>)['data'];
+      const raw = value as Record<string, unknown>;
+      const candidates = ['data', 'items', 'products', 'results'];
 
-      if (Array.isArray(payload)) {
-        return payload.filter((item): item is ProductApiModel => this.isProductLike(item));
-      }
-
-      if (this.isProductLike(payload)) {
-        return [payload];
+      for (const key of candidates) {
+        const payload = raw[key];
+        if (Array.isArray(payload)) {
+          return payload.filter((item): item is ProductApiModel => this.isProductLike(item));
+        }
+        if (this.isProductLike(payload)) {
+          return [payload];
+        }
       }
     }
 
@@ -277,11 +416,7 @@ export class Product implements OnInit {
     }
 
     const maybe = value as Partial<ProductApiModel>;
-    return (
-      typeof maybe.id === 'number' &&
-      typeof maybe.name === 'string' &&
-      typeof maybe.quantityUnit === 'string'
-    );
+    return typeof maybe.id === 'number' && typeof maybe.name === 'string';
   }
 
   private pickCreatePayload(): CreateProductDto {
@@ -453,15 +588,24 @@ export class Product implements OnInit {
     this.addNvCreated();
     this.addNvCreated();
     this.addNvCreated();
-    this.nvCreatedFA
-      .at(0)
-      .patchValue({ label: 'Protéines', amount: 12.5, unit: 'g', per: 100 });
-    this.nvCreatedFA
-      .at(1)
-      .patchValue({ label: 'Glucides', amount: 67.3, unit: 'g', per: 100 });
-    this.nvCreatedFA
-      .at(2)
-      .patchValue({ label: 'Fibres', amount: 8, unit: 'g', per: 100 });
+    this.nvCreatedFA.at(0).patchValue({
+      nutritionKey: 'PROTEIN',
+      amount: 12.5,
+      unit: 'G',
+      reference: 'PER_100G',
+    });
+    this.nvCreatedFA.at(1).patchValue({
+      nutritionKey: 'CARBOHYDRATE',
+      amount: 67.3,
+      unit: 'G',
+      reference: 'PER_100G',
+    });
+    this.nvCreatedFA.at(2).patchValue({
+      nutritionKey: 'FIBER',
+      amount: 8,
+      unit: 'G',
+      reference: 'PER_100G',
+    });
   }
 
   fillDemoUpdate() {
@@ -470,17 +614,17 @@ export class Product implements OnInit {
     this.addNvUpdated(); // supposons NV id=10 à mettre à jour
     (this.nvUpdatedFA.at(0) as any).patchValue({
       id: 10,
-      label: 'Protéines',
+      nutritionKey: 'PROTEIN',
       amount: 13,
-      unit: 'g',
-      per: 100,
+      unit: 'G',
+      reference: 'PER_100G',
     });
     this.addNvUpdated(); // nouvelle NV
     (this.nvUpdatedFA.at(1) as any).patchValue({
-      label: 'Sel',
+      nutritionKey: 'SALT',
       amount: 0.01,
-      unit: 'g',
-      per: 100,
+      unit: 'G',
+      reference: 'PER_100G',
     });
 
     this.form.patchValue({

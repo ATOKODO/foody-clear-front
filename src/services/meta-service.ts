@@ -10,6 +10,13 @@ export interface QuantityUnitMeta {
   factor?: number;
 }
 
+export interface NutritionKeyMeta {
+  key: string;
+  value: string;
+  label: string;
+  allowedUnits: string[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class MetaService {
   baseUrl = 'http://localhost:3000';
@@ -24,6 +31,12 @@ export class MetaService {
     return this.http
       .get<unknown>(`${this.baseUrl}/meta/quantity-units`)
       .pipe(map((response) => this.normalizeQuantityUnits(response)));
+  }
+
+  getNutritionKeys(): Observable<NutritionKeyMeta[]> {
+    return this.http
+      .get<unknown>(`${this.baseUrl}/meta/nutrition-keys`)
+      .pipe(map((response) => this.normalizeNutritionKeys(response)));
   }
 
   private normalizeQuantityUnits(response: unknown): QuantityUnitMeta[] {
@@ -42,6 +55,28 @@ export class MetaService {
       const value = data[key];
       if (Array.isArray(value)) {
         return this.sanitizeUnits(value);
+      }
+    }
+
+    return [];
+  }
+
+  private normalizeNutritionKeys(response: unknown): NutritionKeyMeta[] {
+    if (Array.isArray(response)) {
+      return this.sanitizeNutritionKeys(response);
+    }
+
+    if (!response || typeof response !== 'object') {
+      return [];
+    }
+
+    const data = response as Record<string, unknown>;
+    const candidateKeys = ['data', 'items', 'nutritionKeys', 'keys'];
+
+    for (const key of candidateKeys) {
+      const value = data[key];
+      if (Array.isArray(value)) {
+        return this.sanitizeNutritionKeys(value);
       }
     }
 
@@ -105,5 +140,63 @@ export class MetaService {
     }
 
     return units;
+  }
+
+  private sanitizeNutritionKeys(values: unknown[]): NutritionKeyMeta[] {
+    const keys: NutritionKeyMeta[] = [];
+    const seenValues = new Set<string>();
+
+    for (const value of values) {
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (trimmed === '' || seenValues.has(trimmed)) {
+          continue;
+        }
+
+        keys.push({
+          key: trimmed.toUpperCase(),
+          value: trimmed,
+          label: trimmed,
+          allowedUnits: [],
+        });
+        seenValues.add(trimmed);
+        continue;
+      }
+
+      if (!value || typeof value !== 'object') {
+        continue;
+      }
+
+      const raw = value as Record<string, unknown>;
+      const nutritionKeyValue =
+        typeof raw['value'] === 'string' ? raw['value'].trim() : '';
+
+      if (nutritionKeyValue === '' || seenValues.has(nutritionKeyValue)) {
+        continue;
+      }
+
+      const allowedUnits = Array.isArray(raw['allowedUnits'])
+        ? raw['allowedUnits']
+            .filter((unit): unit is string => typeof unit === 'string')
+            .map((unit) => unit.trim())
+            .filter((unit) => unit !== '')
+        : [];
+
+      keys.push({
+        key:
+          typeof raw['key'] === 'string' && raw['key'].trim() !== ''
+            ? raw['key'].trim()
+            : nutritionKeyValue.toUpperCase(),
+        value: nutritionKeyValue,
+        label:
+          typeof raw['label'] === 'string' && raw['label'].trim() !== ''
+            ? raw['label'].trim()
+            : nutritionKeyValue,
+        allowedUnits,
+      });
+      seenValues.add(nutritionKeyValue);
+    }
+
+    return keys;
   }
 }
