@@ -458,6 +458,62 @@
               <mat-label>memo</mat-label>
               <input matInput type="text" formControlName="memo" />
             </mat-form-field>
+
+            <div class="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3" formArrayName="nutritionValuesUpdated">
+              <p class="mb-3 text-sm font-semibold text-slate-900">nutritionValues (PATCH)</p>
+
+              <div
+                *ngFor="let group of editNvFA.controls; let i = index"
+                [formGroupName]="i"
+                class="mb-3 grid gap-3 rounded-lg border border-slate-200 bg-white p-3 sm:grid-cols-2 lg:grid-cols-3">
+                <mat-form-field appearance="fill" class="w-full">
+                  <mat-label>id (optionnel)</mat-label>
+                  <input matInput type="number" formControlName="id" />
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-3">
+                  <mat-label>nutritionKey</mat-label>
+                  <mat-select formControlName="nutritionKey" (selectionChange)="onEditNutritionKeyChange(i)">
+                    <mat-option *ngFor="let nutritionKey of nutritionKeyOptions" [value]="nutritionKey.value">
+                      {{ nutritionKey.label }} ({{ nutritionKey.value }})
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="w-full">
+                  <mat-label>amount</mat-label>
+                  <input matInput type="number" formControlName="amount" />
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="w-full">
+                  <mat-label>unit</mat-label>
+                  <mat-select formControlName="unit">
+                    <mat-option *ngFor="let unit of getNutritionUnitsForEdit(i)" [value]="unit">
+                      {{ unit }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" class="w-full">
+                  <mat-label>reference</mat-label>
+                  <mat-select formControlName="reference">
+                    <mat-option *ngFor="let reference of nutritionReferenceOptions" [value]="reference.value">
+                      {{ reference.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <div class="flex items-end sm:col-span-2 lg:col-span-3">
+                  <button mat-stroked-button color="warn" type="button" (click)="removeEditNv(i)">
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+
+              <button mat-stroked-button type="button" (click)="addEditNv()">
+                Ajouter une NV
+              </button>
+            </div>
           </form>
         </mat-card-content>
         <mat-card-actions align="end" class="gap-2 px-4 pb-4">

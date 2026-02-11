@@ -135,9 +135,6 @@ export class Product implements OnInit {
       nutritionValuesUpdated: this.fb.array<FormArray>([]),
     });
 
-    this.loadQuantityUnits();
-    this.loadNutritionKeys();
-
     this.editForm = this.fb.group({
       id: this.fb.control<number | null>(null),
       name: this.fb.control<string>('', {
@@ -161,7 +158,11 @@ export class Product implements OnInit {
       price: this.fb.control<number | null>(null),
       url: this.fb.control<string | null>(null),
       memo: this.fb.control<string | null>(null),
+      nutritionValuesUpdated: this.fb.array<FormArray>([]),
     });
+
+    this.loadQuantityUnits();
+    this.loadNutritionKeys();
   }
 
   // -------- Helpers UI --------
@@ -177,6 +178,9 @@ export class Product implements OnInit {
   }
   get nvUpdatedFA(): FormArray {
     return this.form.get('nutritionValuesUpdated') as FormArray;
+  }
+  get editNvFA(): FormArray {
+    return this.editForm.get('nutritionValuesUpdated') as FormArray;
   }
 
   trackByProductId(_: number, row: ProductTableRow): number {
@@ -205,20 +209,10 @@ export class Product implements OnInit {
             )
             .map((item) => ({
               id: item['id'] == null ? '-' : String(item['id']),
-              nutritionKey:
-                typeof item['nutritionKey'] === 'string'
-                  ? item['nutritionKey']
-                  : typeof item['label'] === 'string'
-                    ? item['label']
-                    : '-',
+              nutritionKey: this.toDisplayNutritionKey(item),
               amount: item['amount'] == null ? '-' : String(item['amount']),
-              unit: typeof item['unit'] === 'string' ? item['unit'] : '-',
-              reference:
-                typeof item['reference'] === 'string'
-                  ? item['reference']
-                  : item['per'] == null
-                    ? '-'
-                    : String(item['per']),
+              unit: this.toDisplayNutritionUnit(item),
+              reference: this.toDisplayNutritionReference(item),
             }))
         : [],
     }));
@@ -243,6 +237,46 @@ export class Product implements OnInit {
       memo: row.source.memo ?? null,
     });
 
+    this.editNvFA.clear();
+    if (Array.isArray(row.source.nutritionValues)) {
+      for (const item of row.source.nutritionValues) {
+        if (!item || typeof item !== 'object') {
+          continue;
+        }
+
+        const raw = item as Record<string, unknown>;
+        const rawId = raw['id'];
+        const id =
+          typeof rawId === 'number' && Number.isFinite(rawId)
+            ? rawId
+            : typeof rawId === 'string' && rawId.trim() !== '' && !Number.isNaN(Number(rawId))
+              ? Number(rawId)
+              : null;
+
+        const rawAmount = raw['amount'];
+        const amount =
+          typeof rawAmount === 'number' && Number.isFinite(rawAmount)
+            ? rawAmount
+            : typeof rawAmount === 'string' &&
+                rawAmount.trim() !== '' &&
+                !Number.isNaN(Number(rawAmount))
+              ? Number(rawAmount)
+              : null;
+
+        const nutritionKey = this.extractNutritionKeyValue(raw) ?? '';
+        const unit = this.extractNutritionUnitValue(raw) ?? '';
+        const reference = this.extractNutritionReferenceValue(raw) ?? '';
+
+        this.addEditNv({
+          ...(id != null ? { id } : {}),
+          ...(amount != null ? { amount } : {}),
+          nutritionKey,
+          unit,
+          reference,
+        });
+      }
+    }
+
     if (
       !this.editForm.value['quantityUnit'] &&
       this.quantityUnitOptions.length > 0
@@ -256,6 +290,7 @@ export class Product implements OnInit {
   closeEditModal(): void {
     this.isEditModalOpen = false;
     this.editTargetId = null;
+    this.editNvFA.clear();
   }
 
   saveEditFromModal(): void {
@@ -366,6 +401,53 @@ export class Product implements OnInit {
     this.nvUpdatedFA.removeAt(i);
   }
 
+  addEditNv(initial?: Partial<NutritionValueUpdated>) {
+    const initialKey =
+      typeof initial?.nutritionKey === 'string' && initial.nutritionKey.trim() !== ''
+        ? initial.nutritionKey.trim()
+        : this.nutritionKeyOptions[0]?.value ?? '';
+    const allowedUnits = this.getAllowedUnitsByNutritionKey(initialKey);
+    const initialUnitRaw =
+      typeof initial?.unit === 'string' ? initial.unit.trim() : '';
+    const initialUnit =
+      initialUnitRaw !== '' && (allowedUnits.length === 0 || allowedUnits.includes(initialUnitRaw))
+        ? initialUnitRaw
+        : allowedUnits[0] ?? '';
+    const initialReference = this.normalizeNutritionReference(initial?.reference);
+
+    this.editNvFA.push(
+      this.fb.group({
+        id: this.fb.control<number | null>(
+          typeof initial?.id === 'number' && Number.isFinite(initial.id) ? initial.id : null,
+        ),
+        nutritionKey: this.fb.control<string>(initialKey, {
+          nonNullable: true,
+          validators: [Validators.required],
+        }),
+        amount: this.fb.control<number | null>(
+          typeof initial?.amount === 'number' && Number.isFinite(initial.amount)
+            ? initial.amount
+            : null,
+          { validators: [Validators.required] },
+        ),
+        unit: this.fb.control<string>(initialUnit, {
+          nonNullable: true,
+          validators: [Validators.required],
+        }),
+        reference: this.fb.control<string>(initialReference, {
+          nonNullable: true,
+          validators: [Validators.required],
+        }),
+      }),
+    );
+
+    this.onEditNutritionKeyChange(this.editNvFA.length - 1);
+  }
+
+  removeEditNv(i: number) {
+    this.editNvFA.removeAt(i);
+  }
+
   getNutritionUnitsForCreated(index: number): string[] {
     const group = this.nvCreatedFA.at(index);
     const nutritionKey = group?.value?.['nutritionKey'];
@@ -376,6 +458,14 @@ export class Product implements OnInit {
 
   getNutritionUnitsForUpdated(index: number): string[] {
     const group = this.nvUpdatedFA.at(index);
+    const nutritionKey = group?.value?.['nutritionKey'];
+    return this.getAllowedUnitsByNutritionKey(
+      typeof nutritionKey === 'string' ? nutritionKey : '',
+    );
+  }
+
+  getNutritionUnitsForEdit(index: number): string[] {
+    const group = this.editNvFA.at(index);
     const nutritionKey = group?.value?.['nutritionKey'];
     return this.getAllowedUnitsByNutritionKey(
       typeof nutritionKey === 'string' ? nutritionKey : '',
@@ -398,6 +488,14 @@ export class Product implements OnInit {
     this.syncNutritionUnitForGroup(group);
   }
 
+  onEditNutritionKeyChange(index: number): void {
+    const group = this.editNvFA.at(index) as FormGroup | null;
+    if (!group) {
+      return;
+    }
+    this.syncNutritionUnitForGroup(group);
+  }
+
   private parseCsvIds(csv: string | null | undefined): number[] | undefined {
     if (!csv) return undefined;
     const ids = csv
@@ -407,6 +505,34 @@ export class Product implements OnInit {
       .map((s) => Number(s))
       .filter((n) => !Number.isNaN(n));
     return ids.length ? ids : [];
+  }
+
+  private normalizeNutritionReference(value: unknown): string {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      if (value === 100) {
+        return 'PER_100G';
+      }
+      return this.nutritionReferenceOptions[0]?.value ?? 'PER_100G';
+    }
+
+    if (typeof value === 'string') {
+      const normalized = value.trim().toUpperCase();
+      if (normalized === 'PER_100G' || normalized === 'PER_100ML') {
+        return normalized;
+      }
+
+      if (normalized === '100') {
+        return 'PER_100G';
+      }
+      if (normalized.includes('100ML')) {
+        return 'PER_100ML';
+      }
+      if (normalized.includes('100G')) {
+        return 'PER_100G';
+      }
+    }
+
+    return this.nutritionReferenceOptions[0]?.value ?? 'PER_100G';
   }
 
   private loadNutritionKeys(): void {
@@ -433,6 +559,14 @@ export class Product implements OnInit {
         if ((!existsInOptions || currentUnit === '') && units.length > 0) {
           this.form.patchValue({ quantityUnit: units[0].value });
         }
+
+        const currentEditUnit = (this.editForm.value['quantityUnit'] ?? '')
+          .toString()
+          .trim();
+        const existsInEditOptions = units.some((unit) => unit.value === currentEditUnit);
+        if ((!existsInEditOptions || currentEditUnit === '') && units.length > 0) {
+          this.editForm.patchValue({ quantityUnit: units[0].value });
+        }
       },
       error: () => {
         this.quantityUnitOptions = [];
@@ -456,6 +590,10 @@ export class Product implements OnInit {
 
     for (let i = 0; i < this.nvUpdatedFA.length; i += 1) {
       this.onUpdatedNutritionKeyChange(i);
+    }
+
+    for (let i = 0; i < this.editNvFA.length; i += 1) {
+      this.onEditNutritionKeyChange(i);
     }
   }
 
@@ -613,6 +751,116 @@ export class Product implements OnInit {
     return 'Aucun';
   }
 
+  private readStringFromCandidates(
+    raw: Record<string, unknown>,
+    keys: string[],
+  ): string | null {
+    for (const key of keys) {
+      const value = raw[key];
+      if (typeof value === 'string' && value.trim() !== '') {
+        return value.trim();
+      }
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return String(value);
+      }
+    }
+
+    return null;
+  }
+
+  private extractNutritionKeyValue(raw: Record<string, unknown>): string | null {
+    const value = this.readStringFromCandidates(raw, [
+      'nutritionKey',
+      'nutrition_key',
+      'key',
+      'label',
+      'name',
+    ]);
+    if (!value) {
+      return null;
+    }
+
+    const upper = value.toUpperCase();
+    const byValue = this.nutritionKeyOptions.find(
+      (option) => option.value.toUpperCase() === upper || option.key.toUpperCase() === upper,
+    );
+    if (byValue) {
+      return byValue.value;
+    }
+
+    const byLabel = this.nutritionKeyOptions.find(
+      (option) => option.label.toUpperCase() === upper,
+    );
+    if (byLabel) {
+      return byLabel.value;
+    }
+
+    return value;
+  }
+
+  private extractNutritionUnitValue(raw: Record<string, unknown>): string | null {
+    const value = this.readStringFromCandidates(raw, [
+      'unit',
+      'nutritionUnit',
+      'nutrition_unit',
+      'uom',
+      'measureUnit',
+    ]);
+    if (!value) {
+      return null;
+    }
+
+    return value.toUpperCase();
+  }
+
+  private extractNutritionReferenceValue(raw: Record<string, unknown>): string | null {
+    const direct = this.readStringFromCandidates(raw, [
+      'reference',
+      'nutritionReference',
+      'nutrition_reference',
+      'perUnit',
+      'per_unit',
+    ]);
+    if (direct) {
+      return this.normalizeNutritionReference(direct);
+    }
+
+    const perRaw = raw['per'];
+    if (typeof perRaw === 'number' && Number.isFinite(perRaw)) {
+      return this.normalizeNutritionReference(perRaw);
+    }
+    if (typeof perRaw === 'string' && perRaw.trim() !== '') {
+      return this.normalizeNutritionReference(perRaw);
+    }
+
+    return null;
+  }
+
+  private toDisplayNutritionKey(raw: Record<string, unknown>): string {
+    return this.extractNutritionKeyValue(raw) ?? '-';
+  }
+
+  private toDisplayNutritionUnit(raw: Record<string, unknown>): string {
+    return this.extractNutritionUnitValue(raw) ?? '-';
+  }
+
+  private toDisplayNutritionReference(raw: Record<string, unknown>): string {
+    const normalized = this.extractNutritionReferenceValue(raw);
+    if (normalized) {
+      return normalized;
+    }
+
+    const perRaw = raw['per'];
+    if (typeof perRaw === 'number' && Number.isFinite(perRaw)) {
+      return `per ${perRaw}`;
+    }
+    if (typeof perRaw === 'string' && perRaw.trim() !== '') {
+      return perRaw.trim();
+    }
+
+    return '-';
+  }
+
   private pickModalUpdatePayload(): UpdateProductDto {
     const v = this.editForm.getRawValue();
 
@@ -627,7 +875,7 @@ export class Product implements OnInit {
       );
     }
 
-    return {
+    const payload: UpdateProductDto = {
       name: v.name.trim(),
       barcode: v.barcode ?? null,
       categoryId: v.categoryId ?? null,
@@ -639,6 +887,13 @@ export class Product implements OnInit {
       url: v.url ?? null,
       memo: v.memo ?? null,
     };
+
+    if (this.editNvFA.length > 0) {
+      payload.nutritionValuesUpdated =
+        this.editNvFA.getRawValue() as NutritionValueUpdated[];
+    }
+
+    return payload;
   }
 
   private pickCreatePayload(): CreateProductDto {
