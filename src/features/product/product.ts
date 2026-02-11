@@ -38,6 +38,9 @@ type ProductTableRow = {
   unit: string;
   price: string;
   tags: string;
+  category: string;
+  genericProduct: string;
+  source: ProductApiModel;
   nutritionValues: Array<{
     id: string;
     nutritionKey: string;
@@ -75,6 +78,7 @@ export class Product implements OnInit {
   ];
 
   form: FormGroup = new FormGroup({});
+  editForm: FormGroup = new FormGroup({});
   baseUrl: string | '' = '';
 
   lastResponse: unknown = null;
@@ -82,6 +86,8 @@ export class Product implements OnInit {
   loading = false;
   productTableRows: ProductTableRow[] = [];
   expandedProductId: number | null = null;
+  isEditModalOpen = false;
+  editTargetId: number | null = null;
   quantityUnitOptions: QuantityUnitMeta[] = [];
   nutritionKeyOptions: NutritionKeyMeta[] = [];
 
@@ -131,6 +137,31 @@ export class Product implements OnInit {
 
     this.loadQuantityUnits();
     this.loadNutritionKeys();
+
+    this.editForm = this.fb.group({
+      id: this.fb.control<number | null>(null),
+      name: this.fb.control<string>('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      barcode: this.fb.control<string | null>(null),
+      categoryId: this.fb.control<number | null>(null),
+      genericProductId: this.fb.control<number | null>(null),
+      unitType: this.fb.control<string>('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      quantityPerUnit: this.fb.control<number | null>(null, {
+        validators: [Validators.required],
+      }),
+      quantityUnit: this.fb.control<string>('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      price: this.fb.control<number | null>(null),
+      url: this.fb.control<string | null>(null),
+      memo: this.fb.control<string | null>(null),
+    });
   }
 
   // -------- Helpers UI --------
@@ -163,6 +194,9 @@ export class Product implements OnInit {
           : `${product.quantityPerUnit ?? '-'} ${product.quantityUnit ?? ''}`.trim(),
       price: product.price == null ? '-' : String(product.price),
       tags: Array.isArray(product.tags) ? String(product.tags.length) : '-',
+      category: this.resolveLinkedEntityName(product.category),
+      genericProduct: this.resolveLinkedEntityName(product.genericProduct),
+      source: product,
       nutritionValues: Array.isArray(product.nutritionValues)
         ? product.nutritionValues
             .filter(
@@ -188,6 +222,83 @@ export class Product implements OnInit {
             }))
         : [],
     }));
+  }
+
+  openEditModalFromRow(row: ProductTableRow, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    this.editTargetId = row.id;
+    this.editForm.reset({
+      id: row.id,
+      name: row.source.name ?? '',
+      barcode: row.source.barcode ?? null,
+      categoryId: this.readEntityId(row.source.category),
+      genericProductId: this.readEntityId(row.source.genericProduct),
+      unitType: row.source.unitType ?? '',
+      quantityPerUnit: row.source.quantityPerUnit ?? null,
+      quantityUnit: row.source.quantityUnit ?? '',
+      price: row.source.price ?? null,
+      url: row.source.url ?? null,
+      memo: row.source.memo ?? null,
+    });
+
+    if (
+      !this.editForm.value['quantityUnit'] &&
+      this.quantityUnitOptions.length > 0
+    ) {
+      this.editForm.patchValue({ quantityUnit: this.quantityUnitOptions[0].value });
+    }
+
+    this.isEditModalOpen = true;
+  }
+
+  closeEditModal(): void {
+    this.isEditModalOpen = false;
+    this.editTargetId = null;
+  }
+
+  saveEditFromModal(): void {
+    const id = this.editTargetId ?? this.editForm.value['id'] ?? null;
+    if (id == null) {
+      this.setError('Impossible de modifier: id produit manquant.');
+      return;
+    }
+
+    const payload = this.pickModalUpdatePayload();
+
+    this.loading = true;
+    this.productSrv.update(id, payload).subscribe({
+      next: () => {
+        this.closeEditModal();
+        this.getAll();
+      },
+      error: (e) => this.setError(e),
+    });
+  }
+
+  deleteFromRow(row: ProductTableRow, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    const confirmed = window.confirm(`Supprimer le produit "${row.name}" (id=${row.id}) ?`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.loading = true;
+    this.productSrv.remove(row.id).subscribe({
+      next: () => {
+        this.productTableRows = this.productTableRows.filter((item) => item.id !== row.id);
+        if (this.expandedProductId === row.id) {
+          this.expandedProductId = null;
+        }
+        this.lastResponse = { deleted: true, id: row.id };
+        this.lastError = null;
+        this.loading = false;
+      },
+      error: (e) => this.setError(e),
+    });
   }
 
   addNvCreated() {
@@ -384,26 +495,82 @@ export class Product implements OnInit {
   }
 
   private extractProductsFromResponse(value: unknown): ProductApiModel[] {
-    if (Array.isArray(value)) {
-      return value.filter((item): item is ProductApiModel => this.isProductLike(item));
+    const direct = this.collectProductsFromNode(value);
+    if (direct.length > 0) {
+      return direct;
     }
 
-    if (this.isProductLike(value)) {
-      return [value];
+    if (!value || typeof value !== 'object') {
+      return [];
     }
 
-    if (value && typeof value === 'object') {
-      const raw = value as Record<string, unknown>;
-      const candidates = ['data', 'items', 'products', 'results'];
+    // Fallback: explore nested payloads (data/items/results/payload wrappers).
+    const queue: unknown[] = [value];
+    const visited = new Set<object>();
 
-      for (const key of candidates) {
-        const payload = raw[key];
-        if (Array.isArray(payload)) {
-          return payload.filter((item): item is ProductApiModel => this.isProductLike(item));
+    while (queue.length > 0) {
+      const node = queue.shift();
+      if (!node || typeof node !== 'object') {
+        continue;
+      }
+
+      if (visited.has(node)) {
+        continue;
+      }
+      visited.add(node);
+
+      const found = this.collectProductsFromNode(node);
+      if (found.length > 0) {
+        return found;
+      }
+
+      if (Array.isArray(node)) {
+        for (const item of node) {
+          if (item && typeof item === 'object') {
+            queue.push(item);
+          }
         }
-        if (this.isProductLike(payload)) {
-          return [payload];
+        continue;
+      }
+
+      const record = node as Record<string, unknown>;
+      for (const child of Object.values(record)) {
+        if (child && typeof child === 'object') {
+          queue.push(child);
         }
+      }
+    }
+
+    return [];
+  }
+
+  private collectProductsFromNode(node: unknown): ProductApiModel[] {
+    if (Array.isArray(node)) {
+      return node.filter((item): item is ProductApiModel => this.isProductLike(item));
+    }
+
+    if (this.isProductLike(node)) {
+      return [node];
+    }
+
+    if (!node || typeof node !== 'object') {
+      return [];
+    }
+
+    const raw = node as Record<string, unknown>;
+    const candidates = ['data', 'items', 'products', 'results', 'payload'];
+
+    for (const key of candidates) {
+      const payload = raw[key];
+      if (Array.isArray(payload)) {
+        const products = payload.filter(
+          (item): item is ProductApiModel => this.isProductLike(item),
+        );
+        if (products.length > 0) {
+          return products;
+        }
+      } else if (this.isProductLike(payload)) {
+        return [payload];
       }
     }
 
@@ -417,6 +584,61 @@ export class Product implements OnInit {
 
     const maybe = value as Partial<ProductApiModel>;
     return typeof maybe.id === 'number' && typeof maybe.name === 'string';
+  }
+
+  private readEntityId(value: unknown): number | null {
+    if (!value || typeof value !== 'object') {
+      return null;
+    }
+
+    const id = (value as Record<string, unknown>)['id'];
+    return typeof id === 'number' && Number.isFinite(id) ? id : null;
+  }
+
+  private resolveLinkedEntityName(value: unknown): string {
+    if (!value || typeof value !== 'object') {
+      return 'Aucun';
+    }
+
+    const raw = value as Record<string, unknown>;
+    const candidates = ['name', 'title', 'label'];
+
+    for (const key of candidates) {
+      const candidate = raw[key];
+      if (typeof candidate === 'string' && candidate.trim() !== '') {
+        return candidate.trim();
+      }
+    }
+
+    return 'Aucun';
+  }
+
+  private pickModalUpdatePayload(): UpdateProductDto {
+    const v = this.editForm.getRawValue();
+
+    if (
+      !v.name ||
+      !v.unitType ||
+      !v.quantityUnit ||
+      v.quantityPerUnit == null
+    ) {
+      throw new Error(
+        'Pour modifier: name, unitType, quantityPerUnit, quantityUnit sont requis.',
+      );
+    }
+
+    return {
+      name: v.name.trim(),
+      barcode: v.barcode ?? null,
+      categoryId: v.categoryId ?? null,
+      genericProductId: v.genericProductId ?? null,
+      unitType: v.unitType.trim(),
+      quantityPerUnit: v.quantityPerUnit,
+      quantityUnit: v.quantityUnit.trim(),
+      price: v.price ?? null,
+      url: v.url ?? null,
+      memo: v.memo ?? null,
+    };
   }
 
   private pickCreatePayload(): CreateProductDto {
@@ -652,6 +874,7 @@ export class Product implements OnInit {
     this.nvUpdatedFA.clear();
     this.productTableRows = [];
     this.expandedProductId = null;
+    this.closeEditModal();
     this.lastResponse = null;
     this.lastError = null;
   }

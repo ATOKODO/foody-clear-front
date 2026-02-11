@@ -10,7 +10,7 @@
     <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" class="space-y-6 p-4 sm:p-6">
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-content class="pt-4">
-          <div class="grid gap-4">
+          <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>Base URL</mat-label>
               <input
@@ -21,7 +21,133 @@
                 (change)="onBaseUrlChange()"
                 placeholder="http://localhost:3000" />
             </mat-form-field>
+            <button mat-raised-button color="primary" type="button" class="w-full sm:w-auto" (click)="getAll()">
+              GetAll (GET)
+            </button>
           </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="rounded-xl" *ngIf="productTableRows.length > 0">
+        <mat-card-header>
+          <mat-card-title>Resultats (GET / GETALL)</mat-card-title>
+          <mat-card-subtitle>Edition et suppression rapides</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-2">
+          <mat-accordion class="space-y-2">
+            <mat-expansion-panel
+              class="result-panel"
+              *ngFor="let row of productTableRows; trackBy: trackByProductId"
+              [expanded]="expandedProductId === row.id"
+              (opened)="expandedProductId = row.id"
+              (closed)="expandedProductId = null">
+              <mat-expansion-panel-header class="result-panel-header !px-4">
+                <mat-panel-title class="result-panel-title">
+                  <div class="result-header-content">
+                    <div class="result-header-main">
+                      <p class="result-name">
+                        {{ row.name }}
+                      </p>
+                      <div class="result-meta-grid">
+                        <span class="result-chip">ID: {{ row.id }}</span>
+                        <span class="result-chip">Barcode: {{ row.barcode }}</span>
+                        <span class="result-chip">Unit: {{ row.unit }}</span>
+                        <span class="result-chip">Price: {{ row.price }}</span>
+                        <span class="result-chip">Tags: {{ row.tags }}</span>
+                        <span class="result-chip">NV: {{ row.nutritionValues.length }}</span>
+                        <span class="result-chip">Category: {{ row.category }}</span>
+                        <span class="result-chip">Generic: {{ row.genericProduct }}</span>
+                      </div>
+                    </div>
+
+                    <div class="result-actions">
+                      <button
+                        mat-mini-fab
+                        color="primary"
+                        type="button"
+                        class="row-action-fab result-action-btn"
+                        (click)="openEditModalFromRow(row, $event)"
+                        aria-label="Modifier le produit">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="result-action-icon"
+                          aria-hidden="true">
+                          <path d="M12 20h9"></path>
+                          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                        </svg>
+                      </button>
+                      <button
+                        mat-mini-fab
+                        color="warn"
+                        type="button"
+                        class="row-action-fab result-action-btn"
+                        (click)="deleteFromRow(row, $event)"
+                        aria-label="Supprimer le produit">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="result-action-icon"
+                          aria-hidden="true">
+                          <path d="M3 6h18"></path>
+                          <path d="M8 6V4h8v2"></path>
+                          <path d="M19 6l-1 14H6L5 6"></path>
+                          <path d="M10 11v6"></path>
+                          <path d="M14 11v6"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div *ngIf="row.nutritionValues.length > 0; else noNvBlock" class="result-nv-wrap overflow-x-auto rounded-lg border border-slate-200">
+                <table mat-table [dataSource]="row.nutritionValues" class="result-nv-table w-full">
+                  <ng-container matColumnDef="id">
+                    <th mat-header-cell *matHeaderCellDef>ID</th>
+                    <td mat-cell *matCellDef="let nv">{{ nv.id }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="nutritionKey">
+                    <th mat-header-cell *matHeaderCellDef>NutritionKey</th>
+                    <td mat-cell *matCellDef="let nv">{{ nv.nutritionKey }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="amount">
+                    <th mat-header-cell *matHeaderCellDef>Amount</th>
+                    <td mat-cell *matCellDef="let nv">{{ nv.amount }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="unit">
+                    <th mat-header-cell *matHeaderCellDef>Unit</th>
+                    <td mat-cell *matCellDef="let nv">{{ nv.unit }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="reference">
+                    <th mat-header-cell *matHeaderCellDef>Reference</th>
+                    <td mat-cell *matCellDef="let nv">{{ nv.reference }}</td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="nutritionValueColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: nutritionValueColumns"></tr>
+                </table>
+              </div>
+
+              <ng-template #noNvBlock>
+                <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600">
+                  No NV
+                </p>
+              </ng-template>
+            </mat-expansion-panel>
+          </mat-accordion>
         </mat-card-content>
       </mat-card>
 
@@ -263,7 +389,6 @@
         <button mat-stroked-button type="button" (click)="fillDemoUpdate()">Exemple Update</button>
         <button mat-raised-button color="primary" type="button" (click)="create()">Create (POST)</button>
         <button mat-raised-button color="primary" type="button" (click)="getOne()">Get (GET /:id)</button>
-        <button mat-raised-button color="primary" type="button" (click)="getAll()">GetAll (GET)</button>
         <button mat-raised-button color="accent" type="button" (click)="update()">Update (PATCH)</button>
         <button mat-raised-button color="warn" type="button" (click)="delete()">Delete (DELETE)</button>
 
@@ -271,74 +396,77 @@
       </div>
     </form>
 
-    <div class="px-4 pb-2 sm:px-6" *ngIf="productTableRows.length > 0">
-      <h3 class="mb-2 text-base font-semibold text-slate-900">Resultats (GET / GETALL)</h3>
-      <mat-accordion class="space-y-2">
-        <mat-expansion-panel
-          *ngFor="let row of productTableRows; trackBy: trackByProductId"
-          [expanded]="expandedProductId === row.id"
-          (opened)="expandedProductId = row.id"
-          (closed)="expandedProductId = null">
-          <mat-expansion-panel-header
-            [collapsedHeight]="'96px'"
-            [expandedHeight]="'96px'"
-            class="!px-4">
-            <mat-panel-title>
-              <div class="w-full">
-                <p class="mb-2 truncate pr-4 text-sm font-semibold text-slate-900">
-                  {{ row.name }}
-                </p>
-                <div class="grid grid-cols-2 gap-2 text-xs font-medium text-slate-700 sm:grid-cols-3 lg:grid-cols-6">
-                  <span class="rounded-md bg-slate-100 px-2 py-1">ID: {{ row.id }}</span>
-                  <span class="rounded-md bg-slate-100 px-2 py-1">Barcode: {{ row.barcode }}</span>
-                  <span class="rounded-md bg-slate-100 px-2 py-1">Unit: {{ row.unit }}</span>
-                  <span class="rounded-md bg-slate-100 px-2 py-1">Price: {{ row.price }}</span>
-                  <span class="rounded-md bg-slate-100 px-2 py-1">Tags: {{ row.tags }}</span>
-                  <span class="rounded-md bg-slate-100 px-2 py-1">NV: {{ row.nutritionValues.length }}</span>
-                </div>
-              </div>
-            </mat-panel-title>
-          </mat-expansion-panel-header>
+    <div class="modal-backdrop" *ngIf="isEditModalOpen" (click)="closeEditModal()"></div>
+    <div class="modal-shell" *ngIf="isEditModalOpen">
+      <mat-card class="modal-card" (click)="$event.stopPropagation()">
+        <mat-card-header>
+          <mat-card-title>Modifier le produit</mat-card-title>
+          <mat-card-subtitle>ID {{ editTargetId }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-2">
+          <form [formGroup]="editForm" class="grid gap-4 sm:grid-cols-2">
+            <mat-form-field appearance="fill" class="w-full sm:col-span-2">
+              <mat-label>name *</mat-label>
+              <input matInput type="text" formControlName="name" />
+            </mat-form-field>
 
-          <div *ngIf="row.nutritionValues.length > 0; else noNvBlock" class="overflow-x-auto rounded-lg border border-slate-200">
-            <table mat-table [dataSource]="row.nutritionValues" class="w-full">
-              <ng-container matColumnDef="id">
-                <th mat-header-cell *matHeaderCellDef>ID</th>
-                <td mat-cell *matCellDef="let nv">{{ nv.id }}</td>
-              </ng-container>
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>barcode</mat-label>
+              <input matInput type="text" formControlName="barcode" />
+            </mat-form-field>
 
-              <ng-container matColumnDef="nutritionKey">
-                <th mat-header-cell *matHeaderCellDef>NutritionKey</th>
-                <td mat-cell *matCellDef="let nv">{{ nv.nutritionKey }}</td>
-              </ng-container>
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>unitType *</mat-label>
+              <input matInput type="text" formControlName="unitType" />
+            </mat-form-field>
 
-              <ng-container matColumnDef="amount">
-                <th mat-header-cell *matHeaderCellDef>Amount</th>
-                <td mat-cell *matCellDef="let nv">{{ nv.amount }}</td>
-              </ng-container>
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>quantityPerUnit *</mat-label>
+              <input matInput type="number" formControlName="quantityPerUnit" />
+            </mat-form-field>
 
-              <ng-container matColumnDef="unit">
-                <th mat-header-cell *matHeaderCellDef>Unit</th>
-                <td mat-cell *matCellDef="let nv">{{ nv.unit }}</td>
-              </ng-container>
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>quantityUnit *</mat-label>
+              <mat-select formControlName="quantityUnit">
+                <mat-option *ngFor="let unit of quantityUnitOptions" [value]="unit.value">
+                  {{ unit.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
 
-              <ng-container matColumnDef="reference">
-                <th mat-header-cell *matHeaderCellDef>Reference</th>
-                <td mat-cell *matCellDef="let nv">{{ nv.reference }}</td>
-              </ng-container>
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>categoryId (nullable)</mat-label>
+              <input matInput type="number" formControlName="categoryId" />
+            </mat-form-field>
 
-              <tr mat-header-row *matHeaderRowDef="nutritionValueColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: nutritionValueColumns"></tr>
-            </table>
-          </div>
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>genericProductId (nullable)</mat-label>
+              <input matInput type="number" formControlName="genericProductId" />
+            </mat-form-field>
 
-          <ng-template #noNvBlock>
-            <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-              No NV
-            </p>
-          </ng-template>
-        </mat-expansion-panel>
-      </mat-accordion>
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>price</mat-label>
+              <input matInput type="number" step="0.01" formControlName="price" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full sm:col-span-2">
+              <mat-label>url</mat-label>
+              <input matInput type="url" formControlName="url" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full sm:col-span-2">
+              <mat-label>memo</mat-label>
+              <input matInput type="text" formControlName="memo" />
+            </mat-form-field>
+          </form>
+        </mat-card-content>
+        <mat-card-actions align="end" class="gap-2 px-4 pb-4">
+          <button mat-stroked-button type="button" (click)="closeEditModal()">Annuler</button>
+          <button mat-raised-button color="primary" type="button" (click)="saveEditFromModal()">
+            Valider
+          </button>
+        </mat-card-actions>
+      </mat-card>
     </div>
 
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
