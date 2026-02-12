@@ -172,7 +172,7 @@
               <div class="border-r border-gray-200">
                 <div 
                   *ngFor="let hour of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]"
-                  (click)="onHourClick({ hour: hour, label: hour + ':00' })"
+                  (click)="onHourClick({ hour: hour, label: hour + ':00', assignment: day.assignment }, day.date)"
                   class="h-16 border-b border-gray-200 hover:bg-blue-50 dark:hover:bg-blue-800 cursor-pointer transition-colors p-1">
                   
                   <!-- Mock assignment at specific hours -->

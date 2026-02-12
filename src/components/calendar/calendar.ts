@@ -36,6 +36,7 @@ export interface CalendarDayClickEvent {
 export interface CalendarHourClickEvent {
   view: CalendarView;
   currentDateIso: string;
+  dateLocal: string;
   hour: HourSlot;
   sourceAssignment: CycleAssignment | null;
 }
@@ -194,6 +195,7 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     this.refreshView();
+    this.viewChanged.emit(this.buildViewChangeEvent());
   }
 
   switchView(view: CalendarView): void {
@@ -209,6 +211,7 @@ export class Calendar implements OnInit, OnChanges {
   goToToday(): void {
     this.currentDate = DateTime.now();
     this.refreshView();
+    this.viewChanged.emit(this.buildViewChangeEvent());
   }
 
   onDayClick(day: CalendarDay): void {
@@ -225,15 +228,20 @@ export class Calendar implements OnInit, OnChanges {
     });
   }
 
-  onHourClick(hour: HourSlot): void {
-    const sourceAssignment =
+  onHourClick(hour: HourSlot, dateLocal?: string): void {
+    const resolvedDateLocal = dateLocal ?? this.currentDate.toISODate() ?? '';
+    const assignmentFromDate =
+      resolvedDateLocal === '' ? null : (this.findAssignmentForDate(resolvedDateLocal) ?? null);
+    const assignmentFromHour =
       hour.assignment && hour.assignment.id
         ? (this.assignmentById.get(hour.assignment.id) ?? null)
         : null;
+    const sourceAssignment = assignmentFromDate ?? assignmentFromHour;
 
     this.hourClick.emit({
       view: this.currentView,
       currentDateIso: this.currentDate.toISO() ?? '',
+      dateLocal: resolvedDateLocal,
       hour,
       sourceAssignment,
     });

@@ -11,6 +11,7 @@ import { InputDayFeature } from '../features/input-day/input-day.feature';
 import { Calendar } from '../components/calendar/calendar';
 import { DaySetFeature } from '../features/day-set/day-set.feature';
 import { SlotFeature } from '../features/slot/slot.feature';
+import { PlanningFeature } from '../features/planning/planning.feature';
 
 export const routes: Routes = [
     {path: 'home', component: Home},
@@ -25,4 +26,5 @@ export const routes: Routes = [
     {path: 'day-set', component: DaySetFeature},
     {path: 'slot', component: SlotFeature},
     {path: 'calendar', component: Calendar},
+    {path: 'planning', component: PlanningFeature},
 ];

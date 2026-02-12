@@ -55,4 +55,8 @@ export class App {
   goToCalendar() {
     this.router.navigate(['/calendar']);
   }
+
+  goToPlanning() {
+    this.router.navigate(['/planning']);
+  }
 }
