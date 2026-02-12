@@ -8,6 +8,16 @@
     </div>
 
     <div class="space-y-6 p-4 sm:p-6">
+      <div class="flex flex-wrap items-center gap-2">
+        <span *ngIf="loadingMeta" class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
+          Meta nutrition...
+        </span>
+      </div>
+
+      <p *ngIf="lastMetaError" class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+        Impossible de charger les cles nutritionnelles meta, fallback actif.
+      </p>
+
       <app-slot-list
         mode="manage"
         [slots]="slots"
@@ -19,6 +29,7 @@
           <app-slot-form
             [mode]="formMode"
             [slot]="formInitialValue"
+            [nutritionKeys]="nutritionKeys"
             (submitted)="onFormSubmitted($event)"
             (menuClicked)="onMenuClicked()">
           </app-slot-form>

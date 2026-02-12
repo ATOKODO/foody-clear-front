@@ -12,15 +12,17 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table';
+import { CycleNutritionValue } from '../../../interfaces/cycle.interface';
 
 export type DaySetListMode = 'manage' | 'select-single' | 'select-multi';
 
 export interface DaySetListItem {
   id: string;
   title: string;
-  protein: number;
-  carbs: number;
-  fat: number;
+  nutritionValues?: CycleNutritionValue[];
+  protein?: number;
+  carbs?: number;
+  fat?: number;
 }
 
 @Component({
@@ -104,6 +106,18 @@ export class DaySetList implements OnInit, OnChanges {
       : ['title', 'protein', 'carbs', 'fat'];
   }
 
+  getProtein(item: DaySetListItem): number {
+    return this.getMacro(item, 'protein');
+  }
+
+  getCarbs(item: DaySetListItem): number {
+    return this.getMacro(item, 'carbs');
+  }
+
+  getFat(item: DaySetListItem): number {
+    return this.getMacro(item, 'fat');
+  }
+
   trackById(_: number, item: DaySetListItem): string {
     return item.id;
   }
@@ -179,5 +193,65 @@ export class DaySetList implements OnInit, OnChanges {
 
   private getSelectedItems(): DaySetListItem[] {
     return this.resolvedDaySets.filter((item) => this.selectedIdSet.has(item.id));
+  }
+
+  private getMacro(item: DaySetListItem, key: 'protein' | 'carbs' | 'fat'): number {
+    const nutritionValues = item.nutritionValues ?? [];
+    if (nutritionValues.length > 0) {
+      return this.extractMacroTotals(nutritionValues)[key];
+    }
+
+    if (key === 'protein') {
+      return this.roundNumber(item.protein ?? 0);
+    }
+
+    if (key === 'carbs') {
+      return this.roundNumber(item.carbs ?? 0);
+    }
+
+    return this.roundNumber(item.fat ?? 0);
+  }
+
+  private extractMacroTotals(values: CycleNutritionValue[]): {
+    protein: number;
+    carbs: number;
+    fat: number;
+  } {
+    const totals = { protein: 0, carbs: 0, fat: 0 };
+
+    values.forEach((value) => {
+      const amount = this.toGrams(value.amount, value.unit);
+      const nutritionKey = value.nutritionKey.toUpperCase();
+
+      if (nutritionKey === 'PROTEIN') {
+        totals.protein += amount;
+      } else if (nutritionKey === 'CARBOHYDRATE') {
+        totals.carbs += amount;
+      } else if (nutritionKey === 'FAT') {
+        totals.fat += amount;
+      }
+    });
+
+    return {
+      protein: this.roundNumber(totals.protein),
+      carbs: this.roundNumber(totals.carbs),
+      fat: this.roundNumber(totals.fat),
+    };
+  }
+
+  private toGrams(amount: number, unit: string): number {
+    if (unit.toUpperCase() === 'G') {
+      return amount;
+    }
+
+    if (unit.toUpperCase() === 'MG') {
+      return amount / 1000;
+    }
+
+    return 0;
+  }
+
+  private roundNumber(value: number): number {
+    return Math.round(value * 100) / 100;
   }
 }

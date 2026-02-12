@@ -36,17 +36,17 @@
 
           <ng-container matColumnDef="protein">
             <th mat-header-cell *matHeaderCellDef>Proteine</th>
-            <td mat-cell *matCellDef="let item">{{ item.protein }}</td>
+            <td mat-cell *matCellDef="let item">{{ getProtein(item) }}</td>
           </ng-container>
 
           <ng-container matColumnDef="carbs">
             <th mat-header-cell *matHeaderCellDef>Glucide</th>
-            <td mat-cell *matCellDef="let item">{{ item.carbs }}</td>
+            <td mat-cell *matCellDef="let item">{{ getCarbs(item) }}</td>
           </ng-container>
 
           <ng-container matColumnDef="fat">
             <th mat-header-cell *matHeaderCellDef>Lipide</th>
-            <td mat-cell *matCellDef="let item">{{ item.fat }}</td>
+            <td mat-cell *matCellDef="let item">{{ getFat(item) }}</td>
           </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

@@ -17,20 +17,48 @@
     </label>
 
     <div class="sf-macros">
-      <label class="sf-field">
-        <span>Prot</span>
-        <input type="number" min="0" formControlName="protein" placeholder="0" />
-      </label>
+      <div class="flex items-center justify-between gap-3">
+        <h3 class="text-base font-semibold text-slate-900">Nutrition values</h3>
+        <button type="button" class="menu-btn" (click)="addNutritionValue()">+</button>
+      </div>
 
-      <label class="sf-field">
-        <span>Glu</span>
-        <input type="number" min="0" formControlName="carbs" placeholder="0" />
-      </label>
+      <p *ngIf="nutritionKeys.length === 0" class="text-xs text-slate-600">
+        Meta non chargee, saisie libre.
+      </p>
 
-      <label class="sf-field">
-        <span>Lip</span>
-        <input type="number" min="0" formControlName="fat" placeholder="0" />
-      </label>
+      <div *ngFor="let value of nutritionValues; let i = index" class="grid gap-2 md:grid-cols-5">
+        <input
+          type="text"
+          placeholder="Nutrition key"
+          [(ngModel)]="value.nutritionKey"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="onNutritionKeyChange(i)" />
+
+        <input
+          type="number"
+          min="0"
+          placeholder="Amount"
+          [(ngModel)]="value.amount"
+          [ngModelOptions]="{ standalone: true }" />
+
+        <select
+          [(ngModel)]="value.unit"
+          [ngModelOptions]="{ standalone: true }">
+          <option *ngFor="let unit of getUnitsForKey(value.nutritionKey)" [value]="unit">
+            {{ unit }}
+          </option>
+        </select>
+
+        <select
+          [(ngModel)]="value.reference"
+          [ngModelOptions]="{ standalone: true }">
+          <option *ngFor="let reference of referenceOptions" [value]="reference.value">
+            {{ reference.label }}
+          </option>
+        </select>
+
+        <button type="button" class="menu-btn" (click)="removeNutritionValue(i)">x</button>
+      </div>
     </div>
 
     <button type="submit" class="submit-btn">

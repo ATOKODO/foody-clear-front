@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -11,6 +11,8 @@ import {
   DaySetList,
   DaySetListItem,
 } from '../../components/day-set/day-set-list/day-set-list';
+import { CycleNutritionValue } from '../../interfaces/cycle.interface';
+import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
 
 @Component({
   selector: 'app-day-set-feature',
@@ -18,11 +20,35 @@ import {
   templateUrl: './day-set.feature.html',
   styleUrl: './day-set.feature.scss',
 })
-export class DaySetFeature {
+export class DaySetFeature implements OnInit {
   daySets: DaySetListItem[] = [
-    { id: '1', title: 'Lundi', protein: 50, carbs: 120, fat: 30 },
-    { id: '2', title: 'Repos', protein: 50, carbs: 120, fat: 30 },
-    { id: '3', title: 'Mardi', protein: 50, carbs: 150, fat: 30 },
+    {
+      id: '1',
+      title: 'Lundi',
+      nutritionValues: [
+        { nutritionKey: 'PROTEIN', amount: 50, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'CARBOHYDRATE', amount: 120, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'FAT', amount: 30, unit: 'G', reference: 'PER_100G' },
+      ],
+    },
+    {
+      id: '2',
+      title: 'Repos',
+      nutritionValues: [
+        { nutritionKey: 'PROTEIN', amount: 50, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'CARBOHYDRATE', amount: 120, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'FAT', amount: 30, unit: 'G', reference: 'PER_100G' },
+      ],
+    },
+    {
+      id: '3',
+      title: 'Mardi',
+      nutritionValues: [
+        { nutritionKey: 'PROTEIN', amount: 50, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'CARBOHYDRATE', amount: 150, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'FAT', amount: 30, unit: 'G', reference: 'PER_100G' },
+      ],
+    },
   ];
 
   formVisible = false;
@@ -31,6 +57,15 @@ export class DaySetFeature {
   formInitialValue: Partial<DaySetFormValue> | null = null;
 
   lastResponse: unknown = null;
+  loadingMeta = false;
+  lastMetaError: unknown = null;
+  nutritionKeys: NutritionKeyMeta[] = [];
+
+  constructor(private metaSrv: MetaService) {}
+
+  ngOnInit(): void {
+    this.loadNutritionKeys();
+  }
 
   onAddRequested(): void {
     this.formMode = 'add';
@@ -46,9 +81,7 @@ export class DaySetFeature {
           ? {
               ...item,
               title: event.value.title,
-              protein: event.value.protein,
-              carbs: event.value.carbs,
-              fat: event.value.fat,
+              nutritionValues: this.normalizeNutritionValues(event.value.nutritionValues),
             }
           : item,
       );
@@ -56,9 +89,7 @@ export class DaySetFeature {
       const newItem: DaySetListItem = {
         id: this.getNextId(),
         title: event.value.title,
-        protein: event.value.protein,
-        carbs: event.value.carbs,
-        fat: event.value.fat,
+        nutritionValues: this.normalizeNutritionValues(event.value.nutritionValues),
       };
       this.daySets = [...this.daySets, newItem];
     }
@@ -88,5 +119,31 @@ export class DaySetFeature {
     }, 0);
 
     return String(maxId + 1);
+  }
+
+  private loadNutritionKeys(): void {
+    this.loadingMeta = true;
+    this.metaSrv.getNutritionKeys().subscribe({
+      next: (nutritionKeys) => {
+        this.nutritionKeys = nutritionKeys;
+        this.lastMetaError = null;
+        this.loadingMeta = false;
+      },
+      error: (error) => {
+        this.lastMetaError = error;
+        this.loadingMeta = false;
+      },
+    });
+  }
+
+  private normalizeNutritionValues(values: CycleNutritionValue[]): CycleNutritionValue[] {
+    return values
+      .map((value) => ({
+        nutritionKey: value.nutritionKey.trim().toUpperCase(),
+        amount: Number.isFinite(value.amount) ? Math.max(0, value.amount) : 0,
+        unit: value.unit,
+        reference: value.reference,
+      }))
+      .filter((value) => value.nutritionKey !== '');
   }
 }

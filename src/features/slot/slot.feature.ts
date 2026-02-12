@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -11,6 +11,8 @@ import {
   SlotList,
   SlotListItem,
 } from '../../components/slot/slot-list/slot-list';
+import { CycleNutritionValue } from '../../interfaces/cycle.interface';
+import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
 
 @Component({
   selector: 'app-slot-feature',
@@ -18,11 +20,35 @@ import {
   templateUrl: './slot.feature.html',
   styleUrl: './slot.feature.scss',
 })
-export class SlotFeature {
+export class SlotFeature implements OnInit {
   slots: SlotListItem[] = [
-    { id: '1', title: 'Petit dejeuner', protein: 50, carbs: 120, fat: 30 },
-    { id: '2', title: 'Dejeuner', protein: 50, carbs: 120, fat: 30 },
-    { id: '3', title: 'Diner', protein: 50, carbs: 150, fat: 30 },
+    {
+      id: '1',
+      title: 'Petit dejeuner',
+      nutritionValues: [
+        { nutritionKey: 'PROTEIN', amount: 50, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'CARBOHYDRATE', amount: 120, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'FAT', amount: 30, unit: 'G', reference: 'PER_100G' },
+      ],
+    },
+    {
+      id: '2',
+      title: 'Dejeuner',
+      nutritionValues: [
+        { nutritionKey: 'PROTEIN', amount: 50, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'CARBOHYDRATE', amount: 120, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'FAT', amount: 30, unit: 'G', reference: 'PER_100G' },
+      ],
+    },
+    {
+      id: '3',
+      title: 'Diner',
+      nutritionValues: [
+        { nutritionKey: 'PROTEIN', amount: 50, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'CARBOHYDRATE', amount: 150, unit: 'G', reference: 'PER_100G' },
+        { nutritionKey: 'FAT', amount: 30, unit: 'G', reference: 'PER_100G' },
+      ],
+    },
   ];
 
   formVisible = false;
@@ -31,6 +57,15 @@ export class SlotFeature {
   formInitialValue: Partial<SlotFormValue> | null = null;
 
   lastResponse: unknown = null;
+  loadingMeta = false;
+  lastMetaError: unknown = null;
+  nutritionKeys: NutritionKeyMeta[] = [];
+
+  constructor(private metaSrv: MetaService) {}
+
+  ngOnInit(): void {
+    this.loadNutritionKeys();
+  }
 
   onAddRequested(): void {
     this.formMode = 'add';
@@ -46,9 +81,7 @@ export class SlotFeature {
           ? {
               ...item,
               title: event.value.title,
-              protein: event.value.protein,
-              carbs: event.value.carbs,
-              fat: event.value.fat,
+              nutritionValues: this.normalizeNutritionValues(event.value.nutritionValues),
             }
           : item,
       );
@@ -56,9 +89,7 @@ export class SlotFeature {
       const newItem: SlotListItem = {
         id: this.getNextId(),
         title: event.value.title,
-        protein: event.value.protein,
-        carbs: event.value.carbs,
-        fat: event.value.fat,
+        nutritionValues: this.normalizeNutritionValues(event.value.nutritionValues),
       };
       this.slots = [...this.slots, newItem];
     }
@@ -88,5 +119,31 @@ export class SlotFeature {
     }, 0);
 
     return String(maxId + 1);
+  }
+
+  private loadNutritionKeys(): void {
+    this.loadingMeta = true;
+    this.metaSrv.getNutritionKeys().subscribe({
+      next: (nutritionKeys) => {
+        this.nutritionKeys = nutritionKeys;
+        this.lastMetaError = null;
+        this.loadingMeta = false;
+      },
+      error: (error) => {
+        this.lastMetaError = error;
+        this.loadingMeta = false;
+      },
+    });
+  }
+
+  private normalizeNutritionValues(values: CycleNutritionValue[]): CycleNutritionValue[] {
+    return values
+      .map((value) => ({
+        nutritionKey: value.nutritionKey.trim().toUpperCase(),
+        amount: Number.isFinite(value.amount) ? Math.max(0, value.amount) : 0,
+        unit: value.unit,
+        reference: value.reference,
+      }))
+      .filter((value) => value.nutritionKey !== '');
   }
 }

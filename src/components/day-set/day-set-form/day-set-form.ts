@@ -9,28 +9,31 @@ import {
   SimpleChanges,
   inject,
 } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { CycleNutritionValue, NutritionReference } from '../../../interfaces/cycle.interface';
+import { NutritionKeyMeta } from '../../../services/meta-service';
 
 export type DaySetFormMode = 'add' | 'edit';
 
 export interface DaySetFormValue {
   title: string;
-  protein: number;
-  carbs: number;
-  fat: number;
+  nutritionValues: CycleNutritionValue[];
 }
 
 @Component({
   selector: 'app-day-set-form',
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
   ],
   templateUrl: './day-set-form.html',
   styleUrl: './day-set-form.scss',
@@ -40,6 +43,7 @@ export class DaySetForm implements OnInit, OnChanges {
 
   @Input() mode: DaySetFormMode = 'add';
   @Input() daySet: Partial<DaySetFormValue> | null = null;
+  @Input() nutritionKeys: NutritionKeyMeta[] = [];
 
   @Output() readonly submitted = new EventEmitter<{
     mode: DaySetFormMode;
@@ -47,11 +51,14 @@ export class DaySetForm implements OnInit, OnChanges {
   }>();
   @Output() readonly menuClicked = new EventEmitter<void>();
 
+  nutritionValues: CycleNutritionValue[] = [];
+  readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
+    { label: 'Pour 100 g', value: 'PER_100G' },
+    { label: 'Pour 100 ml', value: 'PER_100ML' },
+  ];
+
   readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required]],
-    protein: [0, [Validators.required, Validators.min(0)]],
-    carbs: [0, [Validators.required, Validators.min(0)]],
-    fat: [0, [Validators.required, Validators.min(0)]],
   });
 
   ngOnInit(): void {
@@ -59,7 +66,7 @@ export class DaySetForm implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['mode'] || changes['daySet']) {
+    if (changes['mode'] || changes['daySet'] || changes['nutritionKeys']) {
       this.applyInputState();
     }
   }
@@ -78,30 +85,134 @@ export class DaySetForm implements OnInit, OnChanges {
       return;
     }
 
+    const nutritionValues = this.nutritionValues
+      .map((value) => this.normalizeNutritionValue(value))
+      .filter((value) => value.nutritionKey !== '');
+
     this.submitted.emit({
       mode: this.mode,
-      value: this.form.getRawValue(),
+      value: {
+        ...this.form.getRawValue(),
+        nutritionValues,
+      },
     });
+  }
+
+  addNutritionValue(): void {
+    this.nutritionValues = [...this.nutritionValues, this.buildDefaultNutritionValue()];
+  }
+
+  removeNutritionValue(index: number): void {
+    this.nutritionValues = this.nutritionValues.filter((_, i) => i !== index);
+  }
+
+  onNutritionKeyChange(index: number): void {
+    const row = this.nutritionValues[index];
+    if (!row) {
+      return;
+    }
+
+    const allowedUnits = this.getAllowedUnits(row.nutritionKey);
+    if (allowedUnits.length === 0) {
+      row.unit = 'G';
+      return;
+    }
+
+    if (!allowedUnits.includes(row.unit)) {
+      row.unit = allowedUnits[0];
+    }
+  }
+
+  getUnitsForKey(nutritionKey: string): string[] {
+    const allowedUnits = this.getAllowedUnits(nutritionKey);
+    return allowedUnits.length > 0 ? allowedUnits : ['G', 'MG'];
   }
 
   private applyInputState(): void {
     const defaults: DaySetFormValue = {
       title: '',
-      protein: 0,
-      carbs: 0,
-      fat: 0,
+      nutritionValues: this.getDefaultNutritionValues(),
     };
 
     if (this.mode === 'edit' && this.daySet) {
       this.form.reset({
         title: this.daySet.title ?? defaults.title,
-        protein: this.daySet.protein ?? defaults.protein,
-        carbs: this.daySet.carbs ?? defaults.carbs,
-        fat: this.daySet.fat ?? defaults.fat,
       });
+      this.nutritionValues =
+        this.daySet.nutritionValues && this.daySet.nutritionValues.length > 0
+          ? this.cloneNutritionValues(this.daySet.nutritionValues)
+          : this.getDefaultNutritionValues();
       return;
     }
 
-    this.form.reset(defaults);
+    this.form.reset({ title: defaults.title });
+    this.nutritionValues = this.cloneNutritionValues(defaults.nutritionValues);
+  }
+
+  private getDefaultNutritionValues(): CycleNutritionValue[] {
+    const defaults = ['PROTEIN', 'CARBOHYDRATE', 'FAT'].map((key) =>
+      this.buildDefaultNutritionValue(key),
+    );
+    return this.cloneNutritionValues(defaults);
+  }
+
+  private buildDefaultNutritionValue(nutritionKey = ''): CycleNutritionValue {
+    const unit = this.pickDefaultUnit(nutritionKey);
+    return {
+      nutritionKey,
+      amount: 0,
+      unit,
+      reference: 'PER_100G',
+    };
+  }
+
+  private cloneNutritionValues(values: CycleNutritionValue[]): CycleNutritionValue[] {
+    return values.map((value) => this.normalizeNutritionValue(value));
+  }
+
+  private normalizeNutritionValue(value: CycleNutritionValue): CycleNutritionValue {
+    const nutritionKey = (value.nutritionKey ?? '').trim();
+    const amount = Number.isFinite(value.amount) ? Math.max(0, value.amount) : 0;
+    const unit = this.pickDefaultUnit(nutritionKey, value.unit);
+    const reference = value.reference === 'PER_100ML' ? 'PER_100ML' : 'PER_100G';
+
+    return {
+      nutritionKey,
+      amount,
+      unit,
+      reference,
+    };
+  }
+
+  private pickDefaultUnit(nutritionKey: string, preferred?: string): string {
+    const allowedUnits = this.getAllowedUnits(nutritionKey);
+    if (allowedUnits.length === 0) {
+      return preferred && preferred.trim() !== '' ? preferred : 'G';
+    }
+
+    if (preferred && allowedUnits.includes(preferred)) {
+      return preferred;
+    }
+
+    const gramUnit = allowedUnits.find((unit) => unit.toUpperCase() === 'G');
+    return gramUnit ?? allowedUnits[0];
+  }
+
+  private getAllowedUnits(nutritionKey: string): string[] {
+    if (nutritionKey.trim() === '') {
+      return [];
+    }
+
+    const key = this.nutritionKeys.find(
+      (item) =>
+        item.value.toUpperCase() === nutritionKey.toUpperCase() ||
+        item.key.toUpperCase() === nutritionKey.toUpperCase(),
+    );
+
+    if (!key) {
+      return [];
+    }
+
+    return key.allowedUnits.filter((unit) => unit.trim() !== '');
   }
 }

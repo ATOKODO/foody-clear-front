@@ -23,28 +23,26 @@ describe('DaySetForm', () => {
   it('should initialize add mode with default values', () => {
     expect(component.form.getRawValue()).toEqual({
       title: '',
-      protein: 0,
-      carbs: 0,
-      fat: 0,
     });
+    expect(component.nutritionValues.length).toBe(3);
   });
 
   it('should patch values in edit mode when daySet is provided', () => {
     fixture.componentRef.setInput('mode', 'edit');
     fixture.componentRef.setInput('daySet', {
       title: 'Lundi',
-      protein: 20,
-      carbs: 50,
-      fat: 10,
+      nutritionValues: [
+        { nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },
+      ],
     });
     fixture.detectChanges();
 
     expect(component.form.getRawValue()).toEqual({
       title: 'Lundi',
-      protein: 20,
-      carbs: 50,
-      fat: 10,
     });
+    expect(component.nutritionValues).toEqual([
+      { nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },
+    ]);
   });
 
   it('should emit submitted payload with mode and form value', () => {
@@ -53,10 +51,12 @@ describe('DaySetForm', () => {
 
     component.form.setValue({
       title: 'Mardi',
-      protein: 30,
-      carbs: 40,
-      fat: 15,
     });
+    component.nutritionValues = [
+      { nutritionKey: 'PROTEIN', amount: 30, unit: 'G', reference: 'PER_100G' },
+      { nutritionKey: 'CARBOHYDRATE', amount: 40, unit: 'G', reference: 'PER_100G' },
+      { nutritionKey: 'FAT', amount: 15, unit: 'G', reference: 'PER_100G' },
+    ];
 
     component.onSubmit();
 
@@ -65,9 +65,11 @@ describe('DaySetForm', () => {
         mode: 'add',
         value: {
           title: 'Mardi',
-          protein: 30,
-          carbs: 40,
-          fat: 15,
+          nutritionValues: [
+            { nutritionKey: 'PROTEIN', amount: 30, unit: 'G', reference: 'PER_100G' },
+            { nutritionKey: 'CARBOHYDRATE', amount: 40, unit: 'G', reference: 'PER_100G' },
+            { nutritionKey: 'FAT', amount: 15, unit: 'G', reference: 'PER_100G' },
+          ],
         },
       },
     ]);
