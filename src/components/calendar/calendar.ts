@@ -47,6 +47,13 @@ export interface CalendarMonthClickEvent {
   sourceAssignments: CycleAssignment[];
 }
 
+export interface CalendarViewChangeEvent {
+  view: CalendarView;
+  anchorDateLocal: string;
+  fromDateLocal: string;
+  toDateLocal: string;
+}
+
 @Component({
   selector: 'app-calendar',
   imports: [CommonModule],
@@ -58,6 +65,7 @@ export class Calendar implements OnInit, OnChanges {
   @Output() readonly dayClick = new EventEmitter<CalendarDayClickEvent>();
   @Output() readonly hourClick = new EventEmitter<CalendarHourClickEvent>();
   @Output() readonly monthClick = new EventEmitter<CalendarMonthClickEvent>();
+  @Output() readonly viewChanged = new EventEmitter<CalendarViewChangeEvent>();
 
   readonly VIEWS: CalendarView[] = ['year', 'month', 'week', 'day'];
   readonly WEEKDAY_NAMES = WEEKDAY_NAMES;
@@ -75,6 +83,7 @@ export class Calendar implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.refreshView();
+    this.viewChanged.emit(this.buildViewChangeEvent());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -188,8 +197,13 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   switchView(view: CalendarView): void {
+    if (view === this.currentView) {
+      return;
+    }
+
     this.currentView = view;
     this.refreshView();
+    this.viewChanged.emit(this.buildViewChangeEvent());
   }
 
   goToToday(): void {
@@ -259,6 +273,29 @@ export class Calendar implements OnInit, OnChanges {
   private refreshView(): void {
     this.loadView();
     this.applyAssignments();
+  }
+
+  private buildViewChangeEvent(): CalendarViewChangeEvent {
+    let from = this.currentDate.startOf('day');
+    let to = this.currentDate.endOf('day');
+
+    if (this.currentView === 'year') {
+      from = this.currentDate.startOf('year');
+      to = this.currentDate.endOf('year');
+    } else if (this.currentView === 'month') {
+      from = this.currentDate.startOf('month');
+      to = this.currentDate.endOf('month');
+    } else if (this.currentView === 'week') {
+      from = this.currentDate.startOf('week');
+      to = this.currentDate.endOf('week');
+    }
+
+    return {
+      view: this.currentView,
+      anchorDateLocal: this.currentDate.toISODate() ?? '',
+      fromDateLocal: from.toISODate() ?? '',
+      toDateLocal: to.toISODate() ?? '',
+    };
   }
 
   private buildCalendarAssignmentForDate(dateIso: string): CalendarAssignment | undefined {
