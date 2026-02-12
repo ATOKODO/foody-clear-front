@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   CreateCycleAssignmentDto,
@@ -25,6 +25,11 @@ export class CycleAssignementService {
 
   findAll(): Observable<CycleAssignment[]> {
     return this.http.get<CycleAssignment[]>(`${this.baseUrl}/cycle-assignment`);
+  }
+
+  findInRange(from: string, to: string): Observable<CycleAssignment[]> {
+    const params = new HttpParams().set('from', from).set('to', to);
+    return this.http.get<CycleAssignment[]>(`${this.baseUrl}/cycle-assignment`, { params });
   }
 
   findOne(id: number): Observable<CycleAssignment> {
