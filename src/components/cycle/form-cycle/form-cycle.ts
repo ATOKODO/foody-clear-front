@@ -61,10 +61,13 @@ export class FormCycle implements OnInit, OnChanges {
   ];
 
   readonly colorOptions = [
-    { label: 'Rouge', value: '#ff5b5b' },
-    { label: 'Orange', value: '#f97316' },
-    { label: 'Bleu', value: '#3b82f6' },
-    { label: 'Vert', value: '#22c55e' },
+    { label: 'Rouge', value: 'red' },
+    { label: 'Bleu', value: 'blue' },
+    { label: 'Vert', value: 'green' },
+    { label: 'Jaune', value: 'yellow' },
+    { label: 'Orange', value: 'orange' },
+    { label: 'Violet', value: 'purple' },
+    { label: 'Rose', value: 'pink' },
   ];
 
   readonly durationOptions: { label: string; value: TypeDuree }[] = [

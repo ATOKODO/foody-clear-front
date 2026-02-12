@@ -24,7 +24,7 @@ describe('FormCycle', () => {
   it('should initialize form with expected default values', () => {
     expect(component.form.getRawValue()).toEqual({
       titre: '',
-      couleur: '#ff5b5b',
+      couleur: 'red',
       nombre: 0,
       typeDuree: 'jour',
     });
@@ -35,7 +35,7 @@ describe('FormCycle', () => {
     fixture.componentRef.setInput('mode', 'edit');
     fixture.componentRef.setInput('cycle', {
       titre: 'Seche',
-      couleur: '#22c55e',
+      couleur: 'green',
       nutritionValues: [
         { nutritionKey: 'PROTEIN', amount: 180, unit: 'G', reference: 'PER_100G' },
       ],
@@ -46,7 +46,7 @@ describe('FormCycle', () => {
 
     expect(component.form.getRawValue()).toEqual({
       titre: 'Seche',
-      couleur: '#22c55e',
+      couleur: 'green',
       nombre: 4,
       typeDuree: 'semaine',
     });
@@ -61,7 +61,7 @@ describe('FormCycle', () => {
 
     component.form.setValue({
       titre: 'Prise de masse',
-      couleur: '#f97316',
+      couleur: 'orange',
       nombre: 6,
       typeDuree: 'jour',
     });
@@ -78,7 +78,7 @@ describe('FormCycle', () => {
         mode: 'add',
         value: {
           titre: 'Prise de masse',
-          couleur: '#f97316',
+          couleur: 'orange',
           nutritionValues: [
             { nutritionKey: 'PROTEIN', amount: 200, unit: 'G', reference: 'PER_100G' },
             { nutritionKey: 'CARBOHYDRATE', amount: 300, unit: 'G', reference: 'PER_100G' },
