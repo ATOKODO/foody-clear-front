@@ -1,5 +1,5 @@
 // calendar-container.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DateTime } from 'luxon';
 import { CalendarView, CalendarDay, MonthSummary, HourSlot, CalendarAssignment } from '../../interfaces/calendar.interface';
@@ -11,12 +11,33 @@ import {
   WEEKDAY_NAMES 
 } from '../../utils/calendar.utils';
 
+export interface CalendarDayClickEvent {
+  view: CalendarView;
+  currentDateIso: string;
+  day: CalendarDay;
+}
+
+export interface CalendarHourClickEvent {
+  view: CalendarView;
+  currentDateIso: string;
+  hour: HourSlot;
+}
+
+export interface CalendarMonthClickEvent {
+  view: CalendarView;
+  currentDateIso: string;
+  month: MonthSummary;
+}
+
 @Component({
   selector: 'app-calendar',
   imports: [CommonModule],
   templateUrl: './calendar.html'
 })
 export class Calendar implements OnInit {
+  @Output() readonly dayClick = new EventEmitter<CalendarDayClickEvent>();
+  @Output() readonly hourClick = new EventEmitter<CalendarHourClickEvent>();
+  @Output() readonly monthClick = new EventEmitter<CalendarMonthClickEvent>();
   
   readonly VIEWS: CalendarView[] = ['year', 'month', 'week', 'day'];
 
@@ -155,18 +176,27 @@ export class Calendar implements OnInit {
   }
   
   onDayClick(day: CalendarDay) {
-    console.log('Day clicked:', day);
-    // TODO: Ouvrir modal
+    this.dayClick.emit({
+      view: this.currentView,
+      currentDateIso: this.currentDate.toISO(),
+      day,
+    });
   }
   
   onHourClick(hour: HourSlot) {
-    console.log('Hour clicked:', hour);
-    // TODO: Ouvrir modal
+    this.hourClick.emit({
+      view: this.currentView,
+      currentDateIso: this.currentDate.toISO(),
+      hour,
+    });
   }
   
   onMonthClick(month: MonthSummary) {
-    console.log('Month clicked:', month);
-    // TODO: Zoomer sur le mois
+    this.monthClick.emit({
+      view: this.currentView,
+      currentDateIso: this.currentDate.toISO(),
+      month,
+    });
   }
   
   get currentViewLabel(): string {
