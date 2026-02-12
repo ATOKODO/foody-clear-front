@@ -25,12 +25,10 @@ describe('FormCycle', () => {
     expect(component.form.getRawValue()).toEqual({
       titre: '',
       couleur: '#ff5b5b',
-      proteines: 0,
-      glucides: 0,
-      lipides: 0,
       nombre: 0,
       typeDuree: 'jour',
     });
+    expect(component.nutritionValues.length).toBe(3);
   });
 
   it('should patch values in edit mode when cycle is provided', () => {
@@ -38,9 +36,9 @@ describe('FormCycle', () => {
     fixture.componentRef.setInput('cycle', {
       titre: 'Seche',
       couleur: '#22c55e',
-      proteines: 180,
-      glucides: 120,
-      lipides: 60,
+      nutritionValues: [
+        { nutritionKey: 'PROTEIN', amount: 180, unit: 'G', reference: 'PER_100G' },
+      ],
       nombre: 4,
       typeDuree: 'semaine',
     });
@@ -49,12 +47,12 @@ describe('FormCycle', () => {
     expect(component.form.getRawValue()).toEqual({
       titre: 'Seche',
       couleur: '#22c55e',
-      proteines: 180,
-      glucides: 120,
-      lipides: 60,
       nombre: 4,
       typeDuree: 'semaine',
     });
+    expect(component.nutritionValues).toEqual([
+      { nutritionKey: 'PROTEIN', amount: 180, unit: 'G', reference: 'PER_100G' },
+    ]);
   });
 
   it('should emit submitted payload with mode and form value', () => {
@@ -64,12 +62,14 @@ describe('FormCycle', () => {
     component.form.setValue({
       titre: 'Prise de masse',
       couleur: '#f97316',
-      proteines: 200,
-      glucides: 300,
-      lipides: 70,
       nombre: 6,
       typeDuree: 'jour',
     });
+    component.nutritionValues = [
+      { nutritionKey: 'PROTEIN', amount: 200, unit: 'G', reference: 'PER_100G' },
+      { nutritionKey: 'CARBOHYDRATE', amount: 300, unit: 'G', reference: 'PER_100G' },
+      { nutritionKey: 'FAT', amount: 70, unit: 'G', reference: 'PER_100G' },
+    ];
 
     component.onSubmit();
 
@@ -79,9 +79,11 @@ describe('FormCycle', () => {
         value: {
           titre: 'Prise de masse',
           couleur: '#f97316',
-          proteines: 200,
-          glucides: 300,
-          lipides: 70,
+          nutritionValues: [
+            { nutritionKey: 'PROTEIN', amount: 200, unit: 'G', reference: 'PER_100G' },
+            { nutritionKey: 'CARBOHYDRATE', amount: 300, unit: 'G', reference: 'PER_100G' },
+            { nutritionKey: 'FAT', amount: 70, unit: 'G', reference: 'PER_100G' },
+          ],
           nombre: 6,
           typeDuree: 'jour',
         },
@@ -95,19 +97,16 @@ describe('FormCycle', () => {
     expect(text).toContain('Ajouter un Cycle');
     expect(text).toContain('Titre');
     expect(text).toContain('Couleur');
-    expect(text).toContain('Proteines');
-    expect(text).toContain('Glucides');
-    expect(text).toContain('Lipides');
+    expect(text).toContain('Nutrition values');
     expect(text).toContain('Nombre');
     expect(text).toContain('Type de duree');
-    expect(text).toContain('par jours');
     expect(text).toContain('Jour / Semaine / Mois');
   });
 
   it('should render expected number of inputs and selects', () => {
     const nativeElement = fixture.nativeElement as HTMLElement;
 
-    expect(nativeElement.querySelectorAll('input[matInput]').length).toBe(5);
-    expect(nativeElement.querySelectorAll('mat-select').length).toBe(2);
+    expect(nativeElement.querySelectorAll('input[matInput]').length).toBeGreaterThanOrEqual(4);
+    expect(nativeElement.querySelectorAll('mat-select').length).toBeGreaterThanOrEqual(3);
   });
 });

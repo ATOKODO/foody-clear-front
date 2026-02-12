@@ -31,25 +31,70 @@
       </mat-form-field>
     </div>
 
-    <div class="grid gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))_auto] md:items-center">
-      <mat-form-field appearance="fill" class="fc-field">
-        <mat-label>Proteines</mat-label>
-        <input matInput type="number" formControlName="proteines" min="0" />
-      </mat-form-field>
+    <div class="space-y-3">
+      <div class="flex items-center justify-between gap-3">
+        <h3 class="text-base font-semibold text-slate-900">Nutrition values</h3>
+        <button mat-stroked-button type="button" (click)="addNutritionValue()">
+          Ajouter une valeur
+        </button>
+      </div>
 
-      <mat-form-field appearance="fill" class="fc-field">
-        <mat-label>Glucides</mat-label>
-        <input matInput type="number" formControlName="glucides" min="0" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="fc-field">
-        <mat-label>Lipides</mat-label>
-        <input matInput type="number" formControlName="lipides" min="0" />
-      </mat-form-field>
-
-      <p class="pl-2 text-3xl font-light text-gray-800 dark:text-gray-200 md:pb-6">
-        par jours
+      <p *ngIf="nutritionKeys.length === 0" class="text-sm text-slate-600">
+        Les cles nutritionnelles meta ne sont pas chargees, saisie libre active.
       </p>
+
+      <div *ngFor="let value of nutritionValues; let i = index" class="grid gap-3 md:grid-cols-12 md:items-start">
+        <mat-form-field appearance="fill" class="fc-field md:col-span-4">
+          <mat-label>Cle</mat-label>
+          <input
+            matInput
+            placeholder="PROTEIN, CARBOHYDRATE, FAT..."
+            [(ngModel)]="value.nutritionKey"
+            [ngModelOptions]="{ standalone: true }"
+            (change)="onNutritionKeyChange(i)" />
+          <mat-hint *ngIf="nutritionKeys.length > 0">
+            Exemples: {{ nutritionKeys[0].value }}{{ nutritionKeys.length > 1 ? ', ' + nutritionKeys[1].value : '' }}
+          </mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="fc-field md:col-span-2">
+          <mat-label>Amount</mat-label>
+          <input
+            matInput
+            type="number"
+            min="0"
+            [(ngModel)]="value.amount"
+            [ngModelOptions]="{ standalone: true }" />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="fc-field md:col-span-2">
+          <mat-label>Unite</mat-label>
+          <mat-select
+            [(ngModel)]="value.unit"
+            [ngModelOptions]="{ standalone: true }">
+            <mat-option *ngFor="let unit of getUnitsForKey(value.nutritionKey)" [value]="unit">
+              {{ unit }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="fc-field md:col-span-3">
+          <mat-label>Reference</mat-label>
+          <mat-select
+            [(ngModel)]="value.reference"
+            [ngModelOptions]="{ standalone: true }">
+            <mat-option *ngFor="let reference of referenceOptions" [value]="reference.value">
+              {{ reference.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="md:col-span-1 md:pt-2">
+          <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
+            Retirer
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="grid gap-4 md:grid-cols-12 md:items-start">
