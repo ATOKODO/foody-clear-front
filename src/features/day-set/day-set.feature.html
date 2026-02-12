@@ -21,7 +21,9 @@
       <app-day-set-list
         mode="manage"
         [daySets]="daySets"
-        (addRequested)="onAddRequested()">
+        (addRequested)="onAddRequested()"
+        (editRequested)="onEditRequested($event)"
+        (deleteRequested)="onDeleteRequested($event)">
       </app-day-set-list>
 
       <mat-card *ngIf="formVisible" appearance="outlined" class="rounded-xl">

@@ -43,6 +43,8 @@ export class DaySetList implements OnInit, OnChanges {
   @Input() selectedIds: string[] | null = null;
 
   @Output() readonly addRequested = new EventEmitter<void>();
+  @Output() readonly editRequested = new EventEmitter<DaySetListItem>();
+  @Output() readonly deleteRequested = new EventEmitter<DaySetListItem>();
   @Output() readonly selected = new EventEmitter<DaySetListItem>();
   @Output() readonly selectedMany = new EventEmitter<DaySetListItem[]>();
 
@@ -101,6 +103,10 @@ export class DaySetList implements OnInit, OnChanges {
   }
 
   get displayedColumns(): string[] {
+    if (this.isManageMode) {
+      return ['title', 'protein', 'carbs', 'fat', 'actions'];
+    }
+
     return this.isMultiSelectMode
       ? ['select', 'title', 'protein', 'carbs', 'fat']
       : ['title', 'protein', 'carbs', 'fat'];
@@ -173,6 +179,22 @@ export class DaySetList implements OnInit, OnChanges {
     }
 
     this.addRequested.emit();
+  }
+
+  onEditClick(item: DaySetListItem): void {
+    if (!this.isManageMode) {
+      return;
+    }
+
+    this.editRequested.emit(item);
+  }
+
+  onDeleteClick(item: DaySetListItem): void {
+    if (!this.isManageMode) {
+      return;
+    }
+
+    this.deleteRequested.emit(item);
   }
 
   private applyInputState(): void {

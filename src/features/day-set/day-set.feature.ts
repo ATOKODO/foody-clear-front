@@ -74,6 +74,30 @@ export class DaySetFeature implements OnInit {
     this.formVisible = true;
   }
 
+  onEditRequested(item: DaySetListItem): void {
+    const daySet = this.daySets.find((value) => value.id === item.id);
+    if (!daySet) {
+      return;
+    }
+
+    this.formMode = 'edit';
+    this.editingDaySetId = daySet.id;
+    this.formInitialValue = {
+      title: daySet.title,
+      nutritionValues: this.getEditableNutritionValues(daySet),
+    };
+    this.formVisible = true;
+  }
+
+  onDeleteRequested(item: DaySetListItem): void {
+    this.daySets = this.daySets.filter((value) => value.id !== item.id);
+    this.lastResponse = this.daySets;
+
+    if (this.editingDaySetId === item.id) {
+      this.onCancelForm();
+    }
+  }
+
   onFormSubmitted(event: { mode: DaySetFormMode; value: DaySetFormValue }): void {
     if (event.mode === 'edit' && this.editingDaySetId !== null) {
       this.daySets = this.daySets.map((item) =>
@@ -145,5 +169,37 @@ export class DaySetFeature implements OnInit {
         reference: value.reference,
       }))
       .filter((value) => value.nutritionKey !== '');
+  }
+
+  private getEditableNutritionValues(daySet: DaySetListItem): CycleNutritionValue[] {
+    if (daySet.nutritionValues && daySet.nutritionValues.length > 0) {
+      return daySet.nutritionValues.map((value) => ({
+        nutritionKey: value.nutritionKey,
+        amount: value.amount,
+        unit: value.unit,
+        reference: value.reference,
+      }));
+    }
+
+    return [
+      {
+        nutritionKey: 'PROTEIN',
+        amount: daySet.protein ?? 0,
+        unit: 'G',
+        reference: 'PER_100G',
+      },
+      {
+        nutritionKey: 'CARBOHYDRATE',
+        amount: daySet.carbs ?? 0,
+        unit: 'G',
+        reference: 'PER_100G',
+      },
+      {
+        nutritionKey: 'FAT',
+        amount: daySet.fat ?? 0,
+        unit: 'G',
+        reference: 'PER_100G',
+      },
+    ];
   }
 }
