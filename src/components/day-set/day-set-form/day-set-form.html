@@ -25,12 +25,17 @@
       <div *ngFor="let value of nutritionValues; let i = index" class="grid gap-3 md:grid-cols-12 md:items-start">
         <mat-form-field appearance="fill" class="dsf-field md:col-span-4">
           <mat-label>Cle</mat-label>
-          <input
-            matInput
-            placeholder="PROTEIN, CARBOHYDRATE, FAT..."
+          <mat-select
             [(ngModel)]="value.nutritionKey"
             [ngModelOptions]="{ standalone: true }"
-            (change)="onNutritionKeyChange(i)" />
+            (selectionChange)="onNutritionKeyChange(i)">
+            <mat-option *ngFor="let item of nutritionKeys" [value]="item.value">
+              {{ item.label }}
+            </mat-option>
+          </mat-select>
+          <mat-hint *ngIf="nutritionKeys.length === 0">
+            Aucune cle meta disponible
+          </mat-hint>
         </mat-form-field>
 
         <mat-form-field appearance="fill" class="dsf-field md:col-span-2">
