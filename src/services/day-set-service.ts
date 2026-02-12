@@ -1,8 +1,41 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import {
+  CreateDaySetDto,
+  DaySet,
+  UpdateDaySetDto,
+} from '../interfaces/day-set.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DaySetService {
-  
+  baseUrl = 'http://localhost:3000';
+
+  constructor(private http: HttpClient) {}
+
+  setBaseUrl(url: string): void {
+    this.baseUrl = url.replace(/\/$/, '');
+  }
+
+  create(dto: CreateDaySetDto): Observable<DaySet> {
+    return this.http.post<DaySet>(`${this.baseUrl}/day-set`, dto);
+  }
+
+  findAll(): Observable<DaySet[]> {
+    return this.http.get<DaySet[]>(`${this.baseUrl}/day-set`);
+  }
+
+  findOne(id: number): Observable<DaySet> {
+    return this.http.get<DaySet>(`${this.baseUrl}/day-set/${id}`);
+  }
+
+  update(id: number, dto: UpdateDaySetDto): Observable<DaySet> {
+    return this.http.patch<DaySet>(`${this.baseUrl}/day-set/${id}`, dto);
+  }
+
+  remove(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/day-set/${id}`);
+  }
 }

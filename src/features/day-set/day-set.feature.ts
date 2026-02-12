@@ -12,6 +12,8 @@ import {
   DaySetListItem,
 } from '../../components/day-set/day-set-list/day-set-list';
 import { CycleNutritionValue } from '../../interfaces/cycle.interface';
+import { CreateDaySetDto, DaySet } from '../../interfaces/day-set.interface';
+import { DaySetService } from '../../services/day-set-service';
 import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
 
 @Component({
@@ -21,50 +23,37 @@ import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
   styleUrl: './day-set.feature.scss',
 })
 export class DaySetFeature implements OnInit {
-  daySets: DaySetListItem[] = [
-    {
-      id: '1',
-      title: 'Lundi',
-      nutritionValues: [
-        { nutritionKey: 'PROTEIN', amount: 50, unit: 'G', reference: 'PER_100G' },
-        { nutritionKey: 'CARBOHYDRATE', amount: 120, unit: 'G', reference: 'PER_100G' },
-        { nutritionKey: 'FAT', amount: 30, unit: 'G', reference: 'PER_100G' },
-      ],
-    },
-    {
-      id: '2',
-      title: 'Repos',
-      nutritionValues: [
-        { nutritionKey: 'PROTEIN', amount: 50, unit: 'G', reference: 'PER_100G' },
-        { nutritionKey: 'CARBOHYDRATE', amount: 120, unit: 'G', reference: 'PER_100G' },
-        { nutritionKey: 'FAT', amount: 30, unit: 'G', reference: 'PER_100G' },
-      ],
-    },
-    {
-      id: '3',
-      title: 'Mardi',
-      nutritionValues: [
-        { nutritionKey: 'PROTEIN', amount: 50, unit: 'G', reference: 'PER_100G' },
-        { nutritionKey: 'CARBOHYDRATE', amount: 150, unit: 'G', reference: 'PER_100G' },
-        { nutritionKey: 'FAT', amount: 30, unit: 'G', reference: 'PER_100G' },
-      ],
-    },
-  ];
+  daySets: DaySet[] = [];
+  loading = false;
+  saving = false;
 
   formVisible = false;
   formMode: DaySetFormMode = 'add';
-  editingDaySetId: string | null = null;
+  editingDaySetId: number | null = null;
   formInitialValue: Partial<DaySetFormValue> | null = null;
 
   lastResponse: unknown = null;
+  lastError: unknown = null;
   loadingMeta = false;
   lastMetaError: unknown = null;
   nutritionKeys: NutritionKeyMeta[] = [];
 
-  constructor(private metaSrv: MetaService) {}
+  constructor(
+    private readonly daySetSrv: DaySetService,
+    private readonly metaSrv: MetaService,
+  ) {}
 
   ngOnInit(): void {
     this.loadNutritionKeys();
+    this.loadDaySets();
+  }
+
+  get daySetListItems(): DaySetListItem[] {
+    return this.daySets.map((daySet) => ({
+      id: String(daySet.id),
+      title: daySet.title,
+      nutritionValues: daySet.nutritionValues ?? [],
+    }));
   }
 
   onAddRequested(): void {
@@ -75,7 +64,12 @@ export class DaySetFeature implements OnInit {
   }
 
   onEditRequested(item: DaySetListItem): void {
-    const daySet = this.daySets.find((value) => value.id === item.id);
+    const daySetId = Number(item.id);
+    if (!Number.isFinite(daySetId)) {
+      return;
+    }
+
+    const daySet = this.daySets.find((value) => value.id === daySetId);
     if (!daySet) {
       return;
     }
@@ -90,36 +84,65 @@ export class DaySetFeature implements OnInit {
   }
 
   onDeleteRequested(item: DaySetListItem): void {
-    this.daySets = this.daySets.filter((value) => value.id !== item.id);
-    this.lastResponse = this.daySets;
-
-    if (this.editingDaySetId === item.id) {
-      this.onCancelForm();
+    const daySetId = Number(item.id);
+    if (!Number.isFinite(daySetId)) {
+      return;
     }
+
+    this.saving = true;
+    this.daySetSrv.remove(daySetId).subscribe({
+      next: () => {
+        this.lastResponse = { deleted: true, id: daySetId };
+        this.lastError = null;
+        this.saving = false;
+
+        if (this.editingDaySetId === daySetId) {
+          this.onCancelForm();
+        }
+
+        this.loadDaySets();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
+    });
   }
 
   onFormSubmitted(event: { mode: DaySetFormMode; value: DaySetFormValue }): void {
+    const payload = this.toCreateDto(event.value);
+    this.saving = true;
+
     if (event.mode === 'edit' && this.editingDaySetId !== null) {
-      this.daySets = this.daySets.map((item) =>
-        item.id === this.editingDaySetId
-          ? {
-              ...item,
-              title: event.value.title,
-              nutritionValues: this.normalizeNutritionValues(event.value.nutritionValues),
-            }
-          : item,
-      );
-    } else {
-      const newItem: DaySetListItem = {
-        id: this.getNextId(),
-        title: event.value.title,
-        nutritionValues: this.normalizeNutritionValues(event.value.nutritionValues),
-      };
-      this.daySets = [...this.daySets, newItem];
+      this.daySetSrv.update(this.editingDaySetId, payload).subscribe({
+        next: (response) => {
+          this.lastResponse = response;
+          this.lastError = null;
+          this.saving = false;
+          this.formVisible = false;
+          this.loadDaySets();
+        },
+        error: (error) => {
+          this.lastError = error;
+          this.saving = false;
+        },
+      });
+      return;
     }
 
-    this.lastResponse = this.daySets;
-    this.onCancelForm();
+    this.daySetSrv.create(payload).subscribe({
+      next: (response) => {
+        this.lastResponse = response;
+        this.lastError = null;
+        this.saving = false;
+        this.formVisible = false;
+        this.loadDaySets();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
+    });
   }
 
   onMenuClicked(): void {
@@ -134,15 +157,6 @@ export class DaySetFeature implements OnInit {
     this.formMode = 'add';
     this.formInitialValue = null;
     this.editingDaySetId = null;
-  }
-
-  private getNextId(): string {
-    const maxId = this.daySets.reduce((max, item) => {
-      const numericId = Number(item.id);
-      return Number.isFinite(numericId) ? Math.max(max, numericId) : max;
-    }, 0);
-
-    return String(maxId + 1);
   }
 
   private loadNutritionKeys(): void {
@@ -160,6 +174,36 @@ export class DaySetFeature implements OnInit {
     });
   }
 
+  private loadDaySets(): void {
+    this.loading = true;
+    this.daySetSrv.findAll().subscribe({
+      next: (response) => {
+        this.daySets = response;
+        this.lastResponse = response;
+        this.lastError = null;
+        this.loading = false;
+
+        if (
+          this.editingDaySetId !== null &&
+          !this.daySets.some((daySet) => daySet.id === this.editingDaySetId)
+        ) {
+          this.onCancelForm();
+        }
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.loading = false;
+      },
+    });
+  }
+
+  private toCreateDto(value: DaySetFormValue): CreateDaySetDto {
+    return {
+      title: value.title,
+      nutritionValues: this.normalizeNutritionValues(value.nutritionValues),
+    };
+  }
+
   private normalizeNutritionValues(values: CycleNutritionValue[]): CycleNutritionValue[] {
     return values
       .map((value) => ({
@@ -171,7 +215,7 @@ export class DaySetFeature implements OnInit {
       .filter((value) => value.nutritionKey !== '');
   }
 
-  private getEditableNutritionValues(daySet: DaySetListItem): CycleNutritionValue[] {
+  private getEditableNutritionValues(daySet: DaySet): CycleNutritionValue[] {
     if (daySet.nutritionValues && daySet.nutritionValues.length > 0) {
       return daySet.nutritionValues.map((value) => ({
         nutritionKey: value.nutritionKey,
@@ -184,19 +228,19 @@ export class DaySetFeature implements OnInit {
     return [
       {
         nutritionKey: 'PROTEIN',
-        amount: daySet.protein ?? 0,
+        amount: 0,
         unit: 'G',
         reference: 'PER_100G',
       },
       {
         nutritionKey: 'CARBOHYDRATE',
-        amount: daySet.carbs ?? 0,
+        amount: 0,
         unit: 'G',
         reference: 'PER_100G',
       },
       {
         nutritionKey: 'FAT',
-        amount: daySet.fat ?? 0,
+        amount: 0,
         unit: 'G',
         reference: 'PER_100G',
       },

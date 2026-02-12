@@ -9,10 +9,20 @@
 
     <div class="space-y-6 p-4 sm:p-6">
       <div class="flex flex-wrap items-center gap-2">
+        <span *ngIf="loading" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+          Chargement...
+        </span>
+        <span *ngIf="saving" class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+          Sauvegarde...
+        </span>
         <span *ngIf="loadingMeta" class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
           Meta nutrition...
         </span>
       </div>
+
+      <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        {{ lastError | json }}
+      </p>
 
       <p *ngIf="lastMetaError" class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
         Impossible de charger les cles nutritionnelles meta, fallback actif.
@@ -20,7 +30,7 @@
 
       <app-day-set-list
         mode="manage"
-        [daySets]="daySets"
+        [daySets]="daySetListItems"
         (addRequested)="onAddRequested()"
         (editRequested)="onEditRequested($event)"
         (deleteRequested)="onDeleteRequested($event)">
