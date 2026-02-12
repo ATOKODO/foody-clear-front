@@ -10,19 +10,33 @@ import {
   inject,
 } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { CycleNutritionValue, NutritionReference } from '../../../interfaces/cycle.interface';
 import { NutritionKeyMeta } from '../../../services/meta-service';
 
 export type SlotFormMode = 'add' | 'edit';
 
 export interface SlotFormValue {
+  key: string;
   title: string;
+  sortOrder: number;
   nutritionValues: CycleNutritionValue[];
 }
 
 @Component({
   selector: 'app-slot-form',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+  ],
   templateUrl: './slot-form.html',
   styleUrl: './slot-form.scss',
 })
@@ -46,7 +60,9 @@ export class SlotForm implements OnInit, OnChanges {
   ];
 
   readonly form = this.fb.nonNullable.group({
+    key: ['', [Validators.required]],
     title: ['', [Validators.required]],
+    sortOrder: [0, [Validators.required, Validators.min(0)]],
   });
 
   ngOnInit(): void {
@@ -118,13 +134,17 @@ export class SlotForm implements OnInit, OnChanges {
 
   private applyInputState(): void {
     const defaults: SlotFormValue = {
+      key: '',
       title: '',
+      sortOrder: 0,
       nutritionValues: this.getDefaultNutritionValues(),
     };
 
     if (this.mode === 'edit' && this.slot) {
       this.form.reset({
+        key: this.slot.key ?? defaults.key,
         title: this.slot.title ?? defaults.title,
+        sortOrder: this.slot.sortOrder ?? defaults.sortOrder,
       });
       this.nutritionValues =
         this.slot.nutritionValues && this.slot.nutritionValues.length > 0
@@ -133,7 +153,11 @@ export class SlotForm implements OnInit, OnChanges {
       return;
     }
 
-    this.form.reset({ title: defaults.title });
+    this.form.reset({
+      key: defaults.key,
+      title: defaults.title,
+      sortOrder: defaults.sortOrder,
+    });
     this.nutritionValues = this.cloneNutritionValues(defaults.nutritionValues);
   }
 

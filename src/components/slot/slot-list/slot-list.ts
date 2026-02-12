@@ -18,7 +18,9 @@ export type SlotListMode = 'manage' | 'select-single' | 'select-multi';
 
 export interface SlotListItem {
   id: string;
+  key?: string;
   title: string;
+  sortOrder?: number;
   nutritionValues?: CycleNutritionValue[];
   protein?: number;
   carbs?: number;
@@ -43,6 +45,8 @@ export class SlotList implements OnInit, OnChanges {
   @Input() selectedIds: string[] | null = null;
 
   @Output() readonly addRequested = new EventEmitter<void>();
+  @Output() readonly editRequested = new EventEmitter<SlotListItem>();
+  @Output() readonly deleteRequested = new EventEmitter<SlotListItem>();
   @Output() readonly selected = new EventEmitter<SlotListItem>();
   @Output() readonly selectedMany = new EventEmitter<SlotListItem[]>();
 
@@ -101,6 +105,10 @@ export class SlotList implements OnInit, OnChanges {
   }
 
   get displayedColumns(): string[] {
+    if (this.isManageMode) {
+      return ['title', 'protein', 'carbs', 'fat', 'actions'];
+    }
+
     return this.isMultiSelectMode
       ? ['select', 'title', 'protein', 'carbs', 'fat']
       : ['title', 'protein', 'carbs', 'fat'];
@@ -173,6 +181,22 @@ export class SlotList implements OnInit, OnChanges {
     }
 
     this.addRequested.emit();
+  }
+
+  onEditClick(item: SlotListItem): void {
+    if (!this.isManageMode) {
+      return;
+    }
+
+    this.editRequested.emit(item);
+  }
+
+  onDeleteClick(item: SlotListItem): void {
+    if (!this.isManageMode) {
+      return;
+    }
+
+    this.deleteRequested.emit(item);
   }
 
   private applyInputState(): void {

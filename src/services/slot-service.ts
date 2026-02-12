@@ -1,8 +1,37 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { CreateSlotDto, Slot, UpdateSlotDto } from '../interfaces/slot.interface';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SlotService {
-  
+  baseUrl = 'http://localhost:3000';
+
+  constructor(private http: HttpClient) {}
+
+  setBaseUrl(url: string): void {
+    this.baseUrl = url.replace(/\/$/, '');
+  }
+
+  create(dto: CreateSlotDto): Observable<Slot> {
+    return this.http.post<Slot>(`${this.baseUrl}/slot`, dto);
+  }
+
+  findAll(): Observable<Slot[]> {
+    return this.http.get<Slot[]>(`${this.baseUrl}/slot`);
+  }
+
+  findOne(id: number): Observable<Slot> {
+    return this.http.get<Slot>(`${this.baseUrl}/slot/${id}`);
+  }
+
+  update(id: number, dto: UpdateSlotDto): Observable<Slot> {
+    return this.http.patch<Slot>(`${this.baseUrl}/slot/${id}`, dto);
+  }
+
+  remove(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/slot/${id}`);
+  }
 }
