@@ -20,6 +20,21 @@ describe('ListCycle', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should show add button in manage mode', () => {
+    const addButton = fixture.nativeElement.querySelector('.add-btn');
+
+    expect(addButton).not.toBeNull();
+  });
+
+  it('should hide add button in select-single mode', () => {
+    fixture.componentRef.setInput('mode', 'select-single');
+    fixture.detectChanges();
+
+    const addButton = fixture.nativeElement.querySelector('.add-btn');
+
+    expect(addButton).toBeNull();
+  });
+
   it('should emit addRequested when plus button is clicked', () => {
     const emitted: Array<unknown> = [];
     component.addRequested.subscribe((value) => emitted.push(value));
@@ -65,5 +80,78 @@ describe('ListCycle', () => {
     component.onDelete(cycle);
 
     expect(emitted).toEqual([cycle]);
+  });
+
+  it('should emit selected in single select mode', () => {
+    const emitted: Array<unknown> = [];
+    component.selected.subscribe((value) => emitted.push(value));
+
+    const cycles = [
+      {
+        id: 1,
+        title: 'Seche',
+        color: '#22c55e',
+        proteins: 180,
+        carbs: 120,
+        lipids: 60,
+        durationCount: 4,
+        durationType: 'semaine' as const,
+      },
+      {
+        id: 2,
+        title: 'Masse',
+        color: '#f97316',
+        proteins: 220,
+        carbs: 300,
+        lipids: 70,
+        durationCount: 6,
+        durationType: 'jour' as const,
+      },
+    ];
+
+    fixture.componentRef.setInput('cycles', cycles);
+    fixture.componentRef.setInput('mode', 'select-single');
+    fixture.detectChanges();
+
+    component.onRowClick(cycles[1]);
+
+    expect(emitted).toEqual([cycles[1]]);
+  });
+
+  it('should emit selectedMany in multi select mode', () => {
+    const emitted: Array<unknown> = [];
+    component.selectedMany.subscribe((value) => emitted.push(value));
+
+    const cycles = [
+      {
+        id: 1,
+        title: 'Seche',
+        color: '#22c55e',
+        proteins: 180,
+        carbs: 120,
+        lipids: 60,
+        durationCount: 4,
+        durationType: 'semaine' as const,
+      },
+      {
+        id: 2,
+        title: 'Masse',
+        color: '#f97316',
+        proteins: 220,
+        carbs: 300,
+        lipids: 70,
+        durationCount: 6,
+        durationType: 'jour' as const,
+      },
+    ];
+
+    fixture.componentRef.setInput('cycles', cycles);
+    fixture.componentRef.setInput('mode', 'select-multi');
+    fixture.detectChanges();
+
+    component.onCheckboxChange(cycles[0], true);
+    component.onCheckboxChange(cycles[1], true);
+
+    expect(emitted[emitted.length - 1]).toEqual(cycles);
   });
 });

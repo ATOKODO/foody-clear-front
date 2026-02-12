@@ -2,52 +2,72 @@
   <div class="mb-4 flex items-center justify-between gap-3">
     <h3 class="text-lg font-semibold text-slate-900">Cycles</h3>
     <button
-      *ngIf="showAddButton"
+      *ngIf="isManageMode && showAddButton"
       mat-raised-button
       color="primary"
+      class="add-btn"
       type="button"
       (click)="onAddCycle()">
       Ajouter un cycle
     </button>
   </div>
 
-  <div *ngIf="cycles.length > 0; else emptyState" class="grid gap-3">
-    <mat-card *ngFor="let cycle of cycles; let i = index" appearance="outlined" class="rounded-xl">
+  <div *ngIf="hasItems; else emptyState" class="grid gap-3">
+    <mat-card
+      *ngFor="let cycle of resolvedCycles; let i = index; trackBy: trackById"
+      appearance="outlined"
+      class="rounded-xl">
       <mat-card-content
         class="p-4"
-        [style.boxShadow]="isActive(cycle, i) ? 'inset 0 0 0 2px #0f172a' : ''">
-        <div class="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div class="space-y-3">
-            <div>
-              <p class="text-base font-semibold text-slate-900">{{ cycle.title }}</p>
-              <p class="text-sm text-slate-500">{{ cycle.durationCount }} {{ cycle.durationType }}</p>
+        [class.cursor-pointer]="isSingleSelectMode"
+        [style.boxShadow]="isRowActive(cycle, i) ? 'inset 0 0 0 2px #0f172a' : ''"
+        [attr.tabindex]="isSingleSelectMode ? 0 : null"
+        [attr.role]="isSingleSelectMode ? 'button' : null"
+        (click)="onRowClick(cycle)"
+        (keydown)="onRowKeydown($event, cycle)">
+        <div class="flex items-start gap-3">
+          <mat-checkbox
+            *ngIf="isMultiSelectMode"
+            class="pt-1"
+            [checked]="isSelected(cycle.id)"
+            [attr.aria-label]="'Selectionner ' + cycle.title"
+            (click)="$event.stopPropagation()"
+            (change)="onCheckboxChange(cycle, $event.checked)">
+          </mat-checkbox>
+
+          <div class="grid flex-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div class="space-y-3">
+              <div>
+                <p class="text-base font-semibold text-slate-900">{{ cycle.title }}</p>
+                <p class="text-sm text-slate-500">{{ cycle.durationCount }} {{ cycle.durationType }}</p>
+              </div>
+
+              <div class="grid gap-3 sm:grid-cols-3">
+                <div class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700">
+                  <p class="text-xs uppercase tracking-wide text-slate-500">Proteines</p>
+                  <p class="font-semibold text-slate-900">{{ cycle.proteins }}</p>
+                </div>
+
+                <div class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700">
+                  <p class="text-xs uppercase tracking-wide text-slate-500">Glucides</p>
+                  <p class="font-semibold text-slate-900">{{ cycle.carbs }}</p>
+                </div>
+
+                <div class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700">
+                  <p class="text-xs uppercase tracking-wide text-slate-500">Lipides</p>
+                  <p class="font-semibold text-slate-900">{{ cycle.lipids }}</p>
+                </div>
+              </div>
             </div>
 
-            <div class="grid gap-3 sm:grid-cols-3">
-              <div class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700">
-                <p class="text-xs uppercase tracking-wide text-slate-500">Proteines</p>
-                <p class="font-semibold text-slate-900">{{ cycle.proteins }}</p>
-              </div>
-
-              <div class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700">
-                <p class="text-xs uppercase tracking-wide text-slate-500">Glucides</p>
-                <p class="font-semibold text-slate-900">{{ cycle.carbs }}</p>
-              </div>
-
-              <div class="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700">
-                <p class="text-xs uppercase tracking-wide text-slate-500">Lipides</p>
-                <p class="font-semibold text-slate-900">{{ cycle.lipids }}</p>
-              </div>
+            <div *ngIf="isManageMode" class="flex flex-wrap items-center gap-2">
+              <button mat-stroked-button type="button" (click)="onEdit(cycle)">
+                Modifier
+              </button>
+              <button mat-stroked-button color="warn" type="button" (click)="onDelete(cycle)">
+                Supprimer
+              </button>
             </div>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2">
-            <button mat-stroked-button type="button" (click)="onEdit(cycle)">
-              Modifier
-            </button>
-            <button mat-stroked-button color="warn" type="button" (click)="onDelete(cycle)">
-              Supprimer
-            </button>
           </div>
         </div>
       </mat-card-content>
