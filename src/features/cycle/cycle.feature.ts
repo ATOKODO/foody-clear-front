@@ -12,6 +12,7 @@ import {
   CycleFormMode,
   FormCycle,
 } from '../../components/cycle/form-cycle/form-cycle';
+import { DaySetListItem } from '../../components/day-set/day-set-list/day-set-list';
 import {
   CycleListItem,
   ListCycle,
@@ -22,6 +23,8 @@ import {
   Cycle,
   CycleNutritionValue,
 } from '../../interfaces/cycle.interface';
+import { DaySet } from '../../interfaces/day-set.interface';
+import { DaySetService } from '../../services/day-set-service';
 import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
 
 type MacroTotals = {
@@ -54,6 +57,7 @@ export class CycleFeature implements OnInit {
   loadingMeta = false;
 
   cycles: Cycle[] = [];
+  daySets: DaySet[] = [];
   selectedCycleId: number | null = null;
 
   formVisible = false;
@@ -75,20 +79,25 @@ export class CycleFeature implements OnInit {
 
   constructor(
     private cycleSrv: CycleService,
+    private daySetSrv: DaySetService,
     private metaSrv: MetaService,
   ) {}
 
   ngOnInit(): void {
     this.baseUrl = this.cycleSrv.baseUrl;
     this.metaSrv.setBaseUrl(this.baseUrl);
+    this.daySetSrv.setBaseUrl(this.baseUrl);
     this.loadNutritionKeys();
+    this.loadDaySets();
     this.loadCycles();
   }
 
   onBaseUrlChange() {
     this.cycleSrv.setBaseUrl(this.baseUrl);
     this.metaSrv.setBaseUrl(this.baseUrl);
+    this.daySetSrv.setBaseUrl(this.baseUrl);
     this.loadNutritionKeys();
+    this.loadDaySets();
     this.loadCycles();
   }
 
@@ -100,6 +109,14 @@ export class CycleFeature implements OnInit {
       color: cycle.color,
       durationCount: cycle.durationCount,
       durationType: cycle.durationType,
+    }));
+  }
+
+  get daySetListItems(): DaySetListItem[] {
+    return this.daySets.map((daySet) => ({
+      id: String(daySet.id),
+      title: daySet.title,
+      nutritionValues: daySet.nutritionValues ?? [],
     }));
   }
 
@@ -125,6 +142,7 @@ export class CycleFeature implements OnInit {
       nutritionValues: this.getEditableNutritionValues(cycle),
       nombre: cycle.durationCount,
       typeDuree: cycle.durationType,
+      daySetIds: this.resolveCycleDaySetIds(cycle),
     };
     this.formVisible = true;
   }
@@ -212,6 +230,17 @@ export class CycleFeature implements OnInit {
       error: (error) => {
         this.lastError = error;
         this.loading = false;
+      },
+    });
+  }
+
+  private loadDaySets(): void {
+    this.daySetSrv.findAll().subscribe({
+      next: (response) => {
+        this.daySets = response;
+      },
+      error: () => {
+        this.daySets = [];
       },
     });
   }
@@ -304,7 +333,25 @@ export class CycleFeature implements OnInit {
       nutritionValues,
       durationCount: value.nombre,
       durationType: value.typeDuree,
+      daySetIds: this.normalizeDaySetIds(value.daySetIds),
     };
+  }
+
+  private resolveCycleDaySetIds(cycle: Cycle): number[] {
+    if (Array.isArray(cycle.daySetOrder) && cycle.daySetOrder.length > 0) {
+      return this.normalizeDaySetIds(cycle.daySetOrder);
+    }
+
+    const daySetIds = (cycle.daySets ?? [])
+      .map((daySet) => {
+        if (typeof daySet !== 'object' || daySet === null || !('id' in daySet)) {
+          return NaN;
+        }
+        return Number((daySet as { id: unknown }).id);
+      })
+      .filter((id): id is number => Number.isFinite(id));
+
+    return this.normalizeDaySetIds(daySetIds);
   }
 
   private buildNutritionValues(
@@ -397,5 +444,9 @@ export class CycleFeature implements OnInit {
 
   private roundNumber(value: number): number {
     return Math.round(value * 100) / 100;
+  }
+
+  private normalizeDaySetIds(daySetIds: number[] | null | undefined): number[] {
+    return Array.from(new Set((daySetIds ?? []).filter((id) => Number.isInteger(id) && id > 0)));
   }
 }

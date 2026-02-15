@@ -41,6 +41,7 @@ describe('FormCycle', () => {
       ],
       nombre: 4,
       typeDuree: 'semaine',
+      daySetIds: [1, 3],
     });
     fixture.detectChanges();
 
@@ -53,6 +54,7 @@ describe('FormCycle', () => {
     expect(component.nutritionValues).toEqual([
       { nutritionKey: 'PROTEIN', amount: 180, unit: 'G', reference: 'PER_100G' },
     ]);
+    expect(component.selectedDaySetIds).toEqual([1, 3]);
   });
 
   it('should emit submitted payload with mode and form value', () => {
@@ -65,6 +67,7 @@ describe('FormCycle', () => {
       nombre: 6,
       typeDuree: 'jour',
     });
+    component.selectedDaySetIds = [2, 4];
     component.nutritionValues = [
       { nutritionKey: 'PROTEIN', amount: 200, unit: 'G', reference: 'PER_100G' },
       { nutritionKey: 'CARBOHYDRATE', amount: 300, unit: 'G', reference: 'PER_100G' },
@@ -86,6 +89,7 @@ describe('FormCycle', () => {
           ],
           nombre: 6,
           typeDuree: 'jour',
+          daySetIds: [2, 4],
         },
       },
     ]);

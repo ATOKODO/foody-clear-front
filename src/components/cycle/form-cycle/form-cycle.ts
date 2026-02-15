@@ -16,6 +16,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { NutritionKeyMeta } from '../../../services/meta-service';
 import { CycleNutritionValue, NutritionReference } from '../../../interfaces/cycle.interface';
+import {
+  DaySetList,
+  DaySetListItem,
+} from '../../day-set/day-set-list/day-set-list';
 
 export type TypeDuree = 'jour' | 'semaine' | 'mois';
 export type CycleFormMode = 'add' | 'edit';
@@ -26,6 +30,7 @@ export interface CycleFormValue {
   nutritionValues: CycleNutritionValue[];
   nombre: number;
   typeDuree: TypeDuree;
+  daySetIds: number[];
 }
 
 @Component({
@@ -38,6 +43,7 @@ export interface CycleFormValue {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    DaySetList,
   ],
   templateUrl: './form-cycle.html',
   styleUrl: './form-cycle.scss',
@@ -48,6 +54,7 @@ export class FormCycle implements OnInit, OnChanges {
   @Input() mode: CycleFormMode = 'add';
   @Input() cycle: Partial<CycleFormValue> | null = null;
   @Input() nutritionKeys: NutritionKeyMeta[] = [];
+  @Input() daySets: DaySetListItem[] = [];
 
   @Output() readonly submitted = new EventEmitter<{
     mode: CycleFormMode;
@@ -55,6 +62,7 @@ export class FormCycle implements OnInit, OnChanges {
   }>();
 
   nutritionValues: CycleNutritionValue[] = [];
+  selectedDaySetIds: number[] = [];
   readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
     { label: 'Pour 100 g', value: 'PER_100G' },
     { label: 'Pour 100 ml', value: 'PER_100ML' },
@@ -120,8 +128,21 @@ export class FormCycle implements OnInit, OnChanges {
       value: {
         ...this.form.getRawValue(),
         nutritionValues,
+        daySetIds: [...this.selectedDaySetIds],
       },
     });
+  }
+
+  onDaySetsSelected(daySets: DaySetListItem[]): void {
+    this.selectedDaySetIds = this.normalizeDaySetIds(
+      daySets
+        .map((daySet) => Number(daySet.id))
+        .filter((id) => Number.isFinite(id)),
+    );
+  }
+
+  get selectedDaySetIdsAsString(): string[] {
+    return this.selectedDaySetIds.map((id) => String(id));
   }
 
   addNutritionValue(): void {
@@ -161,6 +182,7 @@ export class FormCycle implements OnInit, OnChanges {
       nutritionValues: this.getDefaultNutritionValues(),
       nombre: 0,
       typeDuree: 'jour',
+      daySetIds: [],
     };
 
     if (this.mode === 'edit' && this.cycle) {
@@ -170,6 +192,7 @@ export class FormCycle implements OnInit, OnChanges {
         nombre: this.cycle.nombre ?? defaults.nombre,
         typeDuree: this.cycle.typeDuree ?? defaults.typeDuree,
       });
+      this.selectedDaySetIds = this.normalizeDaySetIds(this.cycle.daySetIds ?? defaults.daySetIds);
       this.nutritionValues =
         this.cycle.nutritionValues && this.cycle.nutritionValues.length > 0
           ? this.cloneNutritionValues(this.cycle.nutritionValues)
@@ -183,6 +206,7 @@ export class FormCycle implements OnInit, OnChanges {
       nombre: defaults.nombre,
       typeDuree: defaults.typeDuree,
     });
+    this.selectedDaySetIds = [...defaults.daySetIds];
     this.nutritionValues = this.cloneNutritionValues(defaults.nutritionValues);
   }
 
@@ -251,5 +275,9 @@ export class FormCycle implements OnInit, OnChanges {
     }
 
     return key.allowedUnits.filter((unit) => unit.trim() !== '');
+  }
+
+  private normalizeDaySetIds(daySetIds: number[]): number[] {
+    return Array.from(new Set(daySetIds.filter((id) => Number.isInteger(id) && id > 0)));
   }
 }
