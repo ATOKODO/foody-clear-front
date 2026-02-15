@@ -54,6 +54,8 @@ export class SlotFeature implements OnInit {
       key: slot.key,
       title: slot.title,
       sortOrder: slot.sortOrder,
+      startTime: slot.startTime ?? null,
+      endTime: slot.endTime ?? null,
       nutritionValues: slot.nutritionValues ?? [],
     }));
   }
@@ -82,6 +84,8 @@ export class SlotFeature implements OnInit {
       key: slot.key,
       title: slot.title,
       sortOrder: slot.sortOrder,
+      startTime: slot.startTime ?? null,
+      endTime: slot.endTime ?? null,
       nutritionValues: this.getEditableNutritionValues(slot),
     };
     this.formVisible = true;
@@ -206,6 +210,8 @@ export class SlotFeature implements OnInit {
       key: value.key.trim(),
       title: value.title,
       sortOrder: Number.isFinite(value.sortOrder) ? Math.max(0, value.sortOrder) : 0,
+      startTime: this.normalizeTime(value.startTime),
+      endTime: this.normalizeTime(value.endTime),
       nutritionValues: this.normalizeNutritionValues(value.nutritionValues),
     };
   }
@@ -251,5 +257,14 @@ export class SlotFeature implements OnInit {
         reference: 'PER_100G',
       },
     ];
+  }
+
+  private normalizeTime(value: string | null | undefined): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    return trimmed === '' ? null : trimmed;
   }
 }

@@ -23,6 +23,8 @@ export interface SlotFormValue {
   key: string;
   title: string;
   sortOrder: number;
+  startTime: string | null;
+  endTime: string | null;
   nutritionValues: CycleNutritionValue[];
 }
 
@@ -63,6 +65,8 @@ export class SlotForm implements OnInit, OnChanges {
     key: ['', [Validators.required]],
     title: ['', [Validators.required]],
     sortOrder: [0, [Validators.required, Validators.min(0)]],
+    startTime: [''],
+    endTime: [''],
   });
 
   ngOnInit(): void {
@@ -89,6 +93,7 @@ export class SlotForm implements OnInit, OnChanges {
       return;
     }
 
+    const rawValue = this.form.getRawValue();
     const nutritionValues = this.nutritionValues
       .map((value) => this.normalizeNutritionValue(value))
       .filter((value) => value.nutritionKey !== '');
@@ -96,7 +101,11 @@ export class SlotForm implements OnInit, OnChanges {
     this.submitted.emit({
       mode: this.mode,
       value: {
-        ...this.form.getRawValue(),
+        key: rawValue.key,
+        title: rawValue.title,
+        sortOrder: rawValue.sortOrder,
+        startTime: this.normalizeTime(rawValue.startTime),
+        endTime: this.normalizeTime(rawValue.endTime),
         nutritionValues,
       },
     });
@@ -137,6 +146,8 @@ export class SlotForm implements OnInit, OnChanges {
       key: '',
       title: '',
       sortOrder: 0,
+      startTime: null,
+      endTime: null,
       nutritionValues: this.getDefaultNutritionValues(),
     };
 
@@ -145,6 +156,8 @@ export class SlotForm implements OnInit, OnChanges {
         key: this.slot.key ?? defaults.key,
         title: this.slot.title ?? defaults.title,
         sortOrder: this.slot.sortOrder ?? defaults.sortOrder,
+        startTime: this.toInputTime(this.slot.startTime),
+        endTime: this.toInputTime(this.slot.endTime),
       });
       this.nutritionValues =
         this.slot.nutritionValues && this.slot.nutritionValues.length > 0
@@ -157,6 +170,8 @@ export class SlotForm implements OnInit, OnChanges {
       key: defaults.key,
       title: defaults.title,
       sortOrder: defaults.sortOrder,
+      startTime: this.toInputTime(defaults.startTime),
+      endTime: this.toInputTime(defaults.endTime),
     });
     this.nutritionValues = this.cloneNutritionValues(defaults.nutritionValues);
   }
@@ -208,6 +223,19 @@ export class SlotForm implements OnInit, OnChanges {
 
     const gramUnit = allowedUnits.find((unit) => unit.toUpperCase() === 'G');
     return gramUnit ?? allowedUnits[0];
+  }
+
+  private normalizeTime(value: string): string | null {
+    const trimmed = value.trim();
+    return trimmed === '' ? null : trimmed;
+  }
+
+  private toInputTime(value: string | null | undefined): string {
+    if (!value) {
+      return '';
+    }
+
+    return value.length >= 5 ? value.slice(0, 5) : value;
   }
 
   private getAllowedUnits(nutritionKey: string): string[] {

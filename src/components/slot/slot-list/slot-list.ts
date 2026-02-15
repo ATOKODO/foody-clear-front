@@ -21,6 +21,8 @@ export interface SlotListItem {
   key?: string;
   title: string;
   sortOrder?: number;
+  startTime?: string | null;
+  endTime?: string | null;
   nutritionValues?: CycleNutritionValue[];
   protein?: number;
   carbs?: number;
@@ -124,6 +126,17 @@ export class SlotList implements OnInit, OnChanges {
 
   getFat(item: SlotListItem): number {
     return this.getMacro(item, 'fat');
+  }
+
+  getTimeRange(item: SlotListItem): string | null {
+    const start = this.formatTime(item.startTime);
+    const end = this.formatTime(item.endTime);
+
+    if (start && end) {
+      return `${start} - ${end}`;
+    }
+
+    return start ?? end ?? null;
   }
 
   trackById(_: number, item: SlotListItem): string {
@@ -277,5 +290,13 @@ export class SlotList implements OnInit, OnChanges {
 
   private roundNumber(value: number): number {
     return Math.round(value * 100) / 100;
+  }
+
+  private formatTime(value: string | null | undefined): string | null {
+    if (!value) {
+      return null;
+    }
+
+    return value.length >= 5 ? value.slice(0, 5) : value;
   }
 }

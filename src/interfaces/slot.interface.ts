@@ -5,6 +5,8 @@ export interface Slot {
   key: string;
   title: string;
   sortOrder: number;
+  startTime?: string | null;
+  endTime?: string | null;
   nutritionValues?: CycleNutritionValue[];
   daySets?: unknown[];
 }
@@ -13,6 +15,8 @@ export interface CreateSlotDto {
   key: string;
   title: string;
   sortOrder: number;
+  startTime?: string | null;
+  endTime?: string | null;
   nutritionValues?: CycleNutritionValue[];
 }
 

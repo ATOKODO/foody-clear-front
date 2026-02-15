@@ -22,6 +22,18 @@
       </mat-form-field>
     </div>
 
+    <div class="grid gap-4 md:grid-cols-12">
+      <mat-form-field appearance="fill" class="ssf-field md:col-span-6">
+        <mat-label>Heure de debut</mat-label>
+        <input matInput type="time" formControlName="startTime" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="ssf-field md:col-span-6">
+        <mat-label>Heure de fin</mat-label>
+        <input matInput type="time" formControlName="endTime" />
+      </mat-form-field>
+    </div>
+
     <div class="space-y-3">
       <div class="flex items-center justify-between gap-3">
         <h3 class="text-base font-semibold text-slate-900">Nutrition values</h3>

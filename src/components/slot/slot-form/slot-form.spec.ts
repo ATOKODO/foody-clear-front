@@ -25,6 +25,8 @@ describe('SlotForm', () => {
       key: '',
       title: '',
       sortOrder: 0,
+      startTime: '',
+      endTime: '',
     });
     expect(component.nutritionValues.length).toBe(3);
   });
@@ -35,6 +37,8 @@ describe('SlotForm', () => {
       key: 'morning',
       title: 'Petit dejeuner',
       sortOrder: 0,
+      startTime: '08:00:00',
+      endTime: '09:00:00',
       nutritionValues: [
         { nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },
       ],
@@ -45,6 +49,8 @@ describe('SlotForm', () => {
       key: 'morning',
       title: 'Petit dejeuner',
       sortOrder: 0,
+      startTime: '08:00',
+      endTime: '09:00',
     });
     expect(component.nutritionValues).toEqual([
       { nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },
@@ -59,6 +65,8 @@ describe('SlotForm', () => {
       key: 'snack',
       title: 'Collation',
       sortOrder: 3,
+      startTime: '',
+      endTime: '16:30',
     });
     component.nutritionValues = [
       { nutritionKey: 'PROTEIN', amount: 30, unit: 'G', reference: 'PER_100G' },
@@ -75,6 +83,8 @@ describe('SlotForm', () => {
           key: 'snack',
           title: 'Collation',
           sortOrder: 3,
+          startTime: null,
+          endTime: '16:30',
           nutritionValues: [
             { nutritionKey: 'PROTEIN', amount: 30, unit: 'G', reference: 'PER_100G' },
             { nutritionKey: 'CARBOHYDRATE', amount: 40, unit: 'G', reference: 'PER_100G' },
