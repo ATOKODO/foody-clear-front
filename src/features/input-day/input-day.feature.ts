@@ -12,8 +12,10 @@ import { InputDayItemCommand } from '../../interfaces/input-day.interface';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
@@ -25,9 +27,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
     ReactiveFormsModule,
     MatButtonModule,
     MatCardModule,
+    MatDatepickerModule,
     MatDividerModule,
     MatFormFieldModule,
     MatInputModule,
+    MatNativeDateModule,
     MatProgressBarModule,
   ],
   templateUrl: './input-day.feature.html',
@@ -50,8 +54,7 @@ export class InputDayFeature implements OnInit {
     this.baseUrl = this.inputDaySrv.baseUrl;
 
     this.form = this.fb.group({
-      dateLocal: this.fb.control<string>('', {
-        nonNullable: true,
+      dateLocal: this.fb.control<Date | string | null>(null, {
         validators: [Validators.required],
       }),
       timezone: this.fb.control<string>('UTC', { nonNullable: true }),
@@ -171,7 +174,7 @@ export class InputDayFeature implements OnInit {
 
   fillDemo() {
     this.form.patchValue({
-      dateLocal: '2026-02-08',
+      dateLocal: new Date(2026, 1, 8),
       timezone: 'Europe/Paris',
       productId: 1,
       qty: 120,
@@ -186,7 +189,7 @@ export class InputDayFeature implements OnInit {
 
   clear() {
     this.form.reset({
-      dateLocal: '',
+      dateLocal: null,
       timezone: 'UTC',
       productId: null,
       qty: null,
@@ -202,15 +205,14 @@ export class InputDayFeature implements OnInit {
   }
 
   private requireDate(): string | null {
-    const dateLocal = (this.form.value.dateLocal ?? '').trim();
-    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-
-    if (!datePattern.test(dateLocal)) {
+    const rawDate = this.form.value.dateLocal;
+    const parsedDate = this.parseDateInput(rawDate);
+    if (!parsedDate) {
       this.setError('dateLocal doit etre au format YYYY-MM-DD.');
       return null;
     }
 
-    return dateLocal;
+    return this.formatDateLocal(parsedDate);
   }
 
   private buildCreateItemPayload(): InputDayItemCommand {
@@ -297,5 +299,43 @@ export class InputDayFeature implements OnInit {
   private setError(error: unknown) {
     this.lastError = error;
     this.loading = false;
+  }
+
+  private parseDateInput(value: unknown): Date | null {
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      return value;
+    }
+
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+    if (!match) {
+      return null;
+    }
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(year, month - 1, day);
+
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() !== month - 1 ||
+      date.getDate() !== day
+    ) {
+      return null;
+    }
+
+    return date;
+  }
+
+  private formatDateLocal(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

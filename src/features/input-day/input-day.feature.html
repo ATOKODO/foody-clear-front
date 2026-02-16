@@ -1,13 +1,13 @@
-<section class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+<section class="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
   <mat-card class="overflow-hidden rounded-2xl">
-    <div class="bg-slate-900 px-6 py-5 text-white">
+    <div class="bg-slate-900 px-4 py-4 text-white sm:px-6 sm:py-5">
       <h2 class="text-xl font-semibold">InputDay API Tester</h2>
       <p class="mt-1 text-sm text-slate-300">
         Interface Material + Tailwind pour tester les endpoints input-day.
       </p>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" class="space-y-6 p-4 sm:p-6">
+    <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" class="space-y-5 p-3 sm:space-y-6 sm:p-6">
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-content class="pt-4">
           <mat-form-field appearance="fill" class="w-full">
@@ -32,7 +32,13 @@
           <div class="grid gap-4 sm:grid-cols-2">
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>dateLocal (YYYY-MM-DD)</mat-label>
-              <input matInput type="text" formControlName="dateLocal" placeholder="2026-02-08" />
+              <input
+                matInput
+                [matDatepicker]="dateLocalPicker"
+                formControlName="dateLocal"
+                placeholder="2026-02-08" />
+              <mat-datepicker-toggle matIconSuffix [for]="dateLocalPicker"></mat-datepicker-toggle>
+              <mat-datepicker #dateLocalPicker></mat-datepicker>
             </mat-form-field>
 
             <mat-form-field appearance="fill" class="w-full">
@@ -43,14 +49,14 @@
         </mat-card-content>
       </mat-card>
 
-      <div class="grid gap-6 xl:grid-cols-2">
+      <div class="flex-col xl:grid-cols-2">
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-header>
             <mat-card-title>Item simple</mat-card-title>
             <mat-card-subtitle>Creation unitaire</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content class="space-y-3 pt-2">
-            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <mat-form-field appearance="fill" class="w-full">
                 <mat-label>productId</mat-label>
                 <input matInput type="number" formControlName="productId" />
@@ -72,13 +78,15 @@
               </mat-form-field>
             </div>
 
-            <button mat-raised-button color="primary" type="button" (click)="createItem()">
-              Create Item
-            </button>
+            <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <button mat-raised-button color="primary" type="button" class="w-full sm:w-auto" (click)="createItem()">
+                Create Item
+              </button>
+            </div>
           </mat-card-content>
         </mat-card>
 
-        <mat-card appearance="outlined" class="rounded-xl">
+        <mat-card appearance="outlined" class="rounded-xl mt-6">
           <mat-card-header>
             <mat-card-title>Items bulk</mat-card-title>
             <mat-card-subtitle>Creation multiple via JSON</mat-card-subtitle>
@@ -89,9 +97,11 @@
               <textarea matInput rows="6" formControlName="bulkItemsJson"></textarea>
             </mat-form-field>
 
-            <button mat-raised-button color="primary" type="button" (click)="createBulk()">
-              Create Items Bulk
-            </button>
+            <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <button mat-raised-button color="primary" type="button" class="w-full sm:w-auto" (click)="createBulk()">
+                Create Items Bulk
+              </button>
+            </div>
           </mat-card-content>
         </mat-card>
       </div>
@@ -102,7 +112,7 @@
           <mat-card-subtitle>Operations sur un item</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content class="pt-2">
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>itemId</mat-label>
               <input matInput type="number" formControlName="itemId" />
@@ -113,11 +123,11 @@
               <input matInput type="number" step="0.01" formControlName="updateQty" />
             </mat-form-field>
 
-            <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-2">
-              <button mat-raised-button color="accent" type="button" (click)="updateQty()">
+            <div class="grid gap-2 sm:col-span-2 sm:grid-cols-2 xl:col-span-2">
+              <button mat-raised-button color="accent" type="button" class="w-full" (click)="updateQty()">
                 Update Qty
               </button>
-              <button mat-raised-button color="warn" type="button" (click)="removeItem()">
+              <button mat-raised-button color="warn" type="button" class="w-full" (click)="removeItem()">
                 Delete Item
               </button>
             </div>
@@ -127,22 +137,22 @@
 
       <mat-divider />
 
-      <div class="flex flex-wrap gap-2">
-        <button mat-stroked-button type="button" (click)="fillDemo()">Exemple (remplir)</button>
-        <button mat-raised-button color="primary" type="button" (click)="loadDay()">Get InputDay</button>
-        <button mat-button type="button" (click)="clear()">Clear</button>
+      <div class="grid gap-2 sm:grid-cols-3 mt-6">
+        <button mat-stroked-button type="button" class="w-full" (click)="fillDemo()">Exemple (remplir)</button>
+        <button mat-raised-button color="primary" type="button" class="w-full" (click)="loadDay()">Get InputDay</button>
+        <button mat-button type="button" class="w-full" (click)="clear()">Clear</button>
       </div>
     </form>
 
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
-    <div class="space-y-3 p-4 sm:p-6">
-      <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+    <div class="space-y-3 p-3 sm:p-6">
+      <p *ngIf="lastError" class="break-words rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
         {{ lastError | json }}
       </p>
 
       <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
-      <pre class="max-h-96 overflow-auto rounded-lg bg-slate-100 p-4 text-xs text-slate-800">
+      <pre class="input-day-response max-h-[65vh] overflow-auto rounded-lg bg-slate-100 p-3 text-[11px] text-slate-800 sm:p-4 sm:text-xs">
 {{ lastResponse | json }}
       </pre>
     </div>
