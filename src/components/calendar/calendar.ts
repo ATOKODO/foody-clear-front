@@ -16,8 +16,10 @@ import {
   MonthSummary,
   HourSlot,
   CalendarAssignment,
+  CalendarInsertedProduct,
 } from '../../interfaces/calendar.interface';
 import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
+import { InputDayItemsBySlotEntry } from '../../interfaces/input-day.interface';
 import {
   generateMonthDays,
   generateWeekDays,
@@ -62,6 +64,10 @@ export interface CalendarViewChangeEvent {
 })
 export class Calendar implements OnInit, OnChanges {
   @Input() cycleAssignments: CycleAssignment[] = [];
+  @Input() inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
+  @Input() loadingDayItems = false;
+  @Input() dayItemsError: unknown = null;
+  @Input() inputDayTimezone = DateTime.local().zoneName || 'UTC';
 
   @Output() readonly dayClick = new EventEmitter<CalendarDayClickEvent>();
   @Output() readonly hourClick = new EventEmitter<CalendarHourClickEvent>();
@@ -90,6 +96,10 @@ export class Calendar implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['cycleAssignments']) {
       this.applyAssignments();
+    }
+
+    if (changes['inputDayItemsBySlot'] || changes['inputDayTimezone']) {
+      this.applyDayInsertedProducts(this.inputDayItemsBySlot ?? []);
     }
   }
 
@@ -281,6 +291,16 @@ export class Calendar implements OnInit, OnChanges {
   private refreshView(): void {
     this.loadView();
     this.applyAssignments();
+    this.applyDayInsertedProducts(this.inputDayItemsBySlot ?? []);
+  }
+
+  formatInsertedAt(insertedAt: string): string {
+    const parsed = DateTime.fromISO(insertedAt, { setZone: true });
+    if (!parsed.isValid) {
+      return insertedAt;
+    }
+
+    return parsed.setZone(this.normalizeTimezone()).toFormat('HH:mm');
   }
 
   private buildViewChangeEvent(): CalendarViewChangeEvent {
@@ -330,10 +350,57 @@ export class Calendar implements OnInit, OnChanges {
     };
   }
 
+  private applyDayInsertedProducts(entries: InputDayItemsBySlotEntry[]): void {
+    this.clearDayInsertedProducts();
+    if (this.currentView !== 'day') {
+      return;
+    }
+
+    entries.forEach((entry) => {
+      entry.items.forEach((item) => {
+        const parsed = DateTime.fromISO(item.insertedAt, { setZone: true });
+        if (!parsed.isValid) {
+          return;
+        }
+
+        const localized = parsed.setZone(this.normalizeTimezone());
+        const targetHour = this.dayHours.find((hour) => hour.hour === localized.hour);
+        if (!targetHour) {
+          return;
+        }
+
+        if (!targetHour.insertedProducts) {
+          targetHour.insertedProducts = [];
+        }
+
+        const insertedProduct: CalendarInsertedProduct = {
+          id: item.id,
+          productId: item.productId,
+          productName: item.productName,
+          qty: item.qty,
+          insertedAt: item.insertedAt,
+          slotTitle: entry.slot.title,
+          slotKey: entry.slot.slotKey,
+        };
+
+        targetHour.insertedProducts.push(insertedProduct);
+        targetHour.insertedProducts.sort(
+          (a, b) => DateTime.fromISO(a.insertedAt).toMillis() - DateTime.fromISO(b.insertedAt).toMillis(),
+        );
+      });
+    });
+  }
+
   private findAssignmentForDate(dateIso: string): CycleAssignment | undefined {
     return this.cycleAssignments.find((assignment) =>
       this.isDateInRange(dateIso, assignment.startDateLocal, assignment.endDateLocal),
     );
+  }
+
+  private clearDayInsertedProducts(): void {
+    this.dayHours.forEach((hour) => {
+      hour.insertedProducts = [];
+    });
   }
 
   private isDateInRange(dateIso: string, startDateLocal: string, endDateLocal: string): boolean {
@@ -377,5 +444,10 @@ export class Calendar implements OnInit, OnChanges {
     };
 
     return colorMap[normalized] ?? 'bg-slate-500';
+  }
+
+  private normalizeTimezone(): string {
+    const candidate = this.inputDayTimezone.trim() || 'UTC';
+    return DateTime.now().setZone(candidate).isValid ? candidate : 'UTC';
   }
 }

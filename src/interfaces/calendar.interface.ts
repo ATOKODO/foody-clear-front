@@ -33,8 +33,19 @@ export interface MonthSummary {
   hasAssignments: boolean;
 }
 
+export interface CalendarInsertedProduct {
+  id: number;
+  productId: number;
+  productName: string;
+  qty: number;
+  insertedAt: string;
+  slotTitle: string;
+  slotKey: string;
+}
+
 export interface HourSlot {
   hour: number;
   label: string;
   assignment?: CalendarAssignment;
+  insertedProducts?: CalendarInsertedProduct[];
 }

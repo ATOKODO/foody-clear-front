@@ -20,8 +20,11 @@ import {
 } from '../../components/cycle/list-cycle/list-cycle';
 import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
 import { Cycle } from '../../interfaces/cycle.interface';
+import { CalendarView } from '../../interfaces/calendar.interface';
+import { InputDayItemsBySlotEntry } from '../../interfaces/input-day.interface';
 import { CycleAssignementService } from '../../services/cycle-assignement-service';
 import { CycleService } from '../../services/cycle-service';
+import { InputDayService } from '../../services/input-day-service';
 
 @Component({
   selector: 'app-planning',
@@ -44,11 +47,15 @@ export class PlanningFeature implements OnInit {
 
   loadingCycles = false;
   loadingAssignments = false;
+  loadingDayItems = false;
   savingAssignment = false;
 
   cycles: Cycle[] = [];
   cycleAssignments: CycleAssignment[] = [];
+  inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
 
+  currentCalendarView: CalendarView = 'month';
+  currentAnchorDateLocal: string | null = null;
   currentRangeFromLocal: string | null = null;
   currentRangeToLocal: string | null = null;
 
@@ -59,30 +66,39 @@ export class PlanningFeature implements OnInit {
   editingAssignment: CycleAssignment | null = null;
 
   modalError: unknown = null;
+  dayItemsError: unknown = null;
   lastResponse: unknown = null;
   lastError: unknown = null;
+  private inputDayRequestId = 0;
 
   constructor(
     private readonly cycleService: CycleService,
     private readonly cycleAssignmentService: CycleAssignementService,
+    private readonly inputDayService: InputDayService,
   ) {}
 
   ngOnInit(): void {
     this.baseUrl = this.cycleAssignmentService.baseUrl;
+    this.inputDayService.setBaseUrl(this.baseUrl);
     this.loadCycles();
   }
 
   onBaseUrlChange(): void {
     this.cycleService.setBaseUrl(this.baseUrl);
     this.cycleAssignmentService.setBaseUrl(this.baseUrl);
+    this.inputDayService.setBaseUrl(this.baseUrl);
     this.loadCycles();
     this.reloadAssignmentsForCurrentRange();
+    this.reloadInputDayForCurrentView();
   }
 
   onCalendarViewChanged(event: CalendarViewChangeEvent): void {
+    this.currentCalendarView = event.view;
+    this.currentAnchorDateLocal = event.anchorDateLocal;
     this.currentRangeFromLocal = event.fromDateLocal;
     this.currentRangeToLocal = event.toDateLocal;
     this.loadAssignmentsInRange(event.fromDateLocal, event.toDateLocal);
+    this.loadInputDayForView(event);
   }
 
   onCalendarDayClick(event: CalendarDayClickEvent): void {
@@ -249,6 +265,60 @@ export class PlanningFeature implements OnInit {
     this.loadAssignmentsInRange(this.currentRangeFromLocal, this.currentRangeToLocal);
   }
 
+  private reloadInputDayForCurrentView(): void {
+    if (this.currentCalendarView !== 'day' || !this.currentAnchorDateLocal) {
+      return;
+    }
+
+    this.loadInputDay(this.currentAnchorDateLocal);
+  }
+
+  private loadInputDayForView(event: CalendarViewChangeEvent): void {
+    if (event.view !== 'day') {
+      this.clearInputDayState();
+      return;
+    }
+
+    this.loadInputDay(event.anchorDateLocal);
+  }
+
+  private loadInputDay(dateLocal: string): void {
+    if (!this.isDateLocal(dateLocal)) {
+      this.clearInputDayState();
+      return;
+    }
+
+    const requestId = ++this.inputDayRequestId;
+    this.loadingDayItems = true;
+    this.dayItemsError = null;
+    this.inputDayItemsBySlot = [];
+
+    this.inputDayService.getInputDay(dateLocal, this.resolveTimezone()).subscribe({
+      next: (response) => {
+        if (requestId !== this.inputDayRequestId) {
+          return;
+        }
+        this.inputDayItemsBySlot = response.itemsBySlot ?? [];
+        this.loadingDayItems = false;
+      },
+      error: (error) => {
+        if (requestId !== this.inputDayRequestId) {
+          return;
+        }
+        this.inputDayItemsBySlot = [];
+        this.dayItemsError = error;
+        this.loadingDayItems = false;
+      },
+    });
+  }
+
+  private clearInputDayState(): void {
+    this.inputDayRequestId++;
+    this.inputDayItemsBySlot = [];
+    this.loadingDayItems = false;
+    this.dayItemsError = null;
+  }
+
   private openAssignmentModal(
     dateLocal: string,
     sourceAssignment: CycleAssignment | null,
@@ -305,5 +375,9 @@ export class PlanningFeature implements OnInit {
 
   private toNumber(value: unknown): number {
     return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+  }
+
+  private resolveTimezone(): string {
+    return DateTime.local().zoneName || 'UTC';
   }
 }

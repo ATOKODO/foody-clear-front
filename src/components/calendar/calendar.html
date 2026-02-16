@@ -199,12 +199,18 @@
         <h3 class="text-lg font-semibold">
           {{ currentDate.toFormat('EEEE d LLLL', { locale: 'fr' }) }}
         </h3>
+        <p *ngIf="loadingDayItems" class="mt-1 text-xs text-slate-500">
+          Chargement des produits de la journee...
+        </p>
+        <p *ngIf="dayItemsError" class="mt-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-700">
+          Impossible de charger les produits du jour.
+        </p>
       </div>
       
       <div class="flex">
         <!-- Time column -->
         <div class="w-20 flex-shrink-0 border-r border-gray-200">
-          <div *ngFor="let hour of dayHours" class="h-20 border-b border-gray-200 flex items-start justify-end pr-3 pt-2">
+          <div *ngFor="let hour of dayHours" class="h-24 border-b border-gray-200 flex items-start justify-end pr-3 pt-2">
             <span class="text-sm">{{ hour.label }}</span>
           </div>
         </div>
@@ -214,7 +220,7 @@
           <div 
             *ngFor="let hour of dayHours"
             (click)="onHourClick(hour)"
-            class="h-20 border-b border-gray-200 hover:bg-blue-50 dark:hover:bg-red-900 cursor-pointer transition-colors p-2">
+            class="h-24 border-b border-gray-200 hover:bg-blue-50 dark:hover:bg-red-900 cursor-pointer transition-colors p-2">
             
             <div 
               *ngIf="hour.assignment"
@@ -223,6 +229,20 @@
               <div class="font-semibold text-sm">{{ hour.assignment.label }}</div>
               <div *ngIf="hour.assignment.calorieTarget" class="text-xs opacity-90 mt-1">
                 Objectif: {{ hour.assignment.calorieTarget }} kcal
+              </div>
+            </div>
+
+            <div *ngIf="hour.insertedProducts && hour.insertedProducts.length > 0" class="space-y-1">
+              <div
+                *ngFor="let product of hour.insertedProducts"
+                class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-medium">{{ product.productName }}</span>
+                  <span class="text-[11px] text-slate-500">{{ formatInsertedAt(product.insertedAt) }}</span>
+                </div>
+                <div class="text-[11px] text-slate-500">
+                  qte: {{ product.qty }} · {{ product.slotTitle || product.slotKey }}
+                </div>
               </div>
             </div>
           </div>

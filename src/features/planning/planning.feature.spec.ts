@@ -4,6 +4,7 @@ import { of } from 'rxjs';
 import { PlanningFeature } from './planning.feature';
 import { CycleService } from '../../services/cycle-service';
 import { CycleAssignementService } from '../../services/cycle-assignement-service';
+import { InputDayService } from '../../services/input-day-service';
 
 describe('PlanningFeature', () => {
   let component: PlanningFeature;
@@ -23,12 +24,31 @@ describe('PlanningFeature', () => {
     remove: jasmine.createSpy('remove').and.returnValue(of(void 0)),
   };
 
+  const inputDayServiceMock = {
+    baseUrl: 'http://localhost:3000',
+    setBaseUrl: jasmine.createSpy('setBaseUrl'),
+    getInputDay: jasmine
+      .createSpy('getInputDay')
+      .and.returnValue(
+        of({
+          dateLocal: '2026-02-16',
+          timezone: 'UTC',
+          assignment: null,
+          daySet: null,
+          slots: [],
+          itemsBySlot: [],
+          totalsMacros: null,
+        }),
+      ),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PlanningFeature],
       providers: [
         { provide: CycleService, useValue: cycleServiceMock },
         { provide: CycleAssignementService, useValue: cycleAssignmentServiceMock },
+        { provide: InputDayService, useValue: inputDayServiceMock },
       ],
     })
     .compileComponents();
