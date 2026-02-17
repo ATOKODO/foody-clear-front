@@ -1,714 +1,417 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import {
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import {
-  ProductService,
-  CreateProductDto,
-  UpdateProductDto,
-  NutritionValueCreated,
-  NutritionValueUpdated,
-  Product as ProductApiModel,
-} from '../../services/product-service';
-import { CommonModule, JsonPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
-import { MatTableModule } from '@angular/material/table';
+import {
+  ProductForm,
+  ProductFormMode,
+  ProductFormNutritionValue,
+  ProductFormValue,
+} from '../../components/product/product-form/product-form';
+import {
+  ProductList,
+  ProductListItem,
+} from '../../components/product/product-list/product-list';
+import {
+  CreateProductDto,
+  NutritionValueCreated,
+  NutritionValueUpdated,
+  Product as ProductApiModel,
+  ProductService,
+  UpdateProductDto,
+} from '../../services/product-service';
 import {
   MetaService,
   NutritionKeyMeta,
   QuantityUnitMeta,
 } from '../../services/meta-service';
-
-type ProductTableRow = {
-  id: number;
-  name: string;
-  barcode: string;
-  unit: string;
-  price: string;
-  tags: string;
-  category: string;
-  genericProduct: string;
-  source: ProductApiModel;
-  nutritionValues: Array<{
-    id: string;
-    nutritionKey: string;
-    amount: string;
-    unit: string;
-    reference: string;
-  }>;
-};
+import { NutritionReference } from '../../interfaces/cycle.interface';
 
 @Component({
   selector: 'app-product',
   imports: [
-    JsonPipe,
     CommonModule,
     FormsModule,
-    ReactiveFormsModule,
     MatButtonModule,
     MatCardModule,
-    MatDividerModule,
-    MatExpansionModule,
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
-    MatSelectModule,
-    MatTableModule,
+    ProductList,
+    ProductForm,
   ],
   templateUrl: './product.html',
   styleUrl: './product.scss',
 })
 export class Product implements OnInit {
-  readonly nutritionValueColumns = ['id', 'nutritionKey', 'amount', 'unit', 'reference'];
-  readonly nutritionReferenceOptions = [
-    { value: 'PER_100G', label: 'PER_100G' },
-    { value: 'PER_100ML', label: 'PER_100ML' },
-  ];
-
-  form: FormGroup = new FormGroup({});
-  editForm: FormGroup = new FormGroup({});
-  baseUrl: string | '' = '';
-
-  lastResponse: unknown = null;
-  lastError: unknown = null;
+  baseUrl = '';
   loading = false;
-  productTableRows: ProductTableRow[] = [];
-  expandedProductId: number | null = null;
-  isEditModalOpen = false;
-  editTargetId: number | null = null;
+  saving = false;
+  loadingMeta = false;
+
+  products: ProductApiModel[] = [];
+
+  formVisible = false;
+  formMode: ProductFormMode = 'add';
+  editingProductId: number | null = null;
+  formInitialValue: Partial<ProductFormValue> | null = null;
+
   quantityUnitOptions: QuantityUnitMeta[] = [];
   nutritionKeyOptions: NutritionKeyMeta[] = [];
 
+  lastResponse: unknown = null;
+  lastError: unknown = null;
+  lastMetaError: unknown = null;
+
   constructor(
-    private fb: FormBuilder,
-    private productSrv: ProductService,
-    private metaSrv: MetaService,
+    private readonly productSrv: ProductService,
+    private readonly metaSrv: MetaService,
   ) {}
+
   ngOnInit(): void {
     this.baseUrl = this.productSrv.baseUrl;
     this.metaSrv.setBaseUrl(this.baseUrl);
-    // Champs scalaires + 2 FormArray pour NV (create / update)
-    this.form = this.fb.group({
-      id: this.fb.control<number | null>(null),
-
-      name: this.fb.control<string>('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-      barcode: this.fb.control<string | null>(null),
-
-      categoryId: this.fb.control<number | null>(null),
-      tagIdsStr: this.fb.control<string | null>(null), // CSV -> [number, number]1
-      tagIdsToAdd: this.fb.control<string | null>(null),
-      tagIdsToRemove: this.fb.control<string | null>(null),
-      genericProductId: this.fb.control<number | null>(null),
-
-      unitType: this.fb.control<string>('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-      quantityPerUnit: this.fb.control<number | null>(null, {
-        validators: [Validators.required],
-      }),
-      quantityUnit: this.fb.control<string>('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-
-      price: this.fb.control<number | null>(null),
-      url: this.fb.control<string | null>(null),
-      memo: this.fb.control<string | null>(null),
-
-      nutritionValuesCreated: this.fb.array<FormArray>([]),
-      nutritionValuesUpdated: this.fb.array<FormArray>([]),
-    });
-
-    this.editForm = this.fb.group({
-      id: this.fb.control<number | null>(null),
-      name: this.fb.control<string>('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-      barcode: this.fb.control<string | null>(null),
-      categoryId: this.fb.control<number | null>(null),
-      genericProductId: this.fb.control<number | null>(null),
-      unitType: this.fb.control<string>('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-      quantityPerUnit: this.fb.control<number | null>(null, {
-        validators: [Validators.required],
-      }),
-      quantityUnit: this.fb.control<string>('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-      price: this.fb.control<number | null>(null),
-      url: this.fb.control<string | null>(null),
-      memo: this.fb.control<string | null>(null),
-      nutritionValuesUpdated: this.fb.array<FormArray>([]),
-    });
-
-    this.loadQuantityUnits();
-    this.loadNutritionKeys();
+    this.loadMeta();
+    this.loadProducts();
   }
 
-  // -------- Helpers UI --------
-  onBaseUrlChange() {
+  onBaseUrlChange(): void {
     this.productSrv.setBaseUrl(this.baseUrl);
     this.metaSrv.setBaseUrl(this.baseUrl);
-    this.loadQuantityUnits();
-    this.loadNutritionKeys();
+    this.loadMeta();
+    this.loadProducts();
   }
 
-  get nvCreatedFA(): FormArray {
-    return this.form.get('nutritionValuesCreated') as FormArray;
-  }
-  get nvUpdatedFA(): FormArray {
-    return this.form.get('nutritionValuesUpdated') as FormArray;
-  }
-  get editNvFA(): FormArray {
-    return this.editForm.get('nutritionValuesUpdated') as FormArray;
-  }
-
-  trackByProductId(_: number, row: ProductTableRow): number {
-    return row.id;
-  }
-
-  private buildProductTableRows(value: unknown): ProductTableRow[] {
-    return this.extractProductsFromResponse(value).map((product) => ({
-      id: product.id,
+  get productListItems(): ProductListItem[] {
+    return this.products.map((product) => ({
+      id: String(product.id),
       name: product.name,
-      barcode: product.barcode ?? '-',
-      unit:
-        product.quantityPerUnit == null && product.quantityUnit == null
-          ? '-'
-          : `${product.quantityPerUnit ?? '-'} ${product.quantityUnit ?? ''}`.trim(),
-      price: product.price == null ? '-' : String(product.price),
-      tags: Array.isArray(product.tags) ? String(product.tags.length) : '-',
+      barcode: product.barcode ?? null,
+      unitType: product.unitType,
+      quantityPerUnit: product.quantityPerUnit,
+      quantityUnit: product.quantityUnit,
+      price: product.price ?? null,
+      tagNames: this.resolveTagNames(product.tags),
+      nutritionValuesCount: this.extractNutritionValues(product).length,
       category: this.resolveLinkedEntityName(product.category),
       genericProduct: this.resolveLinkedEntityName(product.genericProduct),
-      source: product,
-      nutritionValues: Array.isArray(product.nutritionValues)
-        ? product.nutritionValues
-            .filter(
-              (item): item is Record<string, unknown> =>
-                !!item && typeof item === 'object',
-            )
-            .map((item) => ({
-              id: item['id'] == null ? '-' : String(item['id']),
-              nutritionKey: this.toDisplayNutritionKey(item),
-              amount: item['amount'] == null ? '-' : String(item['amount']),
-              unit: this.toDisplayNutritionUnit(item),
-              reference: this.toDisplayNutritionReference(item),
-            }))
-        : [],
     }));
   }
 
-  openEditModalFromRow(row: ProductTableRow, event?: Event): void {
-    event?.preventDefault();
-    event?.stopPropagation();
+  onRefreshRequested(): void {
+    this.loadProducts();
+  }
 
-    this.editTargetId = row.id;
-    this.editForm.reset({
-      id: row.id,
-      name: row.source.name ?? '',
-      barcode: row.source.barcode ?? null,
-      categoryId: this.readEntityId(row.source.category),
-      genericProductId: this.readEntityId(row.source.genericProduct),
-      unitType: row.source.unitType ?? '',
-      quantityPerUnit: row.source.quantityPerUnit ?? null,
-      quantityUnit: row.source.quantityUnit ?? '',
-      price: row.source.price ?? null,
-      url: row.source.url ?? null,
-      memo: row.source.memo ?? null,
-    });
+  onAddRequested(): void {
+    this.formMode = 'add';
+    this.editingProductId = null;
+    this.formInitialValue = null;
+    this.formVisible = true;
+  }
 
-    this.editNvFA.clear();
-    if (Array.isArray(row.source.nutritionValues)) {
-      for (const item of row.source.nutritionValues) {
-        if (!item || typeof item !== 'object') {
-          continue;
+  onEditRequested(item: ProductListItem): void {
+    const productId = Number(item.id);
+    if (!Number.isFinite(productId)) {
+      return;
+    }
+
+    const product = this.products.find((value) => value.id === productId);
+    if (!product) {
+      return;
+    }
+
+    this.formMode = 'edit';
+    this.editingProductId = product.id;
+    this.formInitialValue = this.toFormValue(product);
+    this.formVisible = true;
+  }
+
+  onDeleteRequested(item: ProductListItem): void {
+    const productId = Number(item.id);
+    if (!Number.isFinite(productId)) {
+      return;
+    }
+
+    this.saving = true;
+    this.productSrv.remove(productId).subscribe({
+      next: () => {
+        this.lastResponse = { deleted: true, id: productId };
+        this.lastError = null;
+        this.saving = false;
+
+        if (this.editingProductId === productId) {
+          this.onCancelForm();
         }
 
-        const raw = item as Record<string, unknown>;
-        const rawId = raw['id'];
-        const id =
-          typeof rawId === 'number' && Number.isFinite(rawId)
-            ? rawId
-            : typeof rawId === 'string' && rawId.trim() !== '' && !Number.isNaN(Number(rawId))
-              ? Number(rawId)
-              : null;
+        this.loadProducts();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
+    });
+  }
 
-        const rawAmount = raw['amount'];
+  onFormSubmitted(event: { mode: ProductFormMode; value: ProductFormValue }): void {
+    this.saving = true;
+
+    if (event.mode === 'edit' && this.editingProductId !== null) {
+      const payload = this.toUpdateDto(event.value);
+      this.productSrv.update(this.editingProductId, payload).subscribe({
+        next: (response) => {
+          this.lastResponse = response;
+          this.lastError = null;
+          this.saving = false;
+          this.formVisible = false;
+          this.loadProducts();
+        },
+        error: (error) => {
+          this.lastError = error;
+          this.saving = false;
+        },
+      });
+      return;
+    }
+
+    const payload = this.toCreateDto(event.value);
+    this.productSrv.create(payload).subscribe({
+      next: (response) => {
+        this.lastResponse = response;
+        this.lastError = null;
+        this.saving = false;
+        this.formVisible = false;
+        this.loadProducts();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
+    });
+  }
+
+  onMenuClicked(): void {
+    this.lastResponse = {
+      info: 'Action menu product-form capturee.',
+      at: new Date().toISOString(),
+    };
+  }
+
+  onCancelForm(): void {
+    this.formVisible = false;
+    this.formMode = 'add';
+    this.formInitialValue = null;
+    this.editingProductId = null;
+  }
+
+  private loadMeta(): void {
+    this.loadingMeta = true;
+    this.lastMetaError = null;
+
+    this.metaSrv.getQuantityUnits().subscribe({
+      next: (units) => {
+        this.quantityUnitOptions = units;
+      },
+      error: (error) => {
+        this.quantityUnitOptions = [];
+        this.lastMetaError = error;
+      },
+    });
+
+    this.metaSrv.getNutritionKeys().subscribe({
+      next: (keys) => {
+        this.nutritionKeyOptions = keys;
+        this.loadingMeta = false;
+      },
+      error: (error) => {
+        this.nutritionKeyOptions = [];
+        this.lastMetaError = error;
+        this.loadingMeta = false;
+      },
+    });
+  }
+
+  private loadProducts(): void {
+    this.loading = true;
+    this.productSrv.findAll().subscribe({
+      next: (response) => {
+        this.products = this.extractProductsFromResponse(response);
+        this.lastResponse = response;
+        this.lastError = null;
+        this.loading = false;
+
+        if (
+          this.editingProductId !== null &&
+          !this.products.some((product) => product.id === this.editingProductId)
+        ) {
+          this.onCancelForm();
+        }
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.loading = false;
+      },
+    });
+  }
+
+  private toCreateDto(value: ProductFormValue): CreateProductDto {
+    return {
+      name: value.name,
+      barcode: value.barcode,
+      categoryId: value.categoryId,
+      tagIds: value.tagIds,
+      genericProductId: value.genericProductId,
+      unitType: value.unitType,
+      quantityPerUnit: value.quantityPerUnit,
+      quantityUnit: value.quantityUnit,
+      price: value.price,
+      url: value.url,
+      memo: value.memo,
+      nutritionValuesCreated: this.toNutritionValuesCreated(value.nutritionValues),
+    };
+  }
+
+  private toUpdateDto(value: ProductFormValue): UpdateProductDto {
+    return {
+      name: value.name,
+      barcode: value.barcode,
+      categoryId: value.categoryId,
+      tagIds: value.tagIds,
+      genericProductId: value.genericProductId,
+      unitType: value.unitType,
+      quantityPerUnit: value.quantityPerUnit,
+      quantityUnit: value.quantityUnit,
+      price: value.price,
+      url: value.url,
+      memo: value.memo,
+      nutritionValuesUpdated: this.toNutritionValuesUpdated(value.nutritionValues),
+    };
+  }
+
+  private toNutritionValuesCreated(
+    values: ProductFormNutritionValue[],
+  ): NutritionValueCreated[] {
+    return values
+      .map((value) => ({
+        nutritionKey: value.nutritionKey.trim().toUpperCase(),
+        amount: Number.isFinite(value.amount) ? Math.max(0, value.amount) : 0,
+        unit: value.unit,
+        reference: value.reference,
+      }))
+      .filter((value) => value.nutritionKey !== '');
+  }
+
+  private toNutritionValuesUpdated(
+    values: ProductFormNutritionValue[],
+  ): NutritionValueUpdated[] {
+    return values
+      .map((value) => ({
+        ...(typeof value.id === 'number' && Number.isInteger(value.id) && value.id > 0
+          ? { id: value.id }
+          : {}),
+        nutritionKey: value.nutritionKey.trim().toUpperCase(),
+        amount: Number.isFinite(value.amount) ? Math.max(0, value.amount) : 0,
+        unit: value.unit,
+        reference: value.reference,
+      }))
+      .filter((value) => value.nutritionKey !== '');
+  }
+
+  private toFormValue(product: ProductApiModel): ProductFormValue {
+    return {
+      name: product.name,
+      barcode: product.barcode ?? null,
+      categoryId: this.readEntityId(product.category),
+      tagIds: this.resolveTagIds(product.tags),
+      genericProductId: this.readEntityId(product.genericProduct),
+      unitType: product.unitType ?? '',
+      quantityPerUnit:
+        typeof product.quantityPerUnit === 'number' && Number.isFinite(product.quantityPerUnit)
+          ? product.quantityPerUnit
+          : 0,
+      quantityUnit: product.quantityUnit ?? this.quantityUnitOptions[0]?.value ?? '',
+      price:
+        typeof product.price === 'number' && Number.isFinite(product.price)
+          ? product.price
+          : null,
+      url: product.url ?? null,
+      memo: product.memo ?? null,
+      nutritionValues: this.extractNutritionValues(product),
+    };
+  }
+
+  private extractNutritionValues(product: ProductApiModel): ProductFormNutritionValue[] {
+    if (!Array.isArray(product.nutritionValues) || product.nutritionValues.length === 0) {
+      return [];
+    }
+
+    return product.nutritionValues
+      .filter(
+        (value): value is Record<string, unknown> =>
+          !!value && typeof value === 'object',
+      )
+      .map((value) => {
+        const rawId = value['id'];
+        const id =
+          typeof rawId === 'number' && Number.isInteger(rawId) && rawId > 0
+            ? rawId
+            : typeof rawId === 'string' &&
+                rawId.trim() !== '' &&
+                Number.isInteger(Number(rawId)) &&
+                Number(rawId) > 0
+              ? Number(rawId)
+              : undefined;
+
+        const rawAmount = value['amount'];
         const amount =
           typeof rawAmount === 'number' && Number.isFinite(rawAmount)
             ? rawAmount
             : typeof rawAmount === 'string' &&
                 rawAmount.trim() !== '' &&
-                !Number.isNaN(Number(rawAmount))
+                Number.isFinite(Number(rawAmount))
               ? Number(rawAmount)
-              : null;
+              : 0;
 
-        const nutritionKey = this.extractNutritionKeyValue(raw) ?? '';
-        const unit = this.extractNutritionUnitValue(raw) ?? '';
-        const reference = this.extractNutritionReferenceValue(raw) ?? '';
+        const nutritionKey = this.extractNutritionKeyValue(value) ?? '';
+        const unit = this.extractNutritionUnitValue(value) ?? 'G';
+        const reference = this.extractNutritionReferenceValue(value);
 
-        this.addEditNv({
+        return {
           ...(id != null ? { id } : {}),
-          ...(amount != null ? { amount } : {}),
           nutritionKey,
+          amount,
           unit,
           reference,
-        });
-      }
-    }
-
-    if (
-      !this.editForm.value['quantityUnit'] &&
-      this.quantityUnitOptions.length > 0
-    ) {
-      this.editForm.patchValue({ quantityUnit: this.quantityUnitOptions[0].value });
-    }
-
-    this.isEditModalOpen = true;
-  }
-
-  closeEditModal(): void {
-    this.isEditModalOpen = false;
-    this.editTargetId = null;
-    this.editNvFA.clear();
-  }
-
-  saveEditFromModal(): void {
-    const id = this.editTargetId ?? this.editForm.value['id'] ?? null;
-    if (id == null) {
-      this.setError('Impossible de modifier: id produit manquant.');
-      return;
-    }
-
-    const payload = this.pickModalUpdatePayload();
-
-    this.loading = true;
-    this.productSrv.update(id, payload).subscribe({
-      next: () => {
-        this.closeEditModal();
-        this.getAll();
-      },
-      error: (e) => this.setError(e),
-    });
-  }
-
-  deleteFromRow(row: ProductTableRow, event?: Event): void {
-    event?.preventDefault();
-    event?.stopPropagation();
-
-    const confirmed = window.confirm(`Supprimer le produit "${row.name}" (id=${row.id}) ?`);
-    if (!confirmed) {
-      return;
-    }
-
-    this.loading = true;
-    this.productSrv.remove(row.id).subscribe({
-      next: () => {
-        this.productTableRows = this.productTableRows.filter((item) => item.id !== row.id);
-        if (this.expandedProductId === row.id) {
-          this.expandedProductId = null;
-        }
-        this.lastResponse = { deleted: true, id: row.id };
-        this.lastError = null;
-        this.loading = false;
-      },
-      error: (e) => this.setError(e),
-    });
-  }
-
-  addNvCreated() {
-    const defaultNutritionKey = this.nutritionKeyOptions[0]?.value ?? '';
-    const allowedUnits = this.getAllowedUnitsByNutritionKey(defaultNutritionKey);
-    const defaultUnit = allowedUnits[0] ?? '';
-    const defaultReference = this.nutritionReferenceOptions[0]?.value ?? '';
-
-    this.nvCreatedFA.push(
-      this.fb.group({
-        nutritionKey: this.fb.control<string>(defaultNutritionKey, {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
-        amount: this.fb.control<number | null>(null, {
-          validators: [Validators.required],
-        }),
-        unit: this.fb.control<string>(defaultUnit, {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
-        reference: this.fb.control<string>(defaultReference, {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
-      }),
-    );
-
-    this.onCreatedNutritionKeyChange(this.nvCreatedFA.length - 1);
-  }
-  removeNvCreated(i: number) {
-    this.nvCreatedFA.removeAt(i);
-  }
-
-  addNvUpdated() {
-    const defaultNutritionKey = this.nutritionKeyOptions[0]?.value ?? '';
-    const allowedUnits = this.getAllowedUnitsByNutritionKey(defaultNutritionKey);
-    const defaultUnit = allowedUnits[0] ?? '';
-    const defaultReference = this.nutritionReferenceOptions[0]?.value ?? '';
-
-    this.nvUpdatedFA.push(
-      this.fb.group({
-        id: this.fb.control<number | null>(null), // si rempli -> update, sinon -> create
-        nutritionKey: this.fb.control<string>(defaultNutritionKey, {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
-        amount: this.fb.control<number | null>(null, {
-          validators: [Validators.required],
-        }),
-        unit: this.fb.control<string>(defaultUnit, {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
-        reference: this.fb.control<string>(defaultReference, {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
-      }),
-    );
-
-    this.onUpdatedNutritionKeyChange(this.nvUpdatedFA.length - 1);
-  }
-  removeNvUpdated(i: number) {
-    this.nvUpdatedFA.removeAt(i);
-  }
-
-  addEditNv(initial?: Partial<NutritionValueUpdated>) {
-    const initialKey =
-      typeof initial?.nutritionKey === 'string' && initial.nutritionKey.trim() !== ''
-        ? initial.nutritionKey.trim()
-        : this.nutritionKeyOptions[0]?.value ?? '';
-    const allowedUnits = this.getAllowedUnitsByNutritionKey(initialKey);
-    const initialUnitRaw =
-      typeof initial?.unit === 'string' ? initial.unit.trim() : '';
-    const initialUnit =
-      initialUnitRaw !== '' && (allowedUnits.length === 0 || allowedUnits.includes(initialUnitRaw))
-        ? initialUnitRaw
-        : allowedUnits[0] ?? '';
-    const initialReference = this.normalizeNutritionReference(initial?.reference);
-
-    this.editNvFA.push(
-      this.fb.group({
-        id: this.fb.control<number | null>(
-          typeof initial?.id === 'number' && Number.isFinite(initial.id) ? initial.id : null,
-        ),
-        nutritionKey: this.fb.control<string>(initialKey, {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
-        amount: this.fb.control<number | null>(
-          typeof initial?.amount === 'number' && Number.isFinite(initial.amount)
-            ? initial.amount
-            : null,
-          { validators: [Validators.required] },
-        ),
-        unit: this.fb.control<string>(initialUnit, {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
-        reference: this.fb.control<string>(initialReference, {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
-      }),
-    );
-
-    this.onEditNutritionKeyChange(this.editNvFA.length - 1);
-  }
-
-  removeEditNv(i: number) {
-    this.editNvFA.removeAt(i);
-  }
-
-  getNutritionUnitsForCreated(index: number): string[] {
-    const group = this.nvCreatedFA.at(index);
-    const nutritionKey = group?.value?.['nutritionKey'];
-    return this.getAllowedUnitsByNutritionKey(
-      typeof nutritionKey === 'string' ? nutritionKey : '',
-    );
-  }
-
-  getNutritionUnitsForUpdated(index: number): string[] {
-    const group = this.nvUpdatedFA.at(index);
-    const nutritionKey = group?.value?.['nutritionKey'];
-    return this.getAllowedUnitsByNutritionKey(
-      typeof nutritionKey === 'string' ? nutritionKey : '',
-    );
-  }
-
-  getNutritionUnitsForEdit(index: number): string[] {
-    const group = this.editNvFA.at(index);
-    const nutritionKey = group?.value?.['nutritionKey'];
-    return this.getAllowedUnitsByNutritionKey(
-      typeof nutritionKey === 'string' ? nutritionKey : '',
-    );
-  }
-
-  onCreatedNutritionKeyChange(index: number): void {
-    const group = this.nvCreatedFA.at(index) as FormGroup | null;
-    if (!group) {
-      return;
-    }
-    this.syncNutritionUnitForGroup(group);
-  }
-
-  onUpdatedNutritionKeyChange(index: number): void {
-    const group = this.nvUpdatedFA.at(index) as FormGroup | null;
-    if (!group) {
-      return;
-    }
-    this.syncNutritionUnitForGroup(group);
-  }
-
-  onEditNutritionKeyChange(index: number): void {
-    const group = this.editNvFA.at(index) as FormGroup | null;
-    if (!group) {
-      return;
-    }
-    this.syncNutritionUnitForGroup(group);
-  }
-
-  private parseCsvIds(csv: string | null | undefined): number[] | undefined {
-    if (!csv) return undefined;
-    const ids = csv
-      .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s !== '')
-      .map((s) => Number(s))
-      .filter((n) => !Number.isNaN(n));
-    return ids.length ? ids : [];
-  }
-
-  private normalizeNutritionReference(value: unknown): string {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      if (value === 100) {
-        return 'PER_100G';
-      }
-      return this.nutritionReferenceOptions[0]?.value ?? 'PER_100G';
-    }
-
-    if (typeof value === 'string') {
-      const normalized = value.trim().toUpperCase();
-      if (normalized === 'PER_100G' || normalized === 'PER_100ML') {
-        return normalized;
-      }
-
-      if (normalized === '100') {
-        return 'PER_100G';
-      }
-      if (normalized.includes('100ML')) {
-        return 'PER_100ML';
-      }
-      if (normalized.includes('100G')) {
-        return 'PER_100G';
-      }
-    }
-
-    return this.nutritionReferenceOptions[0]?.value ?? 'PER_100G';
-  }
-
-  private loadNutritionKeys(): void {
-    this.metaSrv.getNutritionKeys().subscribe({
-      next: (keys) => {
-        this.nutritionKeyOptions = keys;
-        this.syncNutritionUnitsForAllGroups();
-      },
-      error: () => {
-        this.nutritionKeyOptions = [];
-      },
-    });
-  }
-
-  private loadQuantityUnits(): void {
-    this.metaSrv.getQuantityUnits().subscribe({
-      next: (units) => {
-        this.quantityUnitOptions = units;
-
-        const currentUnit = (this.form.value['quantityUnit'] ?? '')
-          .toString()
-          .trim();
-        const existsInOptions = units.some((unit) => unit.value === currentUnit);
-        if ((!existsInOptions || currentUnit === '') && units.length > 0) {
-          this.form.patchValue({ quantityUnit: units[0].value });
-        }
-
-        const currentEditUnit = (this.editForm.value['quantityUnit'] ?? '')
-          .toString()
-          .trim();
-        const existsInEditOptions = units.some((unit) => unit.value === currentEditUnit);
-        if ((!existsInEditOptions || currentEditUnit === '') && units.length > 0) {
-          this.editForm.patchValue({ quantityUnit: units[0].value });
-        }
-      },
-      error: () => {
-        this.quantityUnitOptions = [];
-      },
-    });
-  }
-
-  private getAllowedUnitsByNutritionKey(nutritionKey: string): string[] {
-    const key = nutritionKey.trim();
-    if (key === '') {
-      return [];
-    }
-
-    return this.nutritionKeyOptions.find((item) => item.value === key)?.allowedUnits ?? [];
-  }
-
-  private syncNutritionUnitsForAllGroups(): void {
-    for (let i = 0; i < this.nvCreatedFA.length; i += 1) {
-      this.onCreatedNutritionKeyChange(i);
-    }
-
-    for (let i = 0; i < this.nvUpdatedFA.length; i += 1) {
-      this.onUpdatedNutritionKeyChange(i);
-    }
-
-    for (let i = 0; i < this.editNvFA.length; i += 1) {
-      this.onEditNutritionKeyChange(i);
-    }
-  }
-
-  private syncNutritionUnitForGroup(group: FormGroup): void {
-    const nutritionKeyControl = group.get('nutritionKey');
-    const nutritionKey = nutritionKeyControl?.value;
-    let selectedNutritionKey = typeof nutritionKey === 'string' ? nutritionKey : '';
-    if (selectedNutritionKey.trim() === '' && this.nutritionKeyOptions.length > 0) {
-      selectedNutritionKey = this.nutritionKeyOptions[0].value;
-      nutritionKeyControl?.setValue(selectedNutritionKey);
-    }
-
-    const allowedUnits = this.getAllowedUnitsByNutritionKey(selectedNutritionKey);
-    const unitControl = group.get('unit');
-    const currentUnit = unitControl?.value;
-    const currentUnitValue = typeof currentUnit === 'string' ? currentUnit : '';
-    const referenceControl = group.get('reference');
-    const currentReference = referenceControl?.value;
-    const currentReferenceValue =
-      typeof currentReference === 'string' ? currentReference.trim() : '';
-
-    if (
-      unitControl &&
-      allowedUnits.length > 0 &&
-      !allowedUnits.includes(currentUnitValue)
-    ) {
-      unitControl.setValue(allowedUnits[0]);
-    }
-
-    if (
-      referenceControl &&
-      currentReferenceValue === '' &&
-      this.nutritionReferenceOptions.length > 0
-    ) {
-      referenceControl.setValue(this.nutritionReferenceOptions[0].value);
-    }
+        };
+      })
+      .filter((value) => value.nutritionKey !== '');
   }
 
   private extractProductsFromResponse(value: unknown): ProductApiModel[] {
-    const direct = this.collectProductsFromNode(value);
-    if (direct.length > 0) {
-      return direct;
+    if (Array.isArray(value)) {
+      return value.filter((item): item is ProductApiModel => this.isProductLike(item));
+    }
+
+    if (this.isProductLike(value)) {
+      return [value];
     }
 
     if (!value || typeof value !== 'object') {
       return [];
     }
 
-    // Fallback: explore nested payloads (data/items/results/payload wrappers).
-    const queue: unknown[] = [value];
-    const visited = new Set<object>();
-
-    while (queue.length > 0) {
-      const node = queue.shift();
-      if (!node || typeof node !== 'object') {
-        continue;
-      }
-
-      if (visited.has(node)) {
-        continue;
-      }
-      visited.add(node);
-
-      const found = this.collectProductsFromNode(node);
-      if (found.length > 0) {
-        return found;
-      }
-
-      if (Array.isArray(node)) {
-        for (const item of node) {
-          if (item && typeof item === 'object') {
-            queue.push(item);
-          }
-        }
-        continue;
-      }
-
-      const record = node as Record<string, unknown>;
-      for (const child of Object.values(record)) {
-        if (child && typeof child === 'object') {
-          queue.push(child);
-        }
-      }
-    }
-
-    return [];
-  }
-
-  private collectProductsFromNode(node: unknown): ProductApiModel[] {
-    if (Array.isArray(node)) {
-      return node.filter((item): item is ProductApiModel => this.isProductLike(item));
-    }
-
-    if (this.isProductLike(node)) {
-      return [node];
-    }
-
-    if (!node || typeof node !== 'object') {
-      return [];
-    }
-
-    const raw = node as Record<string, unknown>;
-    const candidates = ['data', 'items', 'products', 'results', 'payload'];
-
-    for (const key of candidates) {
-      const payload = raw[key];
-      if (Array.isArray(payload)) {
-        const products = payload.filter(
-          (item): item is ProductApiModel => this.isProductLike(item),
-        );
+    const raw = value as Record<string, unknown>;
+    const nestedCandidates = ['data', 'items', 'products', 'results', 'payload'];
+    for (const key of nestedCandidates) {
+      const nested = raw[key];
+      if (Array.isArray(nested)) {
+        const products = nested.filter((item): item is ProductApiModel => this.isProductLike(item));
         if (products.length > 0) {
           return products;
         }
-      } else if (this.isProductLike(payload)) {
-        return [payload];
       }
     }
 
@@ -720,8 +423,8 @@ export class Product implements OnInit {
       return false;
     }
 
-    const maybe = value as Partial<ProductApiModel>;
-    return typeof maybe.id === 'number' && typeof maybe.name === 'string';
+    const product = value as Partial<ProductApiModel>;
+    return typeof product.id === 'number' && typeof product.name === 'string';
   }
 
   private readEntityId(value: unknown): number | null {
@@ -733,39 +436,74 @@ export class Product implements OnInit {
     return typeof id === 'number' && Number.isFinite(id) ? id : null;
   }
 
+  private resolveTagIds(tags: unknown): number[] {
+    if (!Array.isArray(tags)) {
+      return [];
+    }
+
+    const ids = tags
+      .map((tag) => {
+        if (typeof tag === 'number') {
+          return tag;
+        }
+
+        if (tag && typeof tag === 'object' && 'id' in tag) {
+          return Number((tag as { id: unknown }).id);
+        }
+
+        return NaN;
+      })
+      .filter((id): id is number => Number.isInteger(id) && id > 0);
+
+    return Array.from(new Set(ids));
+  }
+
+  private resolveTagNames(tags: unknown): string[] {
+    if (!Array.isArray(tags)) {
+      return [];
+    }
+
+    const names = tags
+      .map((tag) => {
+        if (typeof tag === 'string') {
+          return tag.trim();
+        }
+
+        if (!tag || typeof tag !== 'object') {
+          return '';
+        }
+
+        const raw = tag as Record<string, unknown>;
+        const fields = ['name', 'title', 'label', 'key'];
+        for (const field of fields) {
+          const value = raw[field];
+          if (typeof value === 'string' && value.trim() !== '') {
+            return value.trim();
+          }
+        }
+
+        return '';
+      })
+      .filter((name) => name !== '');
+
+    return Array.from(new Set(names));
+  }
+
   private resolveLinkedEntityName(value: unknown): string {
     if (!value || typeof value !== 'object') {
       return 'Aucun';
     }
 
     const raw = value as Record<string, unknown>;
-    const candidates = ['name', 'title', 'label'];
-
-    for (const key of candidates) {
-      const candidate = raw[key];
+    const fields = ['name', 'title', 'label'];
+    for (const field of fields) {
+      const candidate = raw[field];
       if (typeof candidate === 'string' && candidate.trim() !== '') {
         return candidate.trim();
       }
     }
 
     return 'Aucun';
-  }
-
-  private readStringFromCandidates(
-    raw: Record<string, unknown>,
-    keys: string[],
-  ): string | null {
-    for (const key of keys) {
-      const value = raw[key];
-      if (typeof value === 'string' && value.trim() !== '') {
-        return value.trim();
-      }
-      if (typeof value === 'number' && Number.isFinite(value)) {
-        return String(value);
-      }
-    }
-
-    return null;
   }
 
   private extractNutritionKeyValue(raw: Record<string, unknown>): string | null {
@@ -795,7 +533,7 @@ export class Product implements OnInit {
       return byLabel.value;
     }
 
-    return value;
+    return value.toUpperCase();
   }
 
   private extractNutritionUnitValue(raw: Record<string, unknown>): string | null {
@@ -806,14 +544,12 @@ export class Product implements OnInit {
       'uom',
       'measureUnit',
     ]);
-    if (!value) {
-      return null;
-    }
-
-    return value.toUpperCase();
+    return value ? value.toUpperCase() : null;
   }
 
-  private extractNutritionReferenceValue(raw: Record<string, unknown>): string | null {
+  private extractNutritionReferenceValue(
+    raw: Record<string, unknown>,
+  ): NutritionReference {
     const direct = this.readStringFromCandidates(raw, [
       'reference',
       'nutritionReference',
@@ -821,7 +557,8 @@ export class Product implements OnInit {
       'perUnit',
       'per_unit',
     ]);
-    if (direct) {
+
+    if (typeof direct === 'string' && direct.trim() !== '') {
       return this.normalizeNutritionReference(direct);
     }
 
@@ -833,304 +570,39 @@ export class Product implements OnInit {
       return this.normalizeNutritionReference(perRaw);
     }
 
+    return 'PER_100G';
+  }
+
+  private normalizeNutritionReference(value: unknown): NutritionReference {
+    if (typeof value === 'string') {
+      const normalized = value.trim().toUpperCase();
+      if (normalized === 'PER_100ML' || normalized.includes('100ML')) {
+        return 'PER_100ML';
+      }
+      return 'PER_100G';
+    }
+
+    if (typeof value === 'number' && Number.isFinite(value) && value !== 100) {
+      return 'PER_100ML';
+    }
+
+    return 'PER_100G';
+  }
+
+  private readStringFromCandidates(
+    raw: Record<string, unknown>,
+    fields: string[],
+  ): string | null {
+    for (const field of fields) {
+      const value = raw[field];
+      if (typeof value === 'string' && value.trim() !== '') {
+        return value.trim();
+      }
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return String(value);
+      }
+    }
+
     return null;
-  }
-
-  private toDisplayNutritionKey(raw: Record<string, unknown>): string {
-    return this.extractNutritionKeyValue(raw) ?? '-';
-  }
-
-  private toDisplayNutritionUnit(raw: Record<string, unknown>): string {
-    return this.extractNutritionUnitValue(raw) ?? '-';
-  }
-
-  private toDisplayNutritionReference(raw: Record<string, unknown>): string {
-    const normalized = this.extractNutritionReferenceValue(raw);
-    if (normalized) {
-      return normalized;
-    }
-
-    const perRaw = raw['per'];
-    if (typeof perRaw === 'number' && Number.isFinite(perRaw)) {
-      return `per ${perRaw}`;
-    }
-    if (typeof perRaw === 'string' && perRaw.trim() !== '') {
-      return perRaw.trim();
-    }
-
-    return '-';
-  }
-
-  private pickModalUpdatePayload(): UpdateProductDto {
-    const v = this.editForm.getRawValue();
-
-    if (
-      !v.name ||
-      !v.unitType ||
-      !v.quantityUnit ||
-      v.quantityPerUnit == null
-    ) {
-      throw new Error(
-        'Pour modifier: name, unitType, quantityPerUnit, quantityUnit sont requis.',
-      );
-    }
-
-    const payload: UpdateProductDto = {
-      name: v.name.trim(),
-      barcode: v.barcode ?? null,
-      categoryId: v.categoryId ?? null,
-      genericProductId: v.genericProductId ?? null,
-      unitType: v.unitType.trim(),
-      quantityPerUnit: v.quantityPerUnit,
-      quantityUnit: v.quantityUnit.trim(),
-      price: v.price ?? null,
-      url: v.url ?? null,
-      memo: v.memo ?? null,
-    };
-
-    if (this.editNvFA.length > 0) {
-      payload.nutritionValuesUpdated =
-        this.editNvFA.getRawValue() as NutritionValueUpdated[];
-    }
-
-    return payload;
-  }
-
-  private pickCreatePayload(): CreateProductDto {
-    const v = this.form.getRawValue();
-
-    if (
-      !v.name ||
-      !v.unitType ||
-      !v.quantityUnit ||
-      v.quantityPerUnit == null
-    ) {
-      throw new Error(
-        'Pour CREATE: name, unitType, quantityPerUnit, quantityUnit sont requis.',
-      );
-    }
-
-    const dto: CreateProductDto = {
-      name: v.name,
-      barcode: v.barcode ?? null,
-      categoryId: v.categoryId ?? null,
-      tagIds: this.parseCsvIds(v.tagIdsStr ?? undefined),
-      genericProductId: v.genericProductId ?? null,
-      unitType: v.unitType,
-      quantityPerUnit: v.quantityPerUnit!,
-      quantityUnit: v.quantityUnit,
-      price: v.price ?? null,
-      url: v.url ?? null,
-      memo: v.memo ?? null,
-    };
-
-    // nutritionValuesCreated (optionnel)
-    if (this.nvCreatedFA.length) {
-      dto.nutritionValuesCreated =
-        this.nvCreatedFA.getRawValue() as NutritionValueCreated[];
-    }
-
-    return dto;
-  }
-
-  private pickUpdatePayload(): UpdateProductDto {
-    const v = this.form.getRawValue();
-    const dto: UpdateProductDto = {};
-
-    // n’ajoute que ce qui est fourni
-    if (v.name && v.name.trim() !== '') dto.name = v.name.trim();
-    if (v.barcode !== null) dto.barcode = v.barcode;
-    if (v.categoryId !== null) dto.categoryId = v.categoryId; // null pour détacher si validation OK
-    const tagIds = this.parseCsvIds(v.tagIdsStr ?? undefined);
-    const tagIdsToAdd = this.parseCsvIds(v.tagIdsToAdd ?? undefined);
-    const tagIdsToRemove = this.parseCsvIds(v.tagIdsToRemove ?? undefined);
-    if (tagIds !== undefined) dto.tagIds = tagIds; // sémantique “remplacement” si présent
-    if (tagIdsToAdd !== undefined) dto.tagIdsToAdd = tagIdsToAdd; // sémantique “remplacement” si présent
-    if (tagIdsToRemove !== undefined) dto.tagIdsToRemove = tagIdsToRemove; // sémantique “remplacement” si présent
-    if (v.genericProductId !== null) dto.genericProductId = v.genericProductId;
-
-    if (v.unitType && v.unitType.trim() !== '')
-      dto.unitType = v.unitType.trim();
-    if (v.quantityPerUnit != null) dto.quantityPerUnit = v.quantityPerUnit;
-    if (v.quantityUnit && v.quantityUnit.trim() !== '')
-      dto.quantityUnit = v.quantityUnit.trim();
-
-    if (v.price !== null) dto.price = v.price;
-    if (v.url !== null) dto.url = v.url;
-    if (v.memo !== null) dto.memo = v.memo;
-
-    // nutritionValuesUpdated (PATCH partiel — on n’envoie que si présent et non vide)
-    if (this.nvUpdatedFA.length) {
-      dto.nutritionValuesUpdated =
-        this.nvUpdatedFA.getRawValue() as NutritionValueUpdated[];
-    }
-
-    return dto;
-  }
-
-  private setResult(resp: unknown) {
-    this.lastResponse = resp;
-    this.productTableRows = this.buildProductTableRows(resp);
-    this.expandedProductId = null;
-    this.lastError = null;
-    this.loading = false;
-  }
-  private setError(err: unknown) {
-    this.lastError = err;
-    this.loading = false;
-  }
-
-  // -------- Actions API --------
-  create() {
-    this.loading = true;
-    try {
-      const dto = this.pickCreatePayload();
-      this.productSrv.create(dto).subscribe({
-        next: (r) => this.setResult(r),
-        error: (e) => this.setError(e),
-      });
-    } catch (e) {
-      this.setError(e);
-    }
-  }
-
-  getAll() {
-    this.loading = true;
-    this.productSrv.findAll().subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
-    });
-  }
-
-  getOne() {
-    const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError('Veuillez renseigner un id pour GET /products/:id');
-    this.loading = true;
-    this.productSrv.findOne(id).subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
-    });
-  }
-
-  update() {
-    const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError(
-        'Veuillez renseigner un id pour PATCH /products/:id',
-      );
-
-    const dto = this.pickUpdatePayload();
-    if (Object.keys(dto).length === 0)
-      return this.setError('Aucun champ à mettre à jour.');
-
-    this.loading = true;
-    this.productSrv.update(id, dto).subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
-    });
-  }
-
-  delete() {
-    const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError(
-        'Veuillez renseigner un id pour DELETE /products/:id',
-      );
-    this.loading = true;
-    this.productSrv.remove(id).subscribe({
-      next: () => this.setResult({ deleted: true, id }),
-      error: (e) => this.setError(e),
-    });
-  }
-
-  // -------- Presets & reset --------
-  fillDemoCreate() {
-    // adapte les IDs à ta base
-    this.form.patchValue({
-      id: null,
-      name: 'Salades vertes',
-      barcode: '1234567890123',
-      categoryId: 1,
-      tagIdsStr: '2,5',
-      genericProductId: null,
-      unitType: 'Paquet',
-      quantityPerUnit: 500,
-      quantityUnit: 'g',
-      price: 2.99,
-      url: 'https://exemple.com/produit/salades-vertes',
-      memo: 'A racheter souvent, bon rapport qualité/prix',
-    });
-    this.nvCreatedFA.clear();
-    this.addNvCreated();
-    this.addNvCreated();
-    this.addNvCreated();
-    this.nvCreatedFA.at(0).patchValue({
-      nutritionKey: 'PROTEIN',
-      amount: 12.5,
-      unit: 'G',
-      reference: 'PER_100G',
-    });
-    this.nvCreatedFA.at(1).patchValue({
-      nutritionKey: 'CARBOHYDRATE',
-      amount: 67.3,
-      unit: 'G',
-      reference: 'PER_100G',
-    });
-    this.nvCreatedFA.at(2).patchValue({
-      nutritionKey: 'FIBER',
-      amount: 8,
-      unit: 'G',
-      reference: 'PER_100G',
-    });
-  }
-
-  fillDemoUpdate() {
-    // exemple : update scalaires + NV : update + create
-    this.nvUpdatedFA.clear();
-    this.addNvUpdated(); // supposons NV id=10 à mettre à jour
-    (this.nvUpdatedFA.at(0) as any).patchValue({
-      id: 10,
-      nutritionKey: 'PROTEIN',
-      amount: 13,
-      unit: 'G',
-      reference: 'PER_100G',
-    });
-    this.addNvUpdated(); // nouvelle NV
-    (this.nvUpdatedFA.at(1) as any).patchValue({
-      nutritionKey: 'SALT',
-      amount: 0.01,
-      unit: 'G',
-      reference: 'PER_100G',
-    });
-
-    this.form.patchValue({
-      price: 2.79,
-      memo: 'Prendre date courte si promo',
-    });
-  }
-
-  clear() {
-    this.form.reset({
-      id: null,
-      name: '',
-      barcode: null,
-      categoryId: null,
-      tagIdsStr: null,
-      genericProductId: null,
-      unitType: '',
-      quantityPerUnit: null,
-      quantityUnit: '',
-      price: null,
-      url: null,
-      memo: null,
-    });
-    this.nvCreatedFA.clear();
-    this.nvUpdatedFA.clear();
-    this.productTableRows = [];
-    this.expandedProductId = null;
-    this.closeEditModal();
-    this.lastResponse = null;
-    this.lastError = null;
   }
 }

@@ -20,4 +20,57 @@ describe('ProductForm', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should initialize add mode with default values', () => {
+    expect(component.form.getRawValue().name).toBe('');
+    expect(component.nutritionValues.length).toBe(3);
+  });
+
+  it('should patch values in edit mode when product is provided', () => {
+    fixture.componentRef.setInput('mode', 'edit');
+    fixture.componentRef.setInput('product', {
+      name: 'Salade',
+      barcode: '123',
+      tagIds: [2, 5],
+      nutritionValues: [
+        { id: 12, nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },
+      ],
+    });
+    fixture.detectChanges();
+
+    expect(component.form.getRawValue().name).toBe('Salade');
+    expect(component.form.getRawValue().tagIdsCsv).toBe('2,5');
+    expect(component.nutritionValues.length).toBe(1);
+  });
+
+  it('should emit submitted payload', () => {
+    const emitted: Array<unknown> = [];
+    component.submitted.subscribe((payload) => emitted.push(payload));
+
+    component.form.patchValue({
+      name: 'Salade',
+      unitType: 'Paquet',
+      quantityPerUnit: 500,
+      quantityUnit: 'g',
+      tagIdsCsv: '2,5',
+    });
+    component.nutritionValues = [
+      { nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },
+    ];
+
+    component.onSubmit();
+
+    expect(emitted).toEqual([
+      {
+        mode: 'add',
+        value: jasmine.objectContaining({
+          name: 'Salade',
+          tagIds: [2, 5],
+          nutritionValues: [
+            { nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },
+          ],
+        }),
+      },
+    ]);
+  });
 });

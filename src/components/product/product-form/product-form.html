@@ -1,1 +1,159 @@
-<p>product-form works!</p>
+<section class="mx-auto max-w-5xl px-4 py-8 text-gray-900" aria-label="Ajouter ou modifier un produit">
+  <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
+    <h2 class="text-xl font-medium">{{ heading }}</h2>
+    <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
+    <div class="grid gap-4 md:grid-cols-12">
+      <mat-form-field appearance="fill" class="pf-field md:col-span-7">
+        <mat-label>Nom *</mat-label>
+        <input matInput type="text" formControlName="name" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="pf-field md:col-span-5">
+        <mat-label>Barcode</mat-label>
+        <input matInput type="text" formControlName="barcode" />
+      </mat-form-field>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-12">
+      <mat-form-field appearance="fill" class="pf-field md:col-span-4">
+        <mat-label>categoryId</mat-label>
+        <input matInput type="number" formControlName="categoryId" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="pf-field md:col-span-4">
+        <mat-label>genericProductId</mat-label>
+        <input matInput type="number" formControlName="genericProductId" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="pf-field md:col-span-4">
+        <mat-label>tagIds (CSV)</mat-label>
+        <input matInput type="text" formControlName="tagIdsCsv" placeholder="2,5,9" />
+      </mat-form-field>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-12">
+      <mat-form-field appearance="fill" class="pf-field md:col-span-3">
+        <mat-label>unitType *</mat-label>
+        <input matInput type="text" formControlName="unitType" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="pf-field md:col-span-3">
+        <mat-label>quantityPerUnit *</mat-label>
+        <input matInput type="number" min="0" formControlName="quantityPerUnit" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="pf-field md:col-span-3">
+        <mat-label>quantityUnit *</mat-label>
+        <mat-select formControlName="quantityUnit">
+          <mat-option *ngFor="let unit of quantityUnits" [value]="unit.value">
+            {{ unit.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="pf-field md:col-span-3">
+        <mat-label>price</mat-label>
+        <input matInput type="number" min="0" step="0.01" formControlName="price" />
+      </mat-form-field>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-12">
+      <mat-form-field appearance="fill" class="pf-field md:col-span-6">
+        <mat-label>url</mat-label>
+        <input matInput type="text" formControlName="url" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="pf-field md:col-span-6">
+        <mat-label>memo</mat-label>
+        <input matInput type="text" formControlName="memo" />
+      </mat-form-field>
+    </div>
+
+    <div class="space-y-3">
+      <div class="flex items-center justify-between gap-3">
+        <h3 class="text-base font-semibold text-slate-900">Nutrition values</h3>
+        <button mat-stroked-button type="button" (click)="addNutritionValue()">
+          Ajouter une valeur
+        </button>
+      </div>
+
+      <p *ngIf="nutritionKeys.length === 0" class="text-sm text-slate-600">
+        Les cles nutritionnelles meta ne sont pas chargees, saisie libre active.
+      </p>
+
+      <div *ngFor="let value of nutritionValues; let i = index" class="grid gap-3 md:grid-cols-12 md:items-start">
+        <mat-form-field appearance="fill" class="pf-field md:col-span-1">
+          <mat-label>Id</mat-label>
+          <input
+            matInput
+            type="number"
+            min="1"
+            [(ngModel)]="value.id"
+            [ngModelOptions]="{ standalone: true }" />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="pf-field md:col-span-4">
+          <mat-label>Cle</mat-label>
+          <mat-select
+            [(ngModel)]="value.nutritionKey"
+            [ngModelOptions]="{ standalone: true }"
+            (selectionChange)="onNutritionKeyChange(i)">
+            <mat-option *ngFor="let item of nutritionKeys" [value]="item.value">
+              {{ item.label }}
+            </mat-option>
+          </mat-select>
+          <mat-hint *ngIf="nutritionKeys.length === 0">
+            Aucune cle meta disponible
+          </mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="pf-field md:col-span-2">
+          <mat-label>Amount</mat-label>
+          <input
+            matInput
+            type="number"
+            min="0"
+            [(ngModel)]="value.amount"
+            [ngModelOptions]="{ standalone: true }" />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="pf-field md:col-span-2">
+          <mat-label>Unite</mat-label>
+          <mat-select
+            [(ngModel)]="value.unit"
+            [ngModelOptions]="{ standalone: true }">
+            <mat-option *ngFor="let unit of getUnitsForKey(value.nutritionKey)" [value]="unit">
+              {{ unit }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="pf-field md:col-span-2">
+          <mat-label>Reference</mat-label>
+          <mat-select
+            [(ngModel)]="value.reference"
+            [ngModelOptions]="{ standalone: true }">
+            <mat-option *ngFor="let reference of referenceOptions" [value]="reference.value">
+              {{ reference.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="md:col-span-1 md:pt-2">
+          <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
+            Retirer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-center pt-2">
+      <button mat-raised-button color="primary" type="submit" class="rounded-full px-8">
+        Valider
+      </button>
+    </div>
+  </form>
+</section>

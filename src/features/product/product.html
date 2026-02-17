@@ -1,13 +1,13 @@
 <section class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
   <mat-card class="overflow-hidden rounded-2xl">
     <div class="bg-slate-900 px-6 py-5 text-white">
-      <h2 class="text-xl font-semibold">Products API Tester</h2>
+      <h2 class="text-xl font-semibold">Products</h2>
       <p class="mt-1 text-sm text-slate-300">
-        Interface Material + Tailwind pour tester les endpoints products.
+        Gestion des produits.
       </p>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" class="space-y-6 p-4 sm:p-6">
+    <div class="space-y-6 p-4 sm:p-6">
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-content class="pt-4">
           <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
@@ -21,521 +21,64 @@
                 (change)="onBaseUrlChange()"
                 placeholder="http://localhost:3000" />
             </mat-form-field>
-            <button mat-raised-button color="primary" type="button" class="w-full sm:w-auto" (click)="getAll()">
-              GetAll (GET)
+            <button mat-raised-button color="primary" type="button" (click)="onRefreshRequested()">
+              Rafraichir
             </button>
           </div>
         </mat-card-content>
       </mat-card>
 
-      <mat-card appearance="outlined" class="rounded-xl" *ngIf="productTableRows.length > 0">
-        <mat-card-header>
-          <mat-card-title>Resultats (GET / GETALL)</mat-card-title>
-          <mat-card-subtitle>Edition et suppression rapides</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content class="pt-2">
-          <mat-accordion class="space-y-2">
-            <mat-expansion-panel
-              class="result-panel"
-              *ngFor="let row of productTableRows; trackBy: trackByProductId"
-              [expanded]="expandedProductId === row.id"
-              (opened)="expandedProductId = row.id"
-              (closed)="expandedProductId = null">
-              <mat-expansion-panel-header class="result-panel-header !px-4">
-                <mat-panel-title class="result-panel-title">
-                  <div class="result-header-content">
-                    <div class="result-header-main">
-                      <p class="result-name">
-                        {{ row.name }}
-                      </p>
-                      <div class="result-meta-grid">
-                        <span class="result-chip">ID: {{ row.id }}</span>
-                        <span class="result-chip">Barcode: {{ row.barcode }}</span>
-                        <span class="result-chip">Unit: {{ row.unit }}</span>
-                        <span class="result-chip">Price: {{ row.price }}</span>
-                        <span class="result-chip">Tags: {{ row.tags }}</span>
-                        <span class="result-chip">NV: {{ row.nutritionValues.length }}</span>
-                        <span class="result-chip">Category: {{ row.category }}</span>
-                        <span class="result-chip">Generic: {{ row.genericProduct }}</span>
-                      </div>
-                    </div>
-
-                    <div class="result-actions">
-                      <button
-                        mat-mini-fab
-                        color="primary"
-                        type="button"
-                        class="row-action-fab result-action-btn"
-                        (click)="openEditModalFromRow(row, $event)"
-                        aria-label="Modifier le produit">
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          class="result-action-icon"
-                          aria-hidden="true">
-                          <path d="M12 20h9"></path>
-                          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
-                        </svg>
-                      </button>
-                      <button
-                        mat-mini-fab
-                        color="warn"
-                        type="button"
-                        class="row-action-fab result-action-btn"
-                        (click)="deleteFromRow(row, $event)"
-                        aria-label="Supprimer le produit">
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          class="result-action-icon"
-                          aria-hidden="true">
-                          <path d="M3 6h18"></path>
-                          <path d="M8 6V4h8v2"></path>
-                          <path d="M19 6l-1 14H6L5 6"></path>
-                          <path d="M10 11v6"></path>
-                          <path d="M14 11v6"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </mat-panel-title>
-              </mat-expansion-panel-header>
-
-              <div *ngIf="row.nutritionValues.length > 0; else noNvBlock" class="result-nv-wrap overflow-x-auto rounded-lg border border-slate-200">
-                <table mat-table [dataSource]="row.nutritionValues" class="result-nv-table w-full">
-                  <ng-container matColumnDef="id">
-                    <th mat-header-cell *matHeaderCellDef>ID</th>
-                    <td mat-cell *matCellDef="let nv">{{ nv.id }}</td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="nutritionKey">
-                    <th mat-header-cell *matHeaderCellDef>NutritionKey</th>
-                    <td mat-cell *matCellDef="let nv">{{ nv.nutritionKey }}</td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="amount">
-                    <th mat-header-cell *matHeaderCellDef>Amount</th>
-                    <td mat-cell *matCellDef="let nv">{{ nv.amount }}</td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="unit">
-                    <th mat-header-cell *matHeaderCellDef>Unit</th>
-                    <td mat-cell *matCellDef="let nv">{{ nv.unit }}</td>
-                  </ng-container>
-
-                  <ng-container matColumnDef="reference">
-                    <th mat-header-cell *matHeaderCellDef>Reference</th>
-                    <td mat-cell *matCellDef="let nv">{{ nv.reference }}</td>
-                  </ng-container>
-
-                  <tr mat-header-row *matHeaderRowDef="nutritionValueColumns"></tr>
-                  <tr mat-row *matRowDef="let row; columns: nutritionValueColumns"></tr>
-                </table>
-              </div>
-
-              <ng-template #noNvBlock>
-                <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-600">
-                  No NV
-                </p>
-              </ng-template>
-            </mat-expansion-panel>
-          </mat-accordion>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card appearance="outlined" class="rounded-xl">
-        <mat-card-header>
-          <mat-card-title>Produit</mat-card-title>
-          <mat-card-subtitle>Champs principaux</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content class="pt-2">
-          <div class="grid gap-4 sm:grid-cols-2">
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>id (GET/PATCH/DELETE)</mat-label>
-              <input matInput type="number" formControlName="id" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full sm:col-span-1">
-              <mat-label>name *</mat-label>
-              <input matInput type="text" formControlName="name" />
-            </mat-form-field>
-          </div>
-
-          <div class="mt-4 grid gap-4 xl:grid-cols-2">
-            <section class="rounded-xl border border-sky-200 bg-sky-50/60 p-4">
-              <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-sky-900">
-                Referentiel
-              </h4>
-              <div class="grid gap-4 sm:grid-cols-2">
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>barcode</mat-label>
-                  <input matInput type="text" formControlName="barcode" />
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>categoryId (nullable)</mat-label>
-                  <input matInput type="number" formControlName="categoryId" />
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full sm:col-span-2">
-                  <mat-label>tagIds (CSV)</mat-label>
-                  <input matInput type="text" formControlName="tagIdsStr" placeholder="ex: 2,5" />
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>tagIdsToAdd</mat-label>
-                  <input matInput type="text" formControlName="tagIdsToAdd" placeholder="ex: 2,5" />
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>tagIdsToRemove</mat-label>
-                  <input matInput type="text" formControlName="tagIdsToRemove" placeholder="ex: 2,5" />
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full sm:col-span-2">
-                  <mat-label>genericProductId (nullable)</mat-label>
-                  <input matInput type="number" formControlName="genericProductId" />
-                </mat-form-field>
-              </div>
-            </section>
-
-            <section class="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4">
-              <h4 class="mb-3 text-sm font-semibold uppercase tracking-wide text-emerald-900">
-                Unite, quantite et prix
-              </h4>
-              <div class="grid gap-4 sm:grid-cols-2">
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>unitType *</mat-label>
-                  <input matInput type="text" formControlName="unitType" />
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>quantityPerUnit *</mat-label>
-                  <input matInput type="number" formControlName="quantityPerUnit" />
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>quantityUnit *</mat-label>
-                  <mat-select formControlName="quantityUnit">
-                    <mat-option *ngFor="let unit of quantityUnitOptions" [value]="unit.value">
-                      {{ unit.label }}
-                    </mat-option>
-                  </mat-select>
-                  <mat-hint *ngIf="quantityUnitOptions.length === 0">
-                    No units loaded
-                  </mat-hint>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>price</mat-label>
-                  <input matInput type="number" step="0.01" formControlName="price" />
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full sm:col-span-2">
-                  <mat-label>url</mat-label>
-                  <input matInput type="url" formControlName="url" />
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full sm:col-span-2">
-                  <mat-label>memo</mat-label>
-                  <input matInput type="text" formControlName="memo" />
-                </mat-form-field>
-              </div>
-            </section>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
-      <div class="grid gap-6 xl:grid-cols-2">
-        <mat-card appearance="outlined" class="rounded-xl">
-          <mat-card-header>
-            <mat-card-title>nutritionValuesCreated</mat-card-title>
-            <mat-card-subtitle>POST</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content class="space-y-3 pt-2" formArrayName="nutritionValuesCreated">
-            <div
-              *ngFor="let group of nvCreatedFA.controls; let i = index"
-              [formGroupName]="i"
-              class="grid gap-3 rounded-xl border border-slate-200 p-3 sm:grid-cols-2 lg:grid-cols-3">
-              <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-3">
-                <mat-label>nutritionKey</mat-label>
-                <mat-select formControlName="nutritionKey" (selectionChange)="onCreatedNutritionKeyChange(i)">
-                  <mat-option *ngFor="let nutritionKey of nutritionKeyOptions" [value]="nutritionKey.value">
-                    {{ nutritionKey.label }} ({{ nutritionKey.value }})
-                  </mat-option>
-                </mat-select>
-                <mat-hint *ngIf="nutritionKeyOptions.length === 0">
-                  No nutrition keys loaded
-                </mat-hint>
-              </mat-form-field>
-
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>amount</mat-label>
-                <input matInput type="number" formControlName="amount" />
-              </mat-form-field>
-
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>unit</mat-label>
-                <mat-select formControlName="unit">
-                  <mat-option *ngFor="let unit of getNutritionUnitsForCreated(i)" [value]="unit">
-                    {{ unit }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>reference</mat-label>
-                <mat-select formControlName="reference">
-                  <mat-option *ngFor="let reference of nutritionReferenceOptions" [value]="reference.value">
-                    {{ reference.label }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <div class="flex items-end sm:col-span-2 lg:col-span-3">
-                <button mat-stroked-button color="warn" type="button" (click)="removeNvCreated(i)">
-                  Supprimer
-                </button>
-              </div>
-            </div>
-
-            <button class="mt-5" mat-stroked-button type="button" (click)="addNvCreated()">
-              Ajouter une NV (POST)
-            </button>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card appearance="outlined" class="rounded-xl">
-          <mat-card-header>
-            <mat-card-title>nutritionValuesUpdated</mat-card-title>
-            <mat-card-subtitle>PATCH</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content class="space-y-3 pt-2" formArrayName="nutritionValuesUpdated">
-            <div
-              *ngFor="let group of nvUpdatedFA.controls; let i = index"
-              [formGroupName]="i"
-              class="grid gap-3 rounded-xl border border-slate-200 p-3 sm:grid-cols-2 lg:grid-cols-3">
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>id (optionnel)</mat-label>
-                <input matInput type="number" formControlName="id" />
-              </mat-form-field>
-
-              <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-3">
-                <mat-label>nutritionKey</mat-label>
-                <mat-select formControlName="nutritionKey" (selectionChange)="onUpdatedNutritionKeyChange(i)">
-                  <mat-option *ngFor="let nutritionKey of nutritionKeyOptions" [value]="nutritionKey.value">
-                    {{ nutritionKey.label }} ({{ nutritionKey.value }})
-                  </mat-option>
-                </mat-select>
-                <mat-hint *ngIf="nutritionKeyOptions.length === 0">
-                  No nutrition keys loaded
-                </mat-hint>
-              </mat-form-field>
-
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>amount</mat-label>
-                <input matInput type="number" formControlName="amount" />
-              </mat-form-field>
-
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>unit</mat-label>
-                <mat-select formControlName="unit">
-                  <mat-option *ngFor="let unit of getNutritionUnitsForUpdated(i)" [value]="unit">
-                    {{ unit }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>reference</mat-label>
-                <mat-select formControlName="reference">
-                  <mat-option *ngFor="let reference of nutritionReferenceOptions" [value]="reference.value">
-                    {{ reference.label }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <div class="flex items-end sm:col-span-2 lg:col-span-3">
-                <button mat-stroked-button color="warn" type="button" (click)="removeNvUpdated(i)">
-                  Supprimer
-                </button>
-              </div>
-            </div>
-
-            <button class="mt-5" mat-stroked-button type="button" (click)="addNvUpdated()">
-              Ajouter une NV (PATCH)
-            </button>
-
-            <p class="text-xs text-slate-500">
-              Avec <code>id</code> = update. Sans <code>id</code> = create.
-              Si <code>nutritionValuesUpdated</code> est absent, rien n'est modifie.
-            </p>
-          </mat-card-content>
-        </mat-card>
+      <div class="flex flex-wrap items-center gap-2">
+        <span *ngIf="loading" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+          Chargement...
+        </span>
+        <span *ngIf="saving" class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+          Sauvegarde...
+        </span>
+        <span *ngIf="loadingMeta" class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
+          Meta...
+        </span>
       </div>
 
-      <mat-divider />
-
-      <div class="flex flex-wrap gap-2 mt-5">
-        <button mat-stroked-button type="button" (click)="fillDemoCreate()">Exemple Create</button>
-        <button mat-stroked-button type="button" (click)="fillDemoUpdate()">Exemple Update</button>
-        <button mat-raised-button color="primary" type="button" (click)="create()">Create (POST)</button>
-        <button mat-raised-button color="primary" type="button" (click)="getOne()">Get (GET /:id)</button>
-        <button mat-raised-button color="accent" type="button" (click)="update()">Update (PATCH)</button>
-        <button mat-raised-button color="warn" type="button" (click)="delete()">Delete (DELETE)</button>
-
-        <button mat-button type="button" (click)="clear()">Clear</button>
-      </div>
-    </form>
-
-    <div class="modal-backdrop" *ngIf="isEditModalOpen" (click)="closeEditModal()"></div>
-    <div class="modal-shell" *ngIf="isEditModalOpen">
-      <mat-card class="modal-card" (click)="$event.stopPropagation()">
-        <mat-card-header>
-          <mat-card-title>Modifier le produit</mat-card-title>
-          <mat-card-subtitle>ID {{ editTargetId }}</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content class="pt-2">
-          <form [formGroup]="editForm" class="grid gap-4 sm:grid-cols-2">
-            <mat-form-field appearance="fill" class="w-full sm:col-span-2">
-              <mat-label>name *</mat-label>
-              <input matInput type="text" formControlName="name" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>barcode</mat-label>
-              <input matInput type="text" formControlName="barcode" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>unitType *</mat-label>
-              <input matInput type="text" formControlName="unitType" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>quantityPerUnit *</mat-label>
-              <input matInput type="number" formControlName="quantityPerUnit" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>quantityUnit *</mat-label>
-              <mat-select formControlName="quantityUnit">
-                <mat-option *ngFor="let unit of quantityUnitOptions" [value]="unit.value">
-                  {{ unit.label }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>categoryId (nullable)</mat-label>
-              <input matInput type="number" formControlName="categoryId" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>genericProductId (nullable)</mat-label>
-              <input matInput type="number" formControlName="genericProductId" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>price</mat-label>
-              <input matInput type="number" step="0.01" formControlName="price" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full sm:col-span-2">
-              <mat-label>url</mat-label>
-              <input matInput type="url" formControlName="url" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full sm:col-span-2">
-              <mat-label>memo</mat-label>
-              <input matInput type="text" formControlName="memo" />
-            </mat-form-field>
-
-            <div class="sm:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3" formArrayName="nutritionValuesUpdated">
-              <p class="mb-3 text-sm font-semibold text-slate-900">nutritionValues (PATCH)</p>
-
-              <div
-                *ngFor="let group of editNvFA.controls; let i = index"
-                [formGroupName]="i"
-                class="mb-3 grid gap-3 rounded-lg border border-slate-200 bg-white p-3 sm:grid-cols-2 lg:grid-cols-3">
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>id (optionnel)</mat-label>
-                  <input matInput type="number" formControlName="id" />
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-3">
-                  <mat-label>nutritionKey</mat-label>
-                  <mat-select formControlName="nutritionKey" (selectionChange)="onEditNutritionKeyChange(i)">
-                    <mat-option *ngFor="let nutritionKey of nutritionKeyOptions" [value]="nutritionKey.value">
-                      {{ nutritionKey.label }} ({{ nutritionKey.value }})
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>amount</mat-label>
-                  <input matInput type="number" formControlName="amount" />
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>unit</mat-label>
-                  <mat-select formControlName="unit">
-                    <mat-option *ngFor="let unit of getNutritionUnitsForEdit(i)" [value]="unit">
-                      {{ unit }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-
-                <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>reference</mat-label>
-                  <mat-select formControlName="reference">
-                    <mat-option *ngFor="let reference of nutritionReferenceOptions" [value]="reference.value">
-                      {{ reference.label }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-
-                <div class="flex items-end sm:col-span-2 lg:col-span-3">
-                  <button mat-stroked-button color="warn" type="button" (click)="removeEditNv(i)">
-                    Supprimer
-                  </button>
-                </div>
-              </div>
-
-              <button mat-stroked-button type="button" (click)="addEditNv()">
-                Ajouter une NV
-              </button>
-            </div>
-          </form>
-        </mat-card-content>
-        <mat-card-actions align="end" class="gap-2 px-4 pb-4">
-          <button mat-stroked-button type="button" (click)="closeEditModal()">Annuler</button>
-          <button mat-raised-button color="primary" type="button" (click)="saveEditFromModal()">
-            Valider
-          </button>
-        </mat-card-actions>
-      </mat-card>
-    </div>
-
-    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
-
-    <div class="space-y-3 p-4 sm:p-6">
       <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
         {{ lastError | json }}
       </p>
 
-      <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
-      <pre class="max-h-96 overflow-auto rounded-lg bg-slate-100 p-4 text-xs text-slate-800">
-{{ lastResponse | json }}
-      </pre>
+      <p *ngIf="lastMetaError" class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+        Impossible de charger les metas (units / nutrition keys), fallback actif.
+      </p>
+
+      <app-product-list
+        mode="manage"
+        [products]="productListItems"
+        (addRequested)="onAddRequested()"
+        (editRequested)="onEditRequested($event)"
+        (deleteRequested)="onDeleteRequested($event)">
+      </app-product-list>
+
+      <mat-card *ngIf="formVisible" appearance="outlined" class="rounded-xl">
+        <mat-card-content class="p-0">
+          <app-product-form
+            [mode]="formMode"
+            [product]="formInitialValue"
+            [quantityUnits]="quantityUnitOptions"
+            [nutritionKeys]="nutritionKeyOptions"
+            (submitted)="onFormSubmitted($event)"
+            (menuClicked)="onMenuClicked()">
+          </app-product-form>
+        </mat-card-content>
+
+        <mat-card-actions class="flex justify-center pb-6">
+          <button mat-stroked-button type="button" (click)="onCancelForm()">
+            Annuler
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+      <div *ngIf="lastResponse" class="space-y-2">
+        <h3 class="text-sm font-semibold text-slate-800">Derniere reponse</h3>
+        <pre class="max-h-72 overflow-auto rounded-lg bg-slate-100 p-3 text-xs text-slate-800">{{ lastResponse | json }}</pre>
+      </div>
     </div>
   </mat-card>
 </section>
