@@ -8,7 +8,11 @@ import {
   Validators,
 } from '@angular/forms';
 import { InputDayService } from '../../services/input-day-service';
-import { InputDayItemCommand } from '../../interfaces/input-day.interface';
+import {
+  InputDayItemCommand,
+  InputDayMacroValue,
+  InputDayResponse,
+} from '../../interfaces/input-day.interface';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -44,6 +48,7 @@ export class InputDayFeature implements OnInit {
 
   lastResponse: unknown = null;
   lastError: unknown = null;
+  inputDayResponse: InputDayResponse | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -202,6 +207,27 @@ export class InputDayFeature implements OnInit {
 
     this.lastResponse = null;
     this.lastError = null;
+    this.inputDayResponse = null;
+  }
+
+  formatMacroValue(value: InputDayMacroValue): string {
+    if (typeof value === 'number') {
+      return this.formatDecimal(value);
+    }
+
+    return value;
+  }
+
+  formatNutritionAmount(value: number): string {
+    return this.formatDecimal(value);
+  }
+
+  formatTime(value: string | null | undefined): string {
+    if (!value) {
+      return '-';
+    }
+
+    return value.length >= 5 ? value.slice(0, 5) : value;
   }
 
   private requireDate(): string | null {
@@ -293,6 +319,7 @@ export class InputDayFeature implements OnInit {
   private setResult(response: unknown) {
     this.lastResponse = response;
     this.lastError = null;
+    this.inputDayResponse = this.isInputDayResponse(response) ? response : null;
     this.loading = false;
   }
 
@@ -337,5 +364,26 @@ export class InputDayFeature implements OnInit {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private formatDecimal(value: number): string {
+    if (!Number.isFinite(value)) {
+      return '0';
+    }
+
+    return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
+  }
+
+  private isInputDayResponse(value: unknown): value is InputDayResponse {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const raw = value as Record<string, unknown>;
+    return (
+      typeof raw['dateLocal'] === 'string' &&
+      typeof raw['timezone'] === 'string' &&
+      Array.isArray(raw['items'])
+    );
   }
 }

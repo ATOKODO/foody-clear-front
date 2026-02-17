@@ -151,6 +151,204 @@
         {{ lastError | json }}
       </p>
 
+      <div *ngIf="inputDayResponse as response" class="space-y-3">
+        <h3 class="text-base font-semibold text-slate-900">Resume InputDay</h3>
+
+        <mat-card appearance="outlined" class="rounded-xl">
+          <mat-card-content class="space-y-3 p-4">
+            <div class="grid gap-3 sm:grid-cols-2">
+              <p class="text-sm text-slate-700">
+                <span class="font-semibold text-slate-900">Date:</span> {{ response.dateLocal }}
+              </p>
+              <p class="text-sm text-slate-700">
+                <span class="font-semibold text-slate-900">Timezone:</span> {{ response.timezone }}
+              </p>
+            </div>
+
+            <div *ngIf="response.assignment as assignment; else noAssignment" class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <p class="text-sm font-semibold text-slate-900">Assignation active</p>
+              <p class="text-sm text-slate-700">
+                Cycle #{{ assignment.cycleId }} - {{ assignment.cycleTitle }}
+              </p>
+              <p class="text-sm text-slate-700">
+                Du {{ assignment.startDateLocal }} au {{ assignment.endDateLocal }} (jour {{ assignment.dayIndex }})
+              </p>
+            </div>
+
+            <ng-template #noAssignment>
+              <p class="text-sm text-slate-600">Aucune assignation pour cette date.</p>
+            </ng-template>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card appearance="outlined" class="rounded-xl">
+          <mat-card-content class="space-y-3 p-4">
+            <div *ngIf="response.daySet as daySet; else noDaySet">
+              <p class="text-sm font-semibold text-slate-900">
+                DaySet #{{ daySet.id }} - {{ daySet.title }}
+              </p>
+
+              <div class="flex flex-wrap gap-2">
+                <span
+                  *ngFor="let target of daySet.nutritionValue | keyvalue"
+                  class="rounded-full bg-indigo-50 px-2 py-1 text-xs text-indigo-700">
+                  {{ target.key }}: {{ formatNutritionAmount(target.value) }}
+                </span>
+              </div>
+
+              <div class="overflow-x-auto rounded-lg border border-slate-200">
+                <table class="min-w-full text-sm">
+                  <thead class="bg-slate-50 text-left text-slate-700">
+                    <tr>
+                      <th class="px-3 py-2">Slot</th>
+                      <th class="px-3 py-2">Horaire</th>
+                      <th class="px-3 py-2">Cibles</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let slot of daySet.slots" class="border-t border-slate-100">
+                      <td class="px-3 py-2">
+                        {{ slot.sortOrder }}. {{ slot.title }} <span class="text-slate-500">({{ slot.slotKey }})</span>
+                      </td>
+                      <td class="px-3 py-2">{{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}</td>
+                      <td class="px-3 py-2">
+                        <div class="flex flex-wrap gap-1">
+                          <span
+                            *ngFor="let target of slot.nutritionValue | keyvalue"
+                            class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                            {{ target.key }}: {{ formatNutritionAmount(target.value) }}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <ng-template #noDaySet>
+              <p class="text-sm text-slate-600">Aucun daySet retourne.</p>
+            </ng-template>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card appearance="outlined" class="rounded-xl">
+          <mat-card-content class="space-y-3 p-4">
+            <p class="text-sm font-semibold text-slate-900">Items du jour</p>
+
+            <div *ngIf="response.items.length > 0; else noItems" class="overflow-x-auto rounded-lg border border-slate-200">
+              <table class="min-w-full text-sm">
+                <thead class="bg-slate-50 text-left text-slate-700">
+                  <tr>
+                    <th class="px-3 py-2">Produit</th>
+                    <th class="px-3 py-2">Qty</th>
+                    <th class="px-3 py-2">Ajoute le</th>
+                    <th class="px-3 py-2">Nutrition</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of response.items" class="border-t border-slate-100 align-top">
+                    <td class="px-3 py-2">
+                      {{ item.productName }}
+                      <span class="text-slate-500">(#{{ item.productId }})</span>
+                    </td>
+                    <td class="px-3 py-2">{{ formatNutritionAmount(item.qty) }}</td>
+                    <td class="px-3 py-2">{{ item.insertedAt | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+                    <td class="px-3 py-2">
+                      <div class="flex flex-wrap gap-1">
+                        <span
+                          *ngFor="let nutrition of item.nutritionValue | keyvalue"
+                          class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                          {{ nutrition.key }}: {{ formatNutritionAmount(nutrition.value) }}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <ng-template #noItems>
+              <p class="text-sm text-slate-600">Aucun item saisi pour cette journee.</p>
+            </ng-template>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card *ngIf="response.totalsMacros as totals" appearance="outlined" class="rounded-xl">
+          <mat-card-content class="space-y-3 p-4">
+            <p class="text-sm font-semibold text-slate-900">Totals Macros</p>
+
+            <div class="grid gap-3 md:grid-cols-3">
+              <div class="rounded-lg border border-slate-200 p-3">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Day Total</p>
+                <div class="space-y-1 text-sm text-slate-700">
+                  <p *ngFor="let entry of totals.dayTotal | keyvalue">
+                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                    {{ formatMacroValue(entry.value) }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-slate-200 p-3">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Targets</p>
+                <div class="space-y-1 text-sm text-slate-700">
+                  <p *ngFor="let entry of totals.targets | keyvalue">
+                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                    {{ formatNutritionAmount(entry.value) }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-slate-200 p-3">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Delta To Targets</p>
+                <div class="space-y-1 text-sm text-slate-700">
+                  <p *ngFor="let entry of totals.deltaToTargets | keyvalue">
+                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                    {{ formatMacroValue(entry.value) }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="totals.bySlot.length > 0" class="space-y-2">
+              <p class="text-sm font-semibold text-slate-900">Par slot</p>
+              <div
+                *ngFor="let slotTotals of totals.bySlot"
+                class="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p class="text-sm font-medium text-slate-900">
+                  {{ slotTotals.slot.title }} ({{ slotTotals.slot.slotKey }})
+                </p>
+                <p class="text-xs text-slate-600">
+                  {{ formatTime(slotTotals.slot.startTime) }} - {{ formatTime(slotTotals.slot.endTime) }}
+                </p>
+                <p class="text-sm text-slate-700">
+                  Consomme: P {{ formatMacroValue(slotTotals.proteins) }} / C {{ formatMacroValue(slotTotals.carbs) }} / L {{ formatMacroValue(slotTotals.lipids) }}
+                </p>
+                <p class="text-sm text-slate-700">
+                  Cibles:
+                  <span *ngFor="let target of slotTotals.targets | keyvalue" class="mr-2">
+                    {{ target.key }} {{ formatNutritionAmount(target.value) }}
+                  </span>
+                </p>
+                <p class="text-sm text-slate-700">
+                  Delta:
+                  <span *ngFor="let delta of slotTotals.deltaToTargets | keyvalue" class="mr-2">
+                    {{ delta.key }} {{ formatMacroValue(delta.value) }}
+                  </span>
+                </p>
+                <p *ngIf="slotTotals.incompleteNutritionKeys.length > 0" class="text-xs text-amber-700">
+                  Incomplet: {{ slotTotals.incompleteNutritionKeys.join(', ') }}
+                </p>
+              </div>
+            </div>
+
+            <p *ngIf="totals.incompleteNutritionKeys.length > 0" class="text-xs text-amber-700">
+              Cles incompletes (jour): {{ totals.incompleteNutritionKeys.join(', ') }}
+            </p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
       <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
       <pre class="input-day-response max-h-[65vh] overflow-auto rounded-lg bg-slate-100 p-3 text-[11px] text-slate-800 sm:p-4 sm:text-xs">
 {{ lastResponse | json }}

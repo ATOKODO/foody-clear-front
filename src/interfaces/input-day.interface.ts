@@ -13,6 +13,22 @@ export interface UpdateInputDayItemDto {
   qty: number;
 }
 
+export type InputDayIncompleteValue = 'donnee incomplete';
+export type InputDayMacroValue = number | InputDayIncompleteValue;
+
+export interface InputDayNutritionValue {
+  [nutritionKey: string]: number;
+}
+
+export interface InputDayAssignmentSummary {
+  id: number;
+  cycleId: number;
+  cycleTitle: string;
+  startDateLocal: string;
+  endDateLocal: string;
+  dayIndex: number;
+}
+
 export interface InputDaySlotSummary {
   slotId: number | null;
   slotKey: string;
@@ -26,6 +42,24 @@ export interface InputDayItemSummary {
   productName: string;
   qty: number;
   insertedAt: string;
+  nutritionValue: InputDayNutritionValue;
+}
+
+export interface InputDayDaySetSlotSummary {
+  slotId: number;
+  slotKey: string;
+  title: string;
+  sortOrder: number;
+  startTime: string | null;
+  endTime: string | null;
+  nutritionValue: InputDayNutritionValue;
+}
+
+export interface InputDayDaySetSummary {
+  id: number;
+  title: string;
+  nutritionValue: InputDayNutritionValue;
+  slots: InputDayDaySetSlotSummary[];
 }
 
 export interface InputDayItemsBySlotEntry {
@@ -33,12 +67,31 @@ export interface InputDayItemsBySlotEntry {
   items: InputDayItemSummary[];
 }
 
+export interface InputDayTotalsMacrosBySlotEntry {
+  slot: InputDayDaySetSlotSummary;
+  proteins: InputDayMacroValue;
+  carbs: InputDayMacroValue;
+  lipids: InputDayMacroValue;
+  targets: Record<string, number>;
+  deltaToTargets: Record<string, InputDayMacroValue>;
+  incompleteNutritionKeys: string[];
+}
+
+export interface InputDayTotalsMacrosSummary {
+  bySlot: InputDayTotalsMacrosBySlotEntry[];
+  dayTotal: Record<string, InputDayMacroValue>;
+  targets: Record<string, number>;
+  deltaToTargets: Record<string, InputDayMacroValue>;
+  incompleteNutritionKeys: string[];
+}
+
 export interface InputDayResponse {
   dateLocal: string;
   timezone: string;
-  assignment: unknown | null;
-  daySet: unknown | null;
-  slots: unknown[];
-  itemsBySlot: InputDayItemsBySlotEntry[];
-  totalsMacros: unknown;
+  assignment: InputDayAssignmentSummary | null;
+  daySet: InputDayDaySetSummary | null;
+  items: InputDayItemSummary[];
+  totalsMacros: InputDayTotalsMacrosSummary | null;
+  itemsBySlot?: InputDayItemsBySlotEntry[];
+  slots?: InputDayDaySetSlotSummary[];
 }
