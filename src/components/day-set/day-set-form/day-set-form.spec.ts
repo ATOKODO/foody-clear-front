@@ -25,6 +25,7 @@ describe('DaySetForm', () => {
       title: '',
     });
     expect(component.nutritionValues.length).toBe(3);
+    expect(component.selectedSlotIds).toEqual([]);
   });
 
   it('should patch values in edit mode when daySet is provided', () => {
@@ -34,6 +35,7 @@ describe('DaySetForm', () => {
       nutritionValues: [
         { nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },
       ],
+      slotIds: [2, 3],
     });
     fixture.detectChanges();
 
@@ -43,6 +45,7 @@ describe('DaySetForm', () => {
     expect(component.nutritionValues).toEqual([
       { nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },
     ]);
+    expect(component.selectedSlotIds).toEqual([2, 3]);
   });
 
   it('should emit submitted payload with mode and form value', () => {
@@ -57,6 +60,7 @@ describe('DaySetForm', () => {
       { nutritionKey: 'CARBOHYDRATE', amount: 40, unit: 'G', reference: 'PER_100G' },
       { nutritionKey: 'FAT', amount: 15, unit: 'G', reference: 'PER_100G' },
     ];
+    component.selectedSlotIds = [1, 3];
 
     component.onSubmit();
 
@@ -70,6 +74,7 @@ describe('DaySetForm', () => {
             { nutritionKey: 'CARBOHYDRATE', amount: 40, unit: 'G', reference: 'PER_100G' },
             { nutritionKey: 'FAT', amount: 15, unit: 'G', reference: 'PER_100G' },
           ],
+          slotIds: [1, 3],
         },
       },
     ]);

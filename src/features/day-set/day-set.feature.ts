@@ -11,10 +11,13 @@ import {
   DaySetList,
   DaySetListItem,
 } from '../../components/day-set/day-set-list/day-set-list';
+import { SlotListItem } from '../../components/slot/slot-list/slot-list';
 import { CycleNutritionValue } from '../../interfaces/cycle.interface';
 import { CreateDaySetDto, DaySet } from '../../interfaces/day-set.interface';
+import { Slot } from '../../interfaces/slot.interface';
 import { DaySetService } from '../../services/day-set-service';
 import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
+import { SlotService } from '../../services/slot-service';
 
 @Component({
   selector: 'app-day-set-feature',
@@ -24,6 +27,7 @@ import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
 })
 export class DaySetFeature implements OnInit {
   daySets: DaySet[] = [];
+  slots: Slot[] = [];
   loading = false;
   saving = false;
 
@@ -41,10 +45,12 @@ export class DaySetFeature implements OnInit {
   constructor(
     private readonly daySetSrv: DaySetService,
     private readonly metaSrv: MetaService,
+    private readonly slotSrv: SlotService,
   ) {}
 
   ngOnInit(): void {
     this.loadNutritionKeys();
+    this.loadSlots();
     this.loadDaySets();
   }
 
@@ -53,6 +59,18 @@ export class DaySetFeature implements OnInit {
       id: String(daySet.id),
       title: daySet.title,
       nutritionValues: daySet.nutritionValues ?? [],
+    }));
+  }
+
+  get slotListItems(): SlotListItem[] {
+    return this.slots.map((slot) => ({
+      id: String(slot.id),
+      key: slot.key,
+      title: slot.title,
+      sortOrder: slot.sortOrder,
+      startTime: slot.startTime ?? null,
+      endTime: slot.endTime ?? null,
+      nutritionValues: slot.nutritionValues ?? [],
     }));
   }
 
@@ -79,6 +97,7 @@ export class DaySetFeature implements OnInit {
     this.formInitialValue = {
       title: daySet.title,
       nutritionValues: this.getEditableNutritionValues(daySet),
+      slotIds: this.resolveDaySetSlotIds(daySet),
     };
     this.formVisible = true;
   }
@@ -174,6 +193,17 @@ export class DaySetFeature implements OnInit {
     });
   }
 
+  private loadSlots(): void {
+    this.slotSrv.findAll().subscribe({
+      next: (response) => {
+        this.slots = response;
+      },
+      error: () => {
+        this.slots = [];
+      },
+    });
+  }
+
   private loadDaySets(): void {
     this.loading = true;
     this.daySetSrv.findAll().subscribe({
@@ -201,6 +231,7 @@ export class DaySetFeature implements OnInit {
     return {
       title: value.title,
       nutritionValues: this.normalizeNutritionValues(value.nutritionValues),
+      slotIds: this.normalizeSlotIds(value.slotIds),
     };
   }
 
@@ -245,5 +276,32 @@ export class DaySetFeature implements OnInit {
         reference: 'PER_100G',
       },
     ];
+  }
+
+  private resolveDaySetSlotIds(daySet: DaySet): number[] {
+    const slotIdsProperty = (daySet as DaySet & { slotIds?: number[] }).slotIds;
+    if (Array.isArray(slotIdsProperty) && slotIdsProperty.length > 0) {
+      return this.normalizeSlotIds(slotIdsProperty);
+    }
+
+    const slotIds = (daySet.slots ?? [])
+      .map((slot) => {
+        if (typeof slot === 'number') {
+          return slot;
+        }
+
+        if (typeof slot === 'object' && slot !== null && 'id' in slot) {
+          return Number((slot as { id: unknown }).id);
+        }
+
+        return NaN;
+      })
+      .filter((id): id is number => Number.isFinite(id));
+
+    return this.normalizeSlotIds(slotIds);
+  }
+
+  private normalizeSlotIds(slotIds: number[] | null | undefined): number[] {
+    return Array.from(new Set((slotIds ?? []).filter((id) => Number.isInteger(id) && id > 0)));
   }
 }

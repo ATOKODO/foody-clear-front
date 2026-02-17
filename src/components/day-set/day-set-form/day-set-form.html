@@ -78,6 +78,16 @@
       </div>
     </div>
 
+    <div class="space-y-3">
+      <h3 class="text-base font-semibold text-slate-900">Slots du day set</h3>
+      <app-slot-list
+        mode="select-multi"
+        [slots]="slots"
+        [selectedIds]="selectedSlotIdsAsString"
+        (selectedMany)="onSlotsSelected($event)">
+      </app-slot-list>
+    </div>
+
     <div class="flex justify-center pt-2">
       <button mat-raised-button color="primary" type="submit" class="rounded-full px-8">
         Valider

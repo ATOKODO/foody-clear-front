@@ -16,12 +16,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CycleNutritionValue, NutritionReference } from '../../../interfaces/cycle.interface';
 import { NutritionKeyMeta } from '../../../services/meta-service';
+import { SlotList, SlotListItem } from '../../slot/slot-list/slot-list';
 
 export type DaySetFormMode = 'add' | 'edit';
 
 export interface DaySetFormValue {
   title: string;
   nutritionValues: CycleNutritionValue[];
+  slotIds: number[];
 }
 
 @Component({
@@ -34,6 +36,7 @@ export interface DaySetFormValue {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    SlotList,
   ],
   templateUrl: './day-set-form.html',
   styleUrl: './day-set-form.scss',
@@ -44,6 +47,7 @@ export class DaySetForm implements OnInit, OnChanges {
   @Input() mode: DaySetFormMode = 'add';
   @Input() daySet: Partial<DaySetFormValue> | null = null;
   @Input() nutritionKeys: NutritionKeyMeta[] = [];
+  @Input() slots: SlotListItem[] = [];
 
   @Output() readonly submitted = new EventEmitter<{
     mode: DaySetFormMode;
@@ -52,6 +56,7 @@ export class DaySetForm implements OnInit, OnChanges {
   @Output() readonly menuClicked = new EventEmitter<void>();
 
   nutritionValues: CycleNutritionValue[] = [];
+  selectedSlotIds: number[] = [];
   readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
     { label: 'Pour 100 g', value: 'PER_100G' },
     { label: 'Pour 100 ml', value: 'PER_100ML' },
@@ -94,8 +99,21 @@ export class DaySetForm implements OnInit, OnChanges {
       value: {
         ...this.form.getRawValue(),
         nutritionValues,
+        slotIds: [...this.selectedSlotIds],
       },
     });
+  }
+
+  onSlotsSelected(slots: SlotListItem[]): void {
+    this.selectedSlotIds = this.normalizeSlotIds(
+      slots
+        .map((slot) => Number(slot.id))
+        .filter((id) => Number.isFinite(id)),
+    );
+  }
+
+  get selectedSlotIdsAsString(): string[] {
+    return this.selectedSlotIds.map((id) => String(id));
   }
 
   addNutritionValue(): void {
@@ -132,12 +150,14 @@ export class DaySetForm implements OnInit, OnChanges {
     const defaults: DaySetFormValue = {
       title: '',
       nutritionValues: this.getDefaultNutritionValues(),
+      slotIds: [],
     };
 
     if (this.mode === 'edit' && this.daySet) {
       this.form.reset({
         title: this.daySet.title ?? defaults.title,
       });
+      this.selectedSlotIds = this.normalizeSlotIds(this.daySet.slotIds ?? defaults.slotIds);
       this.nutritionValues =
         this.daySet.nutritionValues && this.daySet.nutritionValues.length > 0
           ? this.cloneNutritionValues(this.daySet.nutritionValues)
@@ -146,6 +166,7 @@ export class DaySetForm implements OnInit, OnChanges {
     }
 
     this.form.reset({ title: defaults.title });
+    this.selectedSlotIds = [...defaults.slotIds];
     this.nutritionValues = this.cloneNutritionValues(defaults.nutritionValues);
   }
 
@@ -214,5 +235,9 @@ export class DaySetForm implements OnInit, OnChanges {
     }
 
     return key.allowedUnits.filter((unit) => unit.trim() !== '');
+  }
+
+  private normalizeSlotIds(slotIds: number[]): number[] {
+    return Array.from(new Set(slotIds.filter((id) => Number.isInteger(id) && id > 0)));
   }
 }
