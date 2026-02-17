@@ -21,7 +21,10 @@ import {
 import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
 import { Cycle } from '../../interfaces/cycle.interface';
 import { CalendarView } from '../../interfaces/calendar.interface';
-import { InputDayItemsBySlotEntry } from '../../interfaces/input-day.interface';
+import {
+  InputDayItemsBySlotEntry,
+  InputDayResponse,
+} from '../../interfaces/input-day.interface';
 import { CycleAssignementService } from '../../services/cycle-assignement-service';
 import { CycleService } from '../../services/cycle-service';
 import { InputDayService } from '../../services/input-day-service';
@@ -52,7 +55,9 @@ export class PlanningFeature implements OnInit {
 
   cycles: Cycle[] = [];
   cycleAssignments: CycleAssignment[] = [];
+  inputDayResponse: InputDayResponse | null = null;
   inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
+  inputDayTimezone = DateTime.local().zoneName || 'UTC';
 
   currentCalendarView: CalendarView = 'month';
   currentAnchorDateLocal: string | null = null;
@@ -298,6 +303,8 @@ export class PlanningFeature implements OnInit {
         if (requestId !== this.inputDayRequestId) {
           return;
         }
+        this.inputDayResponse = response;
+        this.inputDayTimezone = response.timezone?.trim() || this.resolveTimezone();
         this.inputDayItemsBySlot = response.itemsBySlot ?? [];
         this.loadingDayItems = false;
       },
@@ -305,6 +312,7 @@ export class PlanningFeature implements OnInit {
         if (requestId !== this.inputDayRequestId) {
           return;
         }
+        this.inputDayResponse = null;
         this.inputDayItemsBySlot = [];
         this.dayItemsError = error;
         this.loadingDayItems = false;
@@ -314,7 +322,9 @@ export class PlanningFeature implements OnInit {
 
   private clearInputDayState(): void {
     this.inputDayRequestId++;
+    this.inputDayResponse = null;
     this.inputDayItemsBySlot = [];
+    this.inputDayTimezone = DateTime.local().zoneName || 'UTC';
     this.loadingDayItems = false;
     this.dayItemsError = null;
   }

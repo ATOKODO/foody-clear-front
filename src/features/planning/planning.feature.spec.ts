@@ -35,6 +35,7 @@ describe('PlanningFeature', () => {
           timezone: 'UTC',
           assignment: null,
           daySet: null,
+          items: [],
           slots: [],
           itemsBySlot: [],
           totalsMacros: null,

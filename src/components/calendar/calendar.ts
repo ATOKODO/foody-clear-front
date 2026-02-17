@@ -17,9 +17,15 @@ import {
   HourSlot,
   CalendarAssignment,
   CalendarInsertedProduct,
+  CalendarDaySlot,
 } from '../../interfaces/calendar.interface';
 import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
-import { InputDayItemsBySlotEntry } from '../../interfaces/input-day.interface';
+import {
+  InputDayDaySetSlotSummary,
+  InputDayItemSummary,
+  InputDayItemsBySlotEntry,
+  InputDayResponse,
+} from '../../interfaces/input-day.interface';
 import {
   generateMonthDays,
   generateWeekDays,
@@ -64,6 +70,7 @@ export interface CalendarViewChangeEvent {
 })
 export class Calendar implements OnInit, OnChanges {
   @Input() cycleAssignments: CycleAssignment[] = [];
+  @Input() inputDayResponse: InputDayResponse | null = null;
   @Input() inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
   @Input() loadingDayItems = false;
   @Input() dayItemsError: unknown = null;
@@ -85,6 +92,7 @@ export class Calendar implements OnInit, OnChanges {
   weekDays: CalendarDay[] = [];
   yearMonths: MonthSummary[] = [];
   dayHours: HourSlot[] = [];
+  daySlots: CalendarDaySlot[] = [];
 
   private assignmentById = new Map<string, CycleAssignment>();
 
@@ -98,8 +106,12 @@ export class Calendar implements OnInit, OnChanges {
       this.applyAssignments();
     }
 
-    if (changes['inputDayItemsBySlot'] || changes['inputDayTimezone']) {
-      this.applyDayInsertedProducts(this.inputDayItemsBySlot ?? []);
+    if (
+      changes['inputDayResponse'] ||
+      changes['inputDayItemsBySlot'] ||
+      changes['inputDayTimezone']
+    ) {
+      this.applyInputDayData();
     }
   }
 
@@ -291,7 +303,7 @@ export class Calendar implements OnInit, OnChanges {
   private refreshView(): void {
     this.loadView();
     this.applyAssignments();
-    this.applyDayInsertedProducts(this.inputDayItemsBySlot ?? []);
+    this.applyInputDayData();
   }
 
   formatInsertedAt(insertedAt: string): string {
@@ -301,6 +313,17 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     return parsed.setZone(this.normalizeTimezone()).toFormat('HH:mm');
+  }
+
+  formatSlotRange(slot: CalendarDaySlot): string {
+    const start = this.formatClock(slot.startTime);
+    const end = this.formatClock(slot.endTime);
+
+    if (start && end) {
+      return `${start}-${end}`;
+    }
+
+    return start ?? end ?? 'horaire libre';
   }
 
   private buildViewChangeEvent(): CalendarViewChangeEvent {
@@ -350,44 +373,179 @@ export class Calendar implements OnInit, OnChanges {
     };
   }
 
-  private applyDayInsertedProducts(entries: InputDayItemsBySlotEntry[]): void {
+  private applyInputDayData(): void {
+    const entries = this.resolveItemsBySlotEntries();
+    const slots = this.resolveDaySlots();
+    this.applyDaySlots(slots);
+    this.applyDayInsertedProducts(entries, this.inputDayResponse?.items ?? []);
+  }
+
+  private resolveItemsBySlotEntries(): InputDayItemsBySlotEntry[] {
+    if (this.inputDayResponse?.itemsBySlot && this.inputDayResponse.itemsBySlot.length > 0) {
+      return this.inputDayResponse.itemsBySlot;
+    }
+
+    return this.inputDayItemsBySlot ?? [];
+  }
+
+  private resolveDaySlots(): CalendarDaySlot[] {
+    const daySetSlots = this.inputDayResponse?.daySet?.slots ?? [];
+    const totalsSlots = this.inputDayResponse?.totalsMacros?.bySlot.map((entry) => entry.slot) ?? [];
+    const legacySlots = this.inputDayResponse?.slots ?? [];
+
+    const ordered = this.mergeSlots(daySetSlots, totalsSlots, legacySlots);
+    return ordered.map((slot) => ({
+      slotId: slot.slotId,
+      slotKey: slot.slotKey,
+      title: slot.title,
+      sortOrder: slot.sortOrder,
+      startTime: slot.startTime ?? null,
+      endTime: slot.endTime ?? null,
+    }));
+  }
+
+  private mergeSlots(
+    ...sources: Array<InputDayDaySetSlotSummary[]>
+  ): InputDayDaySetSlotSummary[] {
+    const unique = new Map<string, InputDayDaySetSlotSummary>();
+
+    sources.forEach((slots) => {
+      slots.forEach((slot) => {
+        const key = slot.slotId !== null ? `id:${slot.slotId}` : `key:${slot.slotKey}`;
+        if (!unique.has(key)) {
+          unique.set(key, slot);
+        }
+      });
+    });
+
+    return Array.from(unique.values()).sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  private applyDaySlots(slots: CalendarDaySlot[]): void {
+    this.daySlots = slots;
+    this.dayHours.forEach((hour) => {
+      hour.activeSlots = [];
+    });
+
+    if (this.currentView !== 'day' || slots.length === 0) {
+      return;
+    }
+
+    this.dayHours.forEach((hour) => {
+      const hourStart = hour.hour * 60;
+      const hourEnd = hourStart + 60;
+      hour.activeSlots = slots.filter((slot) =>
+        this.isSlotOverlappingHour(slot, hourStart, hourEnd),
+      );
+    });
+  }
+
+  private isSlotOverlappingHour(
+    slot: CalendarDaySlot,
+    hourStart: number,
+    hourEnd: number,
+  ): boolean {
+    const start = this.toMinutes(slot.startTime);
+    const end = this.toMinutes(slot.endTime);
+
+    if (start === null && end === null) {
+      return false;
+    }
+
+    const startMinutes = start ?? 0;
+    const endMinutes = end ?? 24 * 60;
+    if (endMinutes <= startMinutes) {
+      return false;
+    }
+
+    return startMinutes < hourEnd && endMinutes > hourStart;
+  }
+
+  private toMinutes(time: string | null | undefined): number | null {
+    if (!time) {
+      return null;
+    }
+
+    const parts = time.split(':');
+    if (parts.length < 2) {
+      return null;
+    }
+
+    const hour = Number(parts[0]);
+    const minute = Number(parts[1]);
+    if (!Number.isInteger(hour) || !Number.isInteger(minute)) {
+      return null;
+    }
+
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      return null;
+    }
+
+    return hour * 60 + minute;
+  }
+
+  private formatClock(time: string | null | undefined): string | null {
+    if (!time) {
+      return null;
+    }
+
+    return time.length >= 5 ? time.slice(0, 5) : time;
+  }
+
+  private applyDayInsertedProducts(
+    entries: InputDayItemsBySlotEntry[],
+    responseItems: InputDayItemSummary[],
+  ): void {
     this.clearDayInsertedProducts();
     if (this.currentView !== 'day') {
       return;
     }
 
+    const items = responseItems.length > 0
+      ? responseItems
+      : entries.flatMap((entry) => entry.items);
+
+    const slotByItemId = new Map<number, { slotTitle: string; slotKey: string }>();
     entries.forEach((entry) => {
       entry.items.forEach((item) => {
-        const parsed = DateTime.fromISO(item.insertedAt, { setZone: true });
-        if (!parsed.isValid) {
-          return;
-        }
-
-        const localized = parsed.setZone(this.normalizeTimezone());
-        const targetHour = this.dayHours.find((hour) => hour.hour === localized.hour);
-        if (!targetHour) {
-          return;
-        }
-
-        if (!targetHour.insertedProducts) {
-          targetHour.insertedProducts = [];
-        }
-
-        const insertedProduct: CalendarInsertedProduct = {
-          id: item.id,
-          productId: item.productId,
-          productName: item.productName,
-          qty: item.qty,
-          insertedAt: item.insertedAt,
+        slotByItemId.set(item.id, {
           slotTitle: entry.slot.title,
           slotKey: entry.slot.slotKey,
-        };
-
-        targetHour.insertedProducts.push(insertedProduct);
-        targetHour.insertedProducts.sort(
-          (a, b) => DateTime.fromISO(a.insertedAt).toMillis() - DateTime.fromISO(b.insertedAt).toMillis(),
-        );
+        });
       });
+    });
+
+    items.forEach((item) => {
+      const parsed = DateTime.fromISO(item.insertedAt, { setZone: true });
+      if (!parsed.isValid) {
+        return;
+      }
+
+      const localized = parsed.setZone(this.normalizeTimezone());
+      const targetHour = this.dayHours.find((hour) => hour.hour === localized.hour);
+      if (!targetHour) {
+        return;
+      }
+
+      if (!targetHour.insertedProducts) {
+        targetHour.insertedProducts = [];
+      }
+
+      const slot = slotByItemId.get(item.id);
+      const insertedProduct: CalendarInsertedProduct = {
+        id: item.id,
+        productId: item.productId,
+        productName: item.productName,
+        qty: item.qty,
+        insertedAt: item.insertedAt,
+        slotTitle: slot?.slotTitle ?? 'Sans slot',
+        slotKey: slot?.slotKey ?? '-',
+      };
+
+      targetHour.insertedProducts.push(insertedProduct);
+      targetHour.insertedProducts.sort(
+        (a, b) => DateTime.fromISO(a.insertedAt).toMillis() - DateTime.fromISO(b.insertedAt).toMillis(),
+      );
     });
   }
 

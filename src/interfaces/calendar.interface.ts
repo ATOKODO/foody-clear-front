@@ -43,9 +43,19 @@ export interface CalendarInsertedProduct {
   slotKey: string;
 }
 
+export interface CalendarDaySlot {
+  slotId: number | null;
+  slotKey: string;
+  title: string;
+  sortOrder: number;
+  startTime?: string | null;
+  endTime?: string | null;
+}
+
 export interface HourSlot {
   hour: number;
   label: string;
   assignment?: CalendarAssignment;
   insertedProducts?: CalendarInsertedProduct[];
+  activeSlots?: CalendarDaySlot[];
 }

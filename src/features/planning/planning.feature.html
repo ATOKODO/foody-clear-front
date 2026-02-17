@@ -40,7 +40,9 @@
 
       <app-calendar
         [cycleAssignments]="cycleAssignments"
+        [inputDayResponse]="inputDayResponse"
         [inputDayItemsBySlot]="inputDayItemsBySlot"
+        [inputDayTimezone]="inputDayTimezone"
         [loadingDayItems]="loadingDayItems"
         [dayItemsError]="dayItemsError"
         (viewChanged)="onCalendarViewChanged($event)"
