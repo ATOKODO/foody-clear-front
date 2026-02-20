@@ -10,6 +10,7 @@ import {
 import { InventoryService } from '../../services/inventory-service';
 import {
   CreateInventoryDto,
+  InventoryProductQtyDto,
   UpdateInventoryDto,
   UpdateInventoryProductsDto,
 } from '../../interfaces/inventory.interface';
@@ -60,8 +61,11 @@ export class Inventory implements OnInit {
         validators: [Validators.required],
       }),
       productIdsStr: this.fb.control<string | null>(null),
+      productsJson: this.fb.control<string | null>(null),
       addProductIdsStr: this.fb.control<string | null>(null),
+      addProductsJson: this.fb.control<string | null>(null),
       removeProductIdsStr: this.fb.control<string | null>(null),
+      removeProductsJson: this.fb.control<string | null>(null),
     });
   }
 
@@ -98,6 +102,53 @@ export class Inventory implements OnInit {
     return Array.from(new Set(ids));
   }
 
+  private parseProductsJson(
+    rawJson: string | null | undefined,
+    fieldName: string,
+  ): InventoryProductQtyDto[] | undefined {
+    if (!rawJson || rawJson.trim() === '') {
+      return undefined;
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(rawJson);
+    } catch {
+      throw new Error(`${fieldName} doit etre un JSON valide.`);
+    }
+
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      throw new Error(`${fieldName} doit etre un tableau JSON non vide.`);
+    }
+
+    const products = parsed.map((value, index) => {
+      if (!value || typeof value !== 'object') {
+        throw new Error(`${fieldName}[${index}] doit etre un objet.`);
+      }
+
+      const item = value as Record<string, unknown>;
+      const productId = Number(item['productId']);
+      const qty = Number(item['qty']);
+
+      if (!Number.isInteger(productId) || productId < 1) {
+        throw new Error(`${fieldName}[${index}].productId doit etre un entier > 0.`);
+      }
+
+      if (!Number.isFinite(qty) || qty <= 0) {
+        throw new Error(`${fieldName}[${index}].qty doit etre > 0.`);
+      }
+
+      return { productId, qty };
+    });
+
+    const merged = new Map<number, number>();
+    products.forEach((product) => {
+      merged.set(product.productId, (merged.get(product.productId) ?? 0) + product.qty);
+    });
+
+    return Array.from(merged.entries()).map(([productId, qty]) => ({ productId, qty }));
+  }
+
   private pickCreatePayload(): CreateInventoryDto {
     const value = this.form.getRawValue();
     const name = value.name.trim();
@@ -108,9 +159,14 @@ export class Inventory implements OnInit {
 
     const dto: CreateInventoryDto = { name };
     const productIds = this.parseCsvIds(value.productIdsStr, 'productIds');
+    const products = this.parseProductsJson(value.productsJson, 'products');
 
     if (productIds && productIds.length > 0) {
       dto.productIds = productIds;
+    }
+
+    if (products && products.length > 0) {
+      dto.products = products;
     }
 
     return dto;
@@ -129,15 +185,20 @@ export class Inventory implements OnInit {
 
   private pickProductsPayload(
     csv: string | null | undefined,
+    productsJson: string | null | undefined,
     operationLabel: string,
   ): UpdateInventoryProductsDto {
     const productIds = this.parseCsvIds(csv, 'productIds');
+    const products = this.parseProductsJson(productsJson, 'products');
 
-    if (!productIds || productIds.length === 0) {
-      throw new Error(`Pour ${operationLabel}, productIds est requis.`);
+    if ((!productIds || productIds.length === 0) && (!products || products.length === 0)) {
+      throw new Error(`Pour ${operationLabel}, productIds ou products est requis.`);
     }
 
-    return { productIds };
+    return {
+      ...(productIds && productIds.length > 0 ? { productIds } : {}),
+      ...(products && products.length > 0 ? { products } : {}),
+    };
   }
 
   private setResult(response: unknown) {
@@ -235,6 +296,7 @@ export class Inventory implements OnInit {
     try {
       const dto = this.pickProductsPayload(
         this.form.value.addProductIdsStr,
+        this.form.value.addProductsJson,
         'products/add',
       );
 
@@ -260,6 +322,7 @@ export class Inventory implements OnInit {
     try {
       const dto = this.pickProductsPayload(
         this.form.value.removeProductIdsStr,
+        this.form.value.removeProductsJson,
         'products/remove',
       );
 
@@ -291,8 +354,11 @@ export class Inventory implements OnInit {
       id: null,
       name: 'Stock principal',
       productIdsStr: '1,2,3',
+      productsJson: '[{"productId":1,"qty":2.5},{"productId":3,"qty":1}]',
       addProductIdsStr: '4,5',
+      addProductsJson: '[{"productId":7,"qty":3}]',
       removeProductIdsStr: '2',
+      removeProductsJson: '[{"productId":5,"qty":1}]',
     });
   }
 
@@ -301,8 +367,11 @@ export class Inventory implements OnInit {
       id: null,
       name: '',
       productIdsStr: null,
+      productsJson: null,
       addProductIdsStr: null,
+      addProductsJson: null,
       removeProductIdsStr: null,
+      removeProductsJson: null,
     });
 
     this.lastResponse = null;

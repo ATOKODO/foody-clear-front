@@ -56,15 +56,25 @@
             <mat-card-subtitle>Creation unitaire</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content class="space-y-3 pt-2">
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
               <mat-form-field appearance="fill" class="w-full">
                 <mat-label>productId</mat-label>
                 <input matInput type="number" formControlName="productId" />
               </mat-form-field>
 
               <mat-form-field appearance="fill" class="w-full">
+                <mat-label>inventoryId</mat-label>
+                <input matInput type="number" formControlName="inventoryId" />
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="w-full">
                 <mat-label>qty</mat-label>
                 <input matInput type="number" step="0.01" formControlName="qty" />
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>qtyUnit (optionnel)</mat-label>
+                <input matInput type="text" formControlName="qtyUnit" list="input-day-qty-units" placeholder="g, ml, unit..." />
               </mat-form-field>
 
               <mat-form-field appearance="fill" class="w-full">
@@ -112,7 +122,7 @@
           <mat-card-subtitle>Operations sur un item</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content class="pt-2">
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>itemId</mat-label>
               <input matInput type="number" formControlName="itemId" />
@@ -121,6 +131,11 @@
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>updateQty</mat-label>
               <input matInput type="number" step="0.01" formControlName="updateQty" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>updateQtyUnit (optionnel)</mat-label>
+              <input matInput type="text" formControlName="updateQtyUnit" list="input-day-qty-units" placeholder="g, ml, unit..." />
             </mat-form-field>
 
             <div class="grid gap-2 sm:col-span-2 sm:grid-cols-2 xl:col-span-2">
@@ -142,6 +157,10 @@
         <button mat-raised-button color="primary" type="button" class="w-full" (click)="loadDay()">Get InputDay</button>
         <button mat-button type="button" class="w-full" (click)="clear()">Clear</button>
       </div>
+
+      <datalist id="input-day-qty-units">
+        <option *ngFor="let unit of qtyUnitOptions" [value]="unit"></option>
+      </datalist>
     </form>
 
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
@@ -188,13 +207,17 @@
                 DaySet #{{ daySet.id }} - {{ daySet.title }}
               </p>
 
-              <div class="flex flex-wrap gap-2">
+              <div *ngIf="hasEntries(daySet.nutritionValue); else noDaySetTargets" class="flex flex-wrap gap-2">
                 <span
                   *ngFor="let target of daySet.nutritionValue | keyvalue"
                   class="rounded-full bg-indigo-50 px-2 py-1 text-xs text-indigo-700">
                   {{ target.key }}: {{ formatNutritionAmount(target.value) }}
                 </span>
               </div>
+
+              <ng-template #noDaySetTargets>
+                <p class="text-xs text-slate-500">Aucune cible nutritionnelle definie pour ce daySet.</p>
+              </ng-template>
 
               <div class="overflow-x-auto rounded-lg border border-slate-200">
                 <table class="min-w-full text-sm">
@@ -212,13 +235,16 @@
                       </td>
                       <td class="px-3 py-2">{{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}</td>
                       <td class="px-3 py-2">
-                        <div class="flex flex-wrap gap-1">
+                        <div *ngIf="hasEntries(slot.nutritionValue); else noSlotTargets" class="flex flex-wrap gap-1">
                           <span
                             *ngFor="let target of slot.nutritionValue | keyvalue"
                             class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
                             {{ target.key }}: {{ formatNutritionAmount(target.value) }}
                           </span>
                         </div>
+                        <ng-template #noSlotTargets>
+                          <span class="text-xs text-slate-500">-</span>
+                        </ng-template>
                       </td>
                     </tr>
                   </tbody>
@@ -241,7 +267,9 @@
                 <thead class="bg-slate-50 text-left text-slate-700">
                   <tr>
                     <th class="px-3 py-2">Produit</th>
+                    <th class="px-3 py-2">Inventory</th>
                     <th class="px-3 py-2">Qty</th>
+                    <th class="px-3 py-2">Qty normalisee</th>
                     <th class="px-3 py-2">Ajoute le</th>
                     <th class="px-3 py-2">Nutrition</th>
                   </tr>
@@ -252,7 +280,11 @@
                       {{ item.productName }}
                       <span class="text-slate-500">(#{{ item.productId }})</span>
                     </td>
-                    <td class="px-3 py-2">{{ formatNutritionAmount(item.qty) }}</td>
+                    <td class="px-3 py-2">{{ item.inventoryId ?? '-' }}</td>
+                    <td class="px-3 py-2">
+                      {{ formatNutritionAmount(item.qty) }} <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
+                    </td>
+                    <td class="px-3 py-2">{{ formatNutritionAmount(item.qtyNormalized) }}</td>
                     <td class="px-3 py-2">{{ item.insertedAt | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
                     <td class="px-3 py-2">
                       <div class="flex flex-wrap gap-1">
@@ -291,22 +323,28 @@
 
               <div class="rounded-lg border border-slate-200 p-3">
                 <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Targets</p>
-                <div class="space-y-1 text-sm text-slate-700">
+                <div *ngIf="hasEntries(totals.targets); else noDayTargets" class="space-y-1 text-sm text-slate-700">
                   <p *ngFor="let entry of totals.targets | keyvalue">
                     <span class="font-medium text-slate-900">{{ entry.key }}:</span>
                     {{ formatNutritionAmount(entry.value) }}
                   </p>
                 </div>
+                <ng-template #noDayTargets>
+                  <p class="text-sm text-slate-500">Aucune cible.</p>
+                </ng-template>
               </div>
 
               <div class="rounded-lg border border-slate-200 p-3">
                 <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Delta To Targets</p>
-                <div class="space-y-1 text-sm text-slate-700">
+                <div *ngIf="hasEntries(totals.deltaToTargets); else noDayDelta" class="space-y-1 text-sm text-slate-700">
                   <p *ngFor="let entry of totals.deltaToTargets | keyvalue">
                     <span class="font-medium text-slate-900">{{ entry.key }}:</span>
                     {{ formatMacroValue(entry.value) }}
                   </p>
                 </div>
+                <ng-template #noDayDelta>
+                  <p class="text-sm text-slate-500">Aucun delta.</p>
+                </ng-template>
               </div>
             </div>
 
@@ -321,21 +359,33 @@
                 <p class="text-xs text-slate-600">
                   {{ formatTime(slotTotals.slot.startTime) }} - {{ formatTime(slotTotals.slot.endTime) }}
                 </p>
-                <p class="text-sm text-slate-700">
-                  Consomme: P {{ formatMacroValue(slotTotals.proteins) }} / C {{ formatMacroValue(slotTotals.carbs) }} / L {{ formatMacroValue(slotTotals.lipids) }}
-                </p>
-                <p class="text-sm text-slate-700">
-                  Cibles:
-                  <span *ngFor="let target of slotTotals.targets | keyvalue" class="mr-2">
+                <div *ngIf="getSlotMacroEntries(slotTotals).length > 0; else noSlotTotalsValues" class="text-sm text-slate-700">
+                  <p class="font-medium text-slate-900">Consomme</p>
+                  <p *ngFor="let entry of getSlotMacroEntries(slotTotals)">
+                    {{ entry.key }}: {{ formatMacroValue(entry.value) }}
+                  </p>
+                </div>
+                <ng-template #noSlotTotalsValues>
+                  <p class="text-sm text-slate-500">Aucun total calcule pour ce slot.</p>
+                </ng-template>
+                <div *ngIf="hasEntries(slotTotals.targets); else noSlotTargetsTotals" class="text-sm text-slate-700">
+                  <p class="font-medium text-slate-900">Cibles</p>
+                  <p *ngFor="let target of slotTotals.targets | keyvalue">
                     {{ target.key }} {{ formatNutritionAmount(target.value) }}
-                  </span>
-                </p>
-                <p class="text-sm text-slate-700">
-                  Delta:
-                  <span *ngFor="let delta of slotTotals.deltaToTargets | keyvalue" class="mr-2">
+                  </p>
+                </div>
+                <ng-template #noSlotTargetsTotals>
+                  <p class="text-sm text-slate-500">Aucune cible.</p>
+                </ng-template>
+                <div *ngIf="hasEntries(slotTotals.deltaToTargets); else noSlotDeltaTotals" class="text-sm text-slate-700">
+                  <p class="font-medium text-slate-900">Delta</p>
+                  <p *ngFor="let delta of slotTotals.deltaToTargets | keyvalue">
                     {{ delta.key }} {{ formatMacroValue(delta.value) }}
-                  </span>
-                </p>
+                  </p>
+                </div>
+                <ng-template #noSlotDeltaTotals>
+                  <p class="text-sm text-slate-500">Aucun delta.</p>
+                </ng-template>
                 <p *ngIf="slotTotals.incompleteNutritionKeys.length > 0" class="text-xs text-amber-700">
                   Incomplet: {{ slotTotals.incompleteNutritionKeys.join(', ') }}
                 </p>

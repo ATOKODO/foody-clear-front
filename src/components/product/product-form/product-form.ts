@@ -16,6 +16,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { NutritionReference } from '../../../interfaces/cycle.interface';
 import { NutritionKeyMeta, QuantityUnitMeta } from '../../../services/meta-service';
+import {
+  PortionUnit,
+  ProductUnitType,
+  QuantityUnit,
+} from '../../../services/product-service';
 
 export type ProductFormMode = 'add' | 'edit';
 
@@ -33,9 +38,12 @@ export interface ProductFormValue {
   categoryId: number | null;
   tagIds: number[];
   genericProductId: number | null;
-  unitType: string;
+  unitType: ProductUnitType;
   quantityPerUnit: number;
-  quantityUnit: string;
+  quantityUnit: QuantityUnit;
+  portionCount: number | null;
+  portionUnit: PortionUnit | null;
+  portionQuantityNormalized: number | null;
   price: number | null;
   url: string | null;
   memo: string | null;
@@ -71,6 +79,23 @@ export class ProductForm implements OnInit, OnChanges {
   @Output() readonly menuClicked = new EventEmitter<void>();
 
   nutritionValues: ProductFormNutritionValue[] = [];
+  readonly unitTypeOptions: ProductUnitType[] = [
+    'Paquet',
+    'Bouteille',
+    'Boite',
+    'Sachet',
+    'Canette',
+    'Bocal',
+    'Unite',
+    'Autre',
+  ];
+  readonly portionUnitOptions: PortionUnit[] = [
+    'tranche',
+    'piece',
+    'part',
+    'bouteille',
+    'portion',
+  ];
   readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
     { label: 'Pour 100 g', value: 'PER_100G' },
     { label: 'Pour 100 ml', value: 'PER_100ML' },
@@ -83,8 +108,11 @@ export class ProductForm implements OnInit, OnChanges {
     tagIdsCsv: [''],
     genericProductId: [''],
     unitType: ['', [Validators.required]],
-    quantityPerUnit: [0, [Validators.required, Validators.min(0)]],
+    quantityPerUnit: [0, [Validators.required, Validators.min(0.000001)]],
     quantityUnit: ['', [Validators.required]],
+    portionCount: [''],
+    portionUnit: [''],
+    portionQuantityNormalized: [''],
     price: [''],
     url: [''],
     memo: [''],
@@ -120,6 +148,18 @@ export class ProductForm implements OnInit, OnChanges {
     }
 
     const rawValue = this.form.getRawValue();
+    const portionCount = this.normalizeNullableInteger(rawValue.portionCount);
+    const portionUnit = this.normalizeNullablePortionUnit(rawValue.portionUnit);
+    const portionQuantityNormalized = this.normalizeNullablePositiveNumber(
+      rawValue.portionQuantityNormalized,
+    );
+
+    this.form.controls.portionUnit.setErrors(null);
+    if ((portionCount != null || portionQuantityNormalized != null) && portionUnit == null) {
+      this.form.controls.portionUnit.setErrors({ requiredWithPortion: true });
+      return;
+    }
+
     const nutritionValues = this.nutritionValues
       .map((value) => this.normalizeNutritionValue(value))
       .filter((value) => value.nutritionKey !== '');
@@ -132,11 +172,14 @@ export class ProductForm implements OnInit, OnChanges {
         categoryId: this.normalizeNullableInteger(rawValue.categoryId),
         tagIds: this.parseCsvIds(rawValue.tagIdsCsv),
         genericProductId: this.normalizeNullableInteger(rawValue.genericProductId),
-        unitType: rawValue.unitType.trim(),
+        unitType: rawValue.unitType.trim() as ProductUnitType,
         quantityPerUnit: Number.isFinite(rawValue.quantityPerUnit)
-          ? Math.max(0, rawValue.quantityPerUnit)
-          : 0,
-        quantityUnit: rawValue.quantityUnit.trim(),
+          ? rawValue.quantityPerUnit
+          : 0.000001,
+        quantityUnit: rawValue.quantityUnit.trim() as QuantityUnit,
+        portionCount,
+        portionUnit,
+        portionQuantityNormalized,
         price: this.normalizeNullableNumber(rawValue.price),
         url: this.normalizeNullableString(rawValue.url),
         memo: this.normalizeNullableString(rawValue.memo),
@@ -182,9 +225,12 @@ export class ProductForm implements OnInit, OnChanges {
       categoryId: null,
       tagIds: [],
       genericProductId: null,
-      unitType: '',
+      unitType: this.unitTypeOptions[0],
       quantityPerUnit: 0,
-      quantityUnit: this.quantityUnits[0]?.value ?? '',
+      quantityUnit: this.normalizeQuantityUnit(this.quantityUnits[0]?.value) ?? 'g',
+      portionCount: null,
+      portionUnit: null,
+      portionQuantityNormalized: null,
       price: null,
       url: null,
       memo: null,
@@ -203,6 +249,13 @@ export class ProductForm implements OnInit, OnChanges {
         unitType: this.product.unitType ?? defaults.unitType,
         quantityPerUnit: this.product.quantityPerUnit ?? defaults.quantityPerUnit,
         quantityUnit: this.product.quantityUnit ?? defaults.quantityUnit,
+        portionCount:
+          this.product.portionCount != null ? String(this.product.portionCount) : '',
+        portionUnit: this.product.portionUnit ?? '',
+        portionQuantityNormalized:
+          this.product.portionQuantityNormalized != null
+            ? String(this.product.portionQuantityNormalized)
+            : '',
         price: this.product.price != null ? String(this.product.price) : '',
         url: this.product.url ?? defaults.url ?? '',
         memo: this.product.memo ?? defaults.memo ?? '',
@@ -223,6 +276,9 @@ export class ProductForm implements OnInit, OnChanges {
       unitType: defaults.unitType,
       quantityPerUnit: defaults.quantityPerUnit,
       quantityUnit: defaults.quantityUnit,
+      portionCount: '',
+      portionUnit: '',
+      portionQuantityNormalized: '',
       price: '',
       url: defaults.url ?? '',
       memo: defaults.memo ?? '',
@@ -376,5 +432,33 @@ export class ProductForm implements OnInit, OnChanges {
 
     const numberValue = Number(trimmed);
     return Number.isFinite(numberValue) ? numberValue : null;
+  }
+
+  private normalizeNullablePositiveNumber(value: unknown): number | null {
+    const normalized = this.normalizeNullableNumber(value);
+    return normalized != null && normalized > 0 ? normalized : null;
+  }
+
+  private normalizeQuantityUnit(value: unknown): QuantityUnit | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim().toLowerCase();
+    const allowed: QuantityUnit[] = ['mg', 'g', 'kg', 'ml', 'l', 'unit', 'pack'];
+    return allowed.includes(candidate as QuantityUnit)
+      ? (candidate as QuantityUnit)
+      : null;
+  }
+
+  private normalizeNullablePortionUnit(value: unknown): PortionUnit | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim().toLowerCase();
+    return this.portionUnitOptions.includes(candidate as PortionUnit)
+      ? (candidate as PortionUnit)
+      : null;
   }
 }

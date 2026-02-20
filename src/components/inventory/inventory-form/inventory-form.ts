@@ -10,12 +10,14 @@ import {
   inject,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { InventoryProductQtyDto } from '../../../interfaces/inventory.interface';
 
 export type InventoryFormMode = 'add' | 'edit';
 
 export interface InventoryFormValue {
   name: string;
   productIds: number[];
+  products: InventoryProductQtyDto[];
 }
 
 @Component({
@@ -39,6 +41,7 @@ export class InventoryForm implements OnInit, OnChanges {
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required]],
     productIdsCsv: [''],
+    productsJson: [''],
   });
 
   ngOnInit(): void {
@@ -67,15 +70,18 @@ export class InventoryForm implements OnInit, OnChanges {
 
     try {
       const productIds = this.parseCsvIds(this.form.controls.productIdsCsv.value);
+      const products = this.parseProductsJson(this.form.controls.productsJson.value);
       this.submitted.emit({
         mode: this.mode,
         value: {
           name: this.form.controls.name.value.trim(),
           productIds,
+          products,
         },
       });
     } catch (error) {
       this.form.controls.productIdsCsv.setErrors({ invalidIds: true });
+      this.form.controls.productsJson.setErrors({ invalidProducts: true });
     }
   }
 
@@ -84,10 +90,14 @@ export class InventoryForm implements OnInit, OnChanges {
     const productIdsCsv = this.inventory?.productIds?.length
       ? this.inventory.productIds.join(',')
       : '';
+    const productsJson = this.inventory?.products?.length
+      ? JSON.stringify(this.inventory.products)
+      : '';
 
     this.form.reset({
       name,
       productIdsCsv,
+      productsJson,
     });
   }
 
@@ -112,5 +122,45 @@ export class InventoryForm implements OnInit, OnChanges {
     }
 
     return Array.from(new Set(ids));
+  }
+
+  private parseProductsJson(raw: string): InventoryProductQtyDto[] {
+    const value = raw.trim();
+    if (value === '') {
+      return [];
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(value);
+    } catch {
+      throw new Error('Invalid products JSON');
+    }
+
+    if (!Array.isArray(parsed)) {
+      throw new Error('Invalid products JSON');
+    }
+
+    const products = parsed.map((item) => {
+      if (!item || typeof item !== 'object') {
+        throw new Error('Invalid products JSON');
+      }
+
+      const row = item as Record<string, unknown>;
+      const productId = Number(row['productId']);
+      const qty = Number(row['qty']);
+      if (!Number.isInteger(productId) || productId < 1 || !Number.isFinite(qty) || qty <= 0) {
+        throw new Error('Invalid products JSON');
+      }
+
+      return { productId, qty };
+    });
+
+    const merged = new Map<number, number>();
+    products.forEach((product) => {
+      merged.set(product.productId, (merged.get(product.productId) ?? 0) + product.qty);
+    });
+
+    return Array.from(merged.entries()).map(([productId, qty]) => ({ productId, qty }));
   }
 }

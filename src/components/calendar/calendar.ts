@@ -25,6 +25,7 @@ import {
   InputDayItemSummary,
   InputDayItemsBySlotEntry,
   InputDayResponse,
+  InputDaySlotSummary,
 } from '../../interfaces/input-day.interface';
 import {
   generateMonthDays,
@@ -385,7 +386,11 @@ export class Calendar implements OnInit, OnChanges {
       return this.inputDayResponse.itemsBySlot;
     }
 
-    return this.inputDayItemsBySlot ?? [];
+    if (this.inputDayItemsBySlot && this.inputDayItemsBySlot.length > 0) {
+      return this.inputDayItemsBySlot;
+    }
+
+    return this.buildItemsBySlotEntriesFromResponse();
   }
 
   private resolveDaySlots(): CalendarDaySlot[] {
@@ -419,6 +424,122 @@ export class Calendar implements OnInit, OnChanges {
     });
 
     return Array.from(unique.values()).sort((a, b) => a.sortOrder - b.sortOrder);
+  }
+
+  private buildItemsBySlotEntriesFromResponse(): InputDayItemsBySlotEntry[] {
+    const response = this.inputDayResponse;
+    if (!response || response.items.length === 0) {
+      return [];
+    }
+
+    const slots = this.resolveDaySlots();
+    if (slots.length === 0) {
+      return [];
+    }
+
+    const entries: InputDayItemsBySlotEntry[] = slots.map((slot) => ({
+      slot: this.toSlotSummary(slot),
+      items: [],
+    }));
+    const entryByKey = new Map(entries.map((entry) => [entry.slot.slotKey, entry]));
+
+    response.items.forEach((item) => {
+      const matchedSlot = this.resolveSlotForInsertedAt(item.insertedAt, slots);
+      if (!matchedSlot) {
+        return;
+      }
+
+      entryByKey.get(matchedSlot.slotKey)?.items.push(item);
+    });
+
+    return entries;
+  }
+
+  private toSlotSummary(slot: CalendarDaySlot): InputDaySlotSummary {
+    return {
+      slotId: slot.slotId,
+      slotKey: slot.slotKey,
+      title: slot.title,
+      sortOrder: slot.sortOrder,
+      startTime: slot.startTime ?? null,
+      endTime: slot.endTime ?? null,
+    };
+  }
+
+  private resolveSlotForInsertedAt(
+    insertedAt: string,
+    slots: CalendarDaySlot[],
+  ): CalendarDaySlot | null {
+    const parsed = DateTime.fromISO(insertedAt, { setZone: true });
+    if (!parsed.isValid) {
+      return null;
+    }
+
+    const localized = parsed.setZone(this.normalizeTimezone());
+    const secondsFromMidnight =
+      localized.hour * 3600 + localized.minute * 60 + localized.second;
+
+    return (
+      slots.find((slot) =>
+        this.isInSlotWindow(
+          secondsFromMidnight,
+          slot.startTime ?? null,
+          slot.endTime ?? null,
+        ),
+      ) ?? null
+    );
+  }
+
+  private isInSlotWindow(
+    secondsFromMidnight: number,
+    startTime: string | null,
+    endTime: string | null,
+  ): boolean {
+    if (!startTime || !endTime) {
+      return false;
+    }
+
+    const startSeconds = this.parseTimeToSeconds(startTime);
+    const endSeconds = this.parseTimeToSeconds(endTime);
+    if (startSeconds === null || endSeconds === null) {
+      return false;
+    }
+
+    if (startSeconds === endSeconds) {
+      return true;
+    }
+
+    if (startSeconds < endSeconds) {
+      return secondsFromMidnight >= startSeconds && secondsFromMidnight < endSeconds;
+    }
+
+    return secondsFromMidnight >= startSeconds || secondsFromMidnight < endSeconds;
+  }
+
+  private parseTimeToSeconds(value: string): number | null {
+    const parts = value.split(':');
+    if (parts.length < 2) {
+      return null;
+    }
+
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+    const seconds = Number((parts[2] ?? '0').split('.')[0]);
+    if (
+      !Number.isFinite(hours) ||
+      !Number.isFinite(minutes) ||
+      !Number.isFinite(seconds) ||
+      hours < 0 ||
+      hours > 23 ||
+      minutes < 0 ||
+      minutes > 59 ||
+      seconds < 0 ||
+      seconds > 59
+    ) {
+      return null;
+    }
+
+    return hours * 3600 + minutes * 60 + seconds;
   }
 
   private applyDaySlots(slots: CalendarDaySlot[]): void {

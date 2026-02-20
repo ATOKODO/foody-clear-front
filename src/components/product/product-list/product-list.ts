@@ -27,6 +27,9 @@ export interface ProductListItem {
   unitType?: string;
   quantityPerUnit?: number;
   quantityUnit?: string | null;
+  portionCount?: number | null;
+  portionUnit?: string | null;
+  portionQuantityNormalized?: number | null;
   price?: number | null;
   tagNames?: string[];
   nutritionValuesCount?: number;
@@ -151,15 +154,24 @@ export class ProductList implements OnInit, OnChanges {
   }
 
   getUnitDisplay(item: ProductListItem): string {
+    const portionSuffix =
+      item.portionCount != null &&
+      item.portionCount > 0 &&
+      item.portionUnit != null &&
+      item.portionUnit.trim() !== ''
+        ? ` (${item.portionCount} ${item.portionUnit})`
+        : '';
+
     if (
       item.quantityPerUnit == null ||
       item.quantityUnit == null ||
       item.quantityUnit.trim() === ''
     ) {
-      return item.unitType?.trim() || '-';
+      const base = item.unitType?.trim() || '-';
+      return `${base}${portionSuffix}`;
     }
 
-    return `${item.quantityPerUnit} ${item.quantityUnit}`;
+    return `${item.quantityPerUnit} ${item.quantityUnit}${portionSuffix}`;
   }
 
   getPriceDisplay(item: ProductListItem): string {

@@ -2,8 +2,22 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// --- Types côté front pour tes tests ---
+export type ProductUnitType =
+  | 'Paquet'
+  | 'Bouteille'
+  | 'Boite'
+  | 'Sachet'
+  | 'Canette'
+  | 'Bocal'
+  | 'Unite'
+  | 'Autre';
+
+export type QuantityUnit = 'mg' | 'g' | 'kg' | 'ml' | 'l' | 'unit' | 'pack';
+
+export type PortionUnit = 'tranche' | 'piece' | 'part' | 'bouteille' | 'portion';
+
 export interface NutritionValueCreated {
+  id?: number;
   nutritionKey: string;
   amount: number;
   unit: string;
@@ -11,7 +25,7 @@ export interface NutritionValueCreated {
 }
 
 export interface NutritionValueUpdated extends Partial<NutritionValueCreated> {
-  id?: number; // si présent -> update ; sinon -> create
+  id?: number;
 }
 
 export interface CreateProductDto {
@@ -20,20 +34,21 @@ export interface CreateProductDto {
   categoryId?: number | null;
   tagIds?: number[];
   genericProductId?: number | null;
-  unitType: string;
+  unitType: ProductUnitType;
   quantityPerUnit: number;
-  quantityUnit: string;
+  quantityUnit: QuantityUnit;
+  portionCount?: number | null;
+  portionUnit?: PortionUnit | null;
+  portionQuantityNormalized?: number | null;
   price?: number | null;
   url?: string | null;
   memo?: string | null;
   nutritionValuesCreated?: NutritionValueCreated[];
 }
 
-export interface UpdateProductDto extends Partial<
-  Omit<CreateProductDto, 'nutritionValuesCreated'>
-> {
-  // PATCH partiel : on n’envoie que ce qu’on modifie
+export interface UpdateProductDto extends Partial<Omit<CreateProductDto, 'nutritionValuesCreated'>> {
   nutritionValuesUpdated?: NutritionValueUpdated[];
+  clearCategory?: boolean;
   tagIdsToAdd?: number[];
   tagIdsToRemove?: number[];
 }
@@ -42,16 +57,21 @@ export interface Product {
   id: number;
   name: string;
   barcode?: string | null;
-  category?: any | null;
-  tags?: any[];
-  genericProduct?: any | null;
-  unitType: string;
+  category?: unknown | null;
+  tags?: unknown[];
+  genericProduct?: unknown | null;
+  unitType: ProductUnitType;
   quantityPerUnit: number;
-  quantityUnit: string | null;
+  quantityUnit: QuantityUnit | null;
+  quantityNormalized?: number | null;
+  portionCount?: number | null;
+  portionUnit?: PortionUnit | null;
+  portionQuantityNormalized?: number | null;
   price?: number | null;
   url?: string | null;
   memo?: string | null;
-  nutritionValues?: any[];
+  nutritionValues?: unknown[];
+  inventoryProducts?: unknown[];
 }
 
 @Injectable({ providedIn: 'root' })

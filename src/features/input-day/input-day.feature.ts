@@ -12,6 +12,8 @@ import {
   InputDayItemCommand,
   InputDayMacroValue,
   InputDayResponse,
+  InputDayTotalsMacrosBySlotEntry,
+  ProductQuantityInputUnit,
 } from '../../interfaces/input-day.interface';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -42,6 +44,21 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
   styleUrl: './input-day.feature.scss',
 })
 export class InputDayFeature implements OnInit {
+  readonly qtyUnitOptions: ProductQuantityInputUnit[] = [
+    'mg',
+    'g',
+    'kg',
+    'ml',
+    'l',
+    'unit',
+    'pack',
+    'tranche',
+    'piece',
+    'part',
+    'bouteille',
+    'portion',
+  ];
+
   baseUrl = '';
   form: FormGroup = new FormGroup({});
   loading = false;
@@ -49,6 +66,13 @@ export class InputDayFeature implements OnInit {
   lastResponse: unknown = null;
   lastError: unknown = null;
   inputDayResponse: InputDayResponse | null = null;
+  private readonly qtyUnitSet = new Set<ProductQuantityInputUnit>(this.qtyUnitOptions);
+  private readonly slotTotalsMetaKeys = new Set([
+    'slot',
+    'targets',
+    'deltaToTargets',
+    'incompleteNutritionKeys',
+  ]);
 
   constructor(
     private fb: FormBuilder,
@@ -65,7 +89,9 @@ export class InputDayFeature implements OnInit {
       timezone: this.fb.control<string>('UTC', { nonNullable: true }),
 
       productId: this.fb.control<number | null>(null),
+      inventoryId: this.fb.control<number | null>(null),
       qty: this.fb.control<number | null>(null),
+      qtyUnit: this.fb.control<string | null>(null),
       slotId: this.fb.control<number | null>(null),
       slotKey: this.fb.control<string | null>(null),
 
@@ -73,6 +99,7 @@ export class InputDayFeature implements OnInit {
 
       itemId: this.fb.control<number | null>(null),
       updateQty: this.fb.control<number | null>(null),
+      updateQtyUnit: this.fb.control<string | null>(null),
     });
   }
 
@@ -140,24 +167,32 @@ export class InputDayFeature implements OnInit {
     const dateLocal = this.requireDate();
     if (!dateLocal) return;
 
-    const itemId = this.form.value.itemId ?? null;
-    const qty = this.form.value.updateQty ?? null;
+    try {
+      const itemId = this.form.value.itemId ?? null;
+      const qty = this.form.value.updateQty ?? null;
+      const qtyUnit = this.normalizeQtyUnit(this.form.value.updateQtyUnit);
 
-    if (itemId == null || !Number.isInteger(itemId) || itemId < 1) {
-      this.setError('itemId est requis et doit etre un entier > 0.');
-      return;
+      if (itemId == null || !Number.isInteger(itemId) || itemId < 1) {
+        this.setError('itemId est requis et doit etre un entier > 0.');
+        return;
+      }
+
+      if (qty == null || qty <= 0) {
+        this.setError('updateQty est requis et doit etre > 0.');
+        return;
+      }
+
+      this.loading = true;
+      this.inputDaySrv.updateItemQty(dateLocal, itemId, {
+        qty,
+        ...(qtyUnit ? { qtyUnit } : {}),
+      }).subscribe({
+        next: (response) => this.setResult(response),
+        error: (error) => this.setError(error),
+      });
+    } catch (error) {
+      this.setError(error);
     }
-
-    if (qty == null || qty <= 0) {
-      this.setError('updateQty est requis et doit etre > 0.');
-      return;
-    }
-
-    this.loading = true;
-    this.inputDaySrv.updateItemQty(dateLocal, itemId, { qty }).subscribe({
-      next: (response) => this.setResult(response),
-      error: (error) => this.setError(error),
-    });
   }
 
   removeItem() {
@@ -182,13 +217,16 @@ export class InputDayFeature implements OnInit {
       dateLocal: new Date(2026, 1, 8),
       timezone: 'Europe/Paris',
       productId: 1,
+      inventoryId: 1,
       qty: 120,
+      qtyUnit: 'g',
       slotId: 1,
       slotKey: null,
       itemId: 1,
       updateQty: 150,
+      updateQtyUnit: 'g',
       bulkItemsJson:
-        '[{"productId":1,"qty":100,"slotId":1},{"productId":2,"qty":50,"slotId":2}]',
+        '[{"productId":1,"inventoryId":1,"qty":100,"qtyUnit":"g","slotId":1},{"productId":2,"inventoryId":1,"qty":50,"slotId":2}]',
     });
   }
 
@@ -197,12 +235,15 @@ export class InputDayFeature implements OnInit {
       dateLocal: null,
       timezone: 'UTC',
       productId: null,
+      inventoryId: null,
       qty: null,
+      qtyUnit: null,
       slotId: null,
       slotKey: null,
       bulkItemsJson: '',
       itemId: null,
       updateQty: null,
+      updateQtyUnit: null,
     });
 
     this.lastResponse = null;
@@ -230,6 +271,25 @@ export class InputDayFeature implements OnInit {
     return value.length >= 5 ? value.slice(0, 5) : value;
   }
 
+  hasEntries(value: Record<string, unknown> | null | undefined): boolean {
+    return !!value && Object.keys(value).length > 0;
+  }
+
+  getSlotMacroEntries(
+    slotTotals: InputDayTotalsMacrosBySlotEntry,
+  ): Array<{ key: string; value: InputDayMacroValue }> {
+    return Object.entries(slotTotals)
+      .filter(
+        ([key, value]) =>
+          !this.slotTotalsMetaKeys.has(key) &&
+          (typeof value === 'number' || value === 'donnee incomplete'),
+      )
+      .map(([key, value]) => ({
+        key,
+        value: value as InputDayMacroValue,
+      }));
+  }
+
   private requireDate(): string | null {
     const rawDate = this.form.value.dateLocal;
     const parsedDate = this.parseDateInput(rawDate);
@@ -243,10 +303,16 @@ export class InputDayFeature implements OnInit {
 
   private buildCreateItemPayload(): InputDayItemCommand {
     const productId = this.form.value.productId ?? null;
+    const inventoryId = this.form.value.inventoryId ?? null;
     const qty = this.form.value.qty ?? null;
+    const qtyUnit = this.normalizeQtyUnit(this.form.value.qtyUnit);
 
     if (productId == null || !Number.isInteger(productId) || productId < 1) {
       throw new Error('productId est requis et doit etre un entier > 0.');
+    }
+
+    if (inventoryId == null || !Number.isInteger(inventoryId) || inventoryId < 1) {
+      throw new Error('inventoryId est requis et doit etre un entier > 0.');
     }
 
     if (qty == null || qty <= 0) {
@@ -255,7 +321,9 @@ export class InputDayFeature implements OnInit {
 
     const dto: InputDayItemCommand = {
       productId,
+      inventoryId,
       qty,
+      ...(qtyUnit ? { qtyUnit } : {}),
     };
 
     const slotId = this.form.value.slotId ?? null;
@@ -282,10 +350,16 @@ export class InputDayFeature implements OnInit {
 
     const raw = value as Record<string, unknown>;
     const productId = Number(raw['productId']);
+    const inventoryId = Number(raw['inventoryId']);
     const qty = Number(raw['qty']);
+    const qtyUnit = this.normalizeQtyUnit(raw['qtyUnit']);
 
     if (!Number.isInteger(productId) || productId < 1) {
       throw new Error('Chaque item bulk doit avoir productId entier > 0.');
+    }
+
+    if (!Number.isInteger(inventoryId) || inventoryId < 1) {
+      throw new Error('Chaque item bulk doit avoir inventoryId entier > 0.');
     }
 
     if (!Number.isFinite(qty) || qty <= 0) {
@@ -294,7 +368,9 @@ export class InputDayFeature implements OnInit {
 
     const dto: InputDayItemCommand = {
       productId,
+      inventoryId,
       qty,
+      ...(qtyUnit ? { qtyUnit } : {}),
     };
 
     if (raw['slotId'] != null) {
@@ -314,6 +390,23 @@ export class InputDayFeature implements OnInit {
     }
 
     return dto;
+  }
+
+  private normalizeQtyUnit(value: unknown): ProductQuantityInputUnit | null {
+    if (value == null) {
+      return null;
+    }
+
+    const candidate = String(value).trim().toLowerCase();
+    if (candidate === '') {
+      return null;
+    }
+
+    if (!this.qtyUnitSet.has(candidate as ProductQuantityInputUnit)) {
+      throw new Error(`qtyUnit invalide: ${candidate}`);
+    }
+
+    return candidate as ProductQuantityInputUnit;
   }
 
   private setResult(response: unknown) {

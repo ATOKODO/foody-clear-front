@@ -20,8 +20,11 @@ import {
   CreateProductDto,
   NutritionValueCreated,
   NutritionValueUpdated,
+  PortionUnit,
   Product as ProductApiModel,
+  ProductUnitType,
   ProductService,
+  QuantityUnit,
   UpdateProductDto,
 } from '../../services/product-service';
 import {
@@ -94,6 +97,9 @@ export class Product implements OnInit {
       unitType: product.unitType,
       quantityPerUnit: product.quantityPerUnit,
       quantityUnit: product.quantityUnit,
+      portionCount: product.portionCount ?? null,
+      portionUnit: product.portionUnit ?? null,
+      portionQuantityNormalized: product.portionQuantityNormalized ?? null,
       price: product.price ?? null,
       tagNames: this.resolveTagNames(product.tags),
       nutritionValuesCount: this.extractNutritionValues(product).length,
@@ -160,7 +166,9 @@ export class Product implements OnInit {
     this.saving = true;
 
     if (event.mode === 'edit' && this.editingProductId !== null) {
-      const payload = this.toUpdateDto(event.value);
+      const previousProduct =
+        this.products.find((product) => product.id === this.editingProductId) ?? null;
+      const payload = this.toUpdateDto(event.value, previousProduct);
       this.productSrv.update(this.editingProductId, payload).subscribe({
         next: (response) => {
           this.lastResponse = response;
@@ -267,6 +275,9 @@ export class Product implements OnInit {
       unitType: value.unitType,
       quantityPerUnit: value.quantityPerUnit,
       quantityUnit: value.quantityUnit,
+      portionCount: value.portionCount,
+      portionUnit: value.portionUnit,
+      portionQuantityNormalized: value.portionQuantityNormalized,
       price: value.price,
       url: value.url,
       memo: value.memo,
@@ -274,21 +285,49 @@ export class Product implements OnInit {
     };
   }
 
-  private toUpdateDto(value: ProductFormValue): UpdateProductDto {
-    return {
+  private toUpdateDto(
+    value: ProductFormValue,
+    previousProduct: ProductApiModel | null,
+  ): UpdateProductDto {
+    const previousTagIds = previousProduct ? this.resolveTagIds(previousProduct.tags) : [];
+    const nextTagIds = value.tagIds;
+    const tagIdsToAdd = nextTagIds.filter((id) => !previousTagIds.includes(id));
+    const tagIdsToRemove = previousTagIds.filter((id) => !nextTagIds.includes(id));
+
+    const previousCategoryId = previousProduct ? this.readEntityId(previousProduct.category) : null;
+    const shouldClearCategory = value.categoryId == null && previousCategoryId != null;
+
+    const dto: UpdateProductDto = {
       name: value.name,
       barcode: value.barcode,
-      categoryId: value.categoryId,
-      tagIds: value.tagIds,
       genericProductId: value.genericProductId,
       unitType: value.unitType,
       quantityPerUnit: value.quantityPerUnit,
       quantityUnit: value.quantityUnit,
+      portionCount: value.portionCount,
+      portionUnit: value.portionUnit,
+      portionQuantityNormalized: value.portionQuantityNormalized,
       price: value.price,
       url: value.url,
       memo: value.memo,
       nutritionValuesUpdated: this.toNutritionValuesUpdated(value.nutritionValues),
     };
+
+    if (value.categoryId != null) {
+      dto.categoryId = value.categoryId;
+    } else if (shouldClearCategory) {
+      dto.clearCategory = true;
+    }
+
+    if (tagIdsToAdd.length > 0) {
+      dto.tagIdsToAdd = tagIdsToAdd;
+    }
+
+    if (tagIdsToRemove.length > 0) {
+      dto.tagIdsToRemove = tagIdsToRemove;
+    }
+
+    return dto;
   }
 
   private toNutritionValuesCreated(
@@ -327,12 +366,27 @@ export class Product implements OnInit {
       categoryId: this.readEntityId(product.category),
       tagIds: this.resolveTagIds(product.tags),
       genericProductId: this.readEntityId(product.genericProduct),
-      unitType: product.unitType ?? '',
+      unitType: this.normalizeUnitType(product.unitType),
       quantityPerUnit:
         typeof product.quantityPerUnit === 'number' && Number.isFinite(product.quantityPerUnit)
           ? product.quantityPerUnit
           : 0,
-      quantityUnit: product.quantityUnit ?? this.quantityUnitOptions[0]?.value ?? '',
+      quantityUnit: this.normalizeQuantityUnit(
+        product.quantityUnit ?? this.quantityUnitOptions[0]?.value,
+      ),
+      portionCount:
+        typeof product.portionCount === 'number' &&
+        Number.isInteger(product.portionCount) &&
+        product.portionCount > 0
+          ? product.portionCount
+          : null,
+      portionUnit: this.normalizePortionUnit(product.portionUnit),
+      portionQuantityNormalized:
+        typeof product.portionQuantityNormalized === 'number' &&
+        Number.isFinite(product.portionQuantityNormalized) &&
+        product.portionQuantityNormalized > 0
+          ? product.portionQuantityNormalized
+          : null,
       price:
         typeof product.price === 'number' && Number.isFinite(product.price)
           ? product.price
@@ -604,5 +658,53 @@ export class Product implements OnInit {
     }
 
     return null;
+  }
+
+  private normalizeUnitType(value: unknown): ProductUnitType {
+    const allowed: ProductUnitType[] = [
+      'Paquet',
+      'Bouteille',
+      'Boite',
+      'Sachet',
+      'Canette',
+      'Bocal',
+      'Unite',
+      'Autre',
+    ];
+
+    if (typeof value !== 'string') {
+      return 'Paquet';
+    }
+
+    const candidate = value.trim();
+    return allowed.includes(candidate as ProductUnitType)
+      ? (candidate as ProductUnitType)
+      : 'Paquet';
+  }
+
+  private normalizeQuantityUnit(value: unknown): QuantityUnit {
+    const allowed: QuantityUnit[] = ['mg', 'g', 'kg', 'ml', 'l', 'unit', 'pack'];
+
+    if (typeof value !== 'string') {
+      return 'g';
+    }
+
+    const candidate = value.trim().toLowerCase();
+    return allowed.includes(candidate as QuantityUnit)
+      ? (candidate as QuantityUnit)
+      : 'g';
+  }
+
+  private normalizePortionUnit(value: unknown): PortionUnit | null {
+    const allowed: PortionUnit[] = ['tranche', 'piece', 'part', 'bouteille', 'portion'];
+
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim().toLowerCase();
+    return allowed.includes(candidate as PortionUnit)
+      ? (candidate as PortionUnit)
+      : null;
   }
 }

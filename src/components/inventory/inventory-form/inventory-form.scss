@@ -65,7 +65,8 @@
   margin-bottom: 0.25rem;
 }
 
-.if-field input {
+.if-field input,
+.if-field textarea {
   border: 0;
   background: transparent;
   outline: none;
@@ -74,7 +75,14 @@
   width: 100%;
 }
 
-.if-field input::placeholder {
+.if-field textarea {
+  resize: vertical;
+  min-height: 5.5rem;
+  line-height: 1.3;
+}
+
+.if-field input::placeholder,
+.if-field textarea::placeholder {
   color: #111111;
   opacity: 0.85;
 }
@@ -112,7 +120,8 @@
     height: 2.35rem;
   }
 
-  .if-field input {
+  .if-field input,
+  .if-field textarea {
     font-size: 1.35rem;
   }
 

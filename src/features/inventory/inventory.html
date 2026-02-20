@@ -45,14 +45,41 @@
               <input matInput type="text" formControlName="productIdsStr" placeholder="ex: 1,2,3" />
             </mat-form-field>
 
-            <mat-form-field appearance="fill" class="w-full sm:col-span-1 lg:col-span-2">
+            <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-4">
+              <mat-label>products (JSON) for create</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                formControlName="productsJson"
+                placeholder='ex: [{"productId":1,"qty":2.5}]'></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-2">
               <mat-label>productIds (CSV) for add</mat-label>
               <input matInput type="text" formControlName="addProductIdsStr" placeholder="ex: 4,5" />
             </mat-form-field>
 
-            <mat-form-field appearance="fill" class="w-full sm:col-span-1 lg:col-span-2">
+            <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-2">
+              <mat-label>products (JSON) for add</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                formControlName="addProductsJson"
+                placeholder='ex: [{"productId":7,"qty":3}]'></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-2">
               <mat-label>productIds (CSV) for remove</mat-label>
               <input matInput type="text" formControlName="removeProductIdsStr" placeholder="ex: 2" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-2">
+              <mat-label>products (JSON) for remove</mat-label>
+              <textarea
+                matInput
+                rows="3"
+                formControlName="removeProductsJson"
+                placeholder='ex: [{"productId":5,"qty":1}]'></textarea>
             </mat-form-field>
           </div>
         </mat-card-content>

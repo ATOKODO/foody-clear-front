@@ -24,6 +24,7 @@ describe('InventoryForm', () => {
     expect(component.form.getRawValue()).toEqual({
       name: '',
       productIdsCsv: '',
+      productsJson: '',
     });
   });
 
@@ -38,6 +39,7 @@ describe('InventoryForm', () => {
     expect(component.form.getRawValue()).toEqual({
       name: 'Stock principal',
       productIdsCsv: '1,2,3',
+      productsJson: '',
     });
   });
 
@@ -48,6 +50,7 @@ describe('InventoryForm', () => {
     component.form.setValue({
       name: 'Frigo',
       productIdsCsv: '1,2,2,3',
+      productsJson: '',
     });
 
     component.onSubmit();
@@ -58,6 +61,7 @@ describe('InventoryForm', () => {
         value: {
           name: 'Frigo',
           productIds: [1, 2, 3],
+          products: [],
         },
       },
     ]);

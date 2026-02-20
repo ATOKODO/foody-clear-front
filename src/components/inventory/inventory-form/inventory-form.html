@@ -24,6 +24,14 @@
       </small>
     </label>
 
+    <label class="if-field">
+      <span>Products (JSON)</span>
+      <textarea formControlName="productsJson" rows="4" placeholder='[{"productId":1,"qty":2.5}]'></textarea>
+      <small *ngIf="form.controls.productsJson.errors?.['invalidProducts']" class="if-error">
+        Utilise un tableau JSON valide avec `productId` et `qty > 0`
+      </small>
+    </label>
+
     <button type="submit" class="submit-btn">
       Valider
     </button>
