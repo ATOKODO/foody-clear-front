@@ -1,39 +1,156 @@
-<section class="inventory-form" aria-label="Ajouter ou modifier un inventory">
-  <div class="if-head">
-    <h2>{{ heading }}</h2>
-    <button type="button" class="menu-btn" aria-label="Plus d'options" (click)="onMenuClick()">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="6" cy="12" r="2" />
-        <circle cx="12" cy="12" r="2" />
-        <circle cx="18" cy="12" r="2" />
-      </svg>
-    </button>
+<section class="mx-auto max-w-5xl px-4 py-8 text-gray-900" aria-label="Ajouter ou modifier un inventory">
+  <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
+    <h2 class="text-xl font-medium">{{ heading }}</h2>
+    <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
   </div>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="if-form">
-    <label class="if-field">
-      <span>Nom</span>
-      <input type="text" formControlName="name" placeholder="Stock principal" />
-    </label>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
+    <div class="grid gap-4 md:grid-cols-12">
+      <mat-form-field appearance="fill" class="md:col-span-8">
+        <mat-label>Nom *</mat-label>
+        <input matInput type="text" formControlName="name" placeholder="Stock principal" />
+      </mat-form-field>
 
-    <label class="if-field">
-      <span>Product IDs (CSV)</span>
-      <input type="text" formControlName="productIdsCsv" placeholder="1,2,3" />
-      <small *ngIf="form.controls.productIdsCsv.errors?.['invalidIds']" class="if-error">
-        Utilise uniquement des IDs entiers positifs (ex: 1,2,3)
-      </small>
-    </label>
+      <div class="flex items-end md:col-span-4">
+        <button mat-raised-button color="primary" type="submit" class="w-full">
+          {{ mode === 'edit' ? 'Mettre a jour' : 'Creer' }}
+        </button>
+      </div>
+    </div>
 
-    <label class="if-field">
-      <span>Products (JSON)</span>
-      <textarea formControlName="productsJson" rows="4" placeholder='[{"productId":1,"qty":2.5}]'></textarea>
-      <small *ngIf="form.controls.productsJson.errors?.['invalidProducts']" class="if-error">
-        Utilise un tableau JSON valide avec `productId` et `qty > 0`
-      </small>
-    </label>
+    <ng-container *ngIf="mode === 'add'">
+      <div class="grid gap-4 md:grid-cols-12">
+        <mat-form-field appearance="fill" class="md:col-span-6">
+          <mat-label>Product IDs (CSV)</mat-label>
+          <input matInput type="text" formControlName="productIdsCsv" placeholder="1,2,3" />
+          <mat-error *ngIf="form.controls.productIdsCsv.errors?.['invalidIds']">
+            Utilise uniquement des IDs entiers positifs (ex: 1,2,3)
+          </mat-error>
+        </mat-form-field>
 
-    <button type="submit" class="submit-btn">
-      Valider
-    </button>
+        <mat-form-field appearance="fill" class="md:col-span-6">
+          <mat-label>Products (JSON)</mat-label>
+          <textarea
+            matInput
+            rows="4"
+            formControlName="productsJson"
+            placeholder='[{"productId":1,"qty":2.5}]'></textarea>
+          <mat-error *ngIf="form.controls.productsJson.errors?.['invalidProducts']">
+            Utilise un tableau JSON valide avec `productId` et `qty > 0`
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </ng-container>
+
+    <section *ngIf="mode === 'edit'" class="mt-8 space-y-4">
+      <div class="grid gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-12">
+        <mat-form-field appearance="fill" class="md:col-span-4">
+          <mat-label>Ajouter IDs (CSV)</mat-label>
+          <input matInput type="text" formControlName="addProductIdsCsv" placeholder="4,5" />
+          <mat-error *ngIf="form.controls.addProductIdsCsv.errors?.['invalidIds']">
+            IDs invalides.
+          </mat-error>
+          <mat-error *ngIf="form.controls.addProductIdsCsv.errors?.['requiredPayload']">
+            Renseigne des IDs ou du JSON.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="md:col-span-6">
+          <mat-label>Ajouter products (JSON)</mat-label>
+          <textarea
+            matInput
+            rows="3"
+            formControlName="addProductsJson"
+            placeholder='[{"productId":7,"qty":3}]'></textarea>
+          <mat-error *ngIf="form.controls.addProductsJson.errors?.['invalidProducts']">
+            JSON invalide.
+          </mat-error>
+          <mat-error *ngIf="form.controls.addProductsJson.errors?.['requiredPayload']">
+            Renseigne des IDs ou du JSON.
+          </mat-error>
+        </mat-form-field>
+
+        <div class="flex items-end md:col-span-2">
+          <button mat-stroked-button color="primary" type="button" class="w-full" (click)="onAddProductsSubmit()">
+            Ajouter
+          </button>
+        </div>
+      </div>
+
+      <div class="grid gap-4 rounded-xl border border-slate-200 bg-rose-50 p-4 md:grid-cols-12">
+        <mat-form-field appearance="fill" class="md:col-span-4">
+          <mat-label>Retirer IDs (CSV)</mat-label>
+          <input matInput type="text" formControlName="removeProductIdsCsv" placeholder="2" />
+          <mat-error *ngIf="form.controls.removeProductIdsCsv.errors?.['invalidIds']">
+            IDs invalides.
+          </mat-error>
+          <mat-error *ngIf="form.controls.removeProductIdsCsv.errors?.['requiredPayload']">
+            Renseigne des IDs ou du JSON.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="md:col-span-6">
+          <mat-label>Retirer products (JSON)</mat-label>
+          <textarea
+            matInput
+            rows="3"
+            formControlName="removeProductsJson"
+            placeholder='[{"productId":5,"qty":1}]'></textarea>
+          <mat-error *ngIf="form.controls.removeProductsJson.errors?.['invalidProducts']">
+            JSON invalide.
+          </mat-error>
+          <mat-error *ngIf="form.controls.removeProductsJson.errors?.['requiredPayload']">
+            Renseigne des IDs ou du JSON.
+          </mat-error>
+        </mat-form-field>
+
+        <div class="flex items-end md:col-span-2">
+          <button mat-stroked-button color="warn" type="button" class="w-full" (click)="onRemoveProductsSubmit()">
+            Retirer
+          </button>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-base font-semibold text-slate-900">Produits associes</h3>
+
+        <p *ngIf="productsLoading" class="text-sm text-slate-600">Chargement des produits...</p>
+
+        <div *ngIf="hasLinkedProducts; else noLinkedProducts" class="overflow-x-auto rounded-xl border border-slate-200">
+          <table mat-table [dataSource]="linkedProducts" class="inventory-products-table w-full">
+            <ng-container matColumnDef="product">
+              <th mat-header-cell *matHeaderCellDef>Produit</th>
+              <td mat-cell *matCellDef="let item">{{ getLinkedProductName(item) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="barcode">
+              <th mat-header-cell *matHeaderCellDef>Barcode</th>
+              <td mat-cell *matCellDef="let item">{{ getLinkedProductBarcode(item) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="qtyUnits">
+              <th mat-header-cell *matHeaderCellDef>Qty Units</th>
+              <td mat-cell *matCellDef="let item">{{ item.qtyOnHandInUnits }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="qtyNormalized">
+              <th mat-header-cell *matHeaderCellDef>Qty Normalized</th>
+              <td mat-cell *matCellDef="let item">{{ getLinkedProductNormalizedDisplay(item) }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="linkedProductsColumns"></tr>
+            <tr
+              mat-row
+              *matRowDef="let item; columns: linkedProductsColumns; trackBy: trackByInventoryProductId">
+            </tr>
+          </table>
+        </div>
+
+        <ng-template #noLinkedProducts>
+          <p class="text-sm text-slate-600">Aucun produit associe a cet inventory.</p>
+        </ng-template>
+      </div>
+    </section>
   </form>
+
 </section>

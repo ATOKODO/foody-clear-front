@@ -1,380 +1,447 @@
-import { CommonModule, JsonPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import {
-  FormBuilder,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { InventoryService } from '../../services/inventory-service';
+  InventoryForm,
+  InventoryFormMode,
+  InventoryFormProductsPayload,
+  InventoryFormValue,
+} from '../../components/inventory/inventory-form/inventory-form';
+import {
+  InventoryList,
+  InventoryListItem,
+} from '../../components/inventory/inventory-list/inventory-list';
 import {
   CreateInventoryDto,
-  InventoryProductQtyDto,
+  Inventory as InventoryApiModel,
+  InventoryProduct,
   UpdateInventoryDto,
   UpdateInventoryProductsDto,
 } from '../../interfaces/inventory.interface';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { InventoryService } from '../../services/inventory-service';
 
 @Component({
   selector: 'app-inventory',
   imports: [
-    JsonPipe,
     CommonModule,
     FormsModule,
-    ReactiveFormsModule,
     MatButtonModule,
     MatCardModule,
-    MatDividerModule,
     MatFormFieldModule,
     MatInputModule,
-    MatProgressBarModule,
+    InventoryList,
+    InventoryForm,
   ],
   templateUrl: './inventory.html',
   styleUrl: './inventory.scss',
 })
 export class Inventory implements OnInit {
   baseUrl = '';
-  form: FormGroup = new FormGroup({});
   loading = false;
+  saving = false;
+  loadingInventoryProducts = false;
+
+  inventories: InventoryApiModel[] = [];
+
+  formVisible = false;
+  formMode: InventoryFormMode = 'add';
+  editingInventoryId: number | null = null;
+  formInitialValue: Partial<InventoryFormValue> | null = null;
+  editingInventoryProducts: InventoryProduct[] = [];
 
   lastResponse: unknown = null;
   lastError: unknown = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private inventorySrv: InventoryService,
-  ) {}
+  constructor(private readonly inventorySrv: InventoryService) {}
 
   ngOnInit(): void {
     this.baseUrl = this.inventorySrv.baseUrl;
-
-    this.form = this.fb.group({
-      id: this.fb.control<number | null>(null),
-      name: this.fb.control<string>('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-      productIdsStr: this.fb.control<string | null>(null),
-      productsJson: this.fb.control<string | null>(null),
-      addProductIdsStr: this.fb.control<string | null>(null),
-      addProductsJson: this.fb.control<string | null>(null),
-      removeProductIdsStr: this.fb.control<string | null>(null),
-      removeProductsJson: this.fb.control<string | null>(null),
-    });
+    this.loadInventories();
   }
 
-  onBaseUrlChange() {
+  onBaseUrlChange(): void {
     this.inventorySrv.setBaseUrl(this.baseUrl);
+    this.loadInventories();
   }
 
-  private parseCsvIds(
-    csv: string | null | undefined,
-    fieldName: string,
-  ): number[] | undefined {
-    if (!csv || csv.trim() === '') {
-      return undefined;
-    }
-
-    const tokens = csv
-      .split(',')
-      .map((value) => value.trim())
-      .filter((value) => value !== '');
-
-    if (tokens.length === 0) {
-      return undefined;
-    }
-
-    const ids = tokens.map((value) => Number(value));
-    const hasInvalid = ids.some(
-      (id) => Number.isNaN(id) || !Number.isInteger(id) || id < 1,
-    );
-
-    if (hasInvalid) {
-      throw new Error(`${fieldName} doit contenir des ids entiers > 0 (CSV).`);
-    }
-
-    return Array.from(new Set(ids));
+  get inventoryListItems(): InventoryListItem[] {
+    return this.inventories.map((inventory) => ({
+      id: String(inventory.id),
+      name: inventory.name,
+      productCount: this.resolveProductCount(inventory),
+    }));
   }
 
-  private parseProductsJson(
-    rawJson: string | null | undefined,
-    fieldName: string,
-  ): InventoryProductQtyDto[] | undefined {
-    if (!rawJson || rawJson.trim() === '') {
-      return undefined;
+  onRefreshRequested(): void {
+    this.loadInventories();
+
+    if (this.editingInventoryId !== null) {
+      this.loadInventoryProducts(this.editingInventoryId);
+    }
+  }
+
+  onAddRequested(): void {
+    this.formMode = 'add';
+    this.editingInventoryId = null;
+    this.formInitialValue = null;
+    this.editingInventoryProducts = [];
+    this.formVisible = true;
+  }
+
+  onEditRequested(item: InventoryListItem): void {
+    const inventoryId = Number(item.id);
+    if (!Number.isInteger(inventoryId) || inventoryId < 1) {
+      return;
     }
 
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(rawJson);
-    } catch {
-      throw new Error(`${fieldName} doit etre un JSON valide.`);
+    const inventory = this.inventories.find((value) => value.id === inventoryId);
+    if (!inventory) {
+      return;
     }
 
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      throw new Error(`${fieldName} doit etre un tableau JSON non vide.`);
+    this.formMode = 'edit';
+    this.editingInventoryId = inventory.id;
+    this.formInitialValue = this.toFormValue(inventory);
+    this.formVisible = true;
+    this.loadInventoryProducts(inventory.id);
+  }
+
+  onDeleteRequested(item: InventoryListItem): void {
+    const inventoryId = Number(item.id);
+    if (!Number.isInteger(inventoryId) || inventoryId < 1) {
+      return;
     }
 
-    const products = parsed.map((value, index) => {
-      if (!value || typeof value !== 'object') {
-        throw new Error(`${fieldName}[${index}] doit etre un objet.`);
-      }
+    this.saving = true;
+    this.inventorySrv.remove(inventoryId).subscribe({
+      next: () => {
+        this.lastResponse = { deleted: true, id: inventoryId };
+        this.lastError = null;
+        this.saving = false;
 
-      const item = value as Record<string, unknown>;
-      const productId = Number(item['productId']);
-      const qty = Number(item['qty']);
+        if (this.editingInventoryId === inventoryId) {
+          this.onCancelForm();
+        }
 
-      if (!Number.isInteger(productId) || productId < 1) {
-        throw new Error(`${fieldName}[${index}].productId doit etre un entier > 0.`);
-      }
-
-      if (!Number.isFinite(qty) || qty <= 0) {
-        throw new Error(`${fieldName}[${index}].qty doit etre > 0.`);
-      }
-
-      return { productId, qty };
+        this.loadInventories();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
     });
+  }
 
-    const merged = new Map<number, number>();
-    products.forEach((product) => {
-      merged.set(product.productId, (merged.get(product.productId) ?? 0) + product.qty);
+  onFormSubmitted(event: { mode: InventoryFormMode; value: InventoryFormValue }): void {
+    this.saving = true;
+
+    if (event.mode === 'edit' && this.editingInventoryId !== null) {
+      const payload: UpdateInventoryDto = {
+        name: event.value.name.trim(),
+      };
+
+      this.inventorySrv.update(this.editingInventoryId, payload).subscribe({
+        next: (response) => {
+          this.lastResponse = response;
+          this.lastError = null;
+          this.saving = false;
+          this.loadInventories();
+        },
+        error: (error) => {
+          this.lastError = error;
+          this.saving = false;
+        },
+      });
+      return;
+    }
+
+    const payload = this.toCreateDto(event.value);
+    this.inventorySrv.create(payload).subscribe({
+      next: (response) => {
+        this.lastResponse = response;
+        this.lastError = null;
+        this.saving = false;
+        this.formVisible = false;
+        this.loadInventories();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
     });
-
-    return Array.from(merged.entries()).map(([productId, qty]) => ({ productId, qty }));
   }
 
-  private pickCreatePayload(): CreateInventoryDto {
-    const value = this.form.getRawValue();
-    const name = value.name.trim();
-
-    if (name === '') {
-      throw new Error('Pour CREATE, le champ name est requis.');
+  onProductsAddRequested(value: InventoryFormProductsPayload): void {
+    const inventoryId = this.editingInventoryId;
+    if (inventoryId == null) {
+      return;
     }
 
-    const dto: CreateInventoryDto = { name };
-    const productIds = this.parseCsvIds(value.productIdsStr, 'productIds');
-    const products = this.parseProductsJson(value.productsJson, 'products');
-
-    if (productIds && productIds.length > 0) {
-      dto.productIds = productIds;
-    }
-
-    if (products && products.length > 0) {
-      dto.products = products;
-    }
-
-    return dto;
+    this.saving = true;
+    const payload = this.toProductsPayload(value);
+    this.inventorySrv.addProducts(inventoryId, payload).subscribe({
+      next: (response) => {
+        this.lastResponse = response;
+        this.lastError = null;
+        this.saving = false;
+        this.loadInventories();
+        this.loadInventoryProducts(inventoryId);
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
+    });
   }
 
-  private pickUpdatePayload(): UpdateInventoryDto {
-    const value = this.form.getRawValue();
-    const dto: UpdateInventoryDto = {};
-
-    if (value.name && value.name.trim() !== '') {
-      dto.name = value.name.trim();
+  onProductsRemoveRequested(value: InventoryFormProductsPayload): void {
+    const inventoryId = this.editingInventoryId;
+    if (inventoryId == null) {
+      return;
     }
 
-    return dto;
+    this.saving = true;
+    const payload = this.toProductsPayload(value);
+    this.inventorySrv.removeProducts(inventoryId, payload).subscribe({
+      next: (response) => {
+        this.lastResponse = response;
+        this.lastError = null;
+        this.saving = false;
+        this.loadInventories();
+        this.loadInventoryProducts(inventoryId);
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
+    });
   }
 
-  private pickProductsPayload(
-    csv: string | null | undefined,
-    productsJson: string | null | undefined,
-    operationLabel: string,
-  ): UpdateInventoryProductsDto {
-    const productIds = this.parseCsvIds(csv, 'productIds');
-    const products = this.parseProductsJson(productsJson, 'products');
-
-    if ((!productIds || productIds.length === 0) && (!products || products.length === 0)) {
-      throw new Error(`Pour ${operationLabel}, productIds ou products est requis.`);
-    }
-
-    return {
-      ...(productIds && productIds.length > 0 ? { productIds } : {}),
-      ...(products && products.length > 0 ? { products } : {}),
+  onMenuClicked(): void {
+    this.lastResponse = {
+      info: 'Action menu inventory-form capturee.',
+      at: new Date().toISOString(),
     };
   }
 
-  private setResult(response: unknown) {
-    this.lastResponse = response;
-    this.lastError = null;
-    this.loading = false;
+  onCancelForm(): void {
+    this.formVisible = false;
+    this.formMode = 'add';
+    this.editingInventoryId = null;
+    this.formInitialValue = null;
+    this.editingInventoryProducts = [];
+    this.loadingInventoryProducts = false;
   }
 
-  private setError(error: unknown) {
-    this.lastError = error;
-    this.loading = false;
-  }
-
-  create() {
-    this.loading = true;
-    try {
-      const dto = this.pickCreatePayload();
-      this.inventorySrv.create(dto).subscribe({
-        next: (response) => this.setResult(response),
-        error: (error) => this.setError(error),
-      });
-    } catch (error) {
-      this.setError(error);
-    }
-  }
-
-  getAll() {
+  private loadInventories(): void {
     this.loading = true;
     this.inventorySrv.findAll().subscribe({
-      next: (response) => this.setResult(response),
-      error: (error) => this.setError(error),
+      next: (response) => {
+        this.inventories = this.extractInventoriesFromResponse(response);
+        this.lastResponse = response;
+        this.lastError = null;
+        this.loading = false;
+
+        if (this.editingInventoryId !== null) {
+          const currentInventory =
+            this.inventories.find((inventory) => inventory.id === this.editingInventoryId) ?? null;
+
+          if (!currentInventory) {
+            this.onCancelForm();
+            return;
+          }
+
+          this.formInitialValue = this.toFormValue(currentInventory);
+        }
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.loading = false;
+      },
     });
   }
 
-  getOne() {
-    const id = this.form.value.id ?? null;
-    if (id == null) {
-      this.setError('Veuillez renseigner un id pour GET /inventory/:id');
-      return;
-    }
-
-    this.loading = true;
-    this.inventorySrv.findOne(id).subscribe({
-      next: (response) => this.setResult(response),
-      error: (error) => this.setError(error),
+  private loadInventoryProducts(inventoryId: number): void {
+    this.loadingInventoryProducts = true;
+    this.inventorySrv.findProducts(inventoryId).subscribe({
+      next: (response) => {
+        this.editingInventoryProducts = this.extractInventoryProductsFromResponse(response);
+        this.lastError = null;
+        this.loadingInventoryProducts = false;
+      },
+      error: (error) => {
+        this.editingInventoryProducts = [];
+        this.lastError = error;
+        this.loadingInventoryProducts = false;
+      },
     });
   }
 
-  getProducts() {
-    const id = this.form.value.id ?? null;
-    if (id == null) {
-      this.setError(
-        'Veuillez renseigner un id pour GET /inventory/:id/products',
-      );
-      return;
+  private toCreateDto(value: InventoryFormValue): CreateInventoryDto {
+    const payload: CreateInventoryDto = {
+      name: value.name.trim(),
+    };
+
+    if (value.productIds.length > 0) {
+      payload.productIds = value.productIds;
     }
 
-    this.loading = true;
-    this.inventorySrv.findProducts(id).subscribe({
-      next: (response) => this.setResult(response),
-      error: (error) => this.setError(error),
-    });
+    if (value.products.length > 0) {
+      payload.products = value.products;
+    }
+
+    return payload;
   }
 
-  update() {
-    const id = this.form.value.id ?? null;
-    if (id == null) {
-      this.setError('Veuillez renseigner un id pour PATCH /inventory/:id');
-      return;
+  private toProductsPayload(value: InventoryFormProductsPayload): UpdateInventoryProductsDto {
+    const payload: UpdateInventoryProductsDto = {};
+
+    if (value.productIds.length > 0) {
+      payload.productIds = value.productIds;
     }
 
-    const dto = this.pickUpdatePayload();
-    if (Object.keys(dto).length === 0) {
-      this.setError('Aucun champ a mettre a jour.');
-      return;
+    if (value.products.length > 0) {
+      payload.products = value.products;
     }
 
-    this.loading = true;
-    this.inventorySrv.update(id, dto).subscribe({
-      next: (response) => this.setResult(response),
-      error: (error) => this.setError(error),
-    });
+    return payload;
   }
 
-  addProducts() {
-    const id = this.form.value.id ?? null;
-    if (id == null) {
-      this.setError(
-        'Veuillez renseigner un id pour PATCH /inventory/:id/products/add',
-      );
-      return;
-    }
+  private toFormValue(inventory: InventoryApiModel): InventoryFormValue {
+    const inventoryProducts = Array.isArray(inventory.inventoryProducts)
+      ? inventory.inventoryProducts
+      : [];
 
-    this.loading = true;
-    try {
-      const dto = this.pickProductsPayload(
-        this.form.value.addProductIdsStr,
-        this.form.value.addProductsJson,
-        'products/add',
-      );
+    const productIds = Array.from(
+      new Set(
+        inventoryProducts
+          .map((item) => item.productId)
+          .filter((id) => Number.isInteger(id) && id > 0),
+      ),
+    );
 
-      this.inventorySrv.addProducts(id, dto).subscribe({
-        next: (response) => this.setResult(response),
-        error: (error) => this.setError(error),
-      });
-    } catch (error) {
-      this.setError(error);
-    }
+    const products = inventoryProducts
+      .filter((item) => Number.isInteger(item.productId) && item.productId > 0)
+      .map((item) => ({
+        productId: item.productId,
+        qty: Number.isFinite(item.qtyOnHandInUnits) ? item.qtyOnHandInUnits : 0,
+      }))
+      .filter((item) => item.qty > 0);
+
+    return {
+      name: inventory.name,
+      productIds,
+      products,
+    };
   }
 
-  removeProducts() {
-    const id = this.form.value.id ?? null;
-    if (id == null) {
-      this.setError(
-        'Veuillez renseigner un id pour PATCH /inventory/:id/products/remove',
-      );
-      return;
+  private resolveProductCount(inventory: InventoryApiModel): number {
+    if (Array.isArray(inventory.inventoryProducts)) {
+      return inventory.inventoryProducts.length;
     }
 
-    this.loading = true;
-    try {
-      const dto = this.pickProductsPayload(
-        this.form.value.removeProductIdsStr,
-        this.form.value.removeProductsJson,
-        'products/remove',
-      );
-
-      this.inventorySrv.removeProducts(id, dto).subscribe({
-        next: (response) => this.setResult(response),
-        error: (error) => this.setError(error),
-      });
-    } catch (error) {
-      this.setError(error);
-    }
-  }
-
-  delete() {
-    const id = this.form.value.id ?? null;
-    if (id == null) {
-      this.setError('Veuillez renseigner un id pour DELETE /inventory/:id');
-      return;
+    const raw = inventory as unknown as Record<string, unknown>;
+    const candidates = ['productCount', 'productsCount', 'inventoryProductsCount'];
+    for (const field of candidates) {
+      const value = raw[field];
+      if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
+        return Math.floor(value);
+      }
     }
 
-    this.loading = true;
-    this.inventorySrv.remove(id).subscribe({
-      next: () => this.setResult({ deleted: true, id }),
-      error: (error) => this.setError(error),
-    });
+    return 0;
   }
 
-  fillDemoCreate() {
-    this.form.patchValue({
-      id: null,
-      name: 'Stock principal',
-      productIdsStr: '1,2,3',
-      productsJson: '[{"productId":1,"qty":2.5},{"productId":3,"qty":1}]',
-      addProductIdsStr: '4,5',
-      addProductsJson: '[{"productId":7,"qty":3}]',
-      removeProductIdsStr: '2',
-      removeProductsJson: '[{"productId":5,"qty":1}]',
-    });
+  private extractInventoriesFromResponse(value: unknown): InventoryApiModel[] {
+    if (Array.isArray(value)) {
+      return value.filter((item): item is InventoryApiModel => this.isInventoryLike(item));
+    }
+
+    if (this.isInventoryLike(value)) {
+      return [value];
+    }
+
+    if (!value || typeof value !== 'object') {
+      return [];
+    }
+
+    const raw = value as Record<string, unknown>;
+    const nestedCandidates = ['data', 'items', 'inventories', 'results', 'payload'];
+    for (const key of nestedCandidates) {
+      const nested = raw[key];
+      if (Array.isArray(nested)) {
+        const inventories = nested.filter(
+          (item): item is InventoryApiModel => this.isInventoryLike(item),
+        );
+        if (inventories.length > 0) {
+          return inventories;
+        }
+      }
+    }
+
+    return [];
   }
 
-  clear() {
-    this.form.reset({
-      id: null,
-      name: '',
-      productIdsStr: null,
-      productsJson: null,
-      addProductIdsStr: null,
-      addProductsJson: null,
-      removeProductIdsStr: null,
-      removeProductsJson: null,
-    });
+  private extractInventoryProductsFromResponse(value: unknown): InventoryProduct[] {
+    if (Array.isArray(value)) {
+      return value.filter((item): item is InventoryProduct => this.isInventoryProductLike(item));
+    }
 
-    this.lastResponse = null;
-    this.lastError = null;
+    if (this.isInventoryProductLike(value)) {
+      return [value];
+    }
+
+    if (!value || typeof value !== 'object') {
+      return [];
+    }
+
+    const raw = value as Record<string, unknown>;
+    const nestedCandidates = [
+      'data',
+      'items',
+      'inventoryProducts',
+      'products',
+      'results',
+      'payload',
+    ];
+    for (const key of nestedCandidates) {
+      const nested = raw[key];
+      if (Array.isArray(nested)) {
+        const products = nested.filter(
+          (item): item is InventoryProduct => this.isInventoryProductLike(item),
+        );
+        if (products.length > 0) {
+          return products;
+        }
+      }
+    }
+
+    return [];
+  }
+
+  private isInventoryLike(value: unknown): value is InventoryApiModel {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const inventory = value as Partial<InventoryApiModel>;
+    return typeof inventory.id === 'number' && typeof inventory.name === 'string';
+  }
+
+  private isInventoryProductLike(value: unknown): value is InventoryProduct {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const inventoryProduct = value as Partial<InventoryProduct>;
+    return (
+      typeof inventoryProduct.id === 'number' &&
+      typeof inventoryProduct.productId === 'number' &&
+      typeof inventoryProduct.inventoryId === 'number'
+    );
   }
 }

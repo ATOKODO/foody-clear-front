@@ -8,6 +8,10 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTableModule } from '@angular/material/table';
 
 export type InventoryListMode = 'manage' | 'select-single' | 'select-multi';
 
@@ -19,7 +23,13 @@ export interface InventoryListItem {
 
 @Component({
   selector: 'app-inventory-list',
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatTableModule,
+  ],
   templateUrl: './inventory-list.html',
   styleUrl: './inventory-list.scss',
 })
@@ -29,6 +39,8 @@ export class InventoryList implements OnInit, OnChanges {
   @Input() selectedIds: string[] | null = null;
 
   @Output() readonly addRequested = new EventEmitter<void>();
+  @Output() readonly editRequested = new EventEmitter<InventoryListItem>();
+  @Output() readonly deleteRequested = new EventEmitter<InventoryListItem>();
   @Output() readonly selected = new EventEmitter<InventoryListItem>();
   @Output() readonly selectedMany = new EventEmitter<InventoryListItem[]>();
 
@@ -66,6 +78,16 @@ export class InventoryList implements OnInit, OnChanges {
 
   get hasItems(): boolean {
     return this.resolvedInventories.length > 0;
+  }
+
+  get displayedColumns(): string[] {
+    if (this.isManageMode) {
+      return ['name', 'productCount', 'actions'];
+    }
+
+    return this.isMultiSelectMode
+      ? ['select', 'name', 'productCount']
+      : ['name', 'productCount'];
   }
 
   trackById(_: number, item: InventoryListItem): string {
@@ -122,6 +144,22 @@ export class InventoryList implements OnInit, OnChanges {
     }
 
     this.addRequested.emit();
+  }
+
+  onEditClick(item: InventoryListItem): void {
+    if (!this.isManageMode) {
+      return;
+    }
+
+    this.editRequested.emit(item);
+  }
+
+  onDeleteClick(item: InventoryListItem): void {
+    if (!this.isManageMode) {
+      return;
+    }
+
+    this.deleteRequested.emit(item);
   }
 
   private applyInputState(): void {
