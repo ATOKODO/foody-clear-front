@@ -121,3 +121,10 @@ export interface InputDayResponse {
   itemsBySlot?: InputDayItemsBySlotEntry[];
   slots?: InputDayDaySetSlotSummary[];
 }
+
+export interface InputWeekResponse {
+  startDateLocal: string;
+  endDateLocal: string;
+  timezone: string;
+  days: InputDayResponse[];
+}

@@ -26,6 +26,7 @@ import {
   InputDayItemsBySlotEntry,
   InputDayResponse,
   InputDaySlotSummary,
+  InputWeekResponse,
 } from '../../interfaces/input-day.interface';
 import {
   generateMonthDays,
@@ -72,6 +73,7 @@ export interface CalendarViewChangeEvent {
 export class Calendar implements OnInit, OnChanges {
   @Input() cycleAssignments: CycleAssignment[] = [];
   @Input() inputDayResponse: InputDayResponse | null = null;
+  @Input() inputWeekResponse: InputWeekResponse | null = null;
   @Input() inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
   @Input() loadingDayItems = false;
   @Input() dayItemsError: unknown = null;
@@ -96,6 +98,10 @@ export class Calendar implements OnInit, OnChanges {
   daySlots: CalendarDaySlot[] = [];
 
   private assignmentById = new Map<string, CycleAssignment>();
+  private weekDayResponseByDate = new Map<string, InputDayResponse>();
+  private weekDaySlotsByDate = new Map<string, CalendarDaySlot[]>();
+  private weekActiveSlotsByDateHour = new Map<string, Map<number, CalendarDaySlot[]>>();
+  private weekInsertedProductsByDateHour = new Map<string, Map<number, CalendarInsertedProduct[]>>();
 
   ngOnInit(): void {
     this.refreshView();
@@ -109,6 +115,7 @@ export class Calendar implements OnInit, OnChanges {
 
     if (
       changes['inputDayResponse'] ||
+      changes['inputWeekResponse'] ||
       changes['inputDayItemsBySlot'] ||
       changes['inputDayTimezone']
     ) {
@@ -375,28 +382,126 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   private applyInputDayData(): void {
+    this.applyWeekInputDayData();
+
+    if (this.currentView !== 'day') {
+      this.daySlots = [];
+      this.clearDayInsertedProducts();
+      return;
+    }
+
     const entries = this.resolveItemsBySlotEntries();
     const slots = this.resolveDaySlots();
     this.applyDaySlots(slots);
     this.applyDayInsertedProducts(entries, this.inputDayResponse?.items ?? []);
   }
 
+  getWeekDayResponse(dateLocal: string): InputDayResponse | null {
+    return this.weekDayResponseByDate.get(dateLocal) ?? null;
+  }
+
+  getWeekDaySlots(dateLocal: string): CalendarDaySlot[] {
+    return this.weekDaySlotsByDate.get(dateLocal) ?? [];
+  }
+
+  getWeekHourActiveSlots(dateLocal: string, hour: number): CalendarDaySlot[] {
+    const byHour = this.weekActiveSlotsByDateHour.get(dateLocal);
+    if (!byHour) {
+      return [];
+    }
+
+    return byHour.get(hour) ?? [];
+  }
+
+  getWeekHourInsertedProducts(
+    dateLocal: string,
+    hour: number,
+  ): CalendarInsertedProduct[] {
+    const byHour = this.weekInsertedProductsByDateHour.get(dateLocal);
+    if (!byHour) {
+      return [];
+    }
+
+    return byHour.get(hour) ?? [];
+  }
+
+  private applyWeekInputDayData(): void {
+    this.weekDayResponseByDate.clear();
+    this.weekDaySlotsByDate.clear();
+    this.weekActiveSlotsByDateHour.clear();
+    this.weekInsertedProductsByDateHour.clear();
+
+    this.resolveWeekDayResponses().forEach((response) => {
+      if (!response.dateLocal || response.dateLocal.trim() === '') {
+        return;
+      }
+
+      this.weekDayResponseByDate.set(response.dateLocal, response);
+
+      const slots = this.resolveDaySlotsForResponse(response);
+      this.weekDaySlotsByDate.set(response.dateLocal, slots);
+
+      const activeSlotsByHour = new Map<number, CalendarDaySlot[]>();
+      for (let hour = 0; hour < 24; hour++) {
+        const hourStart = hour * 60;
+        const hourEnd = hourStart + 60;
+        activeSlotsByHour.set(
+          hour,
+          slots.filter((slot) => this.isSlotOverlappingHour(slot, hourStart, hourEnd)),
+        );
+      }
+      this.weekActiveSlotsByDateHour.set(response.dateLocal, activeSlotsByHour);
+
+      const entries = this.resolveItemsBySlotEntriesForResponse(response);
+      this.weekInsertedProductsByDateHour.set(
+        response.dateLocal,
+        this.buildInsertedProductsByHour(entries, response.items ?? []),
+      );
+    });
+  }
+
+  private resolveWeekDayResponses(): InputDayResponse[] {
+    if (this.inputWeekResponse?.days && this.inputWeekResponse.days.length > 0) {
+      return this.inputWeekResponse.days;
+    }
+
+    if (this.currentView === 'week' && this.inputDayResponse) {
+      return [this.inputDayResponse];
+    }
+
+    return [];
+  }
+
   private resolveItemsBySlotEntries(): InputDayItemsBySlotEntry[] {
-    if (this.inputDayResponse?.itemsBySlot && this.inputDayResponse.itemsBySlot.length > 0) {
-      return this.inputDayResponse.itemsBySlot;
+    return this.resolveItemsBySlotEntriesForResponse(
+      this.inputDayResponse,
+      this.inputDayItemsBySlot,
+    );
+  }
+
+  private resolveItemsBySlotEntriesForResponse(
+    response: InputDayResponse | null,
+    fallbackEntries: InputDayItemsBySlotEntry[] = [],
+  ): InputDayItemsBySlotEntry[] {
+    if (response?.itemsBySlot && response.itemsBySlot.length > 0) {
+      return response.itemsBySlot;
     }
 
-    if (this.inputDayItemsBySlot && this.inputDayItemsBySlot.length > 0) {
-      return this.inputDayItemsBySlot;
+    if (fallbackEntries.length > 0) {
+      return fallbackEntries;
     }
 
-    return this.buildItemsBySlotEntriesFromResponse();
+    return this.buildItemsBySlotEntriesFromResponse(response);
   }
 
   private resolveDaySlots(): CalendarDaySlot[] {
-    const daySetSlots = this.inputDayResponse?.daySet?.slots ?? [];
-    const totalsSlots = this.inputDayResponse?.totalsMacros?.bySlot.map((entry) => entry.slot) ?? [];
-    const legacySlots = this.inputDayResponse?.slots ?? [];
+    return this.resolveDaySlotsForResponse(this.inputDayResponse);
+  }
+
+  private resolveDaySlotsForResponse(response: InputDayResponse | null): CalendarDaySlot[] {
+    const daySetSlots = response?.daySet?.slots ?? [];
+    const totalsSlots = response?.totalsMacros?.bySlot.map((entry) => entry.slot) ?? [];
+    const legacySlots = response?.slots ?? [];
 
     const ordered = this.mergeSlots(daySetSlots, totalsSlots, legacySlots);
     return ordered.map((slot) => ({
@@ -426,13 +531,14 @@ export class Calendar implements OnInit, OnChanges {
     return Array.from(unique.values()).sort((a, b) => a.sortOrder - b.sortOrder);
   }
 
-  private buildItemsBySlotEntriesFromResponse(): InputDayItemsBySlotEntry[] {
-    const response = this.inputDayResponse;
+  private buildItemsBySlotEntriesFromResponse(
+    response: InputDayResponse | null,
+  ): InputDayItemsBySlotEntry[] {
     if (!response || response.items.length === 0) {
       return [];
     }
 
-    const slots = this.resolveDaySlots();
+    const slots = this.resolveDaySlotsForResponse(response);
     if (slots.length === 0) {
       return [];
     }
@@ -622,9 +728,20 @@ export class Calendar implements OnInit, OnChanges {
       return;
     }
 
+    const byHour = this.buildInsertedProductsByHour(entries, responseItems);
+    this.dayHours.forEach((hour) => {
+      hour.insertedProducts = byHour.get(hour.hour) ?? [];
+    });
+  }
+
+  private buildInsertedProductsByHour(
+    entries: InputDayItemsBySlotEntry[],
+    responseItems: InputDayItemSummary[],
+  ): Map<number, CalendarInsertedProduct[]> {
     const items = responseItems.length > 0
       ? responseItems
       : entries.flatMap((entry) => entry.items);
+    const byHour = new Map<number, CalendarInsertedProduct[]>();
 
     const slotByItemId = new Map<number, { slotTitle: string; slotKey: string }>();
     entries.forEach((entry) => {
@@ -643,15 +760,6 @@ export class Calendar implements OnInit, OnChanges {
       }
 
       const localized = parsed.setZone(this.normalizeTimezone());
-      const targetHour = this.dayHours.find((hour) => hour.hour === localized.hour);
-      if (!targetHour) {
-        return;
-      }
-
-      if (!targetHour.insertedProducts) {
-        targetHour.insertedProducts = [];
-      }
-
       const slot = slotByItemId.get(item.id);
       const insertedProduct: CalendarInsertedProduct = {
         id: item.id,
@@ -663,11 +771,20 @@ export class Calendar implements OnInit, OnChanges {
         slotKey: slot?.slotKey ?? '-',
       };
 
-      targetHour.insertedProducts.push(insertedProduct);
-      targetHour.insertedProducts.sort(
-        (a, b) => DateTime.fromISO(a.insertedAt).toMillis() - DateTime.fromISO(b.insertedAt).toMillis(),
+      const products = byHour.get(localized.hour) ?? [];
+      products.push(insertedProduct);
+      byHour.set(localized.hour, products);
+    });
+
+    byHour.forEach((products) => {
+      products.sort(
+        (a, b) =>
+          DateTime.fromISO(a.insertedAt, { setZone: true }).toMillis() -
+          DateTime.fromISO(b.insertedAt, { setZone: true }).toMillis(),
       );
     });
+
+    return byHour;
   }
 
   private findAssignmentForDate(dateIso: string): CycleAssignment | undefined {

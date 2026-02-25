@@ -5,6 +5,7 @@ import {
   CreateInputDayItemsDto,
   InputDayItemCommand,
   InputDayResponse,
+  InputWeekResponse,
   UpdateInputDayItemDto,
 } from '../interfaces/input-day.interface';
 
@@ -27,6 +28,18 @@ export class InputDayService {
     return this.http.get<InputDayResponse>(`${this.baseUrl}/input-days/${dateLocal}`, {
       params,
     });
+  }
+
+  getInputWeek(startDateLocal: string, timezone?: string): Observable<InputWeekResponse> {
+    let params = new HttpParams();
+    if (timezone && timezone.trim() !== '') {
+      params = params.set('timezone', timezone.trim());
+    }
+
+    return this.http.get<InputWeekResponse>(
+      `${this.baseUrl}/input-days/week/${startDateLocal}`,
+      { params },
+    );
   }
 
   createItem(dateLocal: string, dto: InputDayItemCommand): Observable<unknown> {
