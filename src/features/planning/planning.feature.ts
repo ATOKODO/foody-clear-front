@@ -271,7 +271,11 @@ export class PlanningFeature implements OnInit {
   }
 
   private reloadInputDayForCurrentView(): void {
-    if (this.currentCalendarView !== 'day' || !this.currentAnchorDateLocal) {
+    if (
+      (this.currentCalendarView !== 'day' &&
+        this.currentCalendarView !== 'week') ||
+      !this.currentAnchorDateLocal
+    ) {
       return;
     }
 
@@ -279,7 +283,7 @@ export class PlanningFeature implements OnInit {
   }
 
   private loadInputDayForView(event: CalendarViewChangeEvent): void {
-    if (event.view !== 'day') {
+    if (event.view !== 'day' && event.view !== 'week') {
       this.clearInputDayState();
       return;
     }
