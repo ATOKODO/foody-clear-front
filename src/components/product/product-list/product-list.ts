@@ -35,6 +35,8 @@ export interface ProductListItem {
   nutritionValuesCount?: number;
   category?: string | null;
   genericProduct?: string | null;
+  availableQuantity?: number | null;
+  availableQuantityUnit?: string | null;
 }
 
 @Component({
@@ -53,6 +55,8 @@ export class ProductList implements OnInit, OnChanges {
   @Input() mode: ProductListMode = 'manage';
   @Input() products: ProductListItem[] | null = null;
   @Input() selectedIds: string[] | null = null;
+  @Input() compact = false;
+  @Input() showAvailableQty = false;
 
   @Output() readonly addRequested = new EventEmitter<void>();
   @Output() readonly editRequested = new EventEmitter<ProductListItem>();
@@ -98,7 +102,12 @@ export class ProductList implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['mode'] || changes['products'] || changes['selectedIds']) {
+    if (
+      changes['mode'] ||
+      changes['products'] ||
+      changes['selectedIds'] ||
+      changes['showAvailableQty']
+    ) {
       this.applyInputState();
     }
   }
@@ -120,8 +129,11 @@ export class ProductList implements OnInit, OnChanges {
   }
 
   get displayedColumns(): string[] {
+    const withAvailability = (columns: string[]) =>
+      this.showAvailableQty ? this.insertAvailableQtyColumn(columns) : columns;
+
     if (this.isManageMode) {
-      return [
+      return withAvailability([
         'name',
         'barcode',
         'unit',
@@ -129,12 +141,14 @@ export class ProductList implements OnInit, OnChanges {
         'tags',
         'nutritionValues',
         'actions',
-      ];
+      ]);
     }
 
-    return this.isMultiEditMode
-      ? ['select', 'name', 'barcode', 'unit', 'price', 'tags', 'nutritionValues']
-      : ['name', 'barcode', 'unit', 'price', 'tags', 'nutritionValues'];
+    return withAvailability(
+      this.isMultiEditMode
+        ? ['select', 'name', 'barcode', 'unit', 'price', 'tags', 'nutritionValues']
+        : ['name', 'barcode', 'unit', 'price', 'tags', 'nutritionValues'],
+    );
   }
 
   trackById(_: number, item: ProductListItem): string {
@@ -180,6 +194,18 @@ export class ProductList implements OnInit, OnChanges {
     }
 
     return String(Math.round(item.price * 100) / 100);
+  }
+
+  getAvailableQuantityDisplay(item: ProductListItem): string {
+    if (item.availableQuantity == null || !Number.isFinite(item.availableQuantity)) {
+      return '-';
+    }
+
+    const rounded =
+      Math.round(item.availableQuantity * 100) / 100;
+    const value = Number.isInteger(rounded) ? String(rounded) : String(rounded);
+    const unit = item.availableQuantityUnit?.trim() ?? '';
+    return unit !== '' ? `${value} ${unit}` : value;
   }
 
   getTagNamesDisplay(item: ProductListItem): string {
@@ -265,5 +291,21 @@ export class ProductList implements OnInit, OnChanges {
 
   private getSelectedItems(): ProductListItem[] {
     return this.resolvedProducts.filter((item) => this.selectedIdSet.has(item.id));
+  }
+
+  private insertAvailableQtyColumn(columns: string[]): string[] {
+    if (columns.includes('availableQty')) {
+      return columns;
+    }
+
+    const nextColumns = [...columns];
+    const unitIndex = nextColumns.indexOf('unit');
+    if (unitIndex === -1) {
+      nextColumns.push('availableQty');
+      return nextColumns;
+    }
+
+    nextColumns.splice(unitIndex + 1, 0, 'availableQty');
+    return nextColumns;
   }
 }

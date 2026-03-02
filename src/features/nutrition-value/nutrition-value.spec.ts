@@ -1,18 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
-import { NutritionValue } from './nutrition-value';
+import { NutritionValues } from './nutrition-value';
 
-describe('NutritionValue', () => {
-  let component: NutritionValue;
-  let fixture: ComponentFixture<NutritionValue>;
+describe('NutritionValues', () => {
+  let component: NutritionValues;
+  let fixture: ComponentFixture<NutritionValues>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NutritionValue]
+      imports: [NutritionValues],
+      providers: [provideHttpClient(), provideHttpClientTesting()],
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(NutritionValue);
+    fixture = TestBed.createComponent(NutritionValues);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

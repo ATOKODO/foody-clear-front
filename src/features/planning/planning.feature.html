@@ -49,6 +49,7 @@
         (viewChanged)="onCalendarViewChanged($event)"
         (dayClick)="onCalendarDayClick($event)"
         (hourClick)="onCalendarHourClick($event)"
+        (manageItems)="onCalendarManageItems($event)"
         (monthClick)="onCalendarMonthClick($event)">
       </app-calendar>
     </div>
@@ -69,65 +70,93 @@
   </mat-card>
 </section>
 
-<div class="modal-backdrop" *ngIf="isAssignmentModalOpen" (click)="closeAssignmentModal()"></div>
-<div class="modal-shell" *ngIf="isAssignmentModalOpen">
-  <mat-card class="modal-card" (click)="$event.stopPropagation()">
-    <mat-card-header>
-      <mat-card-title>
-        {{ editingAssignment ? 'Modifier un assignement' : 'Assigner un cycle' }}
-      </mat-card-title>
-      <mat-card-subtitle *ngIf="editingAssignment">
-        Assignement #{{ editingAssignment.id }} - {{ editingAssignment.cycle.title }}
-      </mat-card-subtitle>
-      <mat-card-subtitle *ngIf="!editingAssignment">
-        Date selectionnee: {{ clickedDateLocal }}
-      </mat-card-subtitle>
-    </mat-card-header>
+<div class="modal-backdrop" *ngIf="activeModal" (click)="closeActiveModal()"></div>
+<div class="modal-shell" *ngIf="activeModal">
+  <mat-card
+    class="modal-card"
+    [class.modal-card--wide]="activeModal === 'items'"
+    (click)="$event.stopPropagation()">
+    <ng-container *ngIf="activeModal === 'assignment'">
+      <mat-card-header>
+        <mat-card-title>
+          {{ editingAssignment ? 'Modifier un assignement' : 'Assigner un cycle' }}
+        </mat-card-title>
+        <mat-card-subtitle *ngIf="editingAssignment">
+          Assignement #{{ editingAssignment.id }} - {{ editingAssignment.cycle.title }}
+        </mat-card-subtitle>
+        <mat-card-subtitle *ngIf="!editingAssignment">
+          Date selectionnee: {{ clickedDateLocal }}
+        </mat-card-subtitle>
+      </mat-card-header>
 
-    <mat-card-content class="space-y-4 pt-2">
-      <mat-form-field appearance="fill" class="w-full sm:w-80">
-        <mat-label>Date de depart</mat-label>
-        <input
-          matInput
-          type="date"
-          [(ngModel)]="modalStartDateLocal"
-          [ngModelOptions]="{ standalone: true }" />
-      </mat-form-field>
+      <mat-card-content class="space-y-4 pt-2">
+        <mat-form-field appearance="fill" class="w-full sm:w-80">
+          <mat-label>Date de depart</mat-label>
+          <input
+            matInput
+            type="date"
+            [(ngModel)]="modalStartDateLocal"
+            [ngModelOptions]="{ standalone: true }" />
+        </mat-form-field>
 
-      <app-list-cycle
-        [mode]="'select-single'"
-        [cycles]="cycleListItems"
-        [selectedIds]="modalSelectedIds"
-        [showAddButton]="false"
-        (selected)="onModalCycleSelected($event)">
-      </app-list-cycle>
+        <app-list-cycle
+          [mode]="'select-single'"
+          [cycles]="cycleListItems"
+          [selectedIds]="modalSelectedIds"
+          [showAddButton]="false"
+          (selected)="onModalCycleSelected($event)">
+        </app-list-cycle>
 
-      <p *ngIf="modalError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-        {{ modalError | json }}
-      </p>
-    </mat-card-content>
+        <p *ngIf="modalError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {{ modalError | json }}
+        </p>
+      </mat-card-content>
 
-    <mat-card-actions align="end" class="gap-2 px-4 pb-4">
-      <button mat-stroked-button type="button" (click)="closeAssignmentModal()" [disabled]="savingAssignment">
-        Annuler
-      </button>
-      <button
-        *ngIf="editingAssignment"
-        mat-stroked-button
-        color="warn"
-        type="button"
-        (click)="removeAssignmentFromModal()"
-        [disabled]="savingAssignment">
-        Retirer
-      </button>
-      <button
-        mat-raised-button
-        color="primary"
-        type="button"
-        (click)="saveAssignmentFromModal()"
-        [disabled]="savingAssignment || !canSubmitModal">
-        Valider
-      </button>
-    </mat-card-actions>
+      <mat-card-actions align="end" class="gap-2 px-4 pb-4">
+        <button mat-stroked-button type="button" (click)="closeActiveModal()" [disabled]="savingAssignment">
+          Annuler
+        </button>
+        <button
+          *ngIf="editingAssignment"
+          mat-stroked-button
+          color="warn"
+          type="button"
+          (click)="removeAssignmentFromModal()"
+          [disabled]="savingAssignment">
+          Retirer
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          (click)="saveAssignmentFromModal()"
+          [disabled]="savingAssignment || !canSubmitModal">
+          Valider
+        </button>
+      </mat-card-actions>
+    </ng-container>
+
+    <ng-container *ngIf="activeModal === 'items'">
+      <mat-card-header>
+        <mat-card-title>Items du jour</mat-card-title>
+        <mat-card-subtitle>Date selectionnee: {{ selectedModalDateLocal }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="pt-2">
+        <app-input-day
+          [displayMode]="'embedded'"
+          [apiBaseUrl]="baseUrl"
+          [initialDateLocal]="selectedModalDateLocal"
+          [lockDate]="true"
+          (itemsChanged)="onEmbeddedItemsChanged($event)">
+        </app-input-day>
+      </mat-card-content>
+
+      <mat-card-actions align="end" class="gap-2 px-4 pb-4">
+        <button mat-stroked-button type="button" (click)="closeActiveModal()">
+          Fermer
+        </button>
+      </mat-card-actions>
+    </ng-container>
   </mat-card>
 </div>

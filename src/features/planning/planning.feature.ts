@@ -11,6 +11,7 @@ import {
   Calendar,
   CalendarDayClickEvent,
   CalendarHourClickEvent,
+  CalendarManageItemsEvent,
   CalendarMonthClickEvent,
   CalendarViewChangeEvent,
 } from '../../components/calendar/calendar';
@@ -29,6 +30,7 @@ import {
 import { CycleAssignementService } from '../../services/cycle-assignement-service';
 import { CycleService } from '../../services/cycle-service';
 import { InputDayService } from '../../services/input-day-service';
+import { InputDayFeature } from '../input-day/input-day.feature';
 
 @Component({
   selector: 'app-planning',
@@ -36,6 +38,7 @@ import { InputDayService } from '../../services/input-day-service';
     CommonModule,
     FormsModule,
     Calendar,
+    InputDayFeature,
     ListCycle,
     MatButtonModule,
     MatCardModule,
@@ -66,8 +69,9 @@ export class PlanningFeature implements OnInit {
   currentRangeFromLocal: string | null = null;
   currentRangeToLocal: string | null = null;
 
-  isAssignmentModalOpen = false;
+  activeModal: 'assignment' | 'items' | null = null;
   clickedDateLocal = '';
+  selectedModalDateLocal = '';
   modalStartDateLocal = '';
   modalSelectedCycleId: number | null = null;
   editingAssignment: CycleAssignment | null = null;
@@ -129,6 +133,10 @@ export class PlanningFeature implements OnInit {
     this.openAssignmentModal(dateLocal, sourceAssignment);
   }
 
+  onCalendarManageItems(event: CalendarManageItemsEvent): void {
+    this.openItemsModal(event.dateLocal);
+  }
+
   onModalCycleSelected(item: CycleListItem): void {
     this.modalSelectedCycleId = item.id;
   }
@@ -159,13 +167,15 @@ export class PlanningFeature implements OnInit {
   }
 
   closeAssignmentModal(): void {
+    this.closeActiveModal();
+  }
+
+  closeActiveModal(): void {
     if (this.savingAssignment) {
       return;
     }
 
-    this.isAssignmentModalOpen = false;
-    this.editingAssignment = null;
-    this.modalError = null;
+    this.resetModalState();
   }
 
   saveAssignmentFromModal(): void {
@@ -225,6 +235,10 @@ export class PlanningFeature implements OnInit {
         this.onMutationError(error);
       },
     });
+  }
+
+  onEmbeddedItemsChanged(_: { dateLocal: string }): void {
+    this.reloadInputDataForCurrentView();
   }
 
   private loadCycles(): void {
@@ -392,12 +406,24 @@ export class PlanningFeature implements OnInit {
       return;
     }
 
+    this.activeModal = 'assignment';
     this.clickedDateLocal = dateLocal;
+    this.selectedModalDateLocal = dateLocal;
     this.editingAssignment = sourceAssignment;
     this.modalStartDateLocal = sourceAssignment?.startDateLocal ?? dateLocal;
     this.modalSelectedCycleId = sourceAssignment?.cycle.id ?? null;
     this.modalError = null;
-    this.isAssignmentModalOpen = true;
+  }
+
+  private openItemsModal(dateLocal: string): void {
+    if (!this.isDateLocal(dateLocal)) {
+      return;
+    }
+
+    this.resetAssignmentModalState();
+    this.activeModal = 'items';
+    this.clickedDateLocal = dateLocal;
+    this.selectedModalDateLocal = dateLocal;
   }
 
   private computeEndDateLocal(startDateLocal: string, cycle: Cycle): string {
@@ -426,9 +452,7 @@ export class PlanningFeature implements OnInit {
     this.lastResponse = response;
     this.lastError = null;
     this.savingAssignment = false;
-    this.isAssignmentModalOpen = false;
-    this.editingAssignment = null;
-    this.modalError = null;
+    this.resetModalState();
     this.reloadAssignmentsForCurrentRange();
     this.reloadInputDataForCurrentView();
   }
@@ -445,5 +469,19 @@ export class PlanningFeature implements OnInit {
 
   private resolveTimezone(): string {
     return DateTime.local().zoneName || 'UTC';
+  }
+
+  private resetAssignmentModalState(): void {
+    this.editingAssignment = null;
+    this.modalStartDateLocal = '';
+    this.modalSelectedCycleId = null;
+    this.modalError = null;
+  }
+
+  private resetModalState(): void {
+    this.activeModal = null;
+    this.clickedDateLocal = '';
+    this.selectedModalDateLocal = '';
+    this.resetAssignmentModalState();
   }
 }

@@ -60,4 +60,28 @@ describe('ProductList', () => {
 
     expect((emitted[emitted.length - 1] as unknown[]).length).toBe(2);
   });
+
+  it('should show available quantity column when requested', () => {
+    fixture.componentRef.setInput('mode', 'select-multi');
+    fixture.componentRef.setInput('showAvailableQty', true);
+    fixture.componentRef.setInput('products', [
+      {
+        id: '10',
+        name: 'Riz',
+        quantityPerUnit: 500,
+        quantityUnit: 'g',
+        availableQuantity: 1200,
+        availableQuantityUnit: 'g',
+      },
+    ]);
+    fixture.detectChanges();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+    const headerCells = Array.from(
+      nativeElement.querySelectorAll('th'),
+    ).map((cell) => (cell as HTMLElement).textContent?.trim() ?? '');
+
+    expect(headerCells).toContain('Disponible');
+    expect(nativeElement.textContent).toContain('1200 g');
+  });
 });

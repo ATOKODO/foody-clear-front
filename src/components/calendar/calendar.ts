@@ -58,6 +58,13 @@ export interface CalendarMonthClickEvent {
   sourceAssignments: CycleAssignment[];
 }
 
+export interface CalendarManageItemsEvent {
+  view: CalendarView;
+  currentDateIso: string;
+  dateLocal: string;
+  sourceAssignment: CycleAssignment | null;
+}
+
 export interface CalendarViewChangeEvent {
   view: CalendarView;
   anchorDateLocal: string;
@@ -82,6 +89,7 @@ export class Calendar implements OnInit, OnChanges {
   @Output() readonly dayClick = new EventEmitter<CalendarDayClickEvent>();
   @Output() readonly hourClick = new EventEmitter<CalendarHourClickEvent>();
   @Output() readonly monthClick = new EventEmitter<CalendarMonthClickEvent>();
+  @Output() readonly manageItems = new EventEmitter<CalendarManageItemsEvent>();
   @Output() readonly viewChanged = new EventEmitter<CalendarViewChangeEvent>();
 
   readonly VIEWS: CalendarView[] = ['year', 'month', 'week', 'day'];
@@ -287,6 +295,18 @@ export class Calendar implements OnInit, OnChanges {
       currentDateIso: this.currentDate.toISO() ?? '',
       month,
       sourceAssignments,
+    });
+  }
+
+  onManageItems(dateLocal: string): void {
+    const sourceAssignment =
+      dateLocal.trim() === '' ? null : (this.findAssignmentForDate(dateLocal) ?? null);
+
+    this.manageItems.emit({
+      view: this.currentView,
+      currentDateIso: this.currentDate.toISO() ?? '',
+      dateLocal,
+      sourceAssignment,
     });
   }
 
