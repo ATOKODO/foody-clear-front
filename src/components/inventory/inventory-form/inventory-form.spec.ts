@@ -23,12 +23,6 @@ describe('InventoryForm', () => {
   it('should initialize add mode with default values', () => {
     expect(component.form.getRawValue()).toEqual({
       name: '',
-      productIdsCsv: '',
-      productsJson: '',
-      addProductIdsCsv: '',
-      addProductsJson: '',
-      removeProductIdsCsv: '',
-      removeProductsJson: '',
     });
   });
 
@@ -36,33 +30,20 @@ describe('InventoryForm', () => {
     fixture.componentRef.setInput('mode', 'edit');
     fixture.componentRef.setInput('inventory', {
       name: 'Stock principal',
-      productIds: [1, 2, 3],
     });
     fixture.detectChanges();
 
     expect(component.form.getRawValue()).toEqual({
       name: 'Stock principal',
-      productIdsCsv: '',
-      productsJson: '',
-      addProductIdsCsv: '',
-      addProductsJson: '',
-      removeProductIdsCsv: '',
-      removeProductsJson: '',
     });
   });
 
-  it('should emit submitted payload with parsed product ids', () => {
+  it('should emit submitted payload with trimmed name', () => {
     const emitted: Array<unknown> = [];
     component.submitted.subscribe((payload) => emitted.push(payload));
 
     component.form.setValue({
-      name: 'Frigo',
-      productIdsCsv: '1,2,2,3',
-      productsJson: '',
-      addProductIdsCsv: '',
-      addProductsJson: '',
-      removeProductIdsCsv: '',
-      removeProductsJson: '',
+      name: '  Frigo  ',
     });
 
     component.onSubmit();
@@ -72,30 +53,7 @@ describe('InventoryForm', () => {
         mode: 'add',
         value: {
           name: 'Frigo',
-          productIds: [1, 2, 3],
-          products: [],
         },
-      },
-    ]);
-  });
-
-  it('should emit payload for add products', () => {
-    const emitted: Array<unknown> = [];
-    component.productsAddSubmitted.subscribe((payload) => emitted.push(payload));
-
-    fixture.componentRef.setInput('mode', 'edit');
-    fixture.detectChanges();
-
-    component.form.patchValue({
-      addProductIdsCsv: '4,5',
-      addProductsJson: '',
-    });
-    component.onAddProductsSubmit();
-
-    expect(emitted).toEqual([
-      {
-        productIds: [4, 5],
-        products: [],
       },
     ]);
   });

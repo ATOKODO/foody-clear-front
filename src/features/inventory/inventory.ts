@@ -8,7 +8,6 @@ import { MatInputModule } from '@angular/material/input';
 import {
   InventoryForm,
   InventoryFormMode,
-  InventoryFormProductsPayload,
   InventoryFormValue,
 } from '../../components/inventory/inventory-form/inventory-form';
 import {
@@ -16,13 +15,36 @@ import {
   InventoryListItem,
 } from '../../components/inventory/inventory-list/inventory-list';
 import {
+  ProductList,
+  ProductListItem,
+} from '../../components/product/product-list/product-list';
+import {
   CreateInventoryDto,
   Inventory as InventoryApiModel,
   InventoryProduct,
+  InventoryProductQtyDto,
   UpdateInventoryDto,
-  UpdateInventoryProductsDto,
 } from '../../interfaces/inventory.interface';
 import { InventoryService } from '../../services/inventory-service';
+import {
+  Product as ProductApiModel,
+  ProductService,
+} from '../../services/product-service';
+
+type InventorySelectedProductRow = {
+  productId: number;
+  productName: string;
+  qty: number | null;
+};
+
+type InventoryManagedProductRow = {
+  productId: number;
+  productName: string;
+  qty: number | null;
+  currentQty: number;
+  currentNormalizedQty: number | null;
+  quantityUnit: string | null;
+};
 
 @Component({
   selector: 'app-inventory',
@@ -35,6 +57,7 @@ import { InventoryService } from '../../services/inventory-service';
     MatInputModule,
     InventoryList,
     InventoryForm,
+    ProductList,
   ],
   templateUrl: './inventory.html',
   styleUrl: './inventory.scss',
@@ -44,27 +67,43 @@ export class Inventory implements OnInit {
   loading = false;
   saving = false;
   loadingInventoryProducts = false;
+  loadingProducts = false;
 
   inventories: InventoryApiModel[] = [];
+  products: ProductApiModel[] = [];
 
   formVisible = false;
   formMode: InventoryFormMode = 'add';
   editingInventoryId: number | null = null;
+  activeModal: 'add-products' | 'manage-products' | null = null;
   formInitialValue: Partial<InventoryFormValue> | null = null;
   editingInventoryProducts: InventoryProduct[] = [];
+  createSelectedProductRows: InventorySelectedProductRow[] = [];
+  addSelectedProductRows: InventorySelectedProductRow[] = [];
+  manageProductRows: InventoryManagedProductRow[] = [];
 
   lastResponse: unknown = null;
   lastError: unknown = null;
+  createProductsFormError: string | null = null;
+  addProductsFormError: string | null = null;
+  manageProductsFormError: string | null = null;
 
-  constructor(private readonly inventorySrv: InventoryService) {}
+  constructor(
+    private readonly inventorySrv: InventoryService,
+    private readonly productSrv: ProductService,
+  ) {}
 
   ngOnInit(): void {
     this.baseUrl = this.inventorySrv.baseUrl;
+    this.productSrv.setBaseUrl(this.baseUrl);
+    this.loadProducts();
     this.loadInventories();
   }
 
   onBaseUrlChange(): void {
     this.inventorySrv.setBaseUrl(this.baseUrl);
+    this.productSrv.setBaseUrl(this.baseUrl);
+    this.loadProducts();
     this.loadInventories();
   }
 
@@ -76,7 +115,53 @@ export class Inventory implements OnInit {
     }));
   }
 
+  get productListItems(): ProductListItem[] {
+    return this.products.map((product) => this.mapProductToListItem(product));
+  }
+
+  get addableProductListItems(): ProductListItem[] {
+    return this.productListItems;
+  }
+
+  get createSelectedProductIds(): string[] {
+    return this.createSelectedProductRows.map((row) => String(row.productId));
+  }
+
+  get addSelectedProductIds(): string[] {
+    return this.addSelectedProductRows.map((row) => String(row.productId));
+  }
+
+  get isAddProductsModalOpen(): boolean {
+    return this.activeModal === 'add-products';
+  }
+
+  get isManageProductsModalOpen(): boolean {
+    return this.activeModal === 'manage-products';
+  }
+
+  get canAddSelectedProducts(): boolean {
+    return (
+      this.isAddProductsModalOpen &&
+      this.addSelectedProductRows.length > 0 &&
+      !this.saving &&
+      !this.loadingProducts &&
+      !this.loadingInventoryProducts &&
+      this.validatePositiveQtyRows(this.addSelectedProductRows) === null
+    );
+  }
+
+  get canSaveManagedProducts(): boolean {
+    return (
+      this.isManageProductsModalOpen &&
+      !this.saving &&
+      !this.loadingInventoryProducts &&
+      this.validateManagedProductRows(this.manageProductRows) === null &&
+      (this.manageProductRows.length > 0 || this.editingInventoryProducts.length > 0)
+    );
+  }
+
   onRefreshRequested(): void {
+    this.loadProducts();
     this.loadInventories();
 
     if (this.editingInventoryId !== null) {
@@ -87,8 +172,10 @@ export class Inventory implements OnInit {
   onAddRequested(): void {
     this.formMode = 'add';
     this.editingInventoryId = null;
+    this.activeModal = null;
     this.formInitialValue = null;
     this.editingInventoryProducts = [];
+    this.clearProductSelections();
     this.formVisible = true;
   }
 
@@ -105,7 +192,9 @@ export class Inventory implements OnInit {
 
     this.formMode = 'edit';
     this.editingInventoryId = inventory.id;
+    this.activeModal = null;
     this.formInitialValue = this.toFormValue(inventory);
+    this.clearProductSelections();
     this.formVisible = true;
     this.loadInventoryProducts(inventory.id);
   }
@@ -137,9 +226,8 @@ export class Inventory implements OnInit {
   }
 
   onFormSubmitted(event: { mode: InventoryFormMode; value: InventoryFormValue }): void {
-    this.saving = true;
-
     if (event.mode === 'edit' && this.editingInventoryId !== null) {
+      this.saving = true;
       const payload: UpdateInventoryDto = {
         name: event.value.name.trim(),
       };
@@ -159,6 +247,13 @@ export class Inventory implements OnInit {
       return;
     }
 
+    const validationError = this.validatePositiveQtyRows(this.createSelectedProductRows);
+    if (validationError) {
+      this.createProductsFormError = validationError;
+      return;
+    }
+
+    this.saving = true;
     const payload = this.toCreateDto(event.value);
     this.inventorySrv.create(payload).subscribe({
       next: (response) => {
@@ -166,6 +261,7 @@ export class Inventory implements OnInit {
         this.lastError = null;
         this.saving = false;
         this.formVisible = false;
+        this.clearProductSelections();
         this.loadInventories();
       },
       error: (error) => {
@@ -175,19 +271,72 @@ export class Inventory implements OnInit {
     });
   }
 
-  onProductsAddRequested(value: InventoryFormProductsPayload): void {
+  onCreateProductsSelected(items: ProductListItem[]): void {
+    this.createSelectedProductRows = this.syncSelectedProductRows(
+      items,
+      this.createSelectedProductRows,
+    );
+    this.createProductsFormError = null;
+  }
+
+  onProductsToAddSelected(items: ProductListItem[]): void {
+    this.addSelectedProductRows = this.syncSelectedProductRows(items, this.addSelectedProductRows);
+    this.addProductsFormError = null;
+  }
+
+  openAddProductsModal(): void {
+    if (this.editingInventoryId == null) {
+      return;
+    }
+
+    this.activeModal = 'add-products';
+    this.addSelectedProductRows = [];
+    this.addProductsFormError = null;
+  }
+
+  openManageProductsModal(): void {
+    if (this.editingInventoryId == null) {
+      return;
+    }
+
+    this.manageProductRows = this.toManagedProductRows(this.editingInventoryProducts);
+    this.manageProductsFormError = null;
+    this.activeModal = 'manage-products';
+  }
+
+  closeActiveModal(): void {
+    if (this.saving) {
+      return;
+    }
+
+    this.activeModal = null;
+    this.addSelectedProductRows = [];
+    this.addProductsFormError = null;
+    this.manageProductRows = [];
+    this.manageProductsFormError = null;
+  }
+
+  onAddSelectedProducts(): void {
     const inventoryId = this.editingInventoryId;
-    if (inventoryId == null) {
+    if (inventoryId == null || this.addSelectedProductRows.length === 0) {
+      return;
+    }
+
+    const validationError = this.validatePositiveQtyRows(this.addSelectedProductRows);
+    if (validationError) {
+      this.addProductsFormError = validationError;
       return;
     }
 
     this.saving = true;
-    const payload = this.toProductsPayload(value);
-    this.inventorySrv.addProducts(inventoryId, payload).subscribe({
+    this.inventorySrv.addProducts(inventoryId, {
+      products: this.toProductQtyPayload(this.addSelectedProductRows),
+    }).subscribe({
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
         this.saving = false;
+        this.closeActiveModal();
         this.loadInventories();
         this.loadInventoryProducts(inventoryId);
       },
@@ -198,19 +347,113 @@ export class Inventory implements OnInit {
     });
   }
 
-  onProductsRemoveRequested(value: InventoryFormProductsPayload): void {
+  saveManagedProducts(): void {
     const inventoryId = this.editingInventoryId;
     if (inventoryId == null) {
       return;
     }
 
+    const validationError = this.validateManagedProductRows(this.manageProductRows);
+    if (validationError) {
+      this.manageProductsFormError = validationError;
+      return;
+    }
+
+    const currentQtyByProductId = new Map(
+      this.editingInventoryProducts.map((item) => [item.productId, item.qtyOnHandInUnits] as const),
+    );
+    const desiredQtyByProductId = new Map(
+      this.manageProductRows.map((row) => [row.productId, row.qty ?? 0] as const),
+    );
+
+    const productIdsToRemove = Array.from(currentQtyByProductId.entries())
+      .filter(([productId, currentQty]) => {
+        const desiredQty = desiredQtyByProductId.get(productId);
+        return desiredQty == null || desiredQty !== currentQty;
+      })
+      .map(([productId]) => productId);
+
+    const productsToAdd = this.manageProductRows
+      .filter((row) => {
+        const currentQty = currentQtyByProductId.get(row.productId);
+        return row.qty != null && row.qty > 0 && row.qty !== currentQty;
+      })
+      .map((row) => ({
+        productId: row.productId,
+        qty: row.qty as number,
+      }));
+
+    if (productIdsToRemove.length === 0 && productsToAdd.length === 0) {
+      this.closeActiveModal();
+      return;
+    }
+
     this.saving = true;
-    const payload = this.toProductsPayload(value);
-    this.inventorySrv.removeProducts(inventoryId, payload).subscribe({
+    const continueWithAdd = () => {
+      if (productsToAdd.length === 0) {
+        this.lastResponse = { updated: true, inventoryId, removedProductIds: productIdsToRemove };
+        this.lastError = null;
+        this.saving = false;
+        this.closeActiveModal();
+        this.loadInventories();
+        this.loadInventoryProducts(inventoryId);
+        return;
+      }
+
+      this.inventorySrv.addProducts(inventoryId, {
+        products: productsToAdd,
+      }).subscribe({
+        next: (response) => {
+          this.lastResponse = response;
+          this.lastError = null;
+          this.saving = false;
+          this.closeActiveModal();
+          this.loadInventories();
+          this.loadInventoryProducts(inventoryId);
+        },
+        error: (error) => {
+          this.lastError = error;
+          this.saving = false;
+        },
+      });
+    };
+
+    if (productIdsToRemove.length === 0) {
+      continueWithAdd();
+      return;
+    }
+
+    this.inventorySrv.removeProducts(inventoryId, {
+      productIds: productIdsToRemove,
+    }).subscribe({
+      next: (response) => {
+        this.lastResponse = response;
+        this.lastError = null;
+        continueWithAdd();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
+    });
+  }
+
+  emptyInventory(): void {
+    const inventoryId = this.editingInventoryId;
+    const productIds = this.editingInventoryProducts.map((item) => item.productId);
+    if (inventoryId == null || productIds.length === 0) {
+      return;
+    }
+
+    this.saving = true;
+    this.inventorySrv.removeProducts(inventoryId, {
+      productIds,
+    }).subscribe({
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
         this.saving = false;
+        this.closeActiveModal();
         this.loadInventories();
         this.loadInventoryProducts(inventoryId);
       },
@@ -232,9 +475,48 @@ export class Inventory implements OnInit {
     this.formVisible = false;
     this.formMode = 'add';
     this.editingInventoryId = null;
+    this.activeModal = null;
     this.formInitialValue = null;
     this.editingInventoryProducts = [];
     this.loadingInventoryProducts = false;
+    this.clearProductSelections();
+  }
+
+  onCreateProductQtyChange(): void {
+    this.createProductsFormError = null;
+  }
+
+  onAddProductQtyChange(): void {
+    this.addProductsFormError = null;
+  }
+
+  onManagedProductQtyChange(): void {
+    this.manageProductsFormError = null;
+  }
+
+  removeCreateSelectedProduct(productId: number): void {
+    this.createSelectedProductRows = this.createSelectedProductRows.filter(
+      (row) => row.productId !== productId,
+    );
+    this.createProductsFormError = null;
+  }
+
+  removeAddSelectedProduct(productId: number): void {
+    this.addSelectedProductRows = this.addSelectedProductRows.filter(
+      (row) => row.productId !== productId,
+    );
+    this.addProductsFormError = null;
+  }
+
+  removeManagedProduct(productId: number): void {
+    this.manageProductRows = this.manageProductRows.filter(
+      (row) => row.productId !== productId,
+    );
+    this.manageProductsFormError = null;
+  }
+
+  trackBySelectedProductRow(_: number, row: InventorySelectedProductRow): number {
+    return row.productId;
   }
 
   private loadInventories(): void {
@@ -257,10 +539,30 @@ export class Inventory implements OnInit {
 
           this.formInitialValue = this.toFormValue(currentInventory);
         }
+
+        this.syncSelectionsToAvailableProducts();
       },
       error: (error) => {
         this.lastError = error;
         this.loading = false;
+      },
+    });
+  }
+
+  private loadProducts(): void {
+    this.loadingProducts = true;
+    this.productSrv.findAll().subscribe({
+      next: (response) => {
+        this.products = this.extractProductsFromResponse(response);
+        this.lastError = null;
+        this.loadingProducts = false;
+        this.syncSelectionsToAvailableProducts();
+      },
+      error: (error) => {
+        this.products = [];
+        this.lastError = error;
+        this.loadingProducts = false;
+        this.syncSelectionsToAvailableProducts();
       },
     });
   }
@@ -272,11 +574,13 @@ export class Inventory implements OnInit {
         this.editingInventoryProducts = this.extractInventoryProductsFromResponse(response);
         this.lastError = null;
         this.loadingInventoryProducts = false;
+        this.syncSelectionsToAvailableProducts();
       },
       error: (error) => {
         this.editingInventoryProducts = [];
         this.lastError = error;
         this.loadingInventoryProducts = false;
+        this.syncSelectionsToAvailableProducts();
       },
     });
   }
@@ -286,57 +590,128 @@ export class Inventory implements OnInit {
       name: value.name.trim(),
     };
 
-    if (value.productIds.length > 0) {
-      payload.productIds = value.productIds;
-    }
-
-    if (value.products.length > 0) {
-      payload.products = value.products;
-    }
-
-    return payload;
-  }
-
-  private toProductsPayload(value: InventoryFormProductsPayload): UpdateInventoryProductsDto {
-    const payload: UpdateInventoryProductsDto = {};
-
-    if (value.productIds.length > 0) {
-      payload.productIds = value.productIds;
-    }
-
-    if (value.products.length > 0) {
-      payload.products = value.products;
+    const products = this.toProductQtyPayload(this.createSelectedProductRows);
+    if (products.length > 0) {
+      payload.products = products;
     }
 
     return payload;
   }
 
   private toFormValue(inventory: InventoryApiModel): InventoryFormValue {
-    const inventoryProducts = Array.isArray(inventory.inventoryProducts)
-      ? inventory.inventoryProducts
-      : [];
-
-    const productIds = Array.from(
-      new Set(
-        inventoryProducts
-          .map((item) => item.productId)
-          .filter((id) => Number.isInteger(id) && id > 0),
-      ),
-    );
-
-    const products = inventoryProducts
-      .filter((item) => Number.isInteger(item.productId) && item.productId > 0)
-      .map((item) => ({
-        productId: item.productId,
-        qty: Number.isFinite(item.qtyOnHandInUnits) ? item.qtyOnHandInUnits : 0,
-      }))
-      .filter((item) => item.qty > 0);
-
     return {
       name: inventory.name,
-      productIds,
-      products,
     };
+  }
+
+  private clearProductSelections(): void {
+    this.createSelectedProductRows = [];
+    this.createProductsFormError = null;
+    this.clearEditModeSelections();
+  }
+
+  private clearEditModeSelections(): void {
+    this.addSelectedProductRows = [];
+    this.manageProductRows = [];
+    this.addProductsFormError = null;
+    this.manageProductsFormError = null;
+  }
+
+  private syncSelectionsToAvailableProducts(): void {
+    this.createSelectedProductRows = this.filterSelectionRows(
+      this.createSelectedProductRows,
+      this.productListItems,
+    );
+    this.addSelectedProductRows = this.filterSelectionRows(
+      this.addSelectedProductRows,
+      this.productListItems,
+    );
+  }
+
+  private filterSelectionRows(
+    selectedRows: InventorySelectedProductRow[],
+    availableItems: ProductListItem[],
+  ): InventorySelectedProductRow[] {
+    const availableById = new Map(
+      availableItems.map((item) => [item.id, item] as const),
+    );
+
+    return selectedRows
+      .map((row) => {
+        const item = availableById.get(String(row.productId));
+        if (!item) {
+          return null;
+        }
+
+        return {
+          ...row,
+          productName: item.name,
+        };
+      })
+      .filter((row): row is InventorySelectedProductRow => row !== null);
+  }
+
+  private syncSelectedProductRows(
+    items: ProductListItem[],
+    currentRows: InventorySelectedProductRow[],
+  ): InventorySelectedProductRow[] {
+    const rowsByProductId = new Map(
+      currentRows.map((row) => [row.productId, row] as const),
+    );
+
+    return items.map((item) => {
+      const productId = Number(item.id);
+      const existingRow = rowsByProductId.get(productId);
+      if (existingRow) {
+        return {
+          ...existingRow,
+          productName: item.name,
+        };
+      }
+
+      return {
+        productId,
+        productName: item.name,
+        qty: null,
+      };
+    });
+  }
+
+  private toProductQtyPayload(rows: InventorySelectedProductRow[]): InventoryProductQtyDto[] {
+    return rows
+      .filter(
+        (row) => typeof row.qty === 'number' && Number.isFinite(row.qty) && row.qty > 0,
+      )
+      .map((row) => ({
+        productId: row.productId,
+        qty: row.qty as number,
+      }));
+  }
+
+  private validatePositiveQtyRows(rows: InventorySelectedProductRow[]): string | null {
+    if (rows.length === 0) {
+      return null;
+    }
+
+    if (
+      rows.some((row) => row.qty == null || !Number.isFinite(row.qty) || row.qty <= 0)
+    ) {
+      return 'Chaque produit selectionne doit avoir une quantite > 0.';
+    }
+
+    return null;
+  }
+
+  private validateManagedProductRows(rows: InventoryManagedProductRow[]): string | null {
+    if (
+      rows.some(
+        (row) => row.qty == null || !Number.isFinite(row.qty) || row.qty < 0,
+      )
+    ) {
+      return 'Chaque produit doit avoir une quantite >= 0.';
+    }
+
+    return null;
   }
 
   private resolveProductCount(inventory: InventoryApiModel): number {
@@ -386,6 +761,34 @@ export class Inventory implements OnInit {
     return [];
   }
 
+  private extractProductsFromResponse(value: unknown): ProductApiModel[] {
+    if (Array.isArray(value)) {
+      return value.filter((item): item is ProductApiModel => this.isProductLike(item));
+    }
+
+    if (this.isProductLike(value)) {
+      return [value];
+    }
+
+    if (!value || typeof value !== 'object') {
+      return [];
+    }
+
+    const raw = value as Record<string, unknown>;
+    const nestedCandidates = ['data', 'items', 'products', 'results', 'payload'];
+    for (const key of nestedCandidates) {
+      const nested = raw[key];
+      if (Array.isArray(nested)) {
+        const products = nested.filter((item): item is ProductApiModel => this.isProductLike(item));
+        if (products.length > 0) {
+          return products;
+        }
+      }
+    }
+
+    return [];
+  }
+
   private extractInventoryProductsFromResponse(value: unknown): InventoryProduct[] {
     if (Array.isArray(value)) {
       return value.filter((item): item is InventoryProduct => this.isInventoryProductLike(item));
@@ -423,6 +826,15 @@ export class Inventory implements OnInit {
     return [];
   }
 
+  private isProductLike(value: unknown): value is ProductApiModel {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const product = value as Partial<ProductApiModel>;
+    return typeof product.id === 'number' && typeof product.name === 'string';
+  }
+
   private isInventoryLike(value: unknown): value is InventoryApiModel {
     if (!value || typeof value !== 'object') {
       return false;
@@ -443,5 +855,100 @@ export class Inventory implements OnInit {
       typeof inventoryProduct.productId === 'number' &&
       typeof inventoryProduct.inventoryId === 'number'
     );
+  }
+
+  private mapProductToListItem(product: ProductApiModel): ProductListItem {
+    return {
+      id: String(product.id),
+      name: product.name,
+      barcode: product.barcode ?? null,
+      unitType: product.unitType,
+      quantityPerUnit: product.quantityPerUnit,
+      quantityUnit: product.quantityUnit,
+      portionCount: product.portionCount ?? null,
+      portionUnit: product.portionUnit ?? null,
+      portionQuantityNormalized: product.portionQuantityNormalized ?? null,
+      price: product.price ?? null,
+      tagNames: this.resolveTagNames(product.tags),
+      nutritionValuesCount: Array.isArray(product.nutritionValues)
+        ? product.nutritionValues.length
+        : 0,
+      category: this.resolveLinkedEntityName(product.category),
+      genericProduct: this.resolveLinkedEntityName(product.genericProduct),
+    };
+  }
+
+  private toManagedProductRows(items: InventoryProduct[]): InventoryManagedProductRow[] {
+    return items.map((item) => ({
+      productId: item.productId,
+      productName:
+        typeof item.product?.name === 'string' && item.product.name.trim() !== ''
+          ? item.product.name.trim()
+          : `Produit #${item.productId}`,
+      qty:
+        typeof item.qtyOnHandInUnits === 'number' && Number.isFinite(item.qtyOnHandInUnits)
+          ? item.qtyOnHandInUnits
+          : 0,
+      currentQty:
+        typeof item.qtyOnHandInUnits === 'number' && Number.isFinite(item.qtyOnHandInUnits)
+          ? item.qtyOnHandInUnits
+          : 0,
+      currentNormalizedQty:
+        typeof item.qtyOnHandNormalized === 'number' && Number.isFinite(item.qtyOnHandNormalized)
+          ? item.qtyOnHandNormalized
+          : null,
+      quantityUnit:
+        typeof item.product?.quantityUnit === 'string' && item.product.quantityUnit.trim() !== ''
+          ? item.product.quantityUnit.trim()
+          : null,
+    }));
+  }
+
+  private resolveTagNames(tags: unknown): string[] {
+    if (!Array.isArray(tags)) {
+      return [];
+    }
+
+    const names = tags
+      .map((tag) => {
+        if (typeof tag === 'string') {
+          return tag.trim();
+        }
+
+        if (!tag || typeof tag !== 'object') {
+          return '';
+        }
+
+        const raw = tag as Record<string, unknown>;
+        const fields = ['name', 'title', 'label', 'key'];
+        for (const field of fields) {
+          const value = raw[field];
+          if (typeof value === 'string' && value.trim() !== '') {
+            return value.trim();
+          }
+        }
+
+        return '';
+      })
+      .filter((name) => name !== '');
+
+    return Array.from(new Set(names));
+  }
+
+  private resolveLinkedEntityName(value: unknown): string {
+    if (!value || typeof value !== 'object') {
+      return 'Aucun';
+    }
+
+    const raw = value as Record<string, unknown>;
+    const fields = ['name', 'title', 'label'];
+    for (const field of fields) {
+      const candidate = raw[field];
+      if (typeof candidate === 'string' && candidate.trim() !== '') {
+        return candidate.trim();
+      }
+    }
+
+    return 'Aucun';
   }
 }
