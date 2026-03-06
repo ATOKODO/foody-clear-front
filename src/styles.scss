@@ -1,5 +1,6 @@
 @use "@angular/material" as mat;
 @use "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Roboto');   
 
 @custom-variant dark (&:where(.dark, .dark *));
 
