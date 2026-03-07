@@ -61,6 +61,21 @@ describe('ProductList', () => {
     expect((emitted[emitted.length - 1] as unknown[]).length).toBe(2);
   });
 
+  it('should toggle selection on the first checkbox click in multi-edit mode', () => {
+    const emitted: Array<unknown> = [];
+    component.selectedMany.subscribe((items) => emitted.push(items));
+
+    fixture.componentRef.setInput('mode', 'multi-edit');
+    fixture.detectChanges();
+
+    const checkbox = fixture.nativeElement.querySelector('mat-checkbox');
+    checkbox.click();
+    fixture.detectChanges();
+
+    expect((emitted[emitted.length - 1] as unknown[]).length).toBe(1);
+    expect(component.isSelected(component.resolvedProducts[0].id)).toBeTrue();
+  });
+
   it('should show available quantity column when requested', () => {
     fixture.componentRef.setInput('mode', 'select-multi');
     fixture.componentRef.setInput('showAvailableQty', true);
