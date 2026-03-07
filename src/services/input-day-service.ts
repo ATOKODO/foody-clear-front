@@ -50,7 +50,7 @@ export class InputDayService {
     return this.http.post(`${this.baseUrl}/input-days/${dateLocal}/items/bulk`, dto);
   }
 
-  updateItemQty(
+  updateItem(
     dateLocal: string,
     itemId: number,
     dto: UpdateInputDayItemDto,

@@ -8,18 +8,34 @@ import { CycleAssignementService } from '../../services/cycle-assignement-servic
 import { InputDayService } from '../../services/input-day-service';
 import { ProductService } from '../../services/product-service';
 import { InventoryService } from '../../services/inventory-service';
+import { InputDayResponse } from '../../interfaces/input-day.interface';
 import { InputDayFeature } from '../input-day/input-day.feature';
 
 describe('PlanningFeature', () => {
   let component: PlanningFeature;
   let fixture: ComponentFixture<PlanningFeature>;
 
-  const dayResponse = {
+  const dayResponse: InputDayResponse = {
     dateLocal: '2026-02-16',
     timezone: 'UTC',
     assignment: null,
     daySet: null,
-    items: [],
+    items: [
+      {
+        id: 77,
+        productId: 3,
+        productName: 'Skyr',
+        inventoryId: 4,
+        qty: 150,
+        qtyUnit: 'g',
+        qtyNormalized: 150,
+        insertedAt: '2026-02-16T08:25:00Z',
+        occurredAt: '2026-02-16T08:00:00Z',
+        slotId: 11,
+        slotKey: 'breakfast',
+        nutritionValue: {},
+      },
+    ],
     slots: [],
     itemsBySlot: [],
     totalsMacros: null,
@@ -52,8 +68,9 @@ describe('PlanningFeature', () => {
         days: [dayResponse],
       }),
     ),
+    createItem: jasmine.createSpy('createItem').and.returnValue(of([])),
     createItems: jasmine.createSpy('createItems').and.returnValue(of([])),
-    updateItemQty: jasmine.createSpy('updateItemQty').and.returnValue(of(null)),
+    updateItem: jasmine.createSpy('updateItem').and.returnValue(of(null)),
     removeItem: jasmine.createSpy('removeItem').and.returnValue(of(void 0)),
   };
 
@@ -67,6 +84,7 @@ describe('PlanningFeature', () => {
     baseUrl: 'http://localhost:3000',
     setBaseUrl: jasmine.createSpy('setBaseUrl'),
     findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
+    findProducts: jasmine.createSpy('findProducts').and.returnValue(of([])),
   };
 
   beforeEach(async () => {
@@ -79,8 +97,7 @@ describe('PlanningFeature', () => {
         { provide: ProductService, useValue: productServiceMock },
         { provide: InventoryService, useValue: inventoryServiceMock },
       ],
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PlanningFeature);
     component = fixture.componentInstance;
@@ -91,7 +108,7 @@ describe('PlanningFeature', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should open assignment modal from calendar day click', () => {
+  it('should open actions modal from calendar day click', () => {
     component.onCalendarDayClick({
       view: 'day',
       currentDateIso: '2026-02-16T00:00:00.000Z',
@@ -106,17 +123,26 @@ describe('PlanningFeature', () => {
       sourceAssignment: null,
     });
 
-    expect(component.activeModal).toBe('assignment');
+    expect(component.activeModal).toBe('actions');
     expect(component.selectedModalDateLocal).toBe('2026-02-16');
   });
 
-  it('should open items modal and pass embedded input-day inputs', () => {
-    component.onCalendarManageItems({
+  it('should open items modal from action chooser and pass embedded input-day inputs', () => {
+    component.onCalendarHourClick({
       view: 'day',
       currentDateIso: '2026-02-16T00:00:00.000Z',
       dateLocal: '2026-02-16',
+      occurredAt: '2026-02-16T08:00:00Z',
+      hour: {
+        hour: 8,
+        label: '08:00',
+      },
       sourceAssignment: null,
     });
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector('.planning-action-item');
+    trigger.click();
     fixture.detectChanges();
 
     const inputDay = fixture.debugElement.query(By.directive(InputDayFeature))
@@ -125,8 +151,52 @@ describe('PlanningFeature', () => {
     expect(component.activeModal).toBe('items');
     expect(inputDay.displayMode).toBe('embedded');
     expect(inputDay.initialDateLocal).toBe('2026-02-16');
+    expect(inputDay.initialOccurredAt).toBe('2026-02-16T08:00:00Z');
+    expect(inputDay.initialEditingItemId).toBeNull();
     expect(inputDay.apiBaseUrl).toBe(component.baseUrl);
     expect(inputDay.lockDate).toBeTrue();
+  });
+
+  it('should open items modal in edit mode from calendar item click', () => {
+    component.onCalendarItemClick({
+      view: 'week',
+      currentDateIso: '2026-02-16T00:00:00.000Z',
+      dateLocal: '2026-02-16',
+      item: {
+        id: 77,
+        dateLocal: '2026-02-16',
+        productId: 3,
+        productName: 'Skyr',
+        qty: 150,
+        occurredAt: '2026-02-16T08:00:00Z',
+        insertedAt: '2026-02-16T08:25:00Z',
+        slotId: 11,
+        slotTitle: 'Petit dejeuner',
+        slotKey: 'breakfast',
+      },
+    });
+    fixture.detectChanges();
+
+    const inputDay = fixture.debugElement.query(By.directive(InputDayFeature))
+      .componentInstance as InputDayFeature;
+
+    expect(component.activeModal).toBe('items');
+    expect(inputDay.initialEditingItemId).toBe(77);
+    expect(inputDay.initialOccurredAt).toBeNull();
+  });
+
+  it('should keep manage items button opening items modal directly', () => {
+    component.onCalendarManageItems({
+      view: 'day',
+      currentDateIso: '2026-02-16T00:00:00.000Z',
+      dateLocal: '2026-02-16',
+      sourceAssignment: null,
+    });
+    fixture.detectChanges();
+
+    expect(component.activeModal).toBe('items');
+    expect(component.selectedOccurredAt).toBeNull();
+    expect(component.selectedItemId).toBeNull();
   });
 
   it('should reload current input data when embedded items change', () => {
@@ -145,6 +215,9 @@ describe('PlanningFeature', () => {
 
     component.onBaseUrlChange();
 
-    expect(inputDayServiceMock.getInputWeek).toHaveBeenCalledWith('2026-02-16', jasmine.any(String));
+    expect(inputDayServiceMock.getInputWeek).toHaveBeenCalledWith(
+      '2026-02-16',
+      jasmine.any(String),
+    );
   });
 });

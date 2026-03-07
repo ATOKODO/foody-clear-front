@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
 import { InputDayFeature } from './input-day.feature';
+import { InputDayResponse } from '../../interfaces/input-day.interface';
 import { InputDayService } from '../../services/input-day-service';
 import { ProductService } from '../../services/product-service';
 import { InventoryService } from '../../services/inventory-service';
@@ -10,7 +11,7 @@ describe('InputDayFeature', () => {
   let component: InputDayFeature;
   let fixture: ComponentFixture<InputDayFeature>;
 
-  const dayResponse = {
+  const dayResponse: InputDayResponse = {
     dateLocal: '2026-02-16',
     timezone: 'UTC',
     assignment: null,
@@ -30,7 +31,22 @@ describe('InputDayFeature', () => {
         },
       ],
     },
-    items: [],
+    items: [
+      {
+        id: 31,
+        productId: 1,
+        productName: 'Chicken',
+        inventoryId: 4,
+        qty: 120,
+        qtyUnit: 'g',
+        qtyNormalized: 120,
+        insertedAt: '2026-02-16T08:20:00Z',
+        occurredAt: '2026-02-16T08:15:00Z',
+        slotId: 11,
+        slotKey: 'breakfast',
+        nutritionValue: {},
+      },
+    ],
     slots: [],
     itemsBySlot: [],
     totalsMacros: null,
@@ -40,8 +56,9 @@ describe('InputDayFeature', () => {
     baseUrl: 'http://localhost:3000',
     setBaseUrl: jasmine.createSpy('setBaseUrl'),
     getInputDay: jasmine.createSpy('getInputDay').and.returnValue(of(dayResponse)),
+    createItem: jasmine.createSpy('createItem').and.returnValue(of({})),
     createItems: jasmine.createSpy('createItems').and.returnValue(of([])),
-    updateItemQty: jasmine.createSpy('updateItemQty').and.returnValue(of(null)),
+    updateItem: jasmine.createSpy('updateItem').and.returnValue(of(null)),
     removeItem: jasmine.createSpy('removeItem').and.returnValue(of(void 0)),
   };
 
@@ -138,6 +155,15 @@ describe('InputDayFeature', () => {
     expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith('2026-02-16', 'UTC');
   });
 
+  it('should prefill occurredAt from embedded hour context', () => {
+    fixture.componentRef.setInput('displayMode', 'embedded');
+    fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
+    fixture.componentRef.setInput('initialOccurredAt', '2026-02-16T08:00:00Z');
+    fixture.detectChanges();
+
+    expect(component.itemEditorForm.value.occurredAt).toBe('2026-02-16T08:00');
+  });
+
   it('should hide standalone response block in embedded mode', () => {
     fixture.componentRef.setInput('displayMode', 'embedded');
     fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
@@ -160,19 +186,6 @@ describe('InputDayFeature', () => {
 
     expect(inventoryServiceMock.findProducts).toHaveBeenCalledWith(5);
     expect(component.selectableProductListItems.map((item) => item.id)).toEqual(['2']);
-  });
-
-  it('should select a product on the first checkbox click in input-day list', () => {
-    component.onSelectedInventoryChange(4);
-    fixture.detectChanges();
-
-    const checkbox = fixture.nativeElement.querySelector('app-product-list mat-checkbox');
-    checkbox.click();
-    fixture.detectChanges();
-
-    expect(component.selectedProductIds).toEqual(['1']);
-    expect(component.selectedProductRows.length).toBe(1);
-    expect(component.selectedProductRows[0].productId).toBe(1);
   });
 
   it('should create items with shared inventory and slot plus per-product qty', () => {
@@ -212,5 +225,79 @@ describe('InputDayFeature', () => {
       ],
     });
     expect(emitted).toEqual([{ dateLocal: '2026-02-16' }]);
+  });
+
+  it('should create a single item with occurredAt', () => {
+    component.form.patchValue({
+      dateLocal: '2026-02-16',
+      timezone: 'UTC',
+    });
+    component.inputDayResponse = dayResponse;
+    component.onSelectedInventoryChange(4);
+    component.itemEditorForm.patchValue({
+      dateLocal: '2026-02-16',
+      occurredAt: '2026-02-16T08:00',
+      productId: 1,
+      qty: 150,
+      qtyUnit: 'g',
+      slotId: 11,
+      slotKey: '',
+    });
+
+    component.submitItemEditor();
+
+    expect(inputDayServiceMock.createItem).toHaveBeenCalledWith('2026-02-16', {
+      productId: 1,
+      inventoryId: 4,
+      qty: 150,
+      occurredAt: '2026-02-16T08:00:00Z',
+      qtyUnit: 'g',
+      slotId: 11,
+    });
+  });
+
+  it('should load the clicked row into the editor', () => {
+    component.inputDayResponse = dayResponse;
+    fixture.detectChanges();
+
+    const trigger = fixture.nativeElement.querySelector('.input-day-edit-item');
+    trigger.click();
+    fixture.detectChanges();
+
+    expect(component.itemEditorForm.value.itemId).toBe(31);
+    expect(component.itemEditorForm.value.productId).toBe(1);
+    expect(component.itemEditorForm.value.occurredAt).toBe('2026-02-16T08:15');
+  });
+
+  it('should send the full update payload for an edited item', () => {
+    component.form.patchValue({
+      dateLocal: '2026-02-16',
+      timezone: 'UTC',
+    });
+    component.inputDayResponse = dayResponse;
+    component.onSelectedInventoryChange(4);
+    component.startEditingItem(31);
+    component.itemEditorForm.patchValue({
+      dateLocal: '2026-02-17',
+      occurredAt: '2026-02-17T09:30',
+      productId: 2,
+      qty: 200,
+      qtyUnit: 'g',
+      slotId: null,
+      slotKey: 'snack',
+    });
+
+    component.submitItemEditor();
+
+    expect(inputDayServiceMock.updateItem).toHaveBeenCalledWith('2026-02-16', 31, {
+      dateLocal: '2026-02-17',
+      productId: 2,
+      inventoryId: 4,
+      qty: 200,
+      occurredAt: '2026-02-17T09:30:00Z',
+      qtyUnit: 'g',
+      slotId: null,
+      slotKey: 'snack',
+    });
   });
 });

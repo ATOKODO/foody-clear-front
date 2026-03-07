@@ -1,109 +1,95 @@
-<!-- calendar-container.component.html -->
-<div class="h-screen flex flex-col">
-  <!-- Header -->
-  <header class="shadow-sm border-b border-gray-200 px-4 py-3">
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-      <!-- Navigation -->
+<div class="flex h-screen flex-col">
+  <header class="border-b border-gray-200 px-4 py-3 shadow-sm">
+    <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
       <div class="flex items-center gap-3">
-        <button 
+        <button
           (click)="goToToday()"
-          class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-50">
           Aujourd'hui
         </button>
-        
+
         <div class="flex items-center gap-2">
-          <button 
+          <button
             (click)="navigate('prev')"
-            class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            class="rounded-lg p-2 transition-colors hover:bg-gray-100">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          
-          <h2 class="text-lg font-semibold min-w-[200px] text-center">
+
+          <h2 class="min-w-[200px] text-center text-lg font-semibold">
             {{ currentViewLabel }}
           </h2>
-          
-          <button 
+
+          <button
             (click)="navigate('next')"
-            class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            class="rounded-lg p-2 transition-colors hover:bg-gray-100">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
       </div>
-      
-      <!-- View Switcher -->
-      <div class="flex gap-1 bg-gray-600 p-1 rounded-lg">
-        <button 
+
+      <div class="flex gap-1 rounded-lg bg-gray-600 p-1">
+        <button
           *ngFor="let view of VIEWS"
           (click)="switchView(view)"
           [class.bg-black]="currentView === view"
           [class.shadow-sm]="currentView === view"
           [class.text-gray-100]="currentView === view"
           [class.text-gray-400]="currentView !== view"
-          class="px-4 py-2 text-sm font-medium rounded-md transition-all capitalize">
-          {{ view === 'year' ? 'Année' : view === 'month' ? 'Mois' : view === 'week' ? 'Semaine' : 'Jour' }}
+          class="rounded-md px-4 py-2 text-sm font-medium capitalize transition-all">
+          {{ view === 'year' ? 'Annee' : view === 'month' ? 'Mois' : view === 'week' ? 'Semaine' : 'Jour' }}
         </button>
       </div>
     </div>
   </header>
-  
-  <!-- Calendar Body -->
+
   <main class="flex-1 overflow-auto p-4">
-    <!-- Loading -->
-    <div *ngIf="loading" class="flex items-center justify-center h-full">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <div *ngIf="loading" class="flex h-full items-center justify-center">
+      <div class="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
     </div>
-    
-    <!-- Year View -->
-    <div *ngIf="currentView === 'year' && !loading" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      <div 
+
+    <div *ngIf="currentView === 'year' && !loading" class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+      <div
         *ngFor="let month of yearMonths"
         (click)="onMonthClick(month)"
-        class="rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer">
-        <h3 class="text-sm font-semibold mb-3 capitalize">{{ month.name }}</h3>
-        
-        <!-- Mini grid -->
+        class="cursor-pointer rounded-lg border border-gray-200 p-4 shadow-sm transition-shadow hover:shadow-md">
+        <h3 class="mb-3 text-sm font-semibold capitalize">{{ month.name }}</h3>
+
         <div class="grid grid-cols-7 gap-1">
-          <div *ngFor="let day of month.days" 
-               [class.opacity-30]="!day.isCurrentMonth"
-               [class.bg-blue-100]="day.isToday"
-               [class.bg-orange-100]="day.assignment && day.assignment.type === 'cheat_day'"
-               [class.bg-green-100]="day.assignment && day.assignment.type === 'cycle'"
-               class="aspect-square flex items-center justify-center text-xs rounded">
+          <div
+            *ngFor="let day of month.days"
+            [class.opacity-30]="!day.isCurrentMonth"
+            [class.bg-blue-100]="day.isToday"
+            [class.bg-orange-100]="day.assignment && day.assignment.type === 'cheat_day'"
+            [class.bg-green-100]="day.assignment && day.assignment.type === 'cycle'"
+            class="aspect-square rounded text-xs flex items-center justify-center">
             {{ day.dayNumber }}
           </div>
         </div>
       </div>
     </div>
-    
-    <!-- Month View -->
-    <div *ngIf="currentView === 'month' && !loading" class="rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <!-- Weekday headers -->
+
+    <div *ngIf="currentView === 'month' && !loading" class="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
       <div class="grid grid-cols-7 border-b border-gray-200">
-        <div 
-          *ngFor="let weekday of WEEKDAY_NAMES"
-          class="py-3 text-center text-sm font-semibold">
+        <div *ngFor="let weekday of WEEKDAY_NAMES" class="py-3 text-center text-sm font-semibold">
           {{ weekday }}
         </div>
       </div>
-      
-      <!-- Days grid -->
-      <div class="grid grid-cols-7 auto-rows-fr min-h-[600px]">
+
+      <div class="grid min-h-[600px] grid-cols-7 auto-rows-fr">
         <div
           *ngFor="let day of monthDays"
           (click)="onDayClick(day)"
           [ngClass]="{'bg-gray-200 dark:bg-gray-600' : !day.isCurrentMonth}"
           [class.bg-red-600]="day.isToday && day.isCurrentMonth"
           [class.cursor-pointer]="day.isCurrentMonth"
-          class="border-r border-b border-gray-200 p-2 hover:bg-gray-50 dark:hover:bg-blue-900 transition-colors min-h-[100px]">
-          
-          <div class="flex flex-col h-full">
-            <!-- Day number -->
-            <div class="flex items-center justify-between mb-2">
-              <span 
+          class="border-b border-r border-gray-200 p-2 transition-colors hover:bg-gray-50 dark:hover:bg-blue-900 min-h-[100px]">
+          <div class="flex h-full flex-col">
+            <div class="mb-2 flex items-center justify-between">
+              <span
                 [class.opacity-50]="!day.isCurrentMonth"
                 [class.opacity-100]="day.isCurrentMonth && !day.isToday"
                 [class.text-blue-600]="day.isToday"
@@ -111,36 +97,38 @@
                 class="text-sm">
                 {{ day.dayNumber }}
               </span>
-              
-              <span *ngIf="day.isToday" class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                Aujourd'hui
-              </span>
+
+              <div class="flex items-center gap-2">
+                <span *ngIf="day.isToday" class="rounded-full bg-blue-600 px-2 py-0.5 text-xs text-white">
+                  Aujourd'hui
+                </span>
+                <button
+                  *ngIf="day.isCurrentMonth"
+                  mat-mini-fab
+                  color="primary"
+                  type="button"
+                  class="calendar-add-trigger-month h-8 w-8 !shadow-sm"
+                  (click)="$event.stopPropagation(); onDayClick(day)">
+                  +
+                </button>
+              </div>
             </div>
-            
-            <!-- Assignment badge -->
-            <div *ngIf="day.assignment" [class]="day.assignment.color" class="text-white p-2 rounded text-xs flex-1">
+
+            <div *ngIf="day.assignment" [class]="day.assignment.color" class="flex-1 rounded p-2 text-xs text-white">
               <div class="font-semibold">{{ day.assignment.cycleName || day.assignment.label }}</div>
-              <div *ngIf="day.assignment.dayNumber" class="opacity-90 mt-1">
+              <div *ngIf="day.assignment.dayNumber" class="mt-1 opacity-90">
                 Jour {{ day.assignment.dayNumber }}/{{ day.assignment.totalDays }}
               </div>
               <div *ngIf="day.assignment.calorieTarget" class="mt-1 text-xs opacity-90">
                 {{ day.assignment.actualCalories || 0 }} / {{ day.assignment.calorieTarget }} kcal
               </div>
             </div>
-            
-            <!-- Add button -->
-            <button 
-              *ngIf="!day.assignment && day.isCurrentMonth"
-              class="mt-auto text-gray-400 hover:text-gray-600 text-2xl leading-none">
-              +
-            </button>
           </div>
         </div>
       </div>
     </div>
-    
-    <!-- Week View -->
-    <div *ngIf="currentView === 'week' && !loading" class="rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+
+    <div *ngIf="currentView === 'week' && !loading" class="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
       <div class="border-b border-gray-200 bg-slate-50 p-4">
         <h3 class="text-lg font-semibold">Resume de la semaine</h3>
         <div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -183,50 +171,57 @@
         </p>
       </div>
 
-      <!-- Time column + days -->
       <div class="flex">
-        <!-- Time labels -->
         <div class="w-16 flex-shrink-0 border-r border-gray-200">
           <div class="h-16 border-b border-gray-200"></div>
-          <div *ngFor="let hour of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]" 
-               class="h-24 border-b border-gray-200 flex items-start justify-end pr-2 pt-1">
+          <div
+            *ngFor="let hour of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]"
+            class="flex h-24 items-start justify-end border-b border-gray-200 pr-2 pt-1">
             <span class="text-xs">{{ hour.toString().padStart(2, '0') }}:00</span>
           </div>
         </div>
-        
-        <!-- Days columns -->
+
         <div class="flex-1 overflow-x-auto">
-          <div class="grid grid-cols-7 min-w-[700px]">
-            <!-- Day headers -->
-            <div *ngFor="let day of weekDays" class="border-r border-b border-gray-200 h-16 px-1 py-1 flex flex-col items-center justify-center gap-1">
+          <div class="grid min-w-[700px] grid-cols-7">
+            <div
+              *ngFor="let day of weekDays"
+              class="flex h-16 flex-col items-center justify-center gap-1 border-b border-r border-gray-200 px-1 py-1">
               <span class="text-xs">{{ day.dateObj.toFormat('EEE', { locale: 'fr' }) }}</span>
-              <span 
+              <span
                 [class.bg-blue-600]="day.isToday"
                 [class.text-white]="day.isToday"
                 [ngClass]="{'text-gray-900 dark:text-gray-300' : !day.isToday}"
-                class="text-sm font-semibold mt-1 w-7 h-7 flex items-center justify-center rounded-full">
+                class="mt-1 flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold">
                 {{ day.dayNumber }}
               </span>
-              <button
-                type="button"
-                class="calendar-items-trigger-week rounded border border-slate-300 px-2 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-100"
-                (click)="$event.stopPropagation(); onManageItems(day.date)">
-                Items
-              </button>
+              <div class="flex items-center gap-2">
+                <button
+                  type="button"
+                  class="calendar-items-trigger-week rounded border border-slate-300 px-2 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-100"
+                  (click)="$event.stopPropagation(); onManageItems(day.date)">
+                  Items
+                </button>
+                <button
+                  mat-mini-fab
+                  color="primary"
+                  type="button"
+                  class="calendar-add-trigger-week h-8 w-8 !shadow-sm"
+                  (click)="$event.stopPropagation(); onDayClick(day)">
+                  +
+                </button>
+              </div>
             </div>
-            
-            <!-- Hour slots for each day -->
+
             <ng-container *ngFor="let day of weekDays">
               <div class="border-r border-gray-200">
-                <div 
+                <div
                   *ngFor="let hour of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]"
                   (click)="onHourClick({ hour: hour, label: hour + ':00', assignment: day.assignment }, day.date)"
-                  class="h-24 border-b border-gray-200 hover:bg-blue-50 dark:hover:bg-blue-800 cursor-pointer transition-colors p-1">
-                  
-                  <div 
+                  class="h-24 cursor-pointer border-b border-gray-200 p-1 transition-colors hover:bg-blue-50 dark:hover:bg-blue-800">
+                  <div
                     *ngIf="day.assignment && hour === 12"
                     [class]="day.assignment.color"
-                    class="mb-1 rounded text-white text-[11px] p-1">
+                    class="mb-1 rounded p-1 text-[11px] text-white">
                     <div class="font-semibold">{{ day.assignment.label }}</div>
                   </div>
 
@@ -241,10 +236,11 @@
                   <div *ngIf="getWeekHourInsertedProducts(day.date, hour).length > 0" class="space-y-1">
                     <div
                       *ngFor="let product of getWeekHourInsertedProducts(day.date, hour)"
-                      class="rounded border border-slate-200 bg-slate-50 px-1.5 py-1 text-[10px] text-slate-700">
+                      (click)="onItemClick(product, day.date, $event)"
+                      class="calendar-inserted-item-week cursor-pointer rounded border border-slate-200 bg-slate-50 px-1.5 py-1 text-[10px] text-slate-700 transition-colors hover:border-blue-300 hover:bg-blue-50">
                       <div class="flex items-center justify-between gap-1">
                         <span class="font-medium">{{ product.productName }}</span>
-                        <span class="text-[10px] text-slate-500">{{ formatInsertedAt(product.insertedAt) }}</span>
+                        <span class="text-[10px] text-slate-500">{{ formatItemTime(product.occurredAt, product.insertedAt) }}</span>
                       </div>
                       <div class="text-[10px] text-slate-500">
                         qte: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
@@ -258,20 +254,29 @@
         </div>
       </div>
     </div>
-    
-    <!-- Day View -->
-    <div *ngIf="currentView === 'day' && !loading" class="rounded-lg shadow-sm border border-gray-200 overflow-hidden max-w-2xl mx-auto">
-      <div class="p-4 border-b border-gray-200">
+
+    <div *ngIf="currentView === 'day' && !loading" class="mx-auto max-w-2xl overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+      <div class="border-b border-gray-200 p-4">
         <div class="flex items-start justify-between gap-3">
           <h3 class="text-lg font-semibold">
             {{ currentDate.toFormat('EEEE d LLLL', { locale: 'fr' }) }}
           </h3>
-          <button
-            type="button"
-            class="calendar-items-trigger-day rounded border border-slate-300 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
-            (click)="onManageItems(currentDate.toISODate())">
-            Items
-          </button>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="calendar-items-trigger-day rounded border border-slate-300 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
+              (click)="onManageItems(currentDate.toISODate())">
+              Items
+            </button>
+            <button
+              mat-mini-fab
+              color="primary"
+              type="button"
+              class="calendar-add-trigger-day h-10 w-10 !shadow-sm"
+              (click)="onCurrentDayClick()">
+              +
+            </button>
+          </div>
         </div>
         <p *ngIf="inputDayResponse?.assignment as assignment" class="mt-1 text-sm text-slate-700">
           Cycle: {{ assignment.cycleTitle }} (jour {{ assignment.dayIndex }})
@@ -313,29 +318,26 @@
           Impossible de charger les produits du jour.
         </p>
       </div>
-      
+
       <div class="flex">
-        <!-- Time column -->
         <div class="w-20 flex-shrink-0 border-r border-gray-200">
-          <div *ngFor="let hour of dayHours" class="h-24 border-b border-gray-200 flex items-start justify-end pr-3 pt-2">
+          <div *ngFor="let hour of dayHours" class="flex h-24 items-start justify-end border-b border-gray-200 pr-3 pt-2">
             <span class="text-sm">{{ hour.label }}</span>
           </div>
         </div>
-        
-        <!-- Content -->
+
         <div class="flex-1">
-          <div 
+          <div
             *ngFor="let hour of dayHours"
             (click)="onHourClick(hour)"
             [class.bg-blue-50]="hour.activeSlots && hour.activeSlots.length > 0"
-            class="h-24 border-b border-gray-200 hover:bg-blue-50 dark:hover:bg-red-900 cursor-pointer transition-colors p-2">
-            
-            <div 
+            class="h-24 cursor-pointer border-b border-gray-200 p-2 transition-colors hover:bg-blue-50 dark:hover:bg-red-900">
+            <div
               *ngIf="hour.assignment"
               [class]="hour.assignment.color"
-              class="mb-1 rounded text-white p-2">
-              <div class="font-semibold text-sm">{{ hour.assignment.label }}</div>
-              <div *ngIf="hour.assignment.calorieTarget" class="text-xs opacity-90 mt-1">
+              class="mb-1 rounded p-2 text-white">
+              <div class="text-sm font-semibold">{{ hour.assignment.label }}</div>
+              <div *ngIf="hour.assignment.calorieTarget" class="mt-1 text-xs opacity-90">
                 Objectif: {{ hour.assignment.calorieTarget }} kcal
               </div>
             </div>
@@ -351,13 +353,14 @@
             <div *ngIf="hour.insertedProducts && hour.insertedProducts.length > 0" class="space-y-1">
               <div
                 *ngFor="let product of hour.insertedProducts"
-                class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700">
+                (click)="onItemClick(product, product.dateLocal, $event)"
+                class="calendar-inserted-item-day cursor-pointer rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700 transition-colors hover:border-blue-300 hover:bg-blue-50">
                 <div class="flex items-center justify-between gap-2">
                   <span class="font-medium">{{ product.productName }}</span>
-                  <span class="text-[11px] text-slate-500">{{ formatInsertedAt(product.insertedAt) }}</span>
+                  <span class="text-[11px] text-slate-500">{{ formatItemTime(product.occurredAt, product.insertedAt) }}</span>
                 </div>
                 <div class="text-[11px] text-slate-500">
-                  qte: {{ product.qty }} · {{ product.slotTitle || product.slotKey }}
+                  qte: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
                 </div>
               </div>
             </div>

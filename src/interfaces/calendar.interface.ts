@@ -35,10 +35,13 @@ export interface MonthSummary {
 
 export interface CalendarInsertedProduct {
   id: number;
+  dateLocal: string;
   productId: number;
   productName: string;
   qty: number;
+  occurredAt: string | null;
   insertedAt: string;
+  slotId: number | null;
   slotTitle: string;
   slotKey: string;
 }

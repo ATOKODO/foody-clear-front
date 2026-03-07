@@ -49,6 +49,7 @@
         (viewChanged)="onCalendarViewChanged($event)"
         (dayClick)="onCalendarDayClick($event)"
         (hourClick)="onCalendarHourClick($event)"
+        (itemClick)="onCalendarItemClick($event)"
         (manageItems)="onCalendarManageItems($event)"
         (monthClick)="onCalendarMonthClick($event)">
       </app-calendar>
@@ -76,6 +77,54 @@
     class="modal-card"
     [class.modal-card--wide]="activeModal === 'items'"
     (click)="$event.stopPropagation()">
+    <ng-container *ngIf="activeModal === 'actions'">
+      <mat-card-header>
+        <mat-card-title>Actions du jour</mat-card-title>
+        <mat-card-subtitle>
+          {{ selectedModalDateLocal }}
+          <ng-container *ngIf="selectedOccurredAt">
+            - {{ selectedOccurredAt | date: 'HH:mm' }}
+          </ng-container>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="space-y-4 pt-2">
+        <p class="text-sm text-slate-600">
+          Choisis si tu veux modifier le cycle du jour ou ouvrir l'editeur d'entrees.
+        </p>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <button
+            mat-stroked-button
+            type="button"
+            class="planning-action-cycle min-h-28 justify-start rounded-xl border-slate-300 p-4 text-left"
+            (click)="openAssignmentFromActions()">
+            <span class="block text-base font-semibold text-slate-900">Cycle</span>
+            <span class="mt-1 block text-sm text-slate-600">
+              Ajouter ou modifier l'assignation du cycle pour cette date.
+            </span>
+          </button>
+
+          <button
+            mat-stroked-button
+            type="button"
+            class="planning-action-item min-h-28 justify-start rounded-xl border-slate-300 p-4 text-left"
+            (click)="openItemsFromActions()">
+            <span class="block text-base font-semibold text-slate-900">Entree</span>
+            <span class="mt-1 block text-sm text-slate-600">
+              Ouvrir l'editeur `input-day` sur cette date et ce contexte horaire.
+            </span>
+          </button>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions align="end" class="gap-2 px-4 pb-4">
+        <button mat-stroked-button type="button" (click)="closeActiveModal()">
+          Fermer
+        </button>
+      </mat-card-actions>
+    </ng-container>
+
     <ng-container *ngIf="activeModal === 'assignment'">
       <mat-card-header>
         <mat-card-title>
@@ -147,6 +196,8 @@
           [displayMode]="'embedded'"
           [apiBaseUrl]="baseUrl"
           [initialDateLocal]="selectedModalDateLocal"
+          [initialOccurredAt]="selectedOccurredAt"
+          [initialEditingItemId]="selectedItemId"
           [lockDate]="true"
           (itemsChanged)="onEmbeddedItemsChanged($event)">
         </app-input-day>

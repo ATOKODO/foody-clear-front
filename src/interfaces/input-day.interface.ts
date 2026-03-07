@@ -16,6 +16,7 @@ export interface InputDayItemCommand {
   productId: number;
   inventoryId: number;
   qty: number;
+  occurredAt?: string;
   qtyUnit?: ProductQuantityInputUnit;
   slotId?: number;
   slotKey?: string;
@@ -26,8 +27,14 @@ export interface CreateInputDayItemsDto {
 }
 
 export interface UpdateInputDayItemDto {
+  dateLocal: string;
+  productId: number;
+  inventoryId: number;
   qty: number;
+  occurredAt?: string;
   qtyUnit?: ProductQuantityInputUnit;
+  slotId?: number | null;
+  slotKey?: string;
 }
 
 export type InputDayIncompleteValue = 'donnee incomplete';
@@ -64,6 +71,9 @@ export interface InputDayItemSummary {
   qtyUnit: ProductQuantityInputUnit | null;
   qtyNormalized: number;
   insertedAt: string;
+  occurredAt: string | null;
+  slotId: number | null;
+  slotKey: string | null;
   nutritionValue: InputDayNutritionValue;
 }
 

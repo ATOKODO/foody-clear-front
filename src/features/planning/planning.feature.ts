@@ -11,6 +11,7 @@ import {
   Calendar,
   CalendarDayClickEvent,
   CalendarHourClickEvent,
+  CalendarItemClickEvent,
   CalendarManageItemsEvent,
   CalendarMonthClickEvent,
   CalendarViewChangeEvent,
@@ -69,12 +70,15 @@ export class PlanningFeature implements OnInit {
   currentRangeFromLocal: string | null = null;
   currentRangeToLocal: string | null = null;
 
-  activeModal: 'assignment' | 'items' | null = null;
+  activeModal: 'actions' | 'assignment' | 'items' | null = null;
   clickedDateLocal = '';
   selectedModalDateLocal = '';
+  selectedOccurredAt: string | null = null;
+  selectedItemId: number | null = null;
   modalStartDateLocal = '';
   modalSelectedCycleId: number | null = null;
   editingAssignment: CycleAssignment | null = null;
+  selectedActionAssignment: CycleAssignment | null = null;
 
   modalError: unknown = null;
   dayItemsError: unknown = null;
@@ -113,7 +117,7 @@ export class PlanningFeature implements OnInit {
   }
 
   onCalendarDayClick(event: CalendarDayClickEvent): void {
-    this.openAssignmentModal(event.day.date, event.sourceAssignment);
+    this.openActionsModal(event.day.date, null, event.sourceAssignment);
   }
 
   onCalendarHourClick(event: CalendarHourClickEvent): void {
@@ -122,19 +126,22 @@ export class PlanningFeature implements OnInit {
         ? event.dateLocal
         : (DateTime.fromISO(event.currentDateIso).toISODate() ?? '');
 
-    this.openAssignmentModal(dateLocal, event.sourceAssignment);
+    this.openActionsModal(dateLocal, event.occurredAt, event.sourceAssignment);
   }
 
   onCalendarMonthClick(event: CalendarMonthClickEvent): void {
-    const dateLocal = DateTime.local(event.month.year, event.month.month, 1).toISODate() ?? '';
     const sourceAssignment =
       event.sourceAssignments.length === 1 ? event.sourceAssignments[0] : null;
 
-    this.openAssignmentModal(dateLocal, sourceAssignment);
+    this.openActionsModal(event.dateLocal, null, sourceAssignment);
   }
 
   onCalendarManageItems(event: CalendarManageItemsEvent): void {
-    this.openItemsModal(event.dateLocal);
+    this.openItemsModal(event.dateLocal, null, null);
+  }
+
+  onCalendarItemClick(event: CalendarItemClickEvent): void {
+    this.openItemsModal(event.dateLocal, null, event.item.id);
   }
 
   onModalCycleSelected(item: CycleListItem): void {
@@ -168,6 +175,14 @@ export class PlanningFeature implements OnInit {
 
   closeAssignmentModal(): void {
     this.closeActiveModal();
+  }
+
+  openAssignmentFromActions(): void {
+    this.openAssignmentModal(this.selectedModalDateLocal, this.selectedActionAssignment);
+  }
+
+  openItemsFromActions(): void {
+    this.openItemsModal(this.selectedModalDateLocal, this.selectedOccurredAt, null);
   }
 
   closeActiveModal(): void {
@@ -398,6 +413,24 @@ export class PlanningFeature implements OnInit {
     this.dayItemsError = null;
   }
 
+  private openActionsModal(
+    dateLocal: string,
+    occurredAt: string | null,
+    sourceAssignment: CycleAssignment | null,
+  ): void {
+    if (!this.isDateLocal(dateLocal)) {
+      return;
+    }
+
+    this.resetAssignmentModalState();
+    this.activeModal = 'actions';
+    this.clickedDateLocal = dateLocal;
+    this.selectedModalDateLocal = dateLocal;
+    this.selectedOccurredAt = occurredAt;
+    this.selectedItemId = null;
+    this.selectedActionAssignment = sourceAssignment;
+  }
+
   private openAssignmentModal(
     dateLocal: string,
     sourceAssignment: CycleAssignment | null,
@@ -409,13 +442,20 @@ export class PlanningFeature implements OnInit {
     this.activeModal = 'assignment';
     this.clickedDateLocal = dateLocal;
     this.selectedModalDateLocal = dateLocal;
+    this.selectedOccurredAt = null;
+    this.selectedItemId = null;
     this.editingAssignment = sourceAssignment;
     this.modalStartDateLocal = sourceAssignment?.startDateLocal ?? dateLocal;
     this.modalSelectedCycleId = sourceAssignment?.cycle.id ?? null;
     this.modalError = null;
+    this.selectedActionAssignment = sourceAssignment;
   }
 
-  private openItemsModal(dateLocal: string): void {
+  private openItemsModal(
+    dateLocal: string,
+    occurredAt: string | null,
+    itemId: number | null,
+  ): void {
     if (!this.isDateLocal(dateLocal)) {
       return;
     }
@@ -424,6 +464,8 @@ export class PlanningFeature implements OnInit {
     this.activeModal = 'items';
     this.clickedDateLocal = dateLocal;
     this.selectedModalDateLocal = dateLocal;
+    this.selectedOccurredAt = occurredAt;
+    this.selectedItemId = itemId;
   }
 
   private computeEndDateLocal(startDateLocal: string, cycle: Cycle): string {
@@ -473,6 +515,7 @@ export class PlanningFeature implements OnInit {
 
   private resetAssignmentModalState(): void {
     this.editingAssignment = null;
+    this.selectedActionAssignment = null;
     this.modalStartDateLocal = '';
     this.modalSelectedCycleId = null;
     this.modalError = null;
@@ -482,6 +525,8 @@ export class PlanningFeature implements OnInit {
     this.activeModal = null;
     this.clickedDateLocal = '';
     this.selectedModalDateLocal = '';
+    this.selectedOccurredAt = null;
+    this.selectedItemId = null;
     this.resetAssignmentModalState();
   }
 }

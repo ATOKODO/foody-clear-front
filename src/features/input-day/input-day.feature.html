@@ -62,7 +62,7 @@
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
         <mat-card-title>Contexte du jour</mat-card-title>
-        <mat-card-subtitle>Date, timezone, inventory et slot</mat-card-subtitle>
+        <mat-card-subtitle>Date, timezone, inventory et slot batch</mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content class="space-y-4 pt-2">
@@ -106,7 +106,7 @@
           </mat-form-field>
 
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Slot</mat-label>
+            <mat-label>Slot batch</mat-label>
             <mat-select
               [(ngModel)]="selectedSlotId"
               [ngModelOptions]="{ standalone: true }">
@@ -142,7 +142,118 @@
 
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
-        <mat-card-title>Ajouter des items</mat-card-title>
+        <mat-card-title>{{ isEditingItem ? 'Modifier une entree' : 'Ajouter une entree' }}</mat-card-title>
+        <mat-card-subtitle>
+          Creation ponctuelle via POST /items et edition complete via PATCH /items/:itemId
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="space-y-4 pt-2">
+        <div [formGroup]="itemEditorForm" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Date metier</mat-label>
+            <input matInput type="date" formControlName="dateLocal" />
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>occurredAt</mat-label>
+            <input matInput type="datetime-local" formControlName="occurredAt" />
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Inventory</mat-label>
+            <mat-select
+              [ngModel]="selectedInventoryId"
+              [ngModelOptions]="{ standalone: true }"
+              (ngModelChange)="onSelectedInventoryChange($event)">
+              <mat-option [value]="null">Selectionner</mat-option>
+              <mat-option *ngFor="let inventory of inventories" [value]="inventory.id">
+                {{ inventory.name }} (#{{ inventory.id }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Produit</mat-label>
+            <mat-select formControlName="productId">
+              <mat-option [value]="null">Selectionner</mat-option>
+              <mat-option *ngFor="let product of editorProductOptions" [value]="+product.id">
+                {{ product.name }} (#{{ product.id }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Quantite</mat-label>
+            <input matInput type="number" min="0.01" step="0.01" formControlName="qty" />
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Unite</mat-label>
+            <mat-select formControlName="qtyUnit">
+              <mat-option [value]="null">Auto</mat-option>
+              <mat-option *ngFor="let unit of qtyUnitOptions" [value]="unit">
+                {{ unit }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Slot explicite</mat-label>
+            <mat-select
+              formControlName="slotId"
+              (selectionChange)="onItemEditorSlotIdChange($event.value)">
+              <mat-option [value]="null">Sans slot</mat-option>
+              <mat-option *ngFor="let slot of availableSlots" [value]="slot.slotId">
+                {{ slot.sortOrder }}. {{ slot.title }} ({{ slot.slotKey }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>slotKey libre</mat-label>
+            <input
+              matInput
+              type="text"
+              formControlName="slotKey"
+              [disabled]="itemEditorSelectedSlotId !== null"
+              placeholder="ex: breakfast" />
+          </mat-form-field>
+        </div>
+
+        <p *ngIf="itemEditorError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {{ itemEditorError }}
+        </p>
+
+        <div class="flex flex-wrap justify-end gap-2">
+          <button mat-stroked-button type="button" (click)="resetItemEditor()">
+            {{ isEditingItem ? 'Annuler edition' : 'Reset' }}
+          </button>
+          <button
+            *ngIf="isEditingItem"
+            mat-stroked-button
+            color="warn"
+            type="button"
+            (click)="removeItem()"
+            [disabled]="loading">
+            Supprimer
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            type="button"
+            class="input-day-submit-item"
+            (click)="submitItemEditor()"
+            [disabled]="!canSubmitItemEditor">
+            {{ isEditingItem ? 'Enregistrer l entree' : 'Ajouter l entree' }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="rounded-xl">
+      <mat-card-header>
+        <mat-card-title>Ajouter des items en batch</mat-card-title>
         <mat-card-subtitle>Selection multiple de produits avec quantite par produit</mat-card-subtitle>
       </mat-card-header>
 
@@ -255,45 +366,6 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card *ngIf="isStandaloneMode" appearance="outlined" class="rounded-xl">
-      <mat-card-header>
-        <mat-card-title>Update / Delete item</mat-card-title>
-        <mat-card-subtitle>Operations sur un item</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content class="pt-2">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>itemId</mat-label>
-            <input matInput type="number" formControlName="itemId" />
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>updateQty</mat-label>
-            <input matInput type="number" step="0.01" formControlName="updateQty" />
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>updateQtyUnit (optionnel)</mat-label>
-            <mat-select formControlName="updateQtyUnit">
-              <mat-option [value]="null">Auto</mat-option>
-              <mat-option *ngFor="let unit of qtyUnitOptions" [value]="unit">
-                {{ unit }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <div class="grid gap-2 sm:col-span-2 sm:grid-cols-2 xl:col-span-2">
-            <button mat-raised-button color="accent" type="button" class="w-full" (click)="updateQty()">
-              Update Qty
-            </button>
-            <button mat-raised-button color="warn" type="button" class="w-full" (click)="removeItem()">
-              Delete Item
-            </button>
-          </div>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
     <p *ngIf="lastError" class="break-words rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
       {{ lastError | json }}
     </p>
@@ -397,13 +469,16 @@
                   <th class="px-3 py-2">Produit</th>
                   <th class="px-3 py-2">Inventory</th>
                   <th class="px-3 py-2">Qty</th>
-                  <th class="px-3 py-2">Qty normalisee</th>
-                  <th class="px-3 py-2">Ajoute le</th>
+                  <th class="px-3 py-2">occurredAt</th>
+                  <th class="px-3 py-2">insertedAt</th>
+                  <th class="px-3 py-2">Slot</th>
+                  <th class="px-3 py-2">slotKey</th>
                   <th class="px-3 py-2">Nutrition</th>
+                  <th class="px-3 py-2 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of response.items" class="border-t border-slate-100 align-top">
+                <tr *ngFor="let item of response.items; trackBy: trackByInputDayItem" class="border-t border-slate-100 align-top">
                   <td class="px-3 py-2">
                     {{ item.productName }}
                     <span class="text-slate-500">(#{{ item.productId }})</span>
@@ -412,8 +487,10 @@
                   <td class="px-3 py-2">
                     {{ formatNutritionAmount(item.qty) }} <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
                   </td>
-                  <td class="px-3 py-2">{{ formatNutritionAmount(item.qtyNormalized) }}</td>
-                  <td class="px-3 py-2">{{ item.insertedAt | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
+                  <td class="px-3 py-2">{{ formatDateTime(item.occurredAt) }}</td>
+                  <td class="px-3 py-2">{{ formatDateTime(item.insertedAt) }}</td>
+                  <td class="px-3 py-2">{{ resolveItemSlotTitle(item) }}</td>
+                  <td class="px-3 py-2">{{ resolveItemSlotKey(item) }}</td>
                   <td class="px-3 py-2">
                     <div class="flex flex-wrap gap-1">
                       <span
@@ -421,6 +498,25 @@
                         class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
                         {{ nutrition.key }}: {{ formatNutritionAmount(nutrition.value) }}
                       </span>
+                    </div>
+                  </td>
+                  <td class="px-3 py-2">
+                    <div class="flex justify-end gap-2">
+                      <button
+                        mat-stroked-button
+                        type="button"
+                        class="input-day-edit-item"
+                        (click)="startEditingItem(item.id)">
+                        Modifier
+                      </button>
+                      <button
+                        mat-stroked-button
+                        color="warn"
+                        type="button"
+                        class="input-day-delete-item"
+                        (click)="removeItem(item.id)">
+                        Supprimer
+                      </button>
                     </div>
                   </td>
                 </tr>

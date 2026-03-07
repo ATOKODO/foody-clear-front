@@ -9,6 +9,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 import { DateTime } from 'luxon';
 import {
   CalendarView,
@@ -47,6 +48,7 @@ export interface CalendarHourClickEvent {
   view: CalendarView;
   currentDateIso: string;
   dateLocal: string;
+  occurredAt: string | null;
   hour: HourSlot;
   sourceAssignment: CycleAssignment | null;
 }
@@ -54,6 +56,7 @@ export interface CalendarHourClickEvent {
 export interface CalendarMonthClickEvent {
   view: CalendarView;
   currentDateIso: string;
+  dateLocal: string;
   month: MonthSummary;
   sourceAssignments: CycleAssignment[];
 }
@@ -72,9 +75,16 @@ export interface CalendarViewChangeEvent {
   toDateLocal: string;
 }
 
+export interface CalendarItemClickEvent {
+  view: CalendarView;
+  currentDateIso: string;
+  dateLocal: string;
+  item: CalendarInsertedProduct;
+}
+
 @Component({
   selector: 'app-calendar',
-  imports: [CommonModule],
+  imports: [CommonModule, MatButtonModule],
   templateUrl: './calendar.html',
 })
 export class Calendar implements OnInit, OnChanges {
@@ -90,6 +100,7 @@ export class Calendar implements OnInit, OnChanges {
   @Output() readonly hourClick = new EventEmitter<CalendarHourClickEvent>();
   @Output() readonly monthClick = new EventEmitter<CalendarMonthClickEvent>();
   @Output() readonly manageItems = new EventEmitter<CalendarManageItemsEvent>();
+  @Output() readonly itemClick = new EventEmitter<CalendarItemClickEvent>();
   @Output() readonly viewChanged = new EventEmitter<CalendarViewChangeEvent>();
 
   readonly VIEWS: CalendarView[] = ['year', 'month', 'week', 'day'];
@@ -280,6 +291,7 @@ export class Calendar implements OnInit, OnChanges {
       view: this.currentView,
       currentDateIso: this.currentDate.toISO() ?? '',
       dateLocal: resolvedDateLocal,
+      occurredAt: this.buildOccurredAtForHour(resolvedDateLocal, hour.hour),
       hour,
       sourceAssignment,
     });
@@ -289,10 +301,12 @@ export class Calendar implements OnInit, OnChanges {
     const sourceAssignments = this.cycleAssignments.filter((assignment) =>
       this.isDateRangeOverlappingMonth(assignment, month),
     );
+    const dateLocal = DateTime.local(month.year, month.month, 1).toISODate() ?? '';
 
     this.monthClick.emit({
       view: this.currentView,
       currentDateIso: this.currentDate.toISO() ?? '',
+      dateLocal,
       month,
       sourceAssignments,
     });
@@ -307,6 +321,39 @@ export class Calendar implements OnInit, OnChanges {
       currentDateIso: this.currentDate.toISO() ?? '',
       dateLocal,
       sourceAssignment,
+    });
+  }
+
+  onCurrentDayClick(): void {
+    const currentDateIso = this.currentDate.toISODate();
+    if (!currentDateIso) {
+      return;
+    }
+
+    this.dayClick.emit({
+      view: this.currentView,
+      currentDateIso: this.currentDate.toISO() ?? '',
+      day: {
+        date: currentDateIso,
+        dateObj: this.currentDate,
+        dayNumber: this.currentDate.day,
+        isToday: this.currentDate.hasSame(DateTime.now(), 'day'),
+        isCurrentMonth: true,
+        isWeekend: this.currentDate.weekday >= 6,
+        assignment: this.buildCalendarAssignmentForDate(currentDateIso),
+      },
+      sourceAssignment: this.findAssignmentForDate(currentDateIso) ?? null,
+    });
+  }
+
+  onItemClick(item: CalendarInsertedProduct, dateLocal: string, event: Event): void {
+    event.stopPropagation();
+
+    this.itemClick.emit({
+      view: this.currentView,
+      currentDateIso: this.currentDate.toISO() ?? '',
+      dateLocal,
+      item,
     });
   }
 
@@ -332,6 +379,15 @@ export class Calendar implements OnInit, OnChanges {
     this.loadView();
     this.applyAssignments();
     this.applyInputDayData();
+  }
+
+  formatItemTime(occurredAt: string | null, insertedAt: string): string {
+    const parsed = DateTime.fromISO(occurredAt?.trim() || insertedAt, { setZone: true });
+    if (!parsed.isValid) {
+      return occurredAt?.trim() || insertedAt;
+    }
+
+    return parsed.setZone(this.normalizeTimezone()).toFormat('HH:mm');
   }
 
   formatInsertedAt(insertedAt: string): string {
@@ -475,7 +531,12 @@ export class Calendar implements OnInit, OnChanges {
       const entries = this.resolveItemsBySlotEntriesForResponse(response);
       this.weekInsertedProductsByDateHour.set(
         response.dateLocal,
-        this.buildInsertedProductsByHour(entries, response.items ?? []),
+        this.buildInsertedProductsByHour(
+          entries,
+          response.items ?? [],
+          response.dateLocal,
+          slots,
+        ),
       );
     });
   }
@@ -570,7 +631,7 @@ export class Calendar implements OnInit, OnChanges {
     const entryByKey = new Map(entries.map((entry) => [entry.slot.slotKey, entry]));
 
     response.items.forEach((item) => {
-      const matchedSlot = this.resolveSlotForInsertedAt(item.insertedAt, slots);
+      const matchedSlot = this.resolveSlotForItem(item, slots);
       if (!matchedSlot) {
         return;
       }
@@ -592,11 +653,37 @@ export class Calendar implements OnInit, OnChanges {
     };
   }
 
-  private resolveSlotForInsertedAt(
-    insertedAt: string,
+  private resolveSlotForItem(
+    item: InputDayItemSummary,
     slots: CalendarDaySlot[],
   ): CalendarDaySlot | null {
-    const parsed = DateTime.fromISO(insertedAt, { setZone: true });
+    if (item.slotId !== null) {
+      const matchedById = slots.find((slot) => slot.slotId === item.slotId);
+      if (matchedById) {
+        return matchedById;
+      }
+    }
+
+    const trimmedSlotKey = item.slotKey?.trim() ?? '';
+    if (trimmedSlotKey !== '') {
+      const matchedByKey = slots.find((slot) => slot.slotKey === trimmedSlotKey);
+      if (matchedByKey) {
+        return matchedByKey;
+      }
+    }
+
+    return this.resolveSlotForTimestamp(this.resolveItemTimestamp(item), slots);
+  }
+
+  private resolveSlotForTimestamp(
+    timestamp: string | null,
+    slots: CalendarDaySlot[],
+  ): CalendarDaySlot | null {
+    if (!timestamp) {
+      return null;
+    }
+
+    const parsed = DateTime.fromISO(timestamp, { setZone: true });
     if (!parsed.isValid) {
       return null;
     }
@@ -748,7 +835,12 @@ export class Calendar implements OnInit, OnChanges {
       return;
     }
 
-    const byHour = this.buildInsertedProductsByHour(entries, responseItems);
+    const byHour = this.buildInsertedProductsByHour(
+      entries,
+      responseItems,
+      this.inputDayResponse?.dateLocal ?? this.currentDate.toISODate() ?? '',
+      this.daySlots,
+    );
     this.dayHours.forEach((hour) => {
       hour.insertedProducts = byHour.get(hour.hour) ?? [];
     });
@@ -757,6 +849,8 @@ export class Calendar implements OnInit, OnChanges {
   private buildInsertedProductsByHour(
     entries: InputDayItemsBySlotEntry[],
     responseItems: InputDayItemSummary[],
+    dateLocal: string,
+    slots: CalendarDaySlot[],
   ): Map<number, CalendarInsertedProduct[]> {
     const items = responseItems.length > 0
       ? responseItems
@@ -774,21 +868,31 @@ export class Calendar implements OnInit, OnChanges {
     });
 
     items.forEach((item) => {
-      const parsed = DateTime.fromISO(item.insertedAt, { setZone: true });
+      const timestamp = this.resolveItemTimestamp(item);
+      if (!timestamp) {
+        return;
+      }
+
+      const parsed = DateTime.fromISO(timestamp, { setZone: true });
       if (!parsed.isValid) {
         return;
       }
 
       const localized = parsed.setZone(this.normalizeTimezone());
-      const slot = slotByItemId.get(item.id);
+      const slot =
+        slotByItemId.get(item.id) ??
+        this.resolveCalendarSlotInfo(this.resolveSlotForItem(item, slots), item);
       const insertedProduct: CalendarInsertedProduct = {
         id: item.id,
+        dateLocal,
         productId: item.productId,
         productName: item.productName,
         qty: item.qty,
+        occurredAt: item.occurredAt,
         insertedAt: item.insertedAt,
+        slotId: item.slotId,
         slotTitle: slot?.slotTitle ?? 'Sans slot',
-        slotKey: slot?.slotKey ?? '-',
+        slotKey: slot?.slotKey ?? item.slotKey?.trim() ?? '-',
       };
 
       const products = byHour.get(localized.hour) ?? [];
@@ -799,12 +903,62 @@ export class Calendar implements OnInit, OnChanges {
     byHour.forEach((products) => {
       products.sort(
         (a, b) =>
-          DateTime.fromISO(a.insertedAt, { setZone: true }).toMillis() -
-          DateTime.fromISO(b.insertedAt, { setZone: true }).toMillis(),
+          DateTime.fromISO(a.occurredAt?.trim() || a.insertedAt, { setZone: true }).toMillis() -
+          DateTime.fromISO(b.occurredAt?.trim() || b.insertedAt, { setZone: true }).toMillis(),
       );
     });
 
     return byHour;
+  }
+
+  private resolveItemTimestamp(item: InputDayItemSummary): string | null {
+    const occurredAt = item.occurredAt?.trim();
+    if (occurredAt) {
+      return occurredAt;
+    }
+
+    return item.insertedAt?.trim() || null;
+  }
+
+  private resolveCalendarSlotInfo(
+    slot: CalendarDaySlot | null,
+    item: InputDayItemSummary,
+  ): { slotTitle: string; slotKey: string } | null {
+    if (slot) {
+      return {
+        slotTitle: slot.title,
+        slotKey: slot.slotKey,
+      };
+    }
+
+    const slotKey = item.slotKey?.trim();
+    if (!slotKey) {
+      return null;
+    }
+
+    return {
+      slotTitle: slotKey,
+      slotKey,
+    };
+  }
+
+  private buildOccurredAtForHour(dateLocal: string, hour: number): string | null {
+    if (!dateLocal || !Number.isInteger(hour) || hour < 0 || hour > 23) {
+      return null;
+    }
+
+    const parsed = DateTime.fromISO(dateLocal, { zone: this.normalizeTimezone() }).set({
+      hour,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+
+    if (!parsed.isValid) {
+      return null;
+    }
+
+    return parsed.toISO({ suppressMilliseconds: true });
   }
 
   private findAssignmentForDate(dateIso: string): CycleAssignment | undefined {
