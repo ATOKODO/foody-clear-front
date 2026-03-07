@@ -133,6 +133,16 @@ export class ListCycle implements OnInit, OnChanges {
     this.selectedMany.emit(this.getSelectedItems());
   }
 
+  onCheckboxClick(event: MouseEvent, cycle: CycleListItem): void {
+    event.stopPropagation();
+
+    if (!this.isMultiSelectMode) {
+      return;
+    }
+
+    this.onCheckboxChange(cycle, !this.isSelected(cycle.id));
+  }
+
   onEdit(cycle: CycleListItem): void {
     if (!this.isManageMode) {
       return;

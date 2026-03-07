@@ -162,6 +162,19 @@ describe('InputDayFeature', () => {
     expect(component.selectableProductListItems.map((item) => item.id)).toEqual(['2']);
   });
 
+  it('should select a product on the first checkbox click in input-day list', () => {
+    component.onSelectedInventoryChange(4);
+    fixture.detectChanges();
+
+    const checkbox = fixture.nativeElement.querySelector('app-product-list mat-checkbox');
+    checkbox.click();
+    fixture.detectChanges();
+
+    expect(component.selectedProductIds).toEqual(['1']);
+    expect(component.selectedProductRows.length).toBe(1);
+    expect(component.selectedProductRows[0].productId).toBe(1);
+  });
+
   it('should create items with shared inventory and slot plus per-product qty', () => {
     const emitted: Array<unknown> = [];
     component.itemsChanged.subscribe((event) => emitted.push(event));

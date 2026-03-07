@@ -154,4 +154,33 @@ describe('ListCycle', () => {
 
     expect(emitted[emitted.length - 1]).toEqual(cycles);
   });
+
+  it('should toggle selection on the first checkbox click in multi select mode', () => {
+    const emitted: Array<unknown> = [];
+    component.selectedMany.subscribe((value) => emitted.push(value));
+
+    const cycles = [
+      {
+        id: 1,
+        title: 'Seche',
+        color: '#22c55e',
+        proteins: 180,
+        carbs: 120,
+        lipids: 60,
+        durationCount: 4,
+        durationType: 'semaine' as const,
+      },
+    ];
+
+    fixture.componentRef.setInput('cycles', cycles);
+    fixture.componentRef.setInput('mode', 'select-multi');
+    fixture.detectChanges();
+
+    const checkbox = fixture.nativeElement.querySelector('mat-checkbox');
+    checkbox.click();
+    fixture.detectChanges();
+
+    expect((emitted[emitted.length - 1] as unknown[]).length).toBe(1);
+    expect(component.isSelected(cycles[0].id)).toBeTrue();
+  });
 });

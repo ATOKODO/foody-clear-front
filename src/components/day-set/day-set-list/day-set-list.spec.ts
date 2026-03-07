@@ -82,4 +82,19 @@ describe('DaySetList', () => {
       },
     ]);
   });
+
+  it('should toggle selection on the first checkbox click in multi select mode', () => {
+    const emitted: Array<unknown> = [];
+    component.selectedMany.subscribe((items) => emitted.push(items));
+
+    fixture.componentRef.setInput('mode', 'select-multi');
+    fixture.detectChanges();
+
+    const checkbox = fixture.nativeElement.querySelector('mat-checkbox');
+    checkbox.click();
+    fixture.detectChanges();
+
+    expect((emitted[emitted.length - 1] as unknown[]).length).toBe(1);
+    expect(component.isSelected(component.resolvedDaySets[0].id)).toBeTrue();
+  });
 });

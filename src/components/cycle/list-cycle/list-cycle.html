@@ -31,8 +31,7 @@
             class="pt-1"
             [checked]="isSelected(cycle.id)"
             [attr.aria-label]="'Selectionner ' + cycle.title"
-            (click)="$event.stopPropagation()"
-            (change)="onCheckboxChange(cycle, $event.checked)">
+            (click)="onCheckboxClick($event, cycle)">
           </mat-checkbox>
 
           <div class="grid flex-1 gap-4 lg:grid-cols-[1fr_auto] lg:items-center">

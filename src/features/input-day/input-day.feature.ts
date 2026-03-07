@@ -124,6 +124,8 @@ export class InputDayFeature implements OnInit, OnChanges {
   products: ProductApiModel[] = [];
   inventories: Inventory[] = [];
   selectedInventoryProducts: InventoryProduct[] = [];
+  productListItemsCache: ProductListItem[] = [];
+  selectableProductListItemsCache: ProductListItem[] = [];
   selectedProductIds: string[] = [];
   selectedProducts: ProductListItem[] = [];
   selectedProductRows: InputDaySelectedProductRow[] = [];
@@ -228,10 +230,14 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   get productListItems(): ProductListItem[] {
-    return this.products.map((product) => this.mapProductToListItem(product));
+    return this.productListItemsCache;
   }
 
   get selectableProductListItems(): ProductListItem[] {
+    return this.selectableProductListItemsCache;
+  }
+
+  private buildSelectableProductListItems(): ProductListItem[] {
     if (
       this.selectedInventoryId == null ||
       !Number.isInteger(this.selectedInventoryId) ||
@@ -599,12 +605,14 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.productSrv.findAll().subscribe({
       next: (response) => {
         this.products = this.extractProductsFromResponse(response);
+        this.refreshProductListItems();
         this.loadingProducts = false;
         this.productsError = null;
         this.syncSelectionToAvailableProducts();
       },
       error: (error) => {
         this.products = [];
+        this.refreshProductListItems();
         this.loadingProducts = false;
         this.productsError = error;
         this.syncSelectionToAvailableProducts();
@@ -797,11 +805,13 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   private clearSelectedInventoryProducts(): void {
     this.selectedInventoryProducts = [];
+    this.refreshSelectableProductListItems();
     this.loadingInventoryProducts = false;
     this.inventoryProductsError = null;
   }
 
   private syncSelectionToAvailableProducts(): void {
+    this.refreshSelectableProductListItems();
     const availableProductsById = new Map(
       this.selectableProductListItems.map((item) => [item.id, item] as const),
     );
@@ -831,6 +841,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     if (inventory && Array.isArray(inventory.inventoryProducts)) {
       this.selectedInventoryProducts = embeddedProducts;
+      this.refreshSelectableProductListItems();
       this.loadingInventoryProducts = false;
       this.inventoryProductsError = null;
       this.syncSelectionToAvailableProducts();
@@ -844,6 +855,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.loadingInventoryProducts = true;
     this.inventoryProductsError = null;
     this.selectedInventoryProducts = [];
+    this.refreshSelectableProductListItems();
     this.syncSelectionToAvailableProducts();
 
     this.inventorySrv.findProducts(inventoryId).subscribe({
@@ -853,6 +865,7 @@ export class InputDayFeature implements OnInit, OnChanges {
         }
 
         this.selectedInventoryProducts = this.extractInventoryProductsFromResponse(response);
+        this.refreshSelectableProductListItems();
         this.loadingInventoryProducts = false;
         this.inventoryProductsError = null;
         this.syncSelectionToAvailableProducts();
@@ -863,6 +876,7 @@ export class InputDayFeature implements OnInit, OnChanges {
         }
 
         this.selectedInventoryProducts = [];
+        this.refreshSelectableProductListItems();
         this.loadingInventoryProducts = false;
         this.inventoryProductsError = error;
         this.syncSelectionToAvailableProducts();
@@ -1078,6 +1092,15 @@ export class InputDayFeature implements OnInit, OnChanges {
           : null,
       availableQuantityUnit: item.quantityUnit ?? null,
     };
+  }
+
+  private refreshProductListItems(): void {
+    this.productListItemsCache = this.products.map((product) => this.mapProductToListItem(product));
+    this.refreshSelectableProductListItems();
+  }
+
+  private refreshSelectableProductListItems(): void {
+    this.selectableProductListItemsCache = this.buildSelectableProductListItems();
   }
 
   private resolveTagNames(tags: unknown): string[] {
