@@ -30,6 +30,7 @@ export interface InventoryProduct {
 export interface Inventory {
   id: number;
   name: string;
+  productCount?: number | null;
   inventoryProducts?: InventoryProduct[];
 }
 

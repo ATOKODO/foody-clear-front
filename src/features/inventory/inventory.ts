@@ -715,6 +715,14 @@ export class Inventory implements OnInit {
   }
 
   private resolveProductCount(inventory: InventoryApiModel): number {
+    if (
+      typeof inventory.productCount === 'number' &&
+      Number.isFinite(inventory.productCount) &&
+      inventory.productCount >= 0
+    ) {
+      return Math.floor(inventory.productCount);
+    }
+
     if (Array.isArray(inventory.inventoryProducts)) {
       return inventory.inventoryProducts.length;
     }

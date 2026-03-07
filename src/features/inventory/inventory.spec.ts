@@ -86,6 +86,27 @@ describe('Inventory', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should use backend productCount in inventory list items', () => {
+    inventoryServiceMock.findAll.and.returnValue(of([
+      {
+        id: 4,
+        name: 'Stock principal',
+        productCount: 7,
+        inventoryProducts: linkedProducts,
+      },
+    ]));
+
+    component.onRefreshRequested();
+
+    expect(component.inventoryListItems).toEqual([
+      {
+        id: '4',
+        name: 'Stock principal',
+        productCount: 7,
+      },
+    ]);
+  });
+
   it('should create an inventory with selected products', () => {
     component.onAddRequested();
     component.onCreateProductsSelected(component.productListItems);
