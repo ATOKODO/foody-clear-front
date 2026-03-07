@@ -22,6 +22,9 @@ describe('Inventory', () => {
         unitType: 'Paquet',
         quantityPerUnit: 1,
         quantityUnit: 'unit',
+        portionCount: 2,
+        portionUnit: 'portion',
+        portionQuantityNormalized: 0.5,
         nutritionValues: [],
       },
     },
@@ -55,6 +58,9 @@ describe('Inventory', () => {
         unitType: 'Paquet',
         quantityPerUnit: 1,
         quantityUnit: 'unit',
+        portionCount: 2,
+        portionUnit: 'portion',
+        portionQuantityNormalized: 0.5,
         nutritionValues: [],
       },
       {
@@ -63,6 +69,9 @@ describe('Inventory', () => {
         unitType: 'Paquet',
         quantityPerUnit: 500,
         quantityUnit: 'g',
+        portionCount: 1,
+        portionUnit: 'portion',
+        portionQuantityNormalized: 125,
         nutritionValues: [],
       },
     ])),
@@ -144,6 +153,41 @@ describe('Inventory', () => {
     });
   });
 
+  it('should send qtyUnit when creating inventory stock by portion', () => {
+    component.onAddRequested();
+    component.onCreateProductsSelected([component.productListItems[1]]);
+    component.createSelectedProductRows[0].qty = 2;
+    component.createSelectedProductRows[0].qtyUnit = 'portion';
+
+    component.onFormSubmitted({
+      mode: 'add',
+      value: { name: 'Stock portionne' },
+    });
+
+    expect(inventoryServiceMock.create).toHaveBeenCalledWith({
+      name: 'Stock portionne',
+      products: [{ productId: 2, qty: 2, qtyUnit: 'portion' }],
+    });
+  });
+
+  it('should send qtyUnit when adding stock by portion', () => {
+    component.onEditRequested({
+      id: '4',
+      name: 'Stock principal',
+      productCount: 1,
+    });
+    component.openAddProductsModal();
+    component.onProductsToAddSelected([component.productListItems[1]]);
+    component.addSelectedProductRows[0].qty = 3;
+    component.addSelectedProductRows[0].qtyUnit = 'portion';
+
+    component.onAddSelectedProducts();
+
+    expect(inventoryServiceMock.addProducts).toHaveBeenCalledWith(4, {
+      products: [{ productId: 2, qty: 3, qtyUnit: 'portion' }],
+    });
+  });
+
   it('should keep already linked products visible in the add modal list', () => {
     component.onEditRequested({
       id: '4',
@@ -187,6 +231,42 @@ describe('Inventory', () => {
     });
     expect(inventoryServiceMock.addProducts).toHaveBeenCalledWith(4, {
       products: [{ productId: 1, qty: 5 }],
+    });
+  });
+
+  it('should render manage modal without recomputing template state indefinitely', () => {
+    component.onEditRequested({
+      id: '4',
+      name: 'Stock principal',
+      productCount: 1,
+    });
+
+    component.openManageProductsModal();
+    fixture.detectChanges();
+
+    const modalTitle = fixture.nativeElement.querySelector('mat-card-title');
+    expect(component.manageProductRows[0].qtyUnitOptions.length).toBeGreaterThan(0);
+    expect(component.manageProductRows[0].currentQtyDisplay).toContain('2');
+    expect(modalTitle?.textContent).toContain("Gerer les produits de l'inventory");
+  });
+
+  it('should replace stock rows when managed quantities switch to portion', () => {
+    component.onEditRequested({
+      id: '4',
+      name: 'Stock principal',
+      productCount: 1,
+    });
+    component.openManageProductsModal();
+    component.manageProductRows[0].qty = 4;
+    component.manageProductRows[0].qtyUnit = 'portion';
+
+    component.saveManagedProducts();
+
+    expect(inventoryServiceMock.removeProducts).toHaveBeenCalledWith(4, {
+      productIds: [1],
+    });
+    expect(inventoryServiceMock.addProducts).toHaveBeenCalledWith(4, {
+      products: [{ productId: 1, qty: 4, qtyUnit: 'portion' }],
     });
   });
 

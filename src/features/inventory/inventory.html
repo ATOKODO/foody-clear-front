@@ -104,17 +104,33 @@
                     class="border-t border-slate-100 align-top">
                     <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
                     <td class="px-3 py-2">
-                      <mat-form-field appearance="fill" class="w-full">
-                        <mat-label>Quantite</mat-label>
-                        <input
-                          matInput
-                          type="number"
-                          min="0.01"
-                          step="0.01"
-                          [(ngModel)]="row.qty"
-                          [ngModelOptions]="{ standalone: true }"
-                          (ngModelChange)="onCreateProductQtyChange()" />
-                      </mat-form-field>
+                      <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+                        <mat-form-field appearance="fill" class="w-full">
+                          <mat-label>Quantite</mat-label>
+                          <input
+                            matInput
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            [(ngModel)]="row.qty"
+                            [ngModelOptions]="{ standalone: true }"
+                            (ngModelChange)="onCreateProductQtyChange()" />
+                        </mat-form-field>
+                        <mat-form-field appearance="fill" class="w-full">
+                          <mat-label>Unite</mat-label>
+                          <mat-select
+                            [(ngModel)]="row.qtyUnit"
+                            [ngModelOptions]="{ standalone: true }"
+                            (ngModelChange)="onCreateProductQtyChange()">
+                            <mat-option *ngFor="let option of row.qtyUnitOptions" [value]="option.value">
+                              {{ option.label }}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </div>
+                      <p *ngIf="row.qtyUnitHelpText" class="mt-1 text-xs text-slate-500">
+                        {{ row.qtyUnitHelpText }}
+                      </p>
                     </td>
                     <td class="px-3 py-2 text-right">
                       <button
@@ -231,17 +247,33 @@
                 class="border-t border-slate-100 align-top">
                 <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
                 <td class="px-3 py-2">
-                  <mat-form-field appearance="fill" class="w-full">
-                    <mat-label>Quantite</mat-label>
-                    <input
-                      matInput
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      [(ngModel)]="row.qty"
-                      [ngModelOptions]="{ standalone: true }"
-                      (ngModelChange)="onAddProductQtyChange()" />
-                  </mat-form-field>
+                  <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+                    <mat-form-field appearance="fill" class="w-full">
+                      <mat-label>Quantite</mat-label>
+                      <input
+                        matInput
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        [(ngModel)]="row.qty"
+                        [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="onAddProductQtyChange()" />
+                    </mat-form-field>
+                    <mat-form-field appearance="fill" class="w-full">
+                      <mat-label>Unite</mat-label>
+                      <mat-select
+                        [(ngModel)]="row.qtyUnit"
+                        [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="onAddProductQtyChange()">
+                        <mat-option *ngFor="let option of row.qtyUnitOptions" [value]="option.value">
+                          {{ option.label }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <p *ngIf="row.qtyUnitHelpText" class="mt-1 text-xs text-slate-500">
+                    {{ row.qtyUnitHelpText }}
+                  </p>
                 </td>
                 <td class="px-3 py-2 text-right">
                   <button
@@ -312,23 +344,39 @@
                 *ngFor="let row of manageProductRows; trackBy: trackBySelectedProductRow"
                 class="border-t border-slate-100 align-top">
                 <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
-                <td class="px-3 py-2 text-slate-700">{{ row.currentQty }}</td>
+                <td class="px-3 py-2 text-slate-700">{{ row.currentQtyDisplay }}</td>
                 <td class="px-3 py-2 text-slate-700">
                   {{ row.currentNormalizedQty ?? '-' }}
                   <span class="text-slate-500">{{ row.quantityUnit ?? '' }}</span>
                 </td>
                 <td class="px-3 py-2">
-                  <mat-form-field appearance="fill" class="w-full">
-                    <mat-label>Quantite</mat-label>
-                    <input
-                      matInput
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      [(ngModel)]="row.qty"
-                      [ngModelOptions]="{ standalone: true }"
-                      (ngModelChange)="onManagedProductQtyChange()" />
-                  </mat-form-field>
+                  <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+                    <mat-form-field appearance="fill" class="w-full">
+                      <mat-label>Quantite</mat-label>
+                      <input
+                        matInput
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        [(ngModel)]="row.qty"
+                        [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="onManagedProductQtyChange()" />
+                    </mat-form-field>
+                    <mat-form-field appearance="fill" class="w-full">
+                      <mat-label>Unite</mat-label>
+                      <mat-select
+                        [(ngModel)]="row.qtyUnit"
+                        [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="onManagedProductQtyChange()">
+                        <mat-option *ngFor="let option of row.qtyUnitOptions" [value]="option.value">
+                          {{ option.label }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <p *ngIf="row.qtyUnitHelpText" class="mt-1 text-xs text-slate-500">
+                    {{ row.qtyUnitHelpText }}
+                  </p>
                 </td>
                 <td class="px-3 py-2 text-right">
                   <button

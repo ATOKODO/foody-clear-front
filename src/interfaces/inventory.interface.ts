@@ -1,3 +1,17 @@
+export type ProductQuantityInputUnit =
+  | 'mg'
+  | 'g'
+  | 'kg'
+  | 'ml'
+  | 'l'
+  | 'unit'
+  | 'pack'
+  | 'tranche'
+  | 'piece'
+  | 'part'
+  | 'bouteille'
+  | 'portion';
+
 export interface InventoryLinkedProduct {
   id: number;
   name: string;
@@ -37,6 +51,7 @@ export interface Inventory {
 export interface InventoryProductQtyDto {
   productId: number;
   qty: number;
+  qtyUnit?: ProductQuantityInputUnit;
 }
 
 export interface CreateInventoryDto {

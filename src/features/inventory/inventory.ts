@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import {
   InventoryForm,
   InventoryFormMode,
@@ -23,6 +24,7 @@ import {
   Inventory as InventoryApiModel,
   InventoryProduct,
   InventoryProductQtyDto,
+  ProductQuantityInputUnit,
   UpdateInventoryDto,
 } from '../../interfaces/inventory.interface';
 import { InventoryService } from '../../services/inventory-service';
@@ -31,19 +33,58 @@ import {
   ProductService,
 } from '../../services/product-service';
 
+const INVENTORY_QTY_UNITS: ProductQuantityInputUnit[] = [
+  'mg',
+  'g',
+  'kg',
+  'ml',
+  'l',
+  'unit',
+  'pack',
+  'tranche',
+  'piece',
+  'part',
+  'bouteille',
+  'portion',
+];
+
+type InventoryRowProductMeta = {
+  unitType: string | null;
+  quantityPerUnit: number | null;
+  quantityUnit: ProductQuantityInputUnit | null;
+  portionCount: number | null;
+  portionUnit: ProductQuantityInputUnit | null;
+  portionQuantityNormalized: number | null;
+};
+
 type InventorySelectedProductRow = {
   productId: number;
   productName: string;
   qty: number | null;
-};
+  qtyUnit: ProductQuantityInputUnit;
+  qtyUnitOptions: InventoryQtyUnitOption[];
+  qtyUnitHelpText: string | null;
+} & InventoryRowProductMeta;
 
 type InventoryManagedProductRow = {
-  productId: number;
-  productName: string;
-  qty: number | null;
   currentQty: number;
+  currentQtyUnit: ProductQuantityInputUnit;
   currentNormalizedQty: number | null;
-  quantityUnit: string | null;
+  currentQtyDisplay: string;
+} & InventorySelectedProductRow;
+
+type InventoryProductMetaSource = {
+  unitType?: string | null;
+  quantityPerUnit?: number | null;
+  quantityUnit?: string | null;
+  portionCount?: number | null;
+  portionUnit?: string | null;
+  portionQuantityNormalized?: number | null;
+};
+
+type InventoryQtyUnitOption = {
+  value: ProductQuantityInputUnit;
+  label: string;
 };
 
 @Component({
@@ -55,6 +96,7 @@ type InventoryManagedProductRow = {
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     InventoryList,
     InventoryForm,
     ProductList,
@@ -87,6 +129,8 @@ export class Inventory implements OnInit {
   createProductsFormError: string | null = null;
   addProductsFormError: string | null = null;
   manageProductsFormError: string | null = null;
+
+  private readonly qtyUnitSet = new Set<ProductQuantityInputUnit>(INVENTORY_QTY_UNITS);
 
   constructor(
     private readonly inventorySrv: InventoryService,
@@ -360,28 +404,44 @@ export class Inventory implements OnInit {
     }
 
     const currentQtyByProductId = new Map(
-      this.editingInventoryProducts.map((item) => [item.productId, item.qtyOnHandInUnits] as const),
+      this.editingInventoryProducts.map((item) => [
+        item.productId,
+        {
+          qty:
+            typeof item.qtyOnHandInUnits === 'number' && Number.isFinite(item.qtyOnHandInUnits)
+              ? item.qtyOnHandInUnits
+              : 0,
+          qtyUnit: 'unit' as const,
+        },
+      ] as const),
     );
     const desiredQtyByProductId = new Map(
-      this.manageProductRows.map((row) => [row.productId, row.qty ?? 0] as const),
+      this.manageProductRows.map((row) => [row.productId, row] as const),
     );
 
     const productIdsToRemove = Array.from(currentQtyByProductId.entries())
-      .filter(([productId, currentQty]) => {
-        const desiredQty = desiredQtyByProductId.get(productId);
-        return desiredQty == null || desiredQty !== currentQty;
+      .filter(([productId, currentState]) => {
+        const desiredRow = desiredQtyByProductId.get(productId);
+        return (
+          desiredRow == null ||
+          (desiredRow.qty ?? 0) !== currentState.qty ||
+          desiredRow.qtyUnit !== currentState.qtyUnit
+        );
       })
       .map(([productId]) => productId);
 
-    const productsToAdd = this.manageProductRows
-      .filter((row) => {
-        const currentQty = currentQtyByProductId.get(row.productId);
-        return row.qty != null && row.qty > 0 && row.qty !== currentQty;
-      })
-      .map((row) => ({
-        productId: row.productId,
-        qty: row.qty as number,
-      }));
+    const productsToAdd = this.toProductQtyPayload(
+      this.manageProductRows.filter((row) => {
+        const currentState = currentQtyByProductId.get(row.productId);
+        return (
+          row.qty != null &&
+          row.qty > 0 &&
+          (currentState == null ||
+            row.qty !== currentState.qty ||
+            row.qtyUnit !== currentState.qtyUnit)
+        );
+      }),
+    );
 
     if (productIdsToRemove.length === 0 && productsToAdd.length === 0) {
       this.closeActiveModal();
@@ -492,6 +552,69 @@ export class Inventory implements OnInit {
 
   onManagedProductQtyChange(): void {
     this.manageProductsFormError = null;
+  }
+
+  getQtyUnitOptions(row: InventoryRowProductMeta): InventoryQtyUnitOption[] {
+    const options: InventoryQtyUnitOption[] = [];
+    const seen = new Set<ProductQuantityInputUnit>();
+
+    const pushOption = (value: ProductQuantityInputUnit | null, label: string): void => {
+      if (value === null || seen.has(value)) {
+        return;
+      }
+
+      seen.add(value);
+      options.push({ value, label });
+    };
+
+    const unitType = row.unitType?.trim();
+    pushOption('unit', unitType ? `Unite produit (${unitType})` : 'Unite produit');
+
+    if (row.quantityUnit) {
+      pushOption(row.quantityUnit, row.quantityUnit.toUpperCase());
+    }
+
+    if (row.portionUnit) {
+      pushOption(row.portionUnit, this.toTitleCase(row.portionUnit));
+    }
+
+    return options;
+  }
+
+  getQtyUnitHelpText(row: InventoryRowProductMeta): string | null {
+    const parts: string[] = [];
+
+    if (
+      row.quantityPerUnit != null &&
+      Number.isFinite(row.quantityPerUnit) &&
+      row.quantityPerUnit > 0 &&
+      row.quantityUnit
+    ) {
+      const unitType = row.unitType?.trim() || 'unite produit';
+      parts.push(`1 ${unitType} = ${this.formatDecimal(row.quantityPerUnit)} ${row.quantityUnit}`);
+    }
+
+    if (
+      row.portionQuantityNormalized != null &&
+      Number.isFinite(row.portionQuantityNormalized) &&
+      row.portionQuantityNormalized > 0 &&
+      row.portionUnit &&
+      row.quantityUnit
+    ) {
+      parts.push(
+        `1 ${row.portionUnit} = ${this.formatDecimal(row.portionQuantityNormalized)} ${row.quantityUnit}`,
+      );
+    }
+
+    return parts.length > 0 ? parts.join(' | ') : null;
+  }
+
+  getCurrentQtyDisplay(
+    row: Pick<InventoryManagedProductRow, 'currentQty' | 'unitType'>,
+  ): string {
+    const qty = this.formatDecimal(row.currentQty);
+    const unitType = row.unitType?.trim();
+    return unitType ? `${qty} ${unitType}` : qty;
   }
 
   removeCreateSelectedProduct(productId: number): void {
@@ -643,9 +766,20 @@ export class Inventory implements OnInit {
           return null;
         }
 
+        const meta = this.buildProductMeta(item);
+        const qtyUnit = this.ensureRowQtyUnit(row.qtyUnit, meta);
         return {
           ...row,
           productName: item.name,
+          unitType: meta.unitType,
+          quantityPerUnit: meta.quantityPerUnit,
+          quantityUnit: meta.quantityUnit,
+          portionCount: meta.portionCount,
+          portionUnit: meta.portionUnit,
+          portionQuantityNormalized: meta.portionQuantityNormalized,
+          qtyUnit,
+          qtyUnitOptions: this.getQtyUnitOptions(meta),
+          qtyUnitHelpText: this.getQtyUnitHelpText(meta),
         };
       })
       .filter((row): row is InventorySelectedProductRow => row !== null);
@@ -662,10 +796,21 @@ export class Inventory implements OnInit {
     return items.map((item) => {
       const productId = Number(item.id);
       const existingRow = rowsByProductId.get(productId);
+      const meta = this.buildProductMeta(item);
+      const qtyUnit = this.ensureRowQtyUnit(existingRow?.qtyUnit, meta);
       if (existingRow) {
         return {
           ...existingRow,
           productName: item.name,
+          unitType: meta.unitType,
+          quantityPerUnit: meta.quantityPerUnit,
+          quantityUnit: meta.quantityUnit,
+          portionCount: meta.portionCount,
+          portionUnit: meta.portionUnit,
+          portionQuantityNormalized: meta.portionQuantityNormalized,
+          qtyUnit,
+          qtyUnitOptions: this.getQtyUnitOptions(meta),
+          qtyUnitHelpText: this.getQtyUnitHelpText(meta),
         };
       }
 
@@ -673,6 +818,10 @@ export class Inventory implements OnInit {
         productId,
         productName: item.name,
         qty: null,
+        qtyUnit,
+        qtyUnitOptions: this.getQtyUnitOptions(meta),
+        qtyUnitHelpText: this.getQtyUnitHelpText(meta),
+        ...meta,
       };
     });
   }
@@ -685,6 +834,7 @@ export class Inventory implements OnInit {
       .map((row) => ({
         productId: row.productId,
         qty: row.qty as number,
+        ...(row.qtyUnit !== 'unit' ? { qtyUnit: row.qtyUnit } : {}),
       }));
   }
 
@@ -887,29 +1037,107 @@ export class Inventory implements OnInit {
   }
 
   private toManagedProductRows(items: InventoryProduct[]): InventoryManagedProductRow[] {
-    return items.map((item) => ({
-      productId: item.productId,
-      productName:
-        typeof item.product?.name === 'string' && item.product.name.trim() !== ''
-          ? item.product.name.trim()
-          : `Produit #${item.productId}`,
-      qty:
+    return items.map((item) => {
+      const currentQty =
         typeof item.qtyOnHandInUnits === 'number' && Number.isFinite(item.qtyOnHandInUnits)
           ? item.qtyOnHandInUnits
-          : 0,
-      currentQty:
-        typeof item.qtyOnHandInUnits === 'number' && Number.isFinite(item.qtyOnHandInUnits)
-          ? item.qtyOnHandInUnits
-          : 0,
-      currentNormalizedQty:
-        typeof item.qtyOnHandNormalized === 'number' && Number.isFinite(item.qtyOnHandNormalized)
-          ? item.qtyOnHandNormalized
+          : 0;
+      const meta = this.buildProductMeta(item.product ?? null);
+      const currentQtyDisplay = this.getCurrentQtyDisplay({
+        currentQty,
+        unitType: meta.unitType,
+      });
+
+      return {
+        productId: item.productId,
+        productName:
+          typeof item.product?.name === 'string' && item.product.name.trim() !== ''
+            ? item.product.name.trim()
+            : `Produit #${item.productId}`,
+        qty: currentQty,
+        qtyUnit: 'unit',
+        qtyUnitOptions: this.getQtyUnitOptions(meta),
+        qtyUnitHelpText: this.getQtyUnitHelpText(meta),
+        currentQty,
+        currentQtyUnit: 'unit',
+        currentNormalizedQty:
+          typeof item.qtyOnHandNormalized === 'number' && Number.isFinite(item.qtyOnHandNormalized)
+            ? item.qtyOnHandNormalized
+            : null,
+        currentQtyDisplay,
+        ...meta,
+      };
+    });
+  }
+
+  private buildProductMeta(source: InventoryProductMetaSource | null | undefined): InventoryRowProductMeta {
+    return {
+      unitType:
+        typeof source?.unitType === 'string' && source.unitType.trim() !== ''
+          ? source.unitType.trim()
           : null,
-      quantityUnit:
-        typeof item.product?.quantityUnit === 'string' && item.product.quantityUnit.trim() !== ''
-          ? item.product.quantityUnit.trim()
+      quantityPerUnit:
+        typeof source?.quantityPerUnit === 'number' && Number.isFinite(source.quantityPerUnit)
+          ? source.quantityPerUnit
           : null,
-    }));
+      quantityUnit: this.normalizeQtyUnit(source?.quantityUnit),
+      portionCount:
+        typeof source?.portionCount === 'number' && Number.isFinite(source.portionCount)
+          ? source.portionCount
+          : null,
+      portionUnit: this.normalizeQtyUnit(source?.portionUnit),
+      portionQuantityNormalized:
+        typeof source?.portionQuantityNormalized === 'number' &&
+        Number.isFinite(source.portionQuantityNormalized)
+          ? source.portionQuantityNormalized
+          : null,
+    };
+  }
+
+  private ensureRowQtyUnit(
+    value: ProductQuantityInputUnit | null | undefined,
+    meta: InventoryRowProductMeta,
+  ): ProductQuantityInputUnit {
+    const normalized = this.normalizeQtyUnit(value);
+    if (normalized === 'unit') {
+      return normalized;
+    }
+
+    if (
+      normalized &&
+      this.getQtyUnitOptions({
+        ...meta,
+      }).some((option) => option.value === normalized)
+    ) {
+      return normalized;
+    }
+
+    return 'unit';
+  }
+
+  private normalizeQtyUnit(value: unknown): ProductQuantityInputUnit | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim().toLowerCase();
+    if (candidate === '' || !this.qtyUnitSet.has(candidate as ProductQuantityInputUnit)) {
+      return null;
+    }
+
+    return candidate as ProductQuantityInputUnit;
+  }
+
+  private toTitleCase(value: string): string {
+    return value.length > 0 ? value[0].toUpperCase() + value.slice(1) : value;
+  }
+
+  private formatDecimal(value: number): string {
+    if (!Number.isFinite(value)) {
+      return '0';
+    }
+
+    return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
   }
 
   private resolveTagNames(tags: unknown): string[] {
