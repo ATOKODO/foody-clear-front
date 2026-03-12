@@ -59,13 +59,13 @@
     </mat-progress-bar>
 
     <div class="space-y-3 p-4 sm:p-6">
-      <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-        {{ lastError | json }}
+      <p *ngIf="lastErrorText" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        {{ lastErrorText }}
       </p>
 
       <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
       <pre class="max-h-96 overflow-auto rounded-lg bg-slate-100 p-4 text-xs text-slate-800">
-{{ lastResponse | json }}
+{{ lastResponseText }}
       </pre>
     </div>
   </mat-card>

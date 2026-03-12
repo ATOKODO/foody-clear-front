@@ -1,5 +1,6 @@
 // calendar-container.component.ts
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -86,6 +87,7 @@ export interface CalendarItemClickEvent {
   selector: 'app-calendar',
   imports: [CommonModule, MatButtonModule],
   templateUrl: './calendar.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Calendar implements OnInit, OnChanges {
   @Input() cycleAssignments: CycleAssignment[] = [];
@@ -105,6 +107,7 @@ export class Calendar implements OnInit, OnChanges {
 
   readonly VIEWS: CalendarView[] = ['year', 'month', 'week', 'day'];
   readonly WEEKDAY_NAMES = WEEKDAY_NAMES;
+  readonly HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
   currentView: CalendarView = 'month';
   currentDate = DateTime.now();
@@ -121,6 +124,8 @@ export class Calendar implements OnInit, OnChanges {
   private weekDaySlotsByDate = new Map<string, CalendarDaySlot[]>();
   private weekActiveSlotsByDateHour = new Map<string, Map<number, CalendarDaySlot[]>>();
   private weekInsertedProductsByDateHour = new Map<string, Map<number, CalendarInsertedProduct[]>>();
+  private readonly emptySlots: CalendarDaySlot[] = [];
+  private readonly emptyInsertedProducts: CalendarInsertedProduct[] = [];
 
   ngOnInit(): void {
     this.refreshView();
@@ -477,16 +482,16 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getWeekDaySlots(dateLocal: string): CalendarDaySlot[] {
-    return this.weekDaySlotsByDate.get(dateLocal) ?? [];
+    return this.weekDaySlotsByDate.get(dateLocal) ?? this.emptySlots;
   }
 
   getWeekHourActiveSlots(dateLocal: string, hour: number): CalendarDaySlot[] {
     const byHour = this.weekActiveSlotsByDateHour.get(dateLocal);
     if (!byHour) {
-      return [];
+      return this.emptySlots;
     }
 
-    return byHour.get(hour) ?? [];
+    return byHour.get(hour) ?? this.emptySlots;
   }
 
   getWeekHourInsertedProducts(
@@ -495,10 +500,30 @@ export class Calendar implements OnInit, OnChanges {
   ): CalendarInsertedProduct[] {
     const byHour = this.weekInsertedProductsByDateHour.get(dateLocal);
     if (!byHour) {
-      return [];
+      return this.emptyInsertedProducts;
     }
 
-    return byHour.get(hour) ?? [];
+    return byHour.get(hour) ?? this.emptyInsertedProducts;
+  }
+
+  trackByDate(_: number, day: CalendarDay): string {
+    return day.date;
+  }
+
+  trackByHour(_: number, hour: number | HourSlot): number {
+    return typeof hour === 'number' ? hour : hour.hour;
+  }
+
+  trackBySlot(_: number, slot: CalendarDaySlot): string {
+    return `${slot.slotId ?? slot.slotKey ?? slot.title}-${slot.startTime ?? ''}-${slot.endTime ?? ''}`;
+  }
+
+  trackByInsertedProduct(_: number, product: CalendarInsertedProduct): number {
+    return product.id;
+  }
+
+  trackByMonth(_: number, month: MonthSummary): string {
+    return `${month.year}-${month.month}`;
   }
 
   private applyWeekInputDayData(): void {

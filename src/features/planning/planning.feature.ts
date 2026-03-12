@@ -84,6 +84,8 @@ export class PlanningFeature implements OnInit {
   dayItemsError: unknown = null;
   lastResponse: unknown = null;
   lastError: unknown = null;
+  lastResponseText = 'null';
+  lastErrorText = '';
   private inputDayRequestId = 0;
 
   constructor(
@@ -263,10 +265,10 @@ export class PlanningFeature implements OnInit {
       next: (response) => {
         this.cycles = response;
         this.loadingCycles = false;
-        this.lastError = null;
+        this.setLastError(null);
       },
       error: (error) => {
-        this.lastError = error;
+        this.setLastError(error);
         this.loadingCycles = false;
       },
     });
@@ -282,12 +284,12 @@ export class PlanningFeature implements OnInit {
     this.cycleAssignmentService.findInRange(fromDateLocal, toDateLocal).subscribe({
       next: (response) => {
         this.cycleAssignments = response;
-        this.lastResponse = response;
-        this.lastError = null;
+        this.setLastResponse(response);
+        this.setLastError(null);
         this.loadingAssignments = false;
       },
       error: (error) => {
-        this.lastError = error;
+        this.setLastError(error);
         this.loadingAssignments = false;
       },
     });
@@ -491,8 +493,8 @@ export class PlanningFeature implements OnInit {
   }
 
   private onMutationSuccess(response: unknown): void {
-    this.lastResponse = response;
-    this.lastError = null;
+    this.setLastResponse(response);
+    this.setLastError(null);
     this.savingAssignment = false;
     this.resetModalState();
     this.reloadAssignmentsForCurrentRange();
@@ -500,7 +502,7 @@ export class PlanningFeature implements OnInit {
   }
 
   private onMutationError(error: unknown): void {
-    this.lastError = error;
+    this.setLastError(error);
     this.modalError = error;
     this.savingAssignment = false;
   }
@@ -528,5 +530,27 @@ export class PlanningFeature implements OnInit {
     this.selectedOccurredAt = null;
     this.selectedItemId = null;
     this.resetAssignmentModalState();
+  }
+
+  private setLastResponse(value: unknown): void {
+    this.lastResponse = value;
+    this.lastResponseText = this.stringifyDebugValue(value);
+  }
+
+  private setLastError(value: unknown): void {
+    this.lastError = value;
+    this.lastErrorText = value === null ? '' : this.stringifyDebugValue(value);
+  }
+
+  private stringifyDebugValue(value: unknown): string {
+    if (value === null) {
+      return 'null';
+    }
+
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
   }
 }
