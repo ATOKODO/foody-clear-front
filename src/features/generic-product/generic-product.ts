@@ -1,188 +1,300 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import {
-  GenericProductService,
-  CreateGenericProductDto,
-  UpdateGenericProductDto,
-} from '../../services/generic-product-service';
-import { CommonModule, JsonPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import {
+  GenericProductForm,
+  GenericProductFormMode,
+  GenericProductFormValue,
+} from '../../components/generic-product/generic-product-form/generic-product-form';
+import {
+  GenericProductList,
+  GenericProductListItem,
+} from '../../components/generic-product/generic-product-list/generic-product-list';
+import {
+  CreateGenericProductDto,
+  GenericProduct as GenericProductApiModel,
+  GenericProductService,
+  UpdateGenericProductDto,
+} from '../../services/generic-product-service';
 
 @Component({
   selector: 'app-generic-product',
   imports: [
-    JsonPipe,
     CommonModule,
     FormsModule,
-    ReactiveFormsModule,
     MatButtonModule,
     MatCardModule,
-    MatDividerModule,
     MatFormFieldModule,
     MatInputModule,
-    MatProgressBarModule,
+    GenericProductList,
+    GenericProductForm,
   ],
   templateUrl: './generic-product.html',
   styleUrl: './generic-product.scss',
 })
 export class GenericProduct implements OnInit {
+  baseUrl = '';
+  loading = false;
+  saving = false;
 
-  form: FormGroup = new FormGroup({});
-  // Lie la baseUrl au service via getter/setter (évite l'erreur "used before initialization")
-  get baseUrl(): string {
-    return this.gpSrv.baseUrl;
-  }
-  set baseUrl(v: string) {
-    this.gpSrv.setBaseUrl(v);
-  }
+  genericProducts: GenericProductApiModel[] = [];
 
-  constructor(
-    private fb: FormBuilder,
-    private gpSrv: GenericProductService,
-  ) {}
-  ngOnInit(): void {
-    this.form = this.fb.group({
-      id: this.fb.control<number | null>(null),
-      name: this.fb.control<string>('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-      minQuantityUnit: this.fb.control<number | null>(null, {
-        validators: [Validators.required],
-      }),
-      minQuantityMetric: this.fb.control<number | null>(null, {
-        validators: [Validators.required],
-      }),
-    });
-  }
+  formVisible = false;
+  formMode: GenericProductFormMode = 'add';
+  editingGenericProductId: number | null = null;
+  formInitialValue: Partial<GenericProductFormValue> | null = null;
 
   lastResponse: unknown = null;
   lastError: unknown = null;
-  loading = false;
 
-  // ----- helpers -----
-  private pickCreatePayload(): CreateGenericProductDto {
-    const v = this.form.getRawValue();
-    if (!v.name || v.minQuantityUnit == null || v.minQuantityMetric == null) {
-      throw new Error(
-        'Pour CREATE : name, minQuantityUnit et minQuantityMetric sont requis.',
-      );
+  constructor(private readonly gpSrv: GenericProductService) {}
+
+  ngOnInit(): void {
+    this.baseUrl = this.gpSrv.baseUrl;
+    this.loadGenericProducts();
+  }
+
+  onBaseUrlChange(): void {
+    this.gpSrv.setBaseUrl(this.baseUrl);
+    this.loadGenericProducts();
+  }
+
+  get genericProductListItems(): GenericProductListItem[] {
+    return this.genericProducts.map((genericProduct) => ({
+      id: String(genericProduct.id),
+      name: genericProduct.name,
+      minQuantityUnit: this.normalizeNonNegativeNumber(genericProduct.minQuantityUnit),
+      minQuantityMetric: this.normalizeNonNegativeNumber(genericProduct.minQuantityMetric),
+    }));
+  }
+
+  onRefreshRequested(): void {
+    this.loadGenericProducts();
+  }
+
+  onAddRequested(): void {
+    this.formMode = 'add';
+    this.editingGenericProductId = null;
+    this.formInitialValue = null;
+    this.formVisible = true;
+  }
+
+  onEditRequested(item: GenericProductListItem): void {
+    const genericProductId = Number(item.id);
+    if (!Number.isInteger(genericProductId) || genericProductId < 1) {
+      return;
     }
-    return {
-      name: v.name.trim(),
-      minQuantityUnit: v.minQuantityUnit,
-      minQuantityMetric: v.minQuantityMetric,
+
+    const genericProduct = this.genericProducts.find(
+      (value) => value.id === genericProductId,
+    );
+    if (!genericProduct) {
+      return;
+    }
+
+    this.formMode = 'edit';
+    this.editingGenericProductId = genericProduct.id;
+    this.formInitialValue = this.toFormValue(genericProduct);
+    this.formVisible = true;
+  }
+
+  onDeleteRequested(item: GenericProductListItem): void {
+    const genericProductId = Number(item.id);
+    if (!Number.isInteger(genericProductId) || genericProductId < 1) {
+      return;
+    }
+
+    this.saving = true;
+    this.gpSrv.remove(genericProductId).subscribe({
+      next: () => {
+        this.lastResponse = { deleted: true, id: genericProductId };
+        this.lastError = null;
+        this.saving = false;
+
+        if (this.editingGenericProductId === genericProductId) {
+          this.onCancelForm();
+        }
+
+        this.loadGenericProducts();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
+    });
+  }
+
+  onFormSubmitted(event: {
+    mode: GenericProductFormMode;
+    value: GenericProductFormValue;
+  }): void {
+    this.saving = true;
+
+    if (event.mode === 'edit' && this.editingGenericProductId !== null) {
+      const payload = this.toUpdateDto(event.value);
+      this.gpSrv.update(this.editingGenericProductId, payload).subscribe({
+        next: (response) => {
+          this.lastResponse = response;
+          this.lastError = null;
+          this.saving = false;
+          this.onCancelForm();
+          this.loadGenericProducts();
+        },
+        error: (error) => {
+          this.lastError = error;
+          this.saving = false;
+        },
+      });
+      return;
+    }
+
+    const payload = this.toCreateDto(event.value);
+    this.gpSrv.create(payload).subscribe({
+      next: (response) => {
+        this.lastResponse = response;
+        this.lastError = null;
+        this.saving = false;
+        this.onCancelForm();
+        this.loadGenericProducts();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
+    });
+  }
+
+  onMenuClicked(): void {
+    this.lastResponse = {
+      info: 'Action menu generic-product-form capturee.',
+      at: new Date().toISOString(),
     };
   }
 
-  private pickUpdatePayload(): UpdateGenericProductDto {
-    const v = this.form.getRawValue();
-    const dto: UpdateGenericProductDto = {};
-    if (v.name && v.name.trim() !== '') dto.name = v.name.trim();
-    if (v.minQuantityUnit != null) dto.minQuantityUnit = v.minQuantityUnit;
-    if (v.minQuantityMetric != null)
-      dto.minQuantityMetric = v.minQuantityMetric;
-    return dto;
+  onCancelForm(): void {
+    this.formVisible = false;
+    this.formMode = 'add';
+    this.editingGenericProductId = null;
+    this.formInitialValue = null;
   }
 
-  private setResult(resp: unknown) {
-    this.lastResponse = resp;
-    this.lastError = null;
-    this.loading = false;
-  }
-  private setError(err: unknown) {
-    this.lastError = err;
-    this.loading = false;
-  }
-
-  // ----- actions API -----
-  create() {
-    this.loading = true;
-    try {
-      const dto = this.pickCreatePayload();
-      this.gpSrv.create(dto).subscribe({
-        next: (r) => this.setResult(r),
-        error: (e) => this.setError(e),
-      });
-    } catch (e) {
-      this.setError(e);
-    }
-  }
-
-  getAll() {
+  private loadGenericProducts(): void {
     this.loading = true;
     this.gpSrv.findAll().subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
+      next: (response) => {
+        this.genericProducts = this.extractGenericProductsFromResponse(response);
+        this.lastResponse = response;
+        this.lastError = null;
+        this.loading = false;
+
+        if (this.editingGenericProductId !== null) {
+          const currentGenericProduct =
+            this.genericProducts.find(
+              (genericProduct) => genericProduct.id === this.editingGenericProductId,
+            ) ?? null;
+
+          if (!currentGenericProduct) {
+            this.onCancelForm();
+            return;
+          }
+
+          this.formInitialValue = this.toFormValue(currentGenericProduct);
+        }
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.loading = false;
+      },
     });
   }
 
-  getOne() {
-    const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError(
-        'Veuillez renseigner un id pour GET /generic-products/:id',
+  private toCreateDto(value: GenericProductFormValue): CreateGenericProductDto {
+    return {
+      name: value.name.trim(),
+      minQuantityUnit: value.minQuantityUnit,
+      minQuantityMetric: value.minQuantityMetric,
+    };
+  }
+
+  private toUpdateDto(value: GenericProductFormValue): UpdateGenericProductDto {
+    return this.toCreateDto(value);
+  }
+
+  private toFormValue(genericProduct: GenericProductApiModel): GenericProductFormValue {
+    return {
+      name: genericProduct.name,
+      minQuantityUnit: this.normalizeNonNegativeNumber(genericProduct.minQuantityUnit) ?? 0,
+      minQuantityMetric: this.normalizeNonNegativeNumber(genericProduct.minQuantityMetric) ?? 0,
+    };
+  }
+
+  private extractGenericProductsFromResponse(value: unknown): GenericProductApiModel[] {
+    if (Array.isArray(value)) {
+      return value.filter((item): item is GenericProductApiModel =>
+        this.isGenericProductLike(item),
       );
-    this.loading = true;
-    this.gpSrv.findOne(id).subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
-    });
+    }
+
+    if (this.isGenericProductLike(value)) {
+      return [value];
+    }
+
+    if (!value || typeof value !== 'object') {
+      return [];
+    }
+
+    const raw = value as Record<string, unknown>;
+    const nestedCandidates = [
+      'data',
+      'items',
+      'genericProducts',
+      'generic-products',
+      'results',
+      'payload',
+    ];
+    for (const key of nestedCandidates) {
+      const nested = raw[key];
+      if (Array.isArray(nested)) {
+        const genericProducts = nested.filter((item): item is GenericProductApiModel =>
+          this.isGenericProductLike(item),
+        );
+        if (genericProducts.length > 0) {
+          return genericProducts;
+        }
+      }
+    }
+
+    return [];
   }
 
-  update() {
-    const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError(
-        'Veuillez renseigner un id pour PATCH /generic-products/:id',
-      );
+  private isGenericProductLike(value: unknown): value is GenericProductApiModel {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
 
-    const dto = this.pickUpdatePayload();
-    if (Object.keys(dto).length === 0)
-      return this.setError('Aucun champ à mettre à jour.');
-
-    this.loading = true;
-    this.gpSrv.update(id, dto).subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
-    });
+    const genericProduct = value as Partial<GenericProductApiModel>;
+    return typeof genericProduct.id === 'number' && typeof genericProduct.name === 'string';
   }
 
-  delete() {
-    const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError(
-        'Veuillez renseigner un id pour DELETE /generic-products/:id',
-      );
-    this.loading = true;
-    this.gpSrv.remove(id).subscribe({
-      next: () => this.setResult({ deleted: true, id }),
-      error: (e) => this.setError(e),
-    });
-  }
+  private normalizeNonNegativeNumber(value: unknown): number | null {
+    if (typeof value === 'number') {
+      return Number.isFinite(value) && value >= 0 ? value : null;
+    }
 
-  fillDemoCreate() {
-    this.form.patchValue({
-      id: null,
-      name: 'Riz Basmati',
-      minQuantityUnit: 1,
-      minQuantityMetric: 500,
-    });
-  }
+    if (typeof value !== 'string') {
+      return null;
+    }
 
-  clear() {
-    this.form.reset({
-      id: null,
-      name: '',
-      minQuantityUnit: null,
-      minQuantityMetric: null,
-    });
-    this.lastResponse = null;
-    this.lastError = null;
+    const trimmed = value.trim();
+    if (trimmed === '') {
+      return null;
+    }
+
+    const parsedValue = Number(trimmed);
+    return Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : null;
   }
 }

@@ -1,81 +1,75 @@
-<section class="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+<section class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
   <mat-card class="overflow-hidden rounded-2xl">
     <div class="bg-slate-900 px-6 py-5 text-white">
-      <h2 class="text-xl font-semibold">Generic Products API Tester</h2>
+      <h2 class="text-xl font-semibold">Generic Products</h2>
       <p class="mt-1 text-sm text-slate-300">
-        Interface Material + Tailwind pour tester les endpoints generic-products.
+        Gestion des generic products.
       </p>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" class="space-y-6 p-4 sm:p-6">
+    <div class="space-y-6 p-4 sm:p-6">
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-content class="pt-4">
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Base URL</mat-label>
-            <input
-              matInput
-              type="text"
-              [(ngModel)]="baseUrl"
-              [ngModelOptions]="{ standalone: true }"
-              placeholder="http://localhost:3000" />
-          </mat-form-field>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card appearance="outlined" class="rounded-xl">
-        <mat-card-header>
-          <mat-card-title>Generic Product</mat-card-title>
-          <mat-card-subtitle>Champs principaux</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content class="pt-2">
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
             <mat-form-field appearance="fill" class="w-full">
-              <mat-label>id (GET/PATCH/DELETE)</mat-label>
-              <input matInput type="number" formControlName="id" />
+              <mat-label>Base URL</mat-label>
+              <input
+                matInput
+                type="text"
+                [(ngModel)]="baseUrl"
+                [ngModelOptions]="{ standalone: true }"
+                (change)="onBaseUrlChange()"
+                placeholder="http://localhost:3000" />
             </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-2">
-              <mat-label>name *</mat-label>
-              <input matInput type="text" formControlName="name" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>minQuantityUnit *</mat-label>
-              <input matInput type="number" formControlName="minQuantityUnit" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>minQuantityMetric *</mat-label>
-              <input matInput type="number" formControlName="minQuantityMetric" />
-            </mat-form-field>
+            <button mat-raised-button color="primary" type="button" (click)="onRefreshRequested()">
+              Rafraichir
+            </button>
           </div>
         </mat-card-content>
       </mat-card>
 
-      <mat-divider />
-
-      <div class="flex flex-wrap gap-2">
-        <button mat-stroked-button type="button" (click)="fillDemoCreate()">Exemple (remplir)</button>
-        <button mat-raised-button color="primary" type="button" (click)="create()">Create (POST)</button>
-        <button mat-raised-button color="primary" type="button" (click)="getOne()">Get (GET /:id)</button>
-        <button mat-raised-button color="primary" type="button" (click)="getAll()">GetAll (GET)</button>
-        <button mat-raised-button color="accent" type="button" (click)="update()">Update (PATCH)</button>
-        <button mat-raised-button color="warn" type="button" (click)="delete()">Delete (DELETE)</button>
-        <button mat-button type="button" (click)="clear()">Clear</button>
+      <div class="flex flex-wrap items-center gap-2">
+        <span *ngIf="loading" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+          Chargement...
+        </span>
+        <span *ngIf="saving" class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+          Sauvegarde...
+        </span>
       </div>
-    </form>
 
-    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
-
-    <div class="space-y-3 p-4 sm:p-6">
       <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
         {{ lastError | json }}
       </p>
 
-      <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
-      <pre class="max-h-96 overflow-auto rounded-lg bg-slate-100 p-4 text-xs text-slate-800">
-{{ lastResponse | json }}
-      </pre>
+      <app-generic-product-list
+        mode="manage"
+        [genericProducts]="genericProductListItems"
+        (addRequested)="onAddRequested()"
+        (editRequested)="onEditRequested($event)"
+        (deleteRequested)="onDeleteRequested($event)">
+      </app-generic-product-list>
+
+      <mat-card *ngIf="formVisible" appearance="outlined" class="rounded-xl">
+        <mat-card-content class="p-0">
+          <app-generic-product-form
+            [mode]="formMode"
+            [genericProduct]="formInitialValue"
+            (submitted)="onFormSubmitted($event)"
+            (menuClicked)="onMenuClicked()">
+          </app-generic-product-form>
+        </mat-card-content>
+
+        <mat-card-actions class="flex justify-center pb-6">
+          <button mat-stroked-button type="button" (click)="onCancelForm()">
+            Annuler
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+      <div *ngIf="lastResponse" class="space-y-2">
+        <h3 class="text-sm font-semibold text-slate-800">Derniere reponse</h3>
+        <pre class="max-h-72 overflow-auto rounded-lg bg-slate-100 p-3 text-xs text-slate-800">{{ lastResponse | json }}</pre>
+      </div>
     </div>
   </mat-card>
 </section>

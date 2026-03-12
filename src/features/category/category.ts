@@ -1,189 +1,288 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import {
-  FormBuilder,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+  CategoryForm,
+  CategoryFormMode,
+  CategoryFormValue,
+} from '../../components/category/category-form/category-form';
 import {
+  CategoryList,
+  CategoryListItem,
+} from '../../components/category/category-list/category-list';
+import {
+  Category as CategoryApiModel,
   CategoryService,
   CreateCategoryDto,
   UpdateCategoryDto,
 } from '../../services/category-service';
-import { CommonModule, JsonPipe } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
   selector: 'app-category',
   imports: [
-    JsonPipe,
-    FormsModule,
-    ReactiveFormsModule,
     CommonModule,
+    FormsModule,
     MatButtonModule,
     MatCardModule,
-    MatDividerModule,
     MatFormFieldModule,
     MatInputModule,
-    MatProgressBarModule,
+    CategoryList,
+    CategoryForm,
   ],
   templateUrl: './category.html',
   styleUrl: './category.scss',
 })
 export class Category implements OnInit {
   baseUrl = '';
-  form: FormGroup = new FormGroup({});
   loading = false;
+  saving = false;
 
-  // Derniers résultats (affichés dans le template)
+  categories: CategoryApiModel[] = [];
+
+  formVisible = false;
+  formMode: CategoryFormMode = 'add';
+  editingCategoryId: number | null = null;
+  formInitialValue: Partial<CategoryFormValue> | null = null;
+
   lastResponse: unknown = null;
   lastError: unknown = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private categorySrv: CategoryService,
-  ) {}
-  ngOnInit(): void {
-    // Base URL éditable depuis l'UI
-    this.baseUrl = this.categorySrv.baseUrl;
+  constructor(private readonly categorySrv: CategoryService) {}
 
-    // Un seul formulaire : id (pour get/update/delete) + champs de catégorie
-    this.form = this.fb.group({
-      id: this.fb.control<number | null>(null),
-      name: this.fb.control<string>('', {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-      warnBeforeDays: this.fb.control<number | null>(null),
-      recentlyExpiredDays: this.fb.control<number | null>(null),
-      minQuantity: this.fb.control<number | null>(null),
+  ngOnInit(): void {
+    this.baseUrl = this.categorySrv.baseUrl;
+    this.loadCategories();
+  }
+
+  onBaseUrlChange(): void {
+    this.categorySrv.setBaseUrl(this.baseUrl);
+    this.loadCategories();
+  }
+
+  get categoryListItems(): CategoryListItem[] {
+    return this.categories.map((category) => ({
+      id: String(category.id),
+      name: category.name,
+      warnBeforeDays: this.normalizeNonNegativeNumber(category.warnBeforeDays),
+      recentlyExpiredDays: this.normalizeNonNegativeNumber(category.recentlyExpiredDays),
+      minQuantity: this.normalizeNonNegativeNumber(category.minQuantity),
+    }));
+  }
+
+  onRefreshRequested(): void {
+    this.loadCategories();
+  }
+
+  onAddRequested(): void {
+    this.formMode = 'add';
+    this.editingCategoryId = null;
+    this.formInitialValue = null;
+    this.formVisible = true;
+  }
+
+  onEditRequested(item: CategoryListItem): void {
+    const categoryId = Number(item.id);
+    if (!Number.isInteger(categoryId) || categoryId < 1) {
+      return;
+    }
+
+    const category = this.categories.find((value) => value.id === categoryId);
+    if (!category) {
+      return;
+    }
+
+    this.formMode = 'edit';
+    this.editingCategoryId = category.id;
+    this.formInitialValue = this.toFormValue(category);
+    this.formVisible = true;
+  }
+
+  onDeleteRequested(item: CategoryListItem): void {
+    const categoryId = Number(item.id);
+    if (!Number.isInteger(categoryId) || categoryId < 1) {
+      return;
+    }
+
+    this.saving = true;
+    this.categorySrv.remove(categoryId).subscribe({
+      next: () => {
+        this.lastResponse = { deleted: true, id: categoryId };
+        this.lastError = null;
+        this.saving = false;
+
+        if (this.editingCategoryId === categoryId) {
+          this.onCancelForm();
+        }
+
+        this.loadCategories();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
     });
   }
 
-  onBaseUrlChange() {
-    this.categorySrv.setBaseUrl(this.baseUrl);
+  onFormSubmitted(event: { mode: CategoryFormMode; value: CategoryFormValue }): void {
+    this.saving = true;
+
+    if (event.mode === 'edit' && this.editingCategoryId !== null) {
+      const payload = this.toUpdateDto(event.value);
+      this.categorySrv.update(this.editingCategoryId, payload).subscribe({
+        next: (response) => {
+          this.lastResponse = response;
+          this.lastError = null;
+          this.saving = false;
+          this.onCancelForm();
+          this.loadCategories();
+        },
+        error: (error) => {
+          this.lastError = error;
+          this.saving = false;
+        },
+      });
+      return;
+    }
+
+    const payload = this.toCreateDto(event.value);
+    this.categorySrv.create(payload).subscribe({
+      next: (response) => {
+        this.lastResponse = response;
+        this.lastError = null;
+        this.saving = false;
+        this.onCancelForm();
+        this.loadCategories();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
+    });
   }
 
-  // --- Helpers ---
-  private pickCreatePayload(): CreateCategoryDto {
-    const v = this.form.getRawValue();
-    if (
-      v.name === '' ||
-      v.warnBeforeDays == null ||
-      v.recentlyExpiredDays == null ||
-      v.minQuantity == null
-    ) {
-      throw new Error(
-        'Pour CREATE, tous les champs (name, warnBeforeDays, recentlyExpiredDays, minQuantity) sont requis.',
-      );
-    }
-    return {
-      name: v.name,
-      warnBeforeDays: v.warnBeforeDays,
-      recentlyExpiredDays: v.recentlyExpiredDays,
-      minQuantity: v.minQuantity,
+  onMenuClicked(): void {
+    this.lastResponse = {
+      info: 'Action menu category-form capturee.',
+      at: new Date().toISOString(),
     };
   }
 
-  /** PATCH partiel : n’envoie que les champs renseignés */
-  private pickUpdatePayload(): UpdateCategoryDto {
-    const v = this.form.getRawValue();
-    const dto: UpdateCategoryDto = {};
-    if (v.name && v.name.trim() !== '') dto.name = v.name.trim();
-    if (v.warnBeforeDays != null) dto.warnBeforeDays = v.warnBeforeDays;
-    if (v.recentlyExpiredDays != null)
-      dto.recentlyExpiredDays = v.recentlyExpiredDays;
-    if (v.minQuantity != null) dto.minQuantity = v.minQuantity;
-    return dto;
+  onCancelForm(): void {
+    this.formVisible = false;
+    this.formMode = 'add';
+    this.editingCategoryId = null;
+    this.formInitialValue = null;
   }
 
-  private setResult(resp: unknown) {
-    this.lastResponse = resp;
-    this.lastError = null;
-    this.loading = false;
-  }
-  private setError(err: unknown) {
-    this.lastError = err;
-    this.loading = false;
-  }
-
-  // --- Actions ---
-  create() {
-    this.loading = true;
-    try {
-      const dto = this.pickCreatePayload();
-      this.categorySrv.create(dto).subscribe({
-        next: (r) => this.setResult(r),
-        error: (e) => this.setError(e),
-      });
-    } catch (e) {
-      this.setError(e);
-    }
-  }
-
-  getAll() {
+  private loadCategories(): void {
     this.loading = true;
     this.categorySrv.findAll().subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
+      next: (response) => {
+        this.categories = this.extractCategoriesFromResponse(response);
+        this.lastResponse = response;
+        this.lastError = null;
+        this.loading = false;
+
+        if (this.editingCategoryId !== null) {
+          const currentCategory =
+            this.categories.find((category) => category.id === this.editingCategoryId) ?? null;
+
+          if (!currentCategory) {
+            this.onCancelForm();
+            return;
+          }
+
+          this.formInitialValue = this.toFormValue(currentCategory);
+        }
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.loading = false;
+      },
     });
   }
 
-  getOne() {
-    const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError('Veuillez renseigner un id pour GET /:id');
-    this.loading = true;
-    this.categorySrv.findOne(id).subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
-    });
+  private toCreateDto(value: CategoryFormValue): CreateCategoryDto {
+    return {
+      name: value.name.trim(),
+      warnBeforeDays: value.warnBeforeDays,
+      recentlyExpiredDays: value.recentlyExpiredDays,
+      minQuantity: value.minQuantity,
+    };
   }
 
-  update() {
-    const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError('Veuillez renseigner un id pour PATCH /:id');
-    const dto = this.pickUpdatePayload();
-    if (Object.keys(dto).length === 0)
-      return this.setError('Aucun champ à mettre à jour.');
-    this.loading = true;
-    this.categorySrv.update(id, dto).subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
-    });
+  private toUpdateDto(value: CategoryFormValue): UpdateCategoryDto {
+    return this.toCreateDto(value);
   }
 
-  delete() {
-    const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError('Veuillez renseigner un id pour DELETE /:id');
-    this.loading = true;
-    this.categorySrv.remove(id).subscribe({
-      next: (r) => this.setResult({ deleted: true, id }),
-      error: (e) => this.setError(e),
-    });
+  private toFormValue(category: CategoryApiModel): CategoryFormValue {
+    return {
+      name: category.name,
+      warnBeforeDays: this.normalizeNonNegativeNumber(category.warnBeforeDays) ?? 0,
+      recentlyExpiredDays:
+        this.normalizeNonNegativeNumber(category.recentlyExpiredDays) ?? 0,
+      minQuantity: this.normalizeNonNegativeNumber(category.minQuantity) ?? 0,
+    };
   }
 
-  fillDemoCreate() {
-    this.form.patchValue({
-      id: null,
-      name: 'Fruits & Légumes',
-      warnBeforeDays: 5,
-      recentlyExpiredDays: 2,
-      minQuantity: 1,
-    });
+  private extractCategoriesFromResponse(value: unknown): CategoryApiModel[] {
+    if (Array.isArray(value)) {
+      return value.filter((item): item is CategoryApiModel => this.isCategoryLike(item));
+    }
+
+    if (this.isCategoryLike(value)) {
+      return [value];
+    }
+
+    if (!value || typeof value !== 'object') {
+      return [];
+    }
+
+    const raw = value as Record<string, unknown>;
+    const nestedCandidates = ['data', 'items', 'categories', 'results', 'payload'];
+    for (const key of nestedCandidates) {
+      const nested = raw[key];
+      if (Array.isArray(nested)) {
+        const categories = nested.filter((item): item is CategoryApiModel =>
+          this.isCategoryLike(item),
+        );
+        if (categories.length > 0) {
+          return categories;
+        }
+      }
+    }
+
+    return [];
   }
 
-  clear() {
-    this.form.reset({ id: null, name: '' });
-    this.lastResponse = null;
-    this.lastError = null;
+  private isCategoryLike(value: unknown): value is CategoryApiModel {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const category = value as Partial<CategoryApiModel>;
+    return typeof category.id === 'number' && typeof category.name === 'string';
+  }
+
+  private normalizeNonNegativeNumber(value: unknown): number | null {
+    if (typeof value === 'number') {
+      return Number.isFinite(value) && value >= 0 ? value : null;
+    }
+
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    if (trimmed === '') {
+      return null;
+    }
+
+    const parsedValue = Number(trimmed);
+    return Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : null;
   }
 }
