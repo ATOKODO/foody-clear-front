@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,6 +18,8 @@ import {
   CycleListItem,
   ListCycle,
 } from '../../components/cycle/list-cycle/list-cycle';
+import { DaySetFeature } from '../day-set/day-set.feature';
+import { SlotFeature } from '../slot/slot.feature';
 import { CycleService } from '../../services/cycle-service';
 import {
   CreateCycleDto,
@@ -33,6 +36,8 @@ type MacroTotals = {
   lipids: number;
 };
 
+type CycleHubView = 'cycle' | 'daySet' | 'slot';
+
 @Component({
   selector: 'app-cycle',
   imports: [
@@ -41,11 +46,14 @@ type MacroTotals = {
     ListCycle,
     FormCycle,
     MatButtonModule,
+    MatButtonToggleModule,
     MatCardModule,
     MatDividerModule,
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    DaySetFeature,
+    SlotFeature,
   ],
   templateUrl: './cycle.feature.html',
   styleUrl: './cycle.feature.scss',
@@ -59,6 +67,7 @@ export class CycleFeature implements OnInit {
   cycles: Cycle[] = [];
   daySets: DaySet[] = [];
   selectedCycleId: number | null = null;
+  activeView: CycleHubView = 'cycle';
 
   formVisible = false;
   formMode: CycleFormMode = 'add';

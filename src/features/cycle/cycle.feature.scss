@@ -1,3 +1,37 @@
 :host {
   display: block;
 }
+
+.cycle-hub-header {
+  background:
+    radial-gradient(circle at top left, rgb(59 130 246 / 0.28), transparent 45%),
+    linear-gradient(135deg, #020617 0%, #0f172a 55%, #1e293b 100%);
+}
+
+.cycle-view-toggle {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.08);
+  padding: 0.35rem;
+}
+
+.cycle-view-toggle mat-button-toggle {
+  min-width: 8rem;
+  flex: 1 1 0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .cycle-view-toggle {
+    width: auto;
+  }
+
+  .cycle-view-toggle mat-button-toggle {
+    flex: 0 0 auto;
+  }
+}

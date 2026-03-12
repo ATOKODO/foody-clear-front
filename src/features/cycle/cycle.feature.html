@@ -1,11 +1,36 @@
 <section class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-  <mat-card class="overflow-hidden rounded-2xl">
+  <div class="cycle-hub-header rounded-3xl px-6 py-6 text-white shadow-lg">
+    <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div class="max-w-3xl">
+        <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-300">
+          Nutrition planner
+        </p>
+        <h1 class="mt-2 text-2xl font-semibold sm:text-3xl">
+          Cycle, day sets et slots
+        </h1>
+        <p class="mt-2 text-sm text-slate-300 sm:text-base">
+          Pilotez les trois ecrans depuis un hub unique, avec une vue active a la fois.
+        </p>
+      </div>
+
+      <mat-button-toggle-group
+        [(ngModel)]="activeView"
+        aria-label="Selection de la vue active"
+        class="cycle-view-toggle"
+        name="cycle-view">
+        <mat-button-toggle value="cycle">Cycle</mat-button-toggle>
+        <mat-button-toggle value="daySet">Day Set</mat-button-toggle>
+        <mat-button-toggle value="slot">Slots</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+  </div>
+
+  <mat-card *ngIf="activeView === 'cycle'" class="mt-6 overflow-hidden rounded-2xl">
     <div class="bg-slate-900 px-6 py-5 text-white">
       <h2 class="text-xl font-semibold">Cycle</h2>
     </div>
 
     <div>
-
       <div class="flex flex-wrap items-center gap-2">
         <span *ngIf="loading" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
           Chargement...
@@ -57,7 +82,10 @@
       <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
         {{ lastError | json }}
       </p>
-
     </div>
   </mat-card>
+
+  <app-day-set-feature *ngIf="activeView === 'daySet'" class="mt-6"></app-day-set-feature>
+
+  <app-slot-feature *ngIf="activeView === 'slot'" class="mt-6"></app-slot-feature>
 </section>
