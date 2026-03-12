@@ -1,6 +1,19 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InventoryForm } from './inventory-form';
+
+@Component({
+  standalone: true,
+  imports: [InventoryForm],
+  template: `
+    <app-inventory-form mode="edit">
+      <button inventory-form-header-actions type="button">Ouvrir l'ajout</button>
+      <section inventory-form-under-name>Gestion inline</section>
+    </app-inventory-form>
+  `,
+})
+class InventoryFormHostComponent {}
 
 describe('InventoryForm', () => {
   let component: InventoryForm;
@@ -8,7 +21,7 @@ describe('InventoryForm', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InventoryForm],
+      imports: [InventoryForm, InventoryFormHostComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InventoryForm);
@@ -56,5 +69,20 @@ describe('InventoryForm', () => {
         },
       },
     ]);
+  });
+
+  it('should project header actions and inline content under the name field', () => {
+    const hostFixture = TestBed.createComponent(InventoryFormHostComponent);
+    hostFixture.detectChanges();
+
+    const element = hostFixture.nativeElement as HTMLElement;
+    const actionLabels = Array.from(
+      element.querySelectorAll('.inventory-form__header-actions button'),
+    ).map((button) => button.textContent?.trim());
+
+    expect(actionLabels).toEqual(["Ouvrir l'ajout", 'Options']);
+    expect(element.querySelector('.inventory-form__under-name')?.textContent).toContain(
+      'Gestion inline',
+    );
   });
 });

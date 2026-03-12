@@ -117,7 +117,7 @@ export class Inventory implements OnInit {
   formVisible = false;
   formMode: InventoryFormMode = 'add';
   editingInventoryId: number | null = null;
-  activeModal: 'add-products' | 'manage-products' | null = null;
+  activeModal: 'add-products' | null = null;
   formInitialValue: Partial<InventoryFormValue> | null = null;
   editingInventoryProducts: InventoryProduct[] = [];
   createSelectedProductRows: InventorySelectedProductRow[] = [];
@@ -179,10 +179,6 @@ export class Inventory implements OnInit {
     return this.activeModal === 'add-products';
   }
 
-  get isManageProductsModalOpen(): boolean {
-    return this.activeModal === 'manage-products';
-  }
-
   get canAddSelectedProducts(): boolean {
     return (
       this.isAddProductsModalOpen &&
@@ -196,7 +192,8 @@ export class Inventory implements OnInit {
 
   get canSaveManagedProducts(): boolean {
     return (
-      this.isManageProductsModalOpen &&
+      this.formMode === 'edit' &&
+      this.editingInventoryId !== null &&
       !this.saving &&
       !this.loadingInventoryProducts &&
       this.validateManagedProductRows(this.manageProductRows) === null &&
@@ -338,16 +335,6 @@ export class Inventory implements OnInit {
     this.addProductsFormError = null;
   }
 
-  openManageProductsModal(): void {
-    if (this.editingInventoryId == null) {
-      return;
-    }
-
-    this.manageProductRows = this.toManagedProductRows(this.editingInventoryProducts);
-    this.manageProductsFormError = null;
-    this.activeModal = 'manage-products';
-  }
-
   closeActiveModal(): void {
     if (this.saving) {
       return;
@@ -356,8 +343,6 @@ export class Inventory implements OnInit {
     this.activeModal = null;
     this.addSelectedProductRows = [];
     this.addProductsFormError = null;
-    this.manageProductRows = [];
-    this.manageProductsFormError = null;
   }
 
   onAddSelectedProducts(): void {
@@ -444,7 +429,7 @@ export class Inventory implements OnInit {
     );
 
     if (productIdsToRemove.length === 0 && productsToAdd.length === 0) {
-      this.closeActiveModal();
+      this.manageProductsFormError = null;
       return;
     }
 
@@ -454,7 +439,6 @@ export class Inventory implements OnInit {
         this.lastResponse = { updated: true, inventoryId, removedProductIds: productIdsToRemove };
         this.lastError = null;
         this.saving = false;
-        this.closeActiveModal();
         this.loadInventories();
         this.loadInventoryProducts(inventoryId);
         return;
@@ -467,7 +451,6 @@ export class Inventory implements OnInit {
           this.lastResponse = response;
           this.lastError = null;
           this.saving = false;
-          this.closeActiveModal();
           this.loadInventories();
           this.loadInventoryProducts(inventoryId);
         },
@@ -513,7 +496,6 @@ export class Inventory implements OnInit {
         this.lastResponse = response;
         this.lastError = null;
         this.saving = false;
-        this.closeActiveModal();
         this.loadInventories();
         this.loadInventoryProducts(inventoryId);
       },
@@ -695,12 +677,14 @@ export class Inventory implements OnInit {
     this.inventorySrv.findProducts(inventoryId).subscribe({
       next: (response) => {
         this.editingInventoryProducts = this.extractInventoryProductsFromResponse(response);
+        this.syncManagedProductRows();
         this.lastError = null;
         this.loadingInventoryProducts = false;
         this.syncSelectionsToAvailableProducts();
       },
       error: (error) => {
         this.editingInventoryProducts = [];
+        this.syncManagedProductRows();
         this.lastError = error;
         this.loadingInventoryProducts = false;
         this.syncSelectionsToAvailableProducts();
@@ -737,6 +721,11 @@ export class Inventory implements OnInit {
     this.addSelectedProductRows = [];
     this.manageProductRows = [];
     this.addProductsFormError = null;
+    this.manageProductsFormError = null;
+  }
+
+  private syncManagedProductRows(): void {
+    this.manageProductRows = this.toManagedProductRows(this.editingInventoryProducts);
     this.manageProductsFormError = null;
   }
 

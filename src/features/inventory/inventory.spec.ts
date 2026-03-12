@@ -86,6 +86,55 @@ describe('Inventory', () => {
       ],
     }).compileComponents();
 
+    inventoryServiceMock.setBaseUrl.calls.reset();
+    inventoryServiceMock.findAll.calls.reset();
+    inventoryServiceMock.findAll.and.returnValue(of([
+      {
+        id: 4,
+        name: 'Stock principal',
+        inventoryProducts: linkedProducts,
+      },
+    ]));
+    inventoryServiceMock.findProducts.calls.reset();
+    inventoryServiceMock.findProducts.and.returnValue(of(linkedProducts));
+    inventoryServiceMock.create.calls.reset();
+    inventoryServiceMock.create.and.returnValue(of({ id: 5, name: 'Nouveau stock' }));
+    inventoryServiceMock.update.calls.reset();
+    inventoryServiceMock.update.and.returnValue(of({ id: 4, name: 'Stock principal' }));
+    inventoryServiceMock.addProducts.calls.reset();
+    inventoryServiceMock.addProducts.and.returnValue(of({ ok: true }));
+    inventoryServiceMock.removeProducts.calls.reset();
+    inventoryServiceMock.removeProducts.and.returnValue(of({ ok: true }));
+    inventoryServiceMock.remove.calls.reset();
+    inventoryServiceMock.remove.and.returnValue(of(void 0));
+
+    productServiceMock.setBaseUrl.calls.reset();
+    productServiceMock.findAll.calls.reset();
+    productServiceMock.findAll.and.returnValue(of([
+      {
+        id: 1,
+        name: 'Chicken',
+        unitType: 'Paquet',
+        quantityPerUnit: 1,
+        quantityUnit: 'unit',
+        portionCount: 2,
+        portionUnit: 'portion',
+        portionQuantityNormalized: 0.5,
+        nutritionValues: [],
+      },
+      {
+        id: 2,
+        name: 'Rice',
+        unitType: 'Paquet',
+        quantityPerUnit: 500,
+        quantityUnit: 'g',
+        portionCount: 1,
+        portionUnit: 'portion',
+        portionQuantityNormalized: 125,
+        nutritionValues: [],
+      },
+    ]));
+
     fixture = TestBed.createComponent(Inventory);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -215,13 +264,72 @@ describe('Inventory', () => {
     });
   });
 
+  it('should open edit mode with inline product management already visible', () => {
+    component.onEditRequested({
+      id: '4',
+      name: 'Stock principal',
+      productCount: 1,
+    });
+    fixture.detectChanges();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const headerActions = Array.from(
+      element.querySelectorAll('.inventory-form__header-actions button'),
+    ).map((button) => button.textContent?.trim());
+
+    expect(component.activeModal).toBeNull();
+    expect(component.manageProductRows.length).toBe(1);
+    expect(headerActions).toEqual(["Ouvrir l'ajout", 'Options']);
+    expect(element.querySelector('.inventory-manage-products')?.textContent).toContain(
+      'Gerer les produits',
+    );
+    expect(element.textContent).not.toContain('Ouvrir la gestion');
+    expect(element.textContent).not.toContain("Gerer les produits de l'inventory");
+  });
+
+  it('should preserve inline managed rows when the add modal closes', () => {
+    component.onEditRequested({
+      id: '4',
+      name: 'Stock principal',
+      productCount: 1,
+    });
+
+    component.openAddProductsModal();
+    component.closeActiveModal();
+
+    expect(component.activeModal).toBeNull();
+    expect(component.manageProductRows.length).toBe(1);
+  });
+
+  it('should render the inline empty state when no product is linked', () => {
+    component.inventories = [
+      {
+        id: 4,
+        name: 'Stock principal',
+        inventoryProducts: [],
+      } as (typeof component.inventories)[number],
+    ];
+    inventoryServiceMock.findProducts.and.returnValue(of([]));
+
+    component.onEditRequested({
+      id: '4',
+      name: 'Stock principal',
+      productCount: 0,
+    });
+    fixture.detectChanges();
+
+    expect(component.manageProductRows).toEqual([]);
+    expect(fixture.nativeElement.querySelector('.inventory-manage-products')?.textContent).toContain(
+      'Aucun produit lie a cet inventory.',
+    );
+  });
+
   it('should replace stock rows when managed quantities change', () => {
     component.onEditRequested({
       id: '4',
       name: 'Stock principal',
       productCount: 1,
     });
-    component.openManageProductsModal();
     component.manageProductRows[0].qty = 5;
 
     component.saveManagedProducts();
@@ -232,22 +340,22 @@ describe('Inventory', () => {
     expect(inventoryServiceMock.addProducts).toHaveBeenCalledWith(4, {
       products: [{ productId: 1, qty: 5 }],
     });
+    expect(component.formVisible).toBeTrue();
+    expect(component.activeModal).toBeNull();
   });
 
-  it('should render manage modal without recomputing template state indefinitely', () => {
+  it('should render inline manage section without recomputing template state indefinitely', () => {
     component.onEditRequested({
       id: '4',
       name: 'Stock principal',
       productCount: 1,
     });
-
-    component.openManageProductsModal();
     fixture.detectChanges();
 
-    const modalTitle = fixture.nativeElement.querySelector('mat-card-title');
+    const manageTitle = fixture.nativeElement.querySelector('.inventory-manage-products h3');
     expect(component.manageProductRows[0].qtyUnitOptions.length).toBeGreaterThan(0);
     expect(component.manageProductRows[0].currentQtyDisplay).toContain('2');
-    expect(modalTitle?.textContent).toContain("Gerer les produits de l'inventory");
+    expect(manageTitle?.textContent).toContain('Gerer les produits');
   });
 
   it('should replace stock rows when managed quantities switch to portion', () => {
@@ -256,7 +364,6 @@ describe('Inventory', () => {
       name: 'Stock principal',
       productCount: 1,
     });
-    component.openManageProductsModal();
     component.manageProductRows[0].qty = 4;
     component.manageProductRows[0].qtyUnit = 'portion';
 
@@ -276,12 +383,13 @@ describe('Inventory', () => {
       name: 'Stock principal',
       productCount: 1,
     });
-    component.openManageProductsModal();
 
     component.emptyInventory();
 
     expect(inventoryServiceMock.removeProducts).toHaveBeenCalledWith(4, {
       productIds: [1],
     });
+    expect(component.formVisible).toBeTrue();
+    expect(component.activeModal).toBeNull();
   });
 });
