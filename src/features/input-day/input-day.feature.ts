@@ -329,12 +329,40 @@ export class InputDayFeature implements OnInit, OnChanges {
     return this.availableSlotsCache;
   }
 
+  get selectedInventoryLabel(): string {
+    if (this.selectedInventoryId === null) {
+      return 'Aucun inventory selectionne';
+    }
+
+    const inventory = this.inventories.find((item) => item.id === this.selectedInventoryId) ?? null;
+    return inventory ? `${inventory.name} (#${inventory.id})` : `Inventory #${this.selectedInventoryId}`;
+  }
+
+  get selectedBatchSlotLabel(): string {
+    if (this.selectedSlotId === null) {
+      return 'Sans slot batch';
+    }
+
+    const slot = this.availableSlots.find((item) => item.slotId === this.selectedSlotId) ?? null;
+    if (!slot) {
+      return `Slot #${this.selectedSlotId}`;
+    }
+
+    return `${slot.sortOrder}. ${slot.title} (${this.formatTime(slot.startTime)} - ${this.formatTime(slot.endTime)})`;
+  }
+
   get isEditingItem(): boolean {
     return this.normalizePositiveInteger(this.itemEditorForm.value.itemId) !== null;
   }
 
   get itemEditorSelectedSlotId(): number | null {
     return this.normalizeNullablePositiveInteger(this.itemEditorForm.value.slotId);
+  }
+
+  get createSelectedItemsLabel(): string {
+    return this.selectedProductRows.length > 1
+      ? 'Ajouter les entrees selectionnees'
+      : 'Ajouter l entree selectionnee';
   }
 
   get canSubmitItemEditor(): boolean {
@@ -403,6 +431,16 @@ export class InputDayFeature implements OnInit, OnChanges {
       return false;
     }
 
+    const dateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
+    const occurredAtRaw = String(this.itemEditorForm.value.occurredAt ?? '').trim();
+    if (!this.isDateLocal(dateLocal)) {
+      return false;
+    }
+
+    if (occurredAtRaw !== '' && this.buildOccurredAtIso(occurredAtRaw) === null) {
+      return false;
+    }
+
     if (this.selectedProductRows.length === 0) {
       return false;
     }
@@ -454,37 +492,22 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   createSelectedItems(): void {
-    const dateLocal = this.requireDate();
-    if (!dateLocal) {
+    const request = this.buildSelectedItemsRequest();
+    if (!request) {
       return;
     }
-
-    const validationError = this.validateSelectedItemsPayload();
-    if (validationError) {
-      this.itemsFormError = validationError;
-      return;
-    }
-
-    const payload: CreateInputDayItemsDto = {
-      items: this.selectedProductRows.map((row) => ({
-        productId: row.productId,
-        inventoryId: this.selectedInventoryId as number,
-        qty: row.qty as number,
-        ...(row.qtyUnit ? { qtyUnit: row.qtyUnit } : {}),
-        ...(this.selectedSlotId != null ? { slotId: this.selectedSlotId } : {}),
-      })),
-    };
 
     this.loading = true;
     this.itemsFormError = null;
 
-    this.inputDaySrv.createItems(dateLocal, payload).subscribe({
+    this.inputDaySrv.createItems(request.requestDateLocal, request.payload).subscribe({
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
         this.clearSelectedProducts();
+        this.prefillItemEditorForCreate(null);
         this.loading = false;
-        this.itemsChanged.emit({ dateLocal });
+        this.itemsChanged.emit({ dateLocal: request.requestDateLocal });
         this.loadDay();
       },
       error: (error) => {
@@ -554,6 +577,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       this.onSelectedInventoryChange(item.inventoryId);
     }
 
+    this.clearSelectedProducts();
     this.itemEditorForm.reset(
       {
         itemId: item.id,
@@ -574,6 +598,11 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   resetItemEditor(): void {
+    this.prefillItemEditorForCreate(this.pendingInitialOccurredAt);
+  }
+
+  resetCreateComposer(): void {
+    this.clearSelectedProducts();
     this.prefillItemEditorForCreate(this.pendingInitialOccurredAt);
   }
 
@@ -1021,6 +1050,48 @@ export class InputDayFeature implements OnInit, OnChanges {
     };
   }
 
+  private buildSelectedItemsRequest():
+    | { requestDateLocal: string; payload: CreateInputDayItemsDto }
+    | null {
+    const validationError = this.validateSelectedItemsPayload();
+    if (validationError) {
+      this.itemsFormError = validationError;
+      return null;
+    }
+
+    const requestDateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
+    const occurredAtRaw = String(this.itemEditorForm.value.occurredAt ?? '').trim();
+    const occurredAt = occurredAtRaw === '' ? null : this.buildOccurredAtIso(occurredAtRaw);
+    const slotKey =
+      this.selectedSlotId === null ? String(this.itemEditorForm.value.slotKey ?? '').trim() : '';
+
+    try {
+      const payload: CreateInputDayItemsDto = {
+        items: this.selectedProductRows.map((row) => {
+          const qtyUnit = this.normalizeQtyUnit(row.qtyUnit);
+          return {
+            productId: row.productId,
+            inventoryId: this.selectedInventoryId as number,
+            qty: row.qty as number,
+            ...(occurredAt ? { occurredAt } : {}),
+            ...(qtyUnit ? { qtyUnit } : {}),
+            ...(this.selectedSlotId != null ? { slotId: this.selectedSlotId } : {}),
+            ...(this.selectedSlotId == null && slotKey !== '' ? { slotKey } : {}),
+          };
+        }),
+      };
+
+      this.itemsFormError = null;
+      return {
+        requestDateLocal,
+        payload,
+      };
+    } catch (error) {
+      this.itemsFormError = error instanceof Error ? error.message : 'qtyUnit invalide.';
+      return null;
+    }
+  }
+
   private prefillItemEditorForCreate(occurredAt: string | null): void {
     this.itemEditorForm.reset(
       {
@@ -1064,6 +1135,16 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     if (this.selectedProductRows.length === 0) {
       return 'Selectionne au moins un produit.';
+    }
+
+    const requestDateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
+    if (!this.isDateLocal(requestDateLocal)) {
+      return 'La date metier doit etre au format YYYY-MM-DD.';
+    }
+
+    const occurredAtRaw = String(this.itemEditorForm.value.occurredAt ?? '').trim();
+    if (occurredAtRaw !== '' && this.buildOccurredAtIso(occurredAtRaw) === null) {
+      return 'occurredAt doit etre une date/heure valide.';
     }
 
     if (

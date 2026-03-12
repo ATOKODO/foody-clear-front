@@ -216,7 +216,8 @@ describe('InputDayFeature', () => {
     expect(component.editorProductOptions.map((item) => item.id)).toEqual(['1', '2']);
   });
 
-  it('should create items with shared inventory and slot plus per-product qty', () => {
+  it('should create selected items with shared metadata and per-product qty', () => {
+    inputDayServiceMock.createItems.calls.reset();
     const emitted: Array<unknown> = [];
     component.itemsChanged.subscribe((event) => emitted.push(event));
 
@@ -227,11 +228,58 @@ describe('InputDayFeature', () => {
     component.inputDayResponse = dayResponse;
     component.onSelectedInventoryChange(4);
     component.selectedSlotId = 11;
+    component.itemEditorForm.patchValue({
+      dateLocal: '2026-02-17',
+      occurredAt: '2026-02-17T08:00',
+      slotKey: '',
+    });
     component.onProductsSelected(component.selectableProductListItems);
     component.selectedProductRows[0].qty = 120;
     component.selectedProductRows[0].qtyUnit = 'g';
     component.selectedProductRows[1].qty = 80;
     component.selectedProductRows[1].qtyUnit = null;
+
+    component.createSelectedItems();
+
+    expect(inputDayServiceMock.createItems).toHaveBeenCalledWith('2026-02-17', {
+      items: [
+        {
+          productId: 1,
+          inventoryId: 4,
+          qty: 120,
+          occurredAt: '2026-02-17T08:00:00Z',
+          qtyUnit: 'g',
+          slotId: 11,
+        },
+        {
+          productId: 2,
+          inventoryId: 4,
+          qty: 80,
+          occurredAt: '2026-02-17T08:00:00Z',
+          slotId: 11,
+        },
+      ],
+    });
+    expect(emitted).toEqual([{ dateLocal: '2026-02-17' }]);
+  });
+
+  it('should use slotKey for selected items when no batch slot is set', () => {
+    inputDayServiceMock.createItems.calls.reset();
+
+    component.form.patchValue({
+      dateLocal: '2026-02-16',
+      timezone: 'UTC',
+    });
+    component.inputDayResponse = dayResponse;
+    component.onSelectedInventoryChange(4);
+    component.itemEditorForm.patchValue({
+      dateLocal: '2026-02-16',
+      occurredAt: '',
+      slotKey: 'snack',
+    });
+    component.onProductsSelected(component.selectableProductListItems.slice(0, 1));
+    component.selectedProductRows[0].qty = 120;
+    component.selectedProductRows[0].qtyUnit = 'g';
 
     component.createSelectedItems();
 
@@ -242,17 +290,10 @@ describe('InputDayFeature', () => {
           inventoryId: 4,
           qty: 120,
           qtyUnit: 'g',
-          slotId: 11,
-        },
-        {
-          productId: 2,
-          inventoryId: 4,
-          qty: 80,
-          slotId: 11,
+          slotKey: 'snack',
         },
       ],
     });
-    expect(emitted).toEqual([{ dateLocal: '2026-02-16' }]);
   });
 
   it('should create a single item with occurredAt', () => {
@@ -295,6 +336,18 @@ describe('InputDayFeature', () => {
     expect(component.itemEditorForm.value.itemId).toBe(31);
     expect(component.itemEditorForm.value.productId).toBe(1);
     expect(component.itemEditorForm.value.occurredAt).toBe('2026-02-16T08:15');
+  });
+
+  it('should clear selected batch products when switching to edition', () => {
+    component.onSelectedInventoryChange(4);
+    component.onProductsSelected(component.selectableProductListItems);
+    expect(component.selectedProductRows.length).toBe(2);
+
+    component.inputDayResponse = dayResponse;
+    component.startEditingItem(31);
+
+    expect(component.selectedProductRows).toEqual([]);
+    expect(component.itemEditorForm.value.itemId).toBe(31);
   });
 
   it('should send the full update payload for an edited item', () => {

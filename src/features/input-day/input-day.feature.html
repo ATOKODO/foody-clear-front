@@ -142,124 +142,14 @@
 
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
-        <mat-card-title>{{ isEditingItem ? 'Modifier une entree' : 'Ajouter une entree' }}</mat-card-title>
+        <mat-card-title>{{ isEditingItem ? 'Modifier une entree' : 'Ajouter des entrees' }}</mat-card-title>
         <mat-card-subtitle>
-          Creation ponctuelle via POST /items et edition complete via PATCH /items/:itemId
+          {{
+            isEditingItem
+              ? 'Edition complete via PATCH /items/:itemId'
+              : 'Selectionne un inventory, choisis les produits puis renseigne les details communs.'
+          }}
         </mat-card-subtitle>
-      </mat-card-header>
-
-      <mat-card-content class="space-y-4 pt-2">
-        <div [formGroup]="itemEditorForm" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Date metier</mat-label>
-            <input matInput type="date" formControlName="dateLocal" />
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>occurredAt</mat-label>
-            <input matInput type="datetime-local" formControlName="occurredAt" />
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Inventory</mat-label>
-            <mat-select
-              [ngModel]="selectedInventoryId"
-              [ngModelOptions]="{ standalone: true }"
-              (ngModelChange)="onSelectedInventoryChange($event)">
-              <mat-option [value]="null">Selectionner</mat-option>
-              <mat-option *ngFor="let inventory of inventories" [value]="inventory.id">
-                {{ inventory.name }} (#{{ inventory.id }})
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Produit</mat-label>
-            <mat-select
-              formControlName="productId"
-              [disabled]="selectedInventoryId === null && !isEditingItem">
-              <mat-option [value]="null">Selectionner</mat-option>
-              <mat-option *ngFor="let product of editorProductOptions" [value]="+product.id">
-                {{ product.name }} (#{{ product.id }})
-              </mat-option>
-            </mat-select>
-            <mat-hint *ngIf="selectedInventoryId === null && !isEditingItem">
-              Choisis d'abord un inventory pour charger une liste de produits plus legere.
-            </mat-hint>
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Quantite</mat-label>
-            <input matInput type="number" min="0.01" step="0.01" formControlName="qty" />
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Unite</mat-label>
-            <mat-select formControlName="qtyUnit">
-              <mat-option [value]="null">Auto</mat-option>
-              <mat-option *ngFor="let unit of qtyUnitOptions" [value]="unit">
-                {{ unit }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Slot explicite</mat-label>
-            <mat-select
-              formControlName="slotId"
-              (selectionChange)="onItemEditorSlotIdChange($event.value)">
-              <mat-option [value]="null">Sans slot</mat-option>
-              <mat-option *ngFor="let slot of availableSlots" [value]="slot.slotId">
-                {{ slot.sortOrder }}. {{ slot.title }} ({{ slot.slotKey }})
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>slotKey libre</mat-label>
-            <input
-              matInput
-              type="text"
-              formControlName="slotKey"
-              [disabled]="itemEditorSelectedSlotId !== null"
-              placeholder="ex: breakfast" />
-          </mat-form-field>
-        </div>
-
-        <p *ngIf="itemEditorError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {{ itemEditorError }}
-        </p>
-
-        <div class="flex flex-wrap justify-end gap-2">
-          <button mat-stroked-button type="button" (click)="resetItemEditor()">
-            {{ isEditingItem ? 'Annuler edition' : 'Reset' }}
-          </button>
-          <button
-            *ngIf="isEditingItem"
-            mat-stroked-button
-            color="warn"
-            type="button"
-            (click)="removeItem()"
-            [disabled]="loading">
-            Supprimer
-          </button>
-          <button
-            mat-raised-button
-            color="primary"
-            type="button"
-            class="input-day-submit-item"
-            (click)="submitItemEditor()"
-            [disabled]="!canSubmitItemEditor">
-            {{ isEditingItem ? 'Enregistrer l entree' : 'Ajouter l entree' }}
-          </button>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
-    <mat-card appearance="outlined" class="rounded-xl">
-      <mat-card-header>
-        <mat-card-title>Ajouter des items en batch</mat-card-title>
-        <mat-card-subtitle>Selection multiple de produits avec quantite par produit</mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content class="space-y-4 pt-2">
@@ -273,101 +163,249 @@
           Impossible de charger les produits de l'inventory selectionne.
         </p>
 
-        <ng-container *ngIf="selectedInventoryId !== null; else selectInventoryHint">
-          <p *ngIf="loadingInventoryProducts" class="text-sm text-slate-500">
-            Chargement des produits de l'inventory...
+        <ng-container *ngIf="isEditingItem; else createComposer">
+          <div [formGroup]="itemEditorForm" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Date metier</mat-label>
+              <input matInput type="date" formControlName="dateLocal" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>occurredAt</mat-label>
+              <input matInput type="datetime-local" formControlName="occurredAt" />
+            </mat-form-field>
+
+            <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Inventory actif</p>
+              <p class="mt-1 text-sm text-slate-900">{{ selectedInventoryLabel }}</p>
+              <p class="mt-1 text-xs text-slate-500">
+                Le changement d'inventory se fait dans Contexte du jour.
+              </p>
+            </div>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Produit</mat-label>
+              <mat-select formControlName="productId">
+                <mat-option [value]="null">Selectionner</mat-option>
+                <mat-option *ngFor="let product of editorProductOptions" [value]="+product.id">
+                  {{ product.name }} (#{{ product.id }})
+                </mat-option>
+              </mat-select>
+              <mat-hint *ngIf="selectedInventoryId === null">
+                Choisis d'abord un inventory dans le contexte du jour.
+              </mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Quantite</mat-label>
+              <input matInput type="number" min="0.01" step="0.01" formControlName="qty" />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Unite</mat-label>
+              <mat-select formControlName="qtyUnit">
+                <mat-option [value]="null">Auto</mat-option>
+                <mat-option *ngFor="let unit of qtyUnitOptions" [value]="unit">
+                  {{ unit }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Slot explicite</mat-label>
+              <mat-select
+                formControlName="slotId"
+                (selectionChange)="onItemEditorSlotIdChange($event.value)">
+                <mat-option [value]="null">Sans slot</mat-option>
+                <mat-option *ngFor="let slot of availableSlots" [value]="slot.slotId">
+                  {{ slot.sortOrder }}. {{ slot.title }} ({{ slot.slotKey }})
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>slotKey libre</mat-label>
+              <input
+                matInput
+                type="text"
+                formControlName="slotKey"
+                [readonly]="itemEditorSelectedSlotId !== null"
+                placeholder="ex: breakfast" />
+            </mat-form-field>
+          </div>
+
+          <p *ngIf="itemEditorError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {{ itemEditorError }}
           </p>
 
-          <app-product-list
-            [mode]="'select-multi'"
-            [products]="selectableProductListItems"
-            [selectedIds]="selectedProductIds"
-            [compact]="true"
-            [showAvailableQty]="true"
-            (selectedMany)="onProductsSelected($event)">
-          </app-product-list>
+          <div class="flex flex-wrap justify-end gap-2">
+            <button mat-stroked-button type="button" (click)="resetItemEditor()">
+              Annuler edition
+            </button>
+            <button
+              mat-stroked-button
+              color="warn"
+              type="button"
+              (click)="removeItem()"
+              [disabled]="loading">
+              Supprimer
+            </button>
+            <button
+              mat-raised-button
+              color="primary"
+              type="button"
+              class="input-day-submit-item"
+              (click)="submitItemEditor()"
+              [disabled]="!canSubmitItemEditor">
+              Enregistrer l entree
+            </button>
+          </div>
         </ng-container>
 
-        <ng-template #selectInventoryHint>
-          <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-            Selectionne un inventory pour afficher ses produits.
-          </p>
-        </ng-template>
+        <ng-template #createComposer>
+          <ng-container *ngIf="selectedInventoryId !== null; else selectInventoryHint">
+            <p *ngIf="loadingInventoryProducts" class="text-sm text-slate-500">
+              Chargement des produits de l'inventory...
+            </p>
 
-        <div *ngIf="selectedProductRows.length > 0; else noSelectedProducts" class="overflow-x-auto rounded-xl border border-slate-200">
-          <table class="w-full min-w-[640px] text-sm">
-            <thead class="bg-slate-50 text-left text-slate-700">
-              <tr>
-                <th class="px-3 py-2">Produit</th>
-                <th class="px-3 py-2">Qty</th>
-                <th class="px-3 py-2">QtyUnit</th>
-                <th class="px-3 py-2 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                *ngFor="let row of selectedProductRows; trackBy: trackBySelectedProductRow"
-                class="border-t border-slate-100 align-top">
-                <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
-                <td class="px-3 py-2">
+            <app-product-list
+              [mode]="'select-multi'"
+              [products]="selectableProductListItems"
+              [selectedIds]="selectedProductIds"
+              [compact]="true"
+              [showAvailableQty]="true"
+              (selectedMany)="onProductsSelected($event)">
+            </app-product-list>
+
+            <ng-container *ngIf="selectedProductRows.length > 0; else noSelectedProducts">
+              <div [formGroup]="itemEditorForm" class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900">Details communs</p>
+                    <p class="text-sm text-slate-600">
+                      {{ selectedProductRows.length }}
+                      {{ selectedProductRows.length > 1 ? 'produits selectionnes' : 'produit selectionne' }}
+                      depuis {{ selectedInventoryLabel }}.
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                    <span class="font-medium text-slate-900">Slot batch:</span> {{ selectedBatchSlotLabel }}
+                  </div>
+                </div>
+
+                <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   <mat-form-field appearance="fill" class="w-full">
-                    <mat-label>Quantite</mat-label>
+                    <mat-label>Date metier</mat-label>
+                    <input matInput type="date" formControlName="dateLocal" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="fill" class="w-full">
+                    <mat-label>occurredAt commun</mat-label>
+                    <input matInput type="datetime-local" formControlName="occurredAt" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="fill" class="w-full">
+                    <mat-label>slotKey libre</mat-label>
                     <input
                       matInput
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      [(ngModel)]="row.qty"
-                      [ngModelOptions]="{ standalone: true }" />
+                      type="text"
+                      formControlName="slotKey"
+                      [readonly]="selectedSlotId !== null"
+                      placeholder="ex: breakfast" />
+                    <mat-hint *ngIf="selectedSlotId !== null">
+                      Le slot choisi dans le contexte du jour sera applique a tous les produits.
+                    </mat-hint>
                   </mat-form-field>
-                </td>
-                <td class="px-3 py-2">
-                  <mat-form-field appearance="fill" class="w-full">
-                    <mat-label>Unite</mat-label>
-                    <mat-select
-                      [(ngModel)]="row.qtyUnit"
-                      [ngModelOptions]="{ standalone: true }">
-                      <mat-option [value]="null">Auto</mat-option>
-                      <mat-option *ngFor="let unit of qtyUnitOptions" [value]="unit">
-                        {{ unit }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </td>
-                <td class="px-3 py-2 text-right">
-                  <button
-                    mat-stroked-button
-                    color="warn"
-                    type="button"
-                    (click)="removeSelectedProduct(row.productId)">
-                    Retirer
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                </div>
+              </div>
 
-        <ng-template #noSelectedProducts>
-          <p class="text-sm text-slate-600">
-            Selectionne un ou plusieurs produits pour preparer le batch.
-          </p>
+              <div class="overflow-x-auto rounded-xl border border-slate-200">
+                <table class="w-full min-w-[640px] text-sm">
+                  <thead class="bg-slate-50 text-left text-slate-700">
+                    <tr>
+                      <th class="px-3 py-2">Produit</th>
+                      <th class="px-3 py-2">Qty</th>
+                      <th class="px-3 py-2">QtyUnit</th>
+                      <th class="px-3 py-2 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="let row of selectedProductRows; trackBy: trackBySelectedProductRow"
+                      class="border-t border-slate-100 align-top">
+                      <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
+                      <td class="px-3 py-2">
+                        <mat-form-field appearance="fill" class="w-full">
+                          <mat-label>Quantite</mat-label>
+                          <input
+                            matInput
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            [(ngModel)]="row.qty"
+                            [ngModelOptions]="{ standalone: true }" />
+                        </mat-form-field>
+                      </td>
+                      <td class="px-3 py-2">
+                        <mat-form-field appearance="fill" class="w-full">
+                          <mat-label>Unite</mat-label>
+                          <mat-select
+                            [(ngModel)]="row.qtyUnit"
+                            [ngModelOptions]="{ standalone: true }">
+                            <mat-option [value]="null">Auto</mat-option>
+                            <mat-option *ngFor="let unit of qtyUnitOptions" [value]="unit">
+                              {{ unit }}
+                            </mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                      <td class="px-3 py-2 text-right">
+                        <button
+                          mat-stroked-button
+                          color="warn"
+                          type="button"
+                          (click)="removeSelectedProduct(row.productId)">
+                          Retirer
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <p *ngIf="itemsFormError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {{ itemsFormError }}
+              </p>
+
+              <div class="flex flex-wrap justify-end gap-2">
+                <button mat-stroked-button type="button" (click)="resetCreateComposer()">
+                  Reinitialiser
+                </button>
+                <button
+                  mat-raised-button
+                  color="primary"
+                  type="button"
+                  (click)="createSelectedItems()"
+                  [disabled]="!canCreateSelectedItems">
+                  {{ createSelectedItemsLabel }}
+                </button>
+              </div>
+            </ng-container>
+          </ng-container>
+
+          <ng-template #selectInventoryHint>
+            <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              Selectionne un inventory dans le contexte du jour pour afficher ses produits.
+            </p>
+          </ng-template>
+
+          <ng-template #noSelectedProducts>
+            <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              Selectionne un ou plusieurs produits pour afficher les champs de saisie et preparer l'ajout.
+            </p>
+          </ng-template>
         </ng-template>
-
-        <p *ngIf="itemsFormError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {{ itemsFormError }}
-        </p>
-
-        <div class="flex justify-end">
-          <button
-            mat-raised-button
-            color="primary"
-            type="button"
-            (click)="createSelectedItems()"
-            [disabled]="!canCreateSelectedItems">
-            Ajouter les items selectionnes
-          </button>
-        </div>
       </mat-card-content>
     </mat-card>
 
