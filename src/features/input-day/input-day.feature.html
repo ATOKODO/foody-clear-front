@@ -175,12 +175,17 @@
 
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Produit</mat-label>
-            <mat-select formControlName="productId">
+            <mat-select
+              formControlName="productId"
+              [disabled]="selectedInventoryId === null && !isEditingItem">
               <mat-option [value]="null">Selectionner</mat-option>
               <mat-option *ngFor="let product of editorProductOptions" [value]="+product.id">
                 {{ product.name }} (#{{ product.id }})
               </mat-option>
             </mat-select>
+            <mat-hint *ngIf="selectedInventoryId === null && !isEditingItem">
+              Choisis d'abord un inventory pour charger une liste de produits plus legere.
+            </mat-hint>
           </mat-form-field>
 
           <mat-form-field appearance="fill" class="w-full">
@@ -371,9 +376,9 @@
     </p>
 
     <div *ngIf="inputDayResponse as response" class="space-y-3">
-      <h3 class="text-base font-semibold text-slate-900">Resume InputDay</h3>
+      <h3 *ngIf="isStandaloneMode" class="text-base font-semibold text-slate-900">Resume InputDay</h3>
 
-      <mat-card appearance="outlined" class="rounded-xl">
+      <mat-card *ngIf="isStandaloneMode" appearance="outlined" class="rounded-xl">
         <mat-card-content class="space-y-3 p-4">
           <div class="grid gap-3 sm:grid-cols-2">
             <p class="text-sm text-slate-700">
@@ -400,7 +405,7 @@
         </mat-card-content>
       </mat-card>
 
-      <mat-card appearance="outlined" class="rounded-xl">
+      <mat-card *ngIf="isStandaloneMode" appearance="outlined" class="rounded-xl">
         <mat-card-content class="space-y-3 p-4">
           <div *ngIf="response.daySet as daySet; else noDaySet">
             <p class="text-sm font-semibold text-slate-900">
@@ -530,97 +535,99 @@
         </mat-card-content>
       </mat-card>
 
-      <mat-card *ngIf="response.totalsMacros as totals" appearance="outlined" class="rounded-xl">
-        <mat-card-content class="space-y-3 p-4">
-          <p class="text-sm font-semibold text-slate-900">Totals Macros</p>
+      <ng-container *ngIf="isStandaloneMode">
+        <mat-card *ngIf="response.totalsMacros as totals" appearance="outlined" class="rounded-xl">
+          <mat-card-content class="space-y-3 p-4">
+            <p class="text-sm font-semibold text-slate-900">Totals Macros</p>
 
-          <div class="grid gap-3 md:grid-cols-3">
-            <div class="rounded-lg border border-slate-200 p-3">
-              <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Day Total</p>
-              <div class="space-y-1 text-sm text-slate-700">
-                <p *ngFor="let entry of totals.dayTotal | keyvalue">
-                  <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                  {{ formatMacroValue(entry.value) }}
+            <div class="grid gap-3 md:grid-cols-3">
+              <div class="rounded-lg border border-slate-200 p-3">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Day Total</p>
+                <div class="space-y-1 text-sm text-slate-700">
+                  <p *ngFor="let entry of totals.dayTotal | keyvalue">
+                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                    {{ formatMacroValue(entry.value) }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-slate-200 p-3">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Targets</p>
+                <div *ngIf="hasEntries(totals.targets); else noDayTargets" class="space-y-1 text-sm text-slate-700">
+                  <p *ngFor="let entry of totals.targets | keyvalue">
+                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                    {{ formatNutritionAmount(entry.value) }}
+                  </p>
+                </div>
+                <ng-template #noDayTargets>
+                  <p class="text-sm text-slate-500">Aucune cible.</p>
+                </ng-template>
+              </div>
+
+              <div class="rounded-lg border border-slate-200 p-3">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Delta To Targets</p>
+                <div *ngIf="hasEntries(totals.deltaToTargets); else noDayDelta" class="space-y-1 text-sm text-slate-700">
+                  <p *ngFor="let entry of totals.deltaToTargets | keyvalue">
+                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                    {{ formatMacroValue(entry.value) }}
+                  </p>
+                </div>
+                <ng-template #noDayDelta>
+                  <p class="text-sm text-slate-500">Aucun delta.</p>
+                </ng-template>
+              </div>
+            </div>
+
+            <div *ngIf="totals.bySlot.length > 0" class="space-y-2">
+              <p class="text-sm font-semibold text-slate-900">Par slot</p>
+              <div
+                *ngFor="let slotTotals of totals.bySlot"
+                class="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p class="text-sm font-medium text-slate-900">
+                  {{ slotTotals.slot.title }} ({{ slotTotals.slot.slotKey }})
+                </p>
+                <p class="text-xs text-slate-600">
+                  {{ formatTime(slotTotals.slot.startTime) }} - {{ formatTime(slotTotals.slot.endTime) }}
+                </p>
+                <div *ngIf="getSlotMacroEntries(slotTotals).length > 0; else noSlotTotalsValues" class="text-sm text-slate-700">
+                  <p class="font-medium text-slate-900">Consomme</p>
+                  <p *ngFor="let entry of getSlotMacroEntries(slotTotals)">
+                    {{ entry.key }}: {{ formatMacroValue(entry.value) }}
+                  </p>
+                </div>
+                <ng-template #noSlotTotalsValues>
+                  <p class="text-sm text-slate-500">Aucun total calcule pour ce slot.</p>
+                </ng-template>
+                <div *ngIf="hasEntries(slotTotals.targets); else noSlotTargetsTotals" class="text-sm text-slate-700">
+                  <p class="font-medium text-slate-900">Cibles</p>
+                  <p *ngFor="let target of slotTotals.targets | keyvalue">
+                    {{ target.key }} {{ formatNutritionAmount(target.value) }}
+                  </p>
+                </div>
+                <ng-template #noSlotTargetsTotals>
+                  <p class="text-sm text-slate-500">Aucune cible.</p>
+                </ng-template>
+                <div *ngIf="hasEntries(slotTotals.deltaToTargets); else noSlotDeltaTotals" class="text-sm text-slate-700">
+                  <p class="font-medium text-slate-900">Delta</p>
+                  <p *ngFor="let delta of slotTotals.deltaToTargets | keyvalue">
+                    {{ delta.key }} {{ formatMacroValue(delta.value) }}
+                  </p>
+                </div>
+                <ng-template #noSlotDeltaTotals>
+                  <p class="text-sm text-slate-500">Aucun delta.</p>
+                </ng-template>
+                <p *ngIf="slotTotals.incompleteNutritionKeys.length > 0" class="text-xs text-amber-700">
+                  Incomplet: {{ slotTotals.incompleteNutritionKeys.join(', ') }}
                 </p>
               </div>
             </div>
 
-            <div class="rounded-lg border border-slate-200 p-3">
-              <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Targets</p>
-              <div *ngIf="hasEntries(totals.targets); else noDayTargets" class="space-y-1 text-sm text-slate-700">
-                <p *ngFor="let entry of totals.targets | keyvalue">
-                  <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                  {{ formatNutritionAmount(entry.value) }}
-                </p>
-              </div>
-              <ng-template #noDayTargets>
-                <p class="text-sm text-slate-500">Aucune cible.</p>
-              </ng-template>
-            </div>
-
-            <div class="rounded-lg border border-slate-200 p-3">
-              <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Delta To Targets</p>
-              <div *ngIf="hasEntries(totals.deltaToTargets); else noDayDelta" class="space-y-1 text-sm text-slate-700">
-                <p *ngFor="let entry of totals.deltaToTargets | keyvalue">
-                  <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                  {{ formatMacroValue(entry.value) }}
-                </p>
-              </div>
-              <ng-template #noDayDelta>
-                <p class="text-sm text-slate-500">Aucun delta.</p>
-              </ng-template>
-            </div>
-          </div>
-
-          <div *ngIf="totals.bySlot.length > 0" class="space-y-2">
-            <p class="text-sm font-semibold text-slate-900">Par slot</p>
-            <div
-              *ngFor="let slotTotals of totals.bySlot"
-              class="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p class="text-sm font-medium text-slate-900">
-                {{ slotTotals.slot.title }} ({{ slotTotals.slot.slotKey }})
-              </p>
-              <p class="text-xs text-slate-600">
-                {{ formatTime(slotTotals.slot.startTime) }} - {{ formatTime(slotTotals.slot.endTime) }}
-              </p>
-              <div *ngIf="getSlotMacroEntries(slotTotals).length > 0; else noSlotTotalsValues" class="text-sm text-slate-700">
-                <p class="font-medium text-slate-900">Consomme</p>
-                <p *ngFor="let entry of getSlotMacroEntries(slotTotals)">
-                  {{ entry.key }}: {{ formatMacroValue(entry.value) }}
-                </p>
-              </div>
-              <ng-template #noSlotTotalsValues>
-                <p class="text-sm text-slate-500">Aucun total calcule pour ce slot.</p>
-              </ng-template>
-              <div *ngIf="hasEntries(slotTotals.targets); else noSlotTargetsTotals" class="text-sm text-slate-700">
-                <p class="font-medium text-slate-900">Cibles</p>
-                <p *ngFor="let target of slotTotals.targets | keyvalue">
-                  {{ target.key }} {{ formatNutritionAmount(target.value) }}
-                </p>
-              </div>
-              <ng-template #noSlotTargetsTotals>
-                <p class="text-sm text-slate-500">Aucune cible.</p>
-              </ng-template>
-              <div *ngIf="hasEntries(slotTotals.deltaToTargets); else noSlotDeltaTotals" class="text-sm text-slate-700">
-                <p class="font-medium text-slate-900">Delta</p>
-                <p *ngFor="let delta of slotTotals.deltaToTargets | keyvalue">
-                  {{ delta.key }} {{ formatMacroValue(delta.value) }}
-                </p>
-              </div>
-              <ng-template #noSlotDeltaTotals>
-                <p class="text-sm text-slate-500">Aucun delta.</p>
-              </ng-template>
-              <p *ngIf="slotTotals.incompleteNutritionKeys.length > 0" class="text-xs text-amber-700">
-                Incomplet: {{ slotTotals.incompleteNutritionKeys.join(', ') }}
-              </p>
-            </div>
-          </div>
-
-          <p *ngIf="totals.incompleteNutritionKeys.length > 0" class="text-xs text-amber-700">
-            Cles incompletes (jour): {{ totals.incompleteNutritionKeys.join(', ') }}
-          </p>
-        </mat-card-content>
-      </mat-card>
+            <p *ngIf="totals.incompleteNutritionKeys.length > 0" class="text-xs text-amber-700">
+              Cles incompletes (jour): {{ totals.incompleteNutritionKeys.join(', ') }}
+            </p>
+          </mat-card-content>
+        </mat-card>
+      </ng-container>
     </div>
 
     <div *ngIf="isStandaloneMode" class="space-y-3">

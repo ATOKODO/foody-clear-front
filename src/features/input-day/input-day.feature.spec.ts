@@ -155,6 +155,25 @@ describe('InputDayFeature', () => {
     expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith('2026-02-16', 'UTC');
   });
 
+  it('should defer full product loading on embedded open until an inventory is selected', () => {
+    productServiceMock.findAll.calls.reset();
+    inventoryServiceMock.findAll.calls.reset();
+    inputDayServiceMock.getInputDay.calls.reset();
+
+    const embeddedFixture = TestBed.createComponent(InputDayFeature);
+    embeddedFixture.componentRef.setInput('displayMode', 'embedded');
+    embeddedFixture.componentRef.setInput('initialDateLocal', '2026-02-16');
+    embeddedFixture.detectChanges();
+
+    expect(productServiceMock.findAll).not.toHaveBeenCalled();
+    expect(inventoryServiceMock.findAll).toHaveBeenCalled();
+    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith('2026-02-16', 'UTC');
+
+    embeddedFixture.componentInstance.onSelectedInventoryChange(4);
+
+    expect(productServiceMock.findAll).toHaveBeenCalledTimes(1);
+  });
+
   it('should prefill occurredAt from embedded hour context', () => {
     fixture.componentRef.setInput('displayMode', 'embedded');
     fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
@@ -186,6 +205,15 @@ describe('InputDayFeature', () => {
 
     expect(inventoryServiceMock.findProducts).toHaveBeenCalledWith(5);
     expect(component.selectableProductListItems.map((item) => item.id)).toEqual(['2']);
+  });
+
+  it('should keep editor product options empty until an inventory is selected', () => {
+    expect(component.selectedInventoryId).toBeNull();
+    expect(component.editorProductOptions).toEqual([]);
+
+    component.onSelectedInventoryChange(4);
+
+    expect(component.editorProductOptions.map((item) => item.id)).toEqual(['1', '2']);
   });
 
   it('should create items with shared inventory and slot plus per-product qty', () => {

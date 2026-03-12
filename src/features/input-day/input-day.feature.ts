@@ -56,6 +56,15 @@ type InputDaySelectedProductRow = {
   qtyUnit: ProductQuantityInputUnit | null;
 };
 
+type InputDayAvailableSlot = {
+  slotId: number;
+  title: string;
+  slotKey: string;
+  sortOrder: number;
+  startTime: string | null;
+  endTime: string | null;
+};
+
 type ProductListSource = {
   id: number;
   name: string;
@@ -132,6 +141,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   selectedInventoryProducts: InventoryProduct[] = [];
   productListItemsCache: ProductListItem[] = [];
   selectableProductListItemsCache: ProductListItem[] = [];
+  availableSlotsCache: InputDayAvailableSlot[] = [];
   selectedProductIds: string[] = [];
   selectedProducts: ProductListItem[] = [];
   selectedProductRows: InputDaySelectedProductRow[] = [];
@@ -146,12 +156,13 @@ export class InputDayFeature implements OnInit, OnChanges {
   itemsFormError: string | null = null;
   itemEditorError: string | null = null;
   initialDateError: string | null = null;
-  inputDayResponse: InputDayResponse | null = null;
   editingSourceDateLocal: string | null = null;
 
   private initialized = false;
+  private _inputDayResponse: InputDayResponse | null = null;
   private pendingInitialOccurredAt: string | null = null;
   private pendingInitialEditingItemId: number | null = null;
+  private readonly emptyProductListItems: ProductListItem[] = [];
   private readonly qtyUnitSet = new Set<ProductQuantityInputUnit>(this.qtyUnitOptions);
   private readonly slotTotalsMetaKeys = new Set([
     'slot',
@@ -191,7 +202,9 @@ export class InputDayFeature implements OnInit, OnChanges {
   ngOnInit(): void {
     this.baseUrl = this.resolveConfiguredBaseUrl();
     this.applyServicesBaseUrl();
-    this.loadProducts();
+    if (this.shouldEagerLoadProducts()) {
+      this.loadProducts();
+    }
     this.loadInventories();
     this.applyInitialDateInput();
     this.syncPendingEditorContextFromInputs();
@@ -214,7 +227,9 @@ export class InputDayFeature implements OnInit, OnChanges {
     if (changes['apiBaseUrl']) {
       this.baseUrl = this.resolveConfiguredBaseUrl();
       this.applyServicesBaseUrl();
-      this.loadProducts();
+      if (this.shouldEagerLoadProducts() || this.products.length > 0) {
+        this.loadProducts();
+      }
       this.loadInventories();
       if (this.hasValidSelectedDate) {
         this.loadDay();
@@ -222,6 +237,10 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     if (changes['initialOccurredAt'] || changes['initialEditingItemId']) {
+      if (this.shouldEagerLoadProducts() && this.products.length === 0 && !this.loadingProducts) {
+        this.loadProducts();
+      }
+
       this.syncPendingEditorContextFromInputs();
       if (this.inputDayResponse) {
         this.applyPendingEditorContext();
@@ -231,6 +250,10 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     if (changes['initialDateLocal'] || changes['displayMode'] || changes['lockDate']) {
+      if (this.shouldEagerLoadProducts() && this.products.length === 0 && !this.loadingProducts) {
+        this.loadProducts();
+      }
+
       this.applyInitialDateInput();
       this.syncPendingEditorContextFromInputs();
       this.prefillItemEditorForCreate(this.pendingInitialOccurredAt);
@@ -270,15 +293,24 @@ export class InputDayFeature implements OnInit, OnChanges {
     return this.productListItemsCache;
   }
 
+  get inputDayResponse(): InputDayResponse | null {
+    return this._inputDayResponse;
+  }
+
+  set inputDayResponse(value: InputDayResponse | null) {
+    this._inputDayResponse = value;
+    this.refreshAvailableSlots();
+  }
+
   get selectableProductListItems(): ProductListItem[] {
     return this.selectableProductListItemsCache;
   }
 
   get editorProductOptions(): ProductListItem[] {
     const baseOptions =
-      this.selectedInventoryId !== null && this.selectableProductListItems.length > 0
+      this.selectedInventoryId !== null
         ? this.selectableProductListItems
-        : this.productListItems;
+        : this.emptyProductListItems;
 
     const selectedProductId = this.normalizePositiveInteger(this.itemEditorForm.value.productId);
     if (selectedProductId === null) {
@@ -293,24 +325,8 @@ export class InputDayFeature implements OnInit, OnChanges {
     return fallback ? [fallback, ...baseOptions] : baseOptions;
   }
 
-  get availableSlots(): Array<{
-    slotId: number;
-    title: string;
-    slotKey: string;
-    sortOrder: number;
-    startTime: string | null;
-    endTime: string | null;
-  }> {
-    return (this.inputDayResponse?.daySet?.slots ?? [])
-      .filter((slot): slot is typeof slot & { slotId: number } => slot.slotId !== null)
-      .map((slot) => ({
-        slotId: slot.slotId,
-        title: slot.title,
-        slotKey: slot.slotKey,
-        sortOrder: slot.sortOrder,
-        startTime: slot.startTime ?? null,
-        endTime: slot.endTime ?? null,
-      }));
+  get availableSlots(): InputDayAvailableSlot[] {
+    return this.availableSlotsCache;
   }
 
   get isEditingItem(): boolean {
@@ -629,6 +645,9 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     this.selectedInventoryId = nextInventoryId;
+    if (nextInventoryId !== null && this.products.length === 0 && !this.loadingProducts) {
+      this.loadProducts();
+    }
     this.refreshSelectedInventoryProducts();
   }
 
@@ -830,6 +849,10 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     return this.inputDaySrv.baseUrl;
+  }
+
+  private shouldEagerLoadProducts(): boolean {
+    return this.isStandaloneMode || this.normalizePositiveInteger(this.initialEditingItemId) !== null;
   }
 
   private applyServicesBaseUrl(): void {
@@ -1297,6 +1320,19 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     return null;
+  }
+
+  private refreshAvailableSlots(): void {
+    this.availableSlotsCache = (this.inputDayResponse?.daySet?.slots ?? [])
+      .filter((slot): slot is typeof slot & { slotId: number } => slot.slotId !== null)
+      .map((slot) => ({
+        slotId: slot.slotId,
+        title: slot.title,
+        slotKey: slot.slotKey,
+        sortOrder: slot.sortOrder,
+        startTime: slot.startTime ?? null,
+        endTime: slot.endTime ?? null,
+      }));
   }
 
   private extractProductsFromResponse(value: unknown): ProductApiModel[] {
