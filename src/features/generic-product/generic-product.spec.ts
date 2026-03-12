@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 
 import { GenericProduct } from './generic-product';
 import { GenericProductService } from '../../services/generic-product-service';
+import { GenericProductFormValue } from '../../components/generic-product/generic-product-form/generic-product-form';
 
 describe('GenericProduct', () => {
   let component: GenericProduct;
@@ -12,10 +13,24 @@ describe('GenericProduct', () => {
     setBaseUrl: jasmine.createSpy('setBaseUrl'),
     findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
     create: jasmine.createSpy('create').and.returnValue(
-      of({ id: 1, name: 'Riz', minQuantityUnit: 1, minQuantityMetric: 500 }),
+      of({
+        id: 1,
+        name: 'Riz',
+        minQuantityUnit: 1,
+        minQuantityUnitType: 'portion',
+        minQuantityMetric: 500,
+        minQuantityMetricType: 'g',
+      }),
     ),
     update: jasmine.createSpy('update').and.returnValue(
-      of({ id: 1, name: 'Riz', minQuantityUnit: 1, minQuantityMetric: 500 }),
+      of({
+        id: 1,
+        name: 'Riz',
+        minQuantityUnit: 1,
+        minQuantityUnitType: 'portion',
+        minQuantityMetric: 500,
+        minQuantityMetricType: 'g',
+      }),
     ),
     remove: jasmine.createSpy('remove').and.returnValue(of(void 0)),
   };
@@ -33,5 +48,25 @@ describe('GenericProduct', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should include quantity enum fields in create payload', () => {
+    const formValue: GenericProductFormValue = {
+      name: 'Pain de mie',
+      minQuantityUnit: 2,
+      minQuantityUnitType: 'tranche',
+      minQuantityMetric: 60,
+      minQuantityMetricType: 'g',
+    };
+
+    component.onFormSubmitted({ mode: 'add', value: formValue });
+
+    expect(genericProductServiceMock.create).toHaveBeenCalledWith({
+      name: 'Pain de mie',
+      minQuantityUnit: 2,
+      minQuantityUnitType: 'tranche',
+      minQuantityMetric: 60,
+      minQuantityMetricType: 'g',
+    });
   });
 });

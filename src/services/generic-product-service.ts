@@ -1,18 +1,23 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import type { PortionUnit, QuantityUnit } from './product-service';
 
 export interface GenericProduct {
   id: number;
   name: string;
   minQuantityUnit: number;    // ex: 1 (paquet)
+  minQuantityUnitType?: PortionUnit | null;
   minQuantityMetric: number;  // ex: 500 (g)
+  minQuantityMetricType?: QuantityUnit | null;
 }
 
 export interface CreateGenericProductDto {
   name: string;
   minQuantityUnit: number;
+  minQuantityUnitType?: PortionUnit | null;
   minQuantityMetric: number;
+  minQuantityMetricType?: QuantityUnit | null;
 }
 
 export type UpdateGenericProductDto = Partial<CreateGenericProductDto>;

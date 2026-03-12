@@ -20,6 +20,7 @@ import {
   GenericProductService,
   UpdateGenericProductDto,
 } from '../../services/generic-product-service';
+import type { PortionUnit, QuantityUnit } from '../../services/product-service';
 
 @Component({
   selector: 'app-generic-product',
@@ -68,7 +69,9 @@ export class GenericProduct implements OnInit {
       id: String(genericProduct.id),
       name: genericProduct.name,
       minQuantityUnit: this.normalizeNonNegativeNumber(genericProduct.minQuantityUnit),
+      minQuantityUnitType: this.normalizePortionUnit(genericProduct.minQuantityUnitType),
       minQuantityMetric: this.normalizeNonNegativeNumber(genericProduct.minQuantityMetric),
+      minQuantityMetricType: this.normalizeQuantityUnit(genericProduct.minQuantityMetricType),
     }));
   }
 
@@ -216,7 +219,9 @@ export class GenericProduct implements OnInit {
     return {
       name: value.name.trim(),
       minQuantityUnit: value.minQuantityUnit,
+      minQuantityUnitType: value.minQuantityUnitType,
       minQuantityMetric: value.minQuantityMetric,
+      minQuantityMetricType: value.minQuantityMetricType,
     };
   }
 
@@ -228,7 +233,9 @@ export class GenericProduct implements OnInit {
     return {
       name: genericProduct.name,
       minQuantityUnit: this.normalizeNonNegativeNumber(genericProduct.minQuantityUnit) ?? 0,
+      minQuantityUnitType: this.normalizePortionUnit(genericProduct.minQuantityUnitType),
       minQuantityMetric: this.normalizeNonNegativeNumber(genericProduct.minQuantityMetric) ?? 0,
+      minQuantityMetricType: this.normalizeQuantityUnit(genericProduct.minQuantityMetricType),
     };
   }
 
@@ -296,5 +303,25 @@ export class GenericProduct implements OnInit {
 
     const parsedValue = Number(trimmed);
     return Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : null;
+  }
+
+  private normalizePortionUnit(value: unknown): PortionUnit | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim();
+    const allowed: PortionUnit[] = ['tranche', 'piece', 'part', 'bouteille', 'portion'];
+    return allowed.includes(candidate as PortionUnit) ? (candidate as PortionUnit) : null;
+  }
+
+  private normalizeQuantityUnit(value: unknown): QuantityUnit | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim();
+    const allowed: QuantityUnit[] = ['mg', 'g', 'kg', 'ml', 'l', 'unit', 'pack'];
+    return allowed.includes(candidate as QuantityUnit) ? (candidate as QuantityUnit) : null;
   }
 }

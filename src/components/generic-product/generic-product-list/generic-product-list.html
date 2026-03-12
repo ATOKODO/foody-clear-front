@@ -42,14 +42,14 @@
           <ng-container matColumnDef="minQuantityUnit">
             <th mat-header-cell *matHeaderCellDef>Min unite</th>
             <td mat-cell *matCellDef="let item">
-              {{ getNumberDisplay(item.minQuantityUnit) }}
+              {{ getQuantityDisplay(item.minQuantityUnit, item.minQuantityUnitType) }}
             </td>
           </ng-container>
 
           <ng-container matColumnDef="minQuantityMetric">
             <th mat-header-cell *matHeaderCellDef>Min metrique</th>
             <td mat-cell *matCellDef="let item">
-              {{ getNumberDisplay(item.minQuantityMetric) }}
+              {{ getQuantityDisplay(item.minQuantityMetric, item.minQuantityMetricType) }}
             </td>
           </ng-container>
 

@@ -13,13 +13,17 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import type { PortionUnit, QuantityUnit } from '../../../services/product-service';
 
 export type GenericProductFormMode = 'add' | 'edit';
 
 export interface GenericProductFormValue {
   name: string;
   minQuantityUnit: number;
+  minQuantityUnitType: PortionUnit | null;
   minQuantityMetric: number;
+  minQuantityMetricType: QuantityUnit | null;
 }
 
 @Component({
@@ -30,6 +34,7 @@ export interface GenericProductFormValue {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
   ],
   templateUrl: './generic-product-form.html',
   styleUrl: './generic-product-form.scss',
@@ -46,16 +51,27 @@ export class GenericProductForm implements OnInit, OnChanges {
   }>();
   @Output() readonly menuClicked = new EventEmitter<void>();
 
+  readonly portionUnitOptions: PortionUnit[] = [
+    'tranche',
+    'piece',
+    'part',
+    'bouteille',
+    'portion',
+  ];
+  readonly quantityUnitOptions: QuantityUnit[] = ['mg', 'g', 'kg', 'ml', 'l', 'unit', 'pack'];
+
   readonly form = this.fb.group({
     name: this.fb.nonNullable.control('', [Validators.required]),
     minQuantityUnit: this.fb.control<number | null>(null, [
       Validators.required,
       Validators.min(0),
     ]),
+    minQuantityUnitType: this.fb.control<PortionUnit | null>(null),
     minQuantityMetric: this.fb.control<number | null>(null, [
       Validators.required,
       Validators.min(0),
     ]),
+    minQuantityMetricType: this.fb.control<QuantityUnit | null>(null),
   });
 
   ngOnInit(): void {
@@ -87,7 +103,11 @@ export class GenericProductForm implements OnInit, OnChanges {
     const rawValue = this.form.getRawValue();
     const name = rawValue.name.trim();
     const minQuantityUnit = this.normalizeNonNegativeNumber(rawValue.minQuantityUnit);
+    const minQuantityUnitType = this.normalizeNullablePortionUnit(rawValue.minQuantityUnitType);
     const minQuantityMetric = this.normalizeNonNegativeNumber(rawValue.minQuantityMetric);
+    const minQuantityMetricType = this.normalizeNullableQuantityUnit(
+      rawValue.minQuantityMetricType,
+    );
 
     this.form.controls.name.setErrors(null);
     if (name === '') {
@@ -105,7 +125,9 @@ export class GenericProductForm implements OnInit, OnChanges {
       value: {
         name,
         minQuantityUnit,
+        minQuantityUnitType,
         minQuantityMetric,
+        minQuantityMetricType,
       },
     });
   }
@@ -115,8 +137,12 @@ export class GenericProductForm implements OnInit, OnChanges {
       name: this.genericProduct?.name ?? '',
       minQuantityUnit:
         this.normalizeNonNegativeNumber(this.genericProduct?.minQuantityUnit) ?? null,
+      minQuantityUnitType:
+        this.normalizeNullablePortionUnit(this.genericProduct?.minQuantityUnitType) ?? null,
       minQuantityMetric:
         this.normalizeNonNegativeNumber(this.genericProduct?.minQuantityMetric) ?? null,
+      minQuantityMetricType:
+        this.normalizeNullableQuantityUnit(this.genericProduct?.minQuantityMetricType) ?? null,
     });
   }
 
@@ -136,5 +162,27 @@ export class GenericProductForm implements OnInit, OnChanges {
 
     const parsedValue = Number(trimmed);
     return Number.isFinite(parsedValue) && parsedValue >= 0 ? parsedValue : null;
+  }
+
+  private normalizeNullableQuantityUnit(value: unknown): QuantityUnit | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim();
+    return this.quantityUnitOptions.includes(candidate as QuantityUnit)
+      ? (candidate as QuantityUnit)
+      : null;
+  }
+
+  private normalizeNullablePortionUnit(value: unknown): PortionUnit | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim();
+    return this.portionUnitOptions.includes(candidate as PortionUnit)
+      ? (candidate as PortionUnit)
+      : null;
   }
 }

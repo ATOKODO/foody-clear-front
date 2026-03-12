@@ -12,6 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table';
+import type { PortionUnit, QuantityUnit } from '../../../services/product-service';
 
 export type GenericProductListMode = 'manage' | 'select-single' | 'select-multi';
 
@@ -19,7 +20,9 @@ export interface GenericProductListItem {
   id: string;
   name: string;
   minQuantityUnit: number | null;
+  minQuantityUnitType: PortionUnit | null;
   minQuantityMetric: number | null;
+  minQuantityMetricType: QuantityUnit | null;
 }
 
 @Component({
@@ -47,8 +50,22 @@ export class GenericProductList implements OnInit, OnChanges {
   @Output() readonly selectedMany = new EventEmitter<GenericProductListItem[]>();
 
   readonly defaultGenericProducts: GenericProductListItem[] = [
-    { id: '1', name: 'Riz', minQuantityUnit: 1, minQuantityMetric: 500 },
-    { id: '2', name: 'Pates', minQuantityUnit: 2, minQuantityMetric: 250 },
+    {
+      id: '1',
+      name: 'Riz',
+      minQuantityUnit: 1,
+      minQuantityUnitType: null,
+      minQuantityMetric: 500,
+      minQuantityMetricType: 'g',
+    },
+    {
+      id: '2',
+      name: 'Pates',
+      minQuantityUnit: 2,
+      minQuantityUnitType: 'portion',
+      minQuantityMetric: 250,
+      minQuantityMetricType: 'g',
+    },
   ];
 
   resolvedGenericProducts: GenericProductListItem[] = [];
@@ -113,6 +130,20 @@ export class GenericProductList implements OnInit, OnChanges {
     }
 
     return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
+  }
+
+  getQuantityDisplay(
+    value: number | null | undefined,
+    unitType: PortionUnit | QuantityUnit | null | undefined,
+  ): string {
+    const numberDisplay = this.getNumberDisplay(value);
+    if (numberDisplay === '-') {
+      return numberDisplay;
+    }
+
+    return typeof unitType === 'string' && unitType.trim() !== ''
+      ? `${numberDisplay} ${unitType}`
+      : numberDisplay;
   }
 
   onRowClick(item: GenericProductListItem): void {
