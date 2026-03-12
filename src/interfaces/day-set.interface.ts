@@ -4,6 +4,7 @@ export interface DaySet {
   id: number;
   title: string;
   nutritionValues?: CycleNutritionValue[];
+  slotIds?: number[];
   slots?: unknown[];
 }
 

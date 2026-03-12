@@ -160,6 +160,16 @@ export class PlanningFeature implements OnInit {
       lipids: this.toNumber(cycle.lipids),
       durationCount: cycle.durationCount,
       durationType: cycle.durationType,
+      daySetTotals: {
+        proteins: 0,
+        carbs: 0,
+        lipids: 0,
+      },
+      daySetMetrics: [],
+      daySets: [],
+      hasDaySetOverflow: false,
+      hasSlotOverflow: false,
+      hasMissingSlotBreakdown: false,
     }));
   }
 

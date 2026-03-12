@@ -1,6 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ListCycle } from './list-cycle';
+import {
+  CycleBreakdownMetric,
+  CycleDaySetBreakdown,
+  CycleListItem,
+  CycleSlotBreakdown,
+  ListCycle,
+} from './list-cycle';
 
 describe('ListCycle', () => {
   let component: ListCycle;
@@ -21,18 +27,14 @@ describe('ListCycle', () => {
   });
 
   it('should show add button in manage mode', () => {
-    const addButton = fixture.nativeElement.querySelector('.add-btn');
-
-    expect(addButton).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.add-btn')).not.toBeNull();
   });
 
   it('should hide add button in select-single mode', () => {
     fixture.componentRef.setInput('mode', 'select-single');
     fixture.detectChanges();
 
-    const addButton = fixture.nativeElement.querySelector('.add-btn');
-
-    expect(addButton).toBeNull();
+    expect(fixture.nativeElement.querySelector('.add-btn')).toBeNull();
   });
 
   it('should emit addRequested when plus button is clicked', () => {
@@ -46,18 +48,9 @@ describe('ListCycle', () => {
 
   it('should emit editRequested with clicked cycle', () => {
     const emitted: Array<unknown> = [];
+    const cycle = createCycle();
     component.editRequested.subscribe((value) => emitted.push(value));
 
-    const cycle = {
-      id: 1,
-      title: 'Seche',
-      color: '#22c55e',
-      proteins: 180,
-      carbs: 120,
-      lipids: 60,
-      durationCount: 4,
-      durationType: 'semaine' as const,
-    };
     component.onEdit(cycle);
 
     expect(emitted).toEqual([cycle]);
@@ -65,18 +58,9 @@ describe('ListCycle', () => {
 
   it('should emit deleteRequested with clicked cycle', () => {
     const emitted: Array<unknown> = [];
+    const cycle = createCycle({ id: 2, title: 'Masse' });
     component.deleteRequested.subscribe((value) => emitted.push(value));
 
-    const cycle = {
-      id: 2,
-      title: 'Masse',
-      color: '#f97316',
-      proteins: 220,
-      carbs: 300,
-      lipids: 70,
-      durationCount: 6,
-      durationType: 'jour' as const,
-    };
     component.onDelete(cycle);
 
     expect(emitted).toEqual([cycle]);
@@ -84,30 +68,8 @@ describe('ListCycle', () => {
 
   it('should emit selected in single select mode', () => {
     const emitted: Array<unknown> = [];
+    const cycles = [createCycle(), createCycle({ id: 2, title: 'Masse' })];
     component.selected.subscribe((value) => emitted.push(value));
-
-    const cycles = [
-      {
-        id: 1,
-        title: 'Seche',
-        color: '#22c55e',
-        proteins: 180,
-        carbs: 120,
-        lipids: 60,
-        durationCount: 4,
-        durationType: 'semaine' as const,
-      },
-      {
-        id: 2,
-        title: 'Masse',
-        color: '#f97316',
-        proteins: 220,
-        carbs: 300,
-        lipids: 70,
-        durationCount: 6,
-        durationType: 'jour' as const,
-      },
-    ];
 
     fixture.componentRef.setInput('cycles', cycles);
     fixture.componentRef.setInput('mode', 'select-single');
@@ -120,30 +82,8 @@ describe('ListCycle', () => {
 
   it('should emit selectedMany in multi select mode', () => {
     const emitted: Array<unknown> = [];
+    const cycles = [createCycle(), createCycle({ id: 2, title: 'Masse' })];
     component.selectedMany.subscribe((value) => emitted.push(value));
-
-    const cycles = [
-      {
-        id: 1,
-        title: 'Seche',
-        color: '#22c55e',
-        proteins: 180,
-        carbs: 120,
-        lipids: 60,
-        durationCount: 4,
-        durationType: 'semaine' as const,
-      },
-      {
-        id: 2,
-        title: 'Masse',
-        color: '#f97316',
-        proteins: 220,
-        carbs: 300,
-        lipids: 70,
-        durationCount: 6,
-        durationType: 'jour' as const,
-      },
-    ];
 
     fixture.componentRef.setInput('cycles', cycles);
     fixture.componentRef.setInput('mode', 'select-multi');
@@ -157,20 +97,8 @@ describe('ListCycle', () => {
 
   it('should toggle selection on the first checkbox click in multi select mode', () => {
     const emitted: Array<unknown> = [];
+    const cycles = [createCycle()];
     component.selectedMany.subscribe((value) => emitted.push(value));
-
-    const cycles = [
-      {
-        id: 1,
-        title: 'Seche',
-        color: '#22c55e',
-        proteins: 180,
-        carbs: 120,
-        lipids: 60,
-        durationCount: 4,
-        durationType: 'semaine' as const,
-      },
-    ];
 
     fixture.componentRef.setInput('cycles', cycles);
     fixture.componentRef.setInput('mode', 'select-multi');
@@ -183,4 +111,167 @@ describe('ListCycle', () => {
     expect((emitted[emitted.length - 1] as unknown[]).length).toBe(1);
     expect(component.isSelected(cycles[0].id)).toBeTrue();
   });
+
+  it('should render the day set summary and overflow badges', () => {
+    fixture.componentRef.setInput(
+      'cycles',
+      [
+        createCycle({
+          daySetMetrics: [
+            createMetric({ key: 'proteins', label: 'Proteines', value: 190, target: 180, percentage: 105.56, status: 'over' }),
+            createMetric({ key: 'carbs', label: 'Glucides', value: 110, target: 120, percentage: 91.67, status: 'under' }),
+            createMetric({ key: 'lipids', label: 'Lipides', value: 55, target: 60, percentage: 91.67, status: 'under' }),
+          ],
+          hasDaySetOverflow: true,
+          hasSlotOverflow: true,
+          hasMissingSlotBreakdown: true,
+        }),
+      ],
+    );
+    fixture.detectChanges();
+
+    const textContent = fixture.nativeElement.textContent;
+
+    expect(textContent).toContain('Totaux day sets / cible cycle');
+    expect(textContent).toContain('Day sets > cycle');
+    expect(textContent).toContain('Slots > day set');
+    expect(textContent).toContain('Decomposition slots partielle');
+  });
+
+  it('should expand and collapse the detail panel', () => {
+    fixture.componentRef.setInput('cycles', [createCycle()]);
+    fixture.detectChanges();
+
+    const toggleButton = fixture.nativeElement.querySelector('.lc-toggle-btn');
+
+    toggleButton.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.lc-detail-panel')).not.toBeNull();
+
+    toggleButton.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.lc-detail-panel')).toBeNull();
+  });
+
+  it('should render day sets and slots with their ratios when expanded', () => {
+    fixture.componentRef.setInput('cycles', [createCycle()]);
+    fixture.detectChanges();
+
+    const toggleButton = fixture.nativeElement.querySelector('.lc-toggle-btn');
+    toggleButton.click();
+    fixture.detectChanges();
+
+    const textContent = fixture.nativeElement.textContent;
+
+    expect(textContent).toContain('Training');
+    expect(textContent).toContain('Petit dejeuner');
+    expect(textContent).toContain('08:00 - 09:00');
+    expect(textContent).toContain('50%');
+  });
+
+  it('should show an unavailable slot breakdown state when slots cannot be reconstructed', () => {
+    fixture.componentRef.setInput(
+      'cycles',
+      [
+        createCycle({
+          daySets: [
+            createDaySet({
+              slots: [],
+              slotMetrics: [],
+              hasMissingSlotBreakdown: true,
+            }),
+          ],
+          hasMissingSlotBreakdown: true,
+        }),
+      ],
+    );
+    fixture.detectChanges();
+
+    const toggleButton = fixture.nativeElement.querySelector('.lc-toggle-btn');
+    toggleButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.lc-slot-missing')).not.toBeNull();
+  });
+
+  function createMetric(
+    overrides: Partial<CycleBreakdownMetric> = {},
+  ): CycleBreakdownMetric {
+    return {
+      key: 'proteins',
+      label: 'Proteines',
+      value: 50,
+      target: 100,
+      percentage: 50,
+      status: 'under',
+      ...overrides,
+    };
+  }
+
+  function createSlot(
+    overrides: Partial<CycleSlotBreakdown> = {},
+  ): CycleSlotBreakdown {
+    return {
+      id: 11,
+      title: 'Petit dejeuner',
+      key: 'breakfast',
+      timeRange: '08:00 - 09:00',
+      totals: { proteins: 50, carbs: 25, lipids: 10 },
+      metrics: [
+        createMetric({ key: 'proteins', label: 'Proteines', value: 50, target: 100, percentage: 50, status: 'under' }),
+        createMetric({ key: 'carbs', label: 'Glucides', value: 25, target: 100, percentage: 25, status: 'under' }),
+        createMetric({ key: 'lipids', label: 'Lipides', value: 10, target: 30, percentage: 33.33, status: 'under' }),
+      ],
+      ...overrides,
+    };
+  }
+
+  function createDaySet(
+    overrides: Partial<CycleDaySetBreakdown> = {},
+  ): CycleDaySetBreakdown {
+    return {
+      id: 1,
+      title: 'Training',
+      totals: { proteins: 100, carbs: 100, lipids: 30 },
+      metrics: [
+        createMetric({ key: 'proteins', label: 'Proteines', value: 100, target: 180, percentage: 55.56, status: 'under' }),
+        createMetric({ key: 'carbs', label: 'Glucides', value: 100, target: 120, percentage: 83.33, status: 'under' }),
+        createMetric({ key: 'lipids', label: 'Lipides', value: 30, target: 60, percentage: 50, status: 'under' }),
+      ],
+      slotTotals: { proteins: 100, carbs: 100, lipids: 30 },
+      slotMetrics: [
+        createMetric({ key: 'proteins', label: 'Proteines', value: 100, target: 100, percentage: 100, status: 'exact' }),
+        createMetric({ key: 'carbs', label: 'Glucides', value: 100, target: 100, percentage: 100, status: 'exact' }),
+        createMetric({ key: 'lipids', label: 'Lipides', value: 30, target: 30, percentage: 100, status: 'exact' }),
+      ],
+      slots: [createSlot()],
+      hasSlotOverflow: false,
+      hasMissingSlotBreakdown: false,
+      ...overrides,
+    };
+  }
+
+  function createCycle(overrides: Partial<CycleListItem> = {}): CycleListItem {
+    return {
+      id: 1,
+      title: 'Seche',
+      color: '#22c55e',
+      proteins: 180,
+      carbs: 120,
+      lipids: 60,
+      durationCount: 4,
+      durationType: 'semaine',
+      daySetTotals: { proteins: 100, carbs: 100, lipids: 30 },
+      daySetMetrics: [
+        createMetric({ key: 'proteins', label: 'Proteines', value: 100, target: 180, percentage: 55.56, status: 'under' }),
+        createMetric({ key: 'carbs', label: 'Glucides', value: 100, target: 120, percentage: 83.33, status: 'under' }),
+        createMetric({ key: 'lipids', label: 'Lipides', value: 30, target: 60, percentage: 50, status: 'under' }),
+      ],
+      daySets: [createDaySet()],
+      hasDaySetOverflow: false,
+      hasSlotOverflow: false,
+      hasMissingSlotBreakdown: false,
+      ...overrides,
+    };
+  }
 });

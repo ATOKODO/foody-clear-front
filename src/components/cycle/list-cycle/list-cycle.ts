@@ -14,16 +14,57 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TypeDuree } from '../form-cycle/form-cycle';
 
 export type CycleListMode = 'manage' | 'select-single' | 'select-multi';
+export type CycleBreakdownStatus = 'under' | 'exact' | 'over' | 'missing';
+export type CycleBreakdownMetricKey = 'proteins' | 'carbs' | 'lipids';
 
-export interface CycleListItem {
-  id: number;
-  title: string;
-  color: string;
+export interface CycleMacroTotals {
   proteins: number;
   carbs: number;
   lipids: number;
+}
+
+export interface CycleBreakdownMetric {
+  key: CycleBreakdownMetricKey;
+  label: string;
+  value: number;
+  target: number;
+  percentage: number | null;
+  status: CycleBreakdownStatus;
+}
+
+export interface CycleSlotBreakdown {
+  id: number | null;
+  title: string;
+  key: string;
+  timeRange: string | null;
+  totals: CycleMacroTotals;
+  metrics: CycleBreakdownMetric[];
+}
+
+export interface CycleDaySetBreakdown {
+  id: number;
+  title: string;
+  totals: CycleMacroTotals;
+  metrics: CycleBreakdownMetric[];
+  slotTotals: CycleMacroTotals;
+  slotMetrics: CycleBreakdownMetric[];
+  slots: CycleSlotBreakdown[];
+  hasSlotOverflow: boolean;
+  hasMissingSlotBreakdown: boolean;
+}
+
+export interface CycleListItem extends CycleMacroTotals {
+  id: number;
+  title: string;
+  color: string;
   durationCount: number;
   durationType: TypeDuree;
+  daySetTotals: CycleMacroTotals;
+  daySetMetrics: CycleBreakdownMetric[];
+  daySets: CycleDaySetBreakdown[];
+  hasDaySetOverflow: boolean;
+  hasSlotOverflow: boolean;
+  hasMissingSlotBreakdown: boolean;
 }
 
 @Component({
@@ -47,7 +88,8 @@ export class ListCycle implements OnInit, OnChanges {
 
   resolvedCycles: CycleListItem[] = [];
 
-  private selectedIdSet = new Set<number>();
+  private readonly selectedIdSet = new Set<number>();
+  private expandedIdSet = new Set<number>();
 
   ngOnInit(): void {
     this.applyInputState();
@@ -84,8 +126,24 @@ export class ListCycle implements OnInit, OnChanges {
     return item.id;
   }
 
+  trackByMetric(_: number, metric: CycleBreakdownMetric): string {
+    return metric.key;
+  }
+
+  trackByDaySetId(_: number, daySet: CycleDaySetBreakdown): number {
+    return daySet.id;
+  }
+
+  trackBySlotId(_: number, slot: CycleSlotBreakdown): string {
+    return `${slot.id ?? 'slot'}-${slot.key}-${slot.title}-${slot.timeRange ?? 'na'}`;
+  }
+
   isSelected(id: number): boolean {
     return this.selectedIdSet.has(id);
+  }
+
+  isExpanded(id: number): boolean {
+    return this.expandedIdSet.has(id);
   }
 
   isRowActive(cycle: CycleListItem, index: number): boolean {
@@ -98,6 +156,42 @@ export class ListCycle implements OnInit, OnChanges {
     }
 
     return this.isSelected(cycle.id);
+  }
+
+  hasSlotMetrics(daySet: CycleDaySetBreakdown): boolean {
+    return daySet.slotMetrics.length > 0;
+  }
+
+  formatAmount(value: number): string {
+    return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, '');
+  }
+
+  formatPercent(percentage: number | null): string {
+    if (percentage === null) {
+      return 'Cible 0';
+    }
+
+    return `${this.formatAmount(percentage)}%`;
+  }
+
+  getStatusLabel(status: CycleBreakdownStatus): string {
+    if (status === 'over') {
+      return 'Depasse';
+    }
+
+    if (status === 'exact') {
+      return 'OK';
+    }
+
+    if (status === 'missing') {
+      return 'Indispo';
+    }
+
+    return 'Sous cible';
+  }
+
+  getStatusClass(status: CycleBreakdownStatus): string {
+    return `lc-status-${status}`;
   }
 
   onRowClick(cycle: CycleListItem): void {
@@ -143,6 +237,21 @@ export class ListCycle implements OnInit, OnChanges {
     this.onCheckboxChange(cycle, !this.isSelected(cycle.id));
   }
 
+  onToggleExpanded(event: MouseEvent, cycleId: number): void {
+    event.stopPropagation();
+
+    if (this.expandedIdSet.has(cycleId)) {
+      this.expandedIdSet.delete(cycleId);
+      return;
+    }
+
+    this.expandedIdSet.add(cycleId);
+  }
+
+  stopPropagation(event: Event): void {
+    event.stopPropagation();
+  }
+
   onEdit(cycle: CycleListItem): void {
     if (!this.isManageMode) {
       return;
@@ -172,7 +281,17 @@ export class ListCycle implements OnInit, OnChanges {
 
     const initialIds = this.selectedIds ?? [];
     const availableIds = new Set(this.resolvedCycles.map((item) => item.id));
-    this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
+
+    this.selectedIdSet.clear();
+    initialIds.forEach((id) => {
+      if (availableIds.has(id)) {
+        this.selectedIdSet.add(id);
+      }
+    });
+
+    this.expandedIdSet = new Set(
+      [...this.expandedIdSet].filter((id) => availableIds.has(id)),
+    );
 
     if (this.isSingleSelectMode && this.selectedIdSet.size > 1) {
       const firstSelected = this.resolvedCycles.find((item) => this.selectedIdSet.has(item.id));
