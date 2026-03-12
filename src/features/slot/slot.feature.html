@@ -7,7 +7,7 @@
       </p>
     </div>
 
-    <div class="space-y-6 p-4 sm:p-6">
+    <div>
       <div class="flex flex-wrap items-center gap-2">
         <span *ngIf="loading" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
           Chargement...
@@ -53,11 +53,6 @@
           </button>
         </mat-card-actions>
       </mat-card>
-
-      <div *ngIf="lastResponse" class="space-y-2">
-        <h3 class="text-sm font-semibold text-slate-800">Derniere reponse</h3>
-        <pre class="max-h-72 overflow-auto rounded-lg bg-slate-100 p-3 text-xs text-slate-800">{{ lastResponse | json }}</pre>
-      </div>
     </div>
   </mat-card>
 </section>

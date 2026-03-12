@@ -20,7 +20,6 @@
       <mat-card-content
         class="p-4"
         [class.cursor-pointer]="isSingleSelectMode"
-        [style.boxShadow]="isRowActive(cycle, i) ? 'inset 0 0 0 2px #0f172a' : ''"
         [attr.tabindex]="isSingleSelectMode ? 0 : null"
         [attr.role]="isSingleSelectMode ? 'button' : null"
         (click)="onRowClick(cycle)"
