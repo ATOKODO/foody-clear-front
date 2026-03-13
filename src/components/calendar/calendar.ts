@@ -93,6 +93,17 @@ interface CalendarWeekMacroHighlight {
   tone: 'energy' | 'proteins' | 'carbs' | 'lipids';
 }
 
+interface CalendarWeekTimelineBlock {
+  id: string;
+  kind: 'slot' | 'orphan';
+  title: string;
+  rangeLabel: string;
+  startMinute: number;
+  endMinute: number;
+  items: CalendarInsertedProduct[];
+  tone: number;
+}
+
 @Component({
   selector: 'app-calendar',
   imports: [CommonModule, MatButtonModule],
@@ -133,10 +144,9 @@ export class Calendar implements OnInit, OnChanges {
   private assignmentById = new Map<string, CycleAssignment>();
   private weekDayResponseByDate = new Map<string, InputDayResponse>();
   private weekDaySlotsByDate = new Map<string, CalendarDaySlot[]>();
-  private weekActiveSlotsByDateHour = new Map<string, Map<number, CalendarDaySlot[]>>();
-  private weekInsertedProductsByDateHour = new Map<string, Map<number, CalendarInsertedProduct[]>>();
+  private weekTimelineBlocksByDate = new Map<string, CalendarWeekTimelineBlock[]>();
   private readonly emptySlots: CalendarDaySlot[] = [];
-  private readonly emptyInsertedProducts: CalendarInsertedProduct[] = [];
+  private readonly emptyWeekTimelineBlocks: CalendarWeekTimelineBlock[] = [];
   private readonly weekMacroOrder = ['energyKcal', 'proteins', 'carbs', 'lipids'];
   private readonly weekMacroDefinitions: Record<
     string,
@@ -616,25 +626,26 @@ export class Calendar implements OnInit, OnChanges {
     return this.weekDaySlotsByDate.get(dateLocal) ?? this.emptySlots;
   }
 
-  getWeekHourActiveSlots(dateLocal: string, hour: number): CalendarDaySlot[] {
-    const byHour = this.weekActiveSlotsByDateHour.get(dateLocal);
-    if (!byHour) {
-      return this.emptySlots;
-    }
-
-    return byHour.get(hour) ?? this.emptySlots;
+  getWeekTimelineBlocks(dateLocal: string): CalendarWeekTimelineBlock[] {
+    return this.weekTimelineBlocksByDate.get(dateLocal) ?? this.emptyWeekTimelineBlocks;
   }
 
-  getWeekHourInsertedProducts(
-    dateLocal: string,
-    hour: number,
-  ): CalendarInsertedProduct[] {
-    const byHour = this.weekInsertedProductsByDateHour.get(dateLocal);
-    if (!byHour) {
-      return this.emptyInsertedProducts;
-    }
+  getWeekHourGridRowStart(hour: number): number {
+    return 2 + hour * 2;
+  }
 
-    return byHour.get(hour) ?? this.emptyInsertedProducts;
+  getWeekHourGridRowEnd(hour: number): number {
+    return this.getWeekHourGridRowStart(hour) + 2;
+  }
+
+  getWeekTimelineBlockGridRowStart(block: CalendarWeekTimelineBlock): number {
+    return 2 + Math.floor(block.startMinute / 30);
+  }
+
+  getWeekTimelineBlockGridRowEnd(block: CalendarWeekTimelineBlock): number {
+    const start = this.getWeekTimelineBlockGridRowStart(block);
+    const end = 2 + Math.ceil(block.endMinute / 30);
+    return Math.max(start + 1, end);
   }
 
   trackByDate(_: number, day: CalendarDay): string {
@@ -657,15 +668,36 @@ export class Calendar implements OnInit, OnChanges {
     return macro.key;
   }
 
+  trackByWeekTimelineBlock(_: number, block: CalendarWeekTimelineBlock): string {
+    return block.id;
+  }
+
   trackByMonth(_: number, month: MonthSummary): string {
     return `${month.year}-${month.month}`;
+  }
+
+  onWeekTimelineBlockClick(
+    day: CalendarDay,
+    block: CalendarWeekTimelineBlock,
+    event: Event,
+  ): void {
+    event.stopPropagation();
+
+    const hour = Math.max(0, Math.min(23, Math.floor(block.startMinute / 60)));
+    this.onHourClick(
+      {
+        hour,
+        label: `${hour.toString().padStart(2, '0')}:00`,
+        assignment: day.assignment,
+      },
+      day.date,
+    );
   }
 
   private applyWeekInputDayData(): void {
     this.weekDayResponseByDate.clear();
     this.weekDaySlotsByDate.clear();
-    this.weekActiveSlotsByDateHour.clear();
-    this.weekInsertedProductsByDateHour.clear();
+    this.weekTimelineBlocksByDate.clear();
 
     this.resolveWeekDayResponses().forEach((response) => {
       if (!response.dateLocal || response.dateLocal.trim() === '') {
@@ -677,26 +709,17 @@ export class Calendar implements OnInit, OnChanges {
       const slots = this.resolveDaySlotsForResponse(response);
       this.weekDaySlotsByDate.set(response.dateLocal, slots);
 
-      const activeSlotsByHour = new Map<number, CalendarDaySlot[]>();
-      for (let hour = 0; hour < 24; hour++) {
-        const hourStart = hour * 60;
-        const hourEnd = hourStart + 60;
-        activeSlotsByHour.set(
-          hour,
-          slots.filter((slot) => this.isSlotOverlappingHour(slot, hourStart, hourEnd)),
-        );
-      }
-      this.weekActiveSlotsByDateHour.set(response.dateLocal, activeSlotsByHour);
-
       const entries = this.resolveItemsBySlotEntriesForResponse(response);
-      this.weekInsertedProductsByDateHour.set(
+      const insertedProducts = this.buildCalendarInsertedProducts(
+        entries,
+        response.items ?? [],
         response.dateLocal,
-        this.buildInsertedProductsByHour(
-          entries,
-          response.items ?? [],
-          response.dateLocal,
-          slots,
-        ),
+        slots,
+      );
+
+      this.weekTimelineBlocksByDate.set(
+        response.dateLocal,
+        this.buildWeekTimelineBlocks(response.dateLocal, slots, insertedProducts),
       );
     });
   }
@@ -1029,12 +1052,35 @@ export class Calendar implements OnInit, OnChanges {
     dateLocal: string,
     slots: CalendarDaySlot[],
   ): Map<number, CalendarInsertedProduct[]> {
+    const items = this.buildCalendarInsertedProducts(entries, responseItems, dateLocal, slots);
+    const byHour = new Map<number, CalendarInsertedProduct[]>();
+
+    items.forEach((item) => {
+      const minute = this.resolveCalendarInsertedProductMinute(item);
+      if (minute === null) {
+        return;
+      }
+
+      const hour = Math.floor(minute / 60);
+      const products = byHour.get(hour) ?? [];
+      products.push(item);
+      byHour.set(hour, products);
+    });
+
+    return byHour;
+  }
+
+  private buildCalendarInsertedProducts(
+    entries: InputDayItemsBySlotEntry[],
+    responseItems: InputDayItemSummary[],
+    dateLocal: string,
+    slots: CalendarDaySlot[],
+  ): CalendarInsertedProduct[] {
     const items = responseItems.length > 0
       ? responseItems
       : entries.flatMap((entry) => entry.items);
-    const byHour = new Map<number, CalendarInsertedProduct[]>();
-
     const slotByItemId = new Map<number, { slotTitle: string; slotKey: string }>();
+
     entries.forEach((entry) => {
       entry.items.forEach((item) => {
         slotByItemId.set(item.id, {
@@ -1044,48 +1090,174 @@ export class Calendar implements OnInit, OnChanges {
       });
     });
 
-    items.forEach((item) => {
+    const insertedProducts = items.flatMap((item) => {
       const timestamp = this.resolveItemTimestamp(item);
       if (!timestamp) {
-        return;
+        return [];
       }
 
       const parsed = DateTime.fromISO(timestamp, { setZone: true });
       if (!parsed.isValid) {
-        return;
+        return [];
       }
 
-      const localized = parsed.setZone(this.normalizeTimezone());
       const slot =
         slotByItemId.get(item.id) ??
         this.resolveCalendarSlotInfo(this.resolveSlotForItem(item, slots), item);
-      const insertedProduct: CalendarInsertedProduct = {
-        id: item.id,
+
+      return [
+        {
+          id: item.id,
+          dateLocal,
+          productId: item.productId,
+          productName: item.productName,
+          qty: item.qty,
+          occurredAt: item.occurredAt,
+          insertedAt: item.insertedAt,
+          slotId: item.slotId,
+          slotTitle: slot?.slotTitle ?? 'Sans slot',
+          slotKey: slot?.slotKey ?? item.slotKey?.trim() ?? '-',
+        },
+      ];
+    });
+
+    insertedProducts.sort((left, right) => {
+      const leftMinute = this.resolveCalendarInsertedProductMinute(left);
+      const rightMinute = this.resolveCalendarInsertedProductMinute(right);
+      if (leftMinute !== null && rightMinute !== null && leftMinute !== rightMinute) {
+        return leftMinute - rightMinute;
+      }
+
+      return left.id - right.id;
+    });
+
+    return insertedProducts;
+  }
+
+  private buildWeekTimelineBlocks(
+    dateLocal: string,
+    slots: CalendarDaySlot[],
+    insertedProducts: CalendarInsertedProduct[],
+  ): CalendarWeekTimelineBlock[] {
+    const blocks: CalendarWeekTimelineBlock[] = [];
+    const slotKeys = new Set(slots.map((slot) => slot.slotKey));
+    const productsBySlotKey = new Map<string, CalendarInsertedProduct[]>();
+
+    insertedProducts.forEach((product) => {
+      if (!slotKeys.has(product.slotKey)) {
+        return;
+      }
+
+      const products = productsBySlotKey.get(product.slotKey) ?? [];
+      products.push(product);
+      productsBySlotKey.set(product.slotKey, products);
+    });
+
+    slots.forEach((slot, index) => {
+      const block = this.buildWeekTimelineSlotBlock(
         dateLocal,
-        productId: item.productId,
-        productName: item.productName,
-        qty: item.qty,
-        occurredAt: item.occurredAt,
-        insertedAt: item.insertedAt,
-        slotId: item.slotId,
-        slotTitle: slot?.slotTitle ?? 'Sans slot',
-        slotKey: slot?.slotKey ?? item.slotKey?.trim() ?? '-',
-      };
-
-      const products = byHour.get(localized.hour) ?? [];
-      products.push(insertedProduct);
-      byHour.set(localized.hour, products);
-    });
-
-    byHour.forEach((products) => {
-      products.sort(
-        (a, b) =>
-          DateTime.fromISO(a.occurredAt?.trim() || a.insertedAt, { setZone: true }).toMillis() -
-          DateTime.fromISO(b.occurredAt?.trim() || b.insertedAt, { setZone: true }).toMillis(),
+        slot,
+        productsBySlotKey.get(slot.slotKey) ?? [],
+        index,
       );
+
+      if (block) {
+        blocks.push(block);
+      }
     });
 
-    return byHour;
+    const orphanProducts = insertedProducts.filter((product) => !slotKeys.has(product.slotKey));
+    const orphanProductsByHour = new Map<number, CalendarInsertedProduct[]>();
+    orphanProducts.forEach((product) => {
+      const minute = this.resolveCalendarInsertedProductMinute(product);
+      const startMinute = minute === null ? 0 : Math.floor(minute / 60) * 60;
+      const products = orphanProductsByHour.get(startMinute) ?? [];
+      products.push(product);
+      orphanProductsByHour.set(startMinute, products);
+    });
+
+    orphanProductsByHour.forEach((products, startMinute) => {
+      const endMinute = this.normalizeTimelineEndMinute(
+        startMinute,
+        Math.max(
+          startMinute + 60,
+          ...products.map((product) => (this.resolveCalendarInsertedProductMinute(product) ?? startMinute) + 30),
+        ),
+      );
+
+      blocks.push({
+        id: `orphan:${dateLocal}:${startMinute}`,
+        kind: 'orphan',
+        title: 'Sans slot',
+        rangeLabel: `${this.formatMinutesClock(startMinute)}-${this.formatMinutesClock(endMinute)}`,
+        startMinute,
+        endMinute,
+        items: products,
+        tone: 4,
+      });
+    });
+
+    return blocks.sort(
+      (left, right) =>
+        left.startMinute - right.startMinute ||
+        left.endMinute - right.endMinute ||
+        left.title.localeCompare(right.title, 'fr'),
+    );
+  }
+
+  private buildWeekTimelineSlotBlock(
+    dateLocal: string,
+    slot: CalendarDaySlot,
+    items: CalendarInsertedProduct[],
+    index: number,
+  ): CalendarWeekTimelineBlock | null {
+    const slotStart = this.toMinutes(slot.startTime);
+    const slotEnd = this.toMinutes(slot.endTime);
+    const firstItemMinute = items.length > 0 ? this.resolveCalendarInsertedProductMinute(items[0]) : null;
+    const lastItemMinute =
+      items.length > 0 ? this.resolveCalendarInsertedProductMinute(items[items.length - 1]) : null;
+
+    const startMinute = slotStart ?? firstItemMinute;
+    if (startMinute === null) {
+      return null;
+    }
+
+    const endMinute = this.normalizeTimelineEndMinute(
+      startMinute,
+      slotEnd ?? (lastItemMinute !== null ? lastItemMinute + 30 : startMinute + 60),
+    );
+
+    return {
+      id: `slot:${dateLocal}:${slot.slotId ?? slot.slotKey}`,
+      kind: 'slot',
+      title: slot.title,
+      rangeLabel: this.formatSlotRange(slot),
+      startMinute,
+      endMinute,
+      items,
+      tone: index % 4,
+    };
+  }
+
+  private normalizeTimelineEndMinute(startMinute: number, endMinute: number): number {
+    return Math.max(startMinute + 30, Math.min(24 * 60, endMinute));
+  }
+
+  private formatMinutesClock(totalMinutes: number): string {
+    const clamped = Math.max(0, Math.min(24 * 60, totalMinutes));
+    const hours = Math.floor(clamped / 60);
+    const minutes = clamped % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  }
+
+  private resolveCalendarInsertedProductMinute(product: CalendarInsertedProduct): number | null {
+    const parsed = DateTime.fromISO(product.occurredAt?.trim() || product.insertedAt, { setZone: true });
+    if (!parsed.isValid) {
+      return null;
+    }
+
+    const localized = parsed.setZone(this.normalizeTimezone());
+    return localized.hour * 60 + localized.minute;
   }
 
   private resolveItemTimestamp(item: InputDayItemSummary): string | null {
