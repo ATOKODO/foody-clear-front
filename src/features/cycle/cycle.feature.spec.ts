@@ -126,6 +126,8 @@ describe('CycleFeature', () => {
     expect(item.daySets[0].slots.length).toBe(1);
     expect(item.daySets[0].slots[0].title).toBe('Petit dejeuner');
     expect(item.daySets[0].slotMetrics[0].percentage).toBe(50);
+    expect(item.missingDayCount).toBe(27);
+    expect(item.daySetTotals.proteins).toBeCloseTo(177.14, 2);
   });
 
   it('should resolve slot breakdown from numeric ids in daySet.slots', () => {
@@ -290,6 +292,7 @@ describe('CycleFeature', () => {
       durationDays: 10,
       durationCount: 10,
       durationType: 'jour',
+      missingDayCount: 0,
       daySetTotals: { proteins: 0, carbs: 0, lipids: 0 },
       daySetMetrics: [],
       daySets: [],

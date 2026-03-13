@@ -200,6 +200,48 @@ describe('InputDayFeature', () => {
     expect(component.selectedProductRows[0].productId).toBe(1);
   });
 
+  it('should render cycle-level targets when no day set is active', () => {
+    const cycleTargetResponse: InputDayResponse = {
+      ...dayResponse,
+      daySet: null,
+      totalsMacros: {
+        bySlot: [],
+        dayTotal: {
+          proteins: 120,
+          carbs: 95,
+          lipids: 35,
+        },
+        targets: {
+          proteins: 150,
+          carbs: 120,
+          lipids: 50,
+        },
+        deltaToTargets: {
+          proteins: -30,
+          carbs: -25,
+          lipids: -15,
+        },
+        incompleteNutritionKeys: [],
+        targetSource: 'cycle',
+      },
+    };
+
+    component.lastResponse = cycleTargetResponse;
+    component.inputDayResponse = cycleTargetResponse;
+    fixture.detectChanges();
+
+    const textContent = fixture.nativeElement.textContent;
+
+    expect(textContent).toContain(
+      'Aucun daySet actif pour cette journee. Les cibles quotidiennes proviennent du cycle.',
+    );
+    expect(textContent).toContain(
+      'Cibles quotidiennes heritees du cycle (aucun day set actif).',
+    );
+    expect(textContent).toContain('proteins:');
+    expect(textContent).toContain('150');
+  });
+
   it('should expose only products linked to the selected inventory', () => {
     component.onSelectedInventoryChange(5);
 

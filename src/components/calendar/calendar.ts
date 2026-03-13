@@ -28,6 +28,7 @@ import {
   InputDayItemsBySlotEntry,
   InputDayResponse,
   InputDaySlotSummary,
+  InputDayTargetSource,
   InputWeekResponse,
 } from '../../interfaces/input-day.interface';
 import {
@@ -413,6 +414,18 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     return start ?? end ?? 'horaire libre';
+  }
+
+  getTargetSourceText(targetSource: InputDayTargetSource): string {
+    if (targetSource === 'cycle') {
+      return 'Cible du cycle';
+    }
+
+    if (targetSource === 'daySet') {
+      return 'Cible du day set';
+    }
+
+    return 'Aucune cible';
   }
 
   private buildViewChangeEvent(): CalendarViewChangeEvent {

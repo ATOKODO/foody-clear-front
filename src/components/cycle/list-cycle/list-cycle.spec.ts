@@ -117,6 +117,7 @@ describe('ListCycle', () => {
       'cycles',
       [
         createCycle({
+          missingDayCount: 4,
           daySetMetrics: [
             createMetric({ key: 'proteins', label: 'Proteines', value: 190, target: 180, percentage: 105.56, status: 'over' }),
             createMetric({ key: 'carbs', label: 'Glucides', value: 110, target: 120, percentage: 91.67, status: 'under' }),
@@ -132,7 +133,8 @@ describe('ListCycle', () => {
 
     const textContent = fixture.nativeElement.textContent;
 
-    expect(textContent).toContain('Totaux day sets / cible cycle');
+    expect(textContent).toContain('Moyenne journaliere effective / cible cycle');
+    expect(textContent).toContain('4 jour(s) sans day set reprennent directement la cible du cycle.');
     expect(textContent).toContain('Day sets > cycle');
     expect(textContent).toContain('Slots > day set');
     expect(textContent).toContain('Decomposition slots partielle');
@@ -262,6 +264,7 @@ describe('ListCycle', () => {
       durationDays: 28,
       durationCount: 4,
       durationType: 'semaine',
+      missingDayCount: 0,
       daySetTotals: { proteins: 100, carbs: 100, lipids: 30 },
       daySetMetrics: [
         createMetric({ key: 'proteins', label: 'Proteines', value: 100, target: 180, percentage: 55.56, status: 'under' }),

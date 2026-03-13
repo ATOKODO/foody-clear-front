@@ -266,6 +266,8 @@ describe('PlanningFeature', () => {
     expect(item.carbs).toBe(120);
     expect(item.daySets[0].title).toBe('Training');
     expect(item.daySets[0].slots[0].title).toBe('Petit dejeuner');
+    expect(item.missingDayCount).toBe(27);
+    expect(item.daySetTotals.proteins).toBeCloseTo(177.14, 2);
   });
 
   it('should submit assignment payload without endDateLocal', () => {

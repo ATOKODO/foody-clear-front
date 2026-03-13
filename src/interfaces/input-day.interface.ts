@@ -113,12 +113,15 @@ export interface InputDayTotalsMacrosBySlotEntry {
     | null;
 }
 
+export type InputDayTargetSource = 'daySet' | 'cycle' | 'none';
+
 export interface InputDayTotalsMacrosSummary {
   bySlot: InputDayTotalsMacrosBySlotEntry[];
   dayTotal: Record<string, InputDayMacroValue>;
   targets: Record<string, number> | null;
   deltaToTargets: Record<string, InputDayMacroValue> | null;
   incompleteNutritionKeys: string[];
+  targetSource: InputDayTargetSource;
 }
 
 export interface InputDayResponse {

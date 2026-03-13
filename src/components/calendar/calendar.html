@@ -290,6 +290,11 @@
         <p *ngIf="inputDayResponse?.daySet as daySet" class="mt-1 text-sm text-slate-700">
           DaySet: {{ daySet.title }}
         </p>
+        <p
+          *ngIf="inputDayResponse?.totalsMacros?.targetSource === 'cycle'"
+          class="mt-1 text-sm text-amber-700">
+          Aucun day set actif. Les cibles du jour proviennent du cycle.
+        </p>
         <div *ngIf="inputDayResponse?.totalsMacros as totals" class="mt-3 grid gap-2 md:grid-cols-3">
           <div class="rounded border border-slate-200 bg-slate-50 p-2 text-xs text-slate-700">
             <p class="mb-1 font-semibold text-slate-900">Day total</p>
@@ -310,6 +315,9 @@
             </p>
           </div>
         </div>
+        <p *ngIf="inputDayResponse?.totalsMacros as totals" class="mt-2 text-xs text-slate-500">
+          {{ getTargetSourceText(totals.targetSource) }}
+        </p>
         <div *ngIf="daySlots.length > 0" class="mt-3 flex flex-wrap gap-2">
           <span
             *ngFor="let slot of daySlots"

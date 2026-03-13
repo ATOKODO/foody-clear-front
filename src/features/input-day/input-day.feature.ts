@@ -36,6 +36,7 @@ import {
   InputDayItemSummary,
   InputDayMacroValue,
   InputDayResponse,
+  InputDayTargetSource,
   InputDayTotalsMacrosBySlotEntry,
   ProductQuantityInputUnit,
   UpdateInputDayItemDto,
@@ -798,6 +799,18 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   hasEntries(value: Record<string, unknown> | null | undefined): boolean {
     return !!value && Object.keys(value).length > 0;
+  }
+
+  getTargetSourceText(targetSource: InputDayTargetSource): string {
+    if (targetSource === 'cycle') {
+      return 'Cibles quotidiennes heritees du cycle (aucun day set actif).';
+    }
+
+    if (targetSource === 'daySet') {
+      return 'Cibles quotidiennes issues du day set actif.';
+    }
+
+    return 'Aucune cible quotidienne active.';
   }
 
   getSlotMacroEntries(

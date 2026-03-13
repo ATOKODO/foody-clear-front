@@ -60,6 +60,7 @@ export interface CycleListItem extends CycleMacroTotals {
   durationDays: number;
   durationCount: number;
   durationType: TypeDuree;
+  missingDayCount: number;
   daySetTotals: CycleMacroTotals;
   daySetMetrics: CycleBreakdownMetric[];
   daySets: CycleDaySetBreakdown[];

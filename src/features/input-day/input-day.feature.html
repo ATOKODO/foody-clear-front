@@ -496,7 +496,14 @@
           </div>
 
           <ng-template #noDaySet>
-            <p class="text-sm text-slate-600">Aucun daySet retourne.</p>
+            <p
+              *ngIf="response.totalsMacros?.targetSource === 'cycle'; else noResolvedDaySet"
+              class="text-sm text-slate-600">
+              Aucun daySet actif pour cette journee. Les cibles quotidiennes proviennent du cycle.
+            </p>
+            <ng-template #noResolvedDaySet>
+              <p class="text-sm text-slate-600">Aucun daySet retourne.</p>
+            </ng-template>
           </ng-template>
         </mat-card-content>
       </mat-card>
@@ -577,6 +584,9 @@
         <mat-card *ngIf="response.totalsMacros as totals" appearance="outlined" class="rounded-xl">
           <mat-card-content class="space-y-3 p-4">
             <p class="text-sm font-semibold text-slate-900">Totals Macros</p>
+            <p class="text-xs text-slate-500">
+              {{ getTargetSourceText(totals.targetSource) }}
+            </p>
 
             <div class="grid gap-3 md:grid-cols-3">
               <div class="rounded-lg border border-slate-200 p-3">

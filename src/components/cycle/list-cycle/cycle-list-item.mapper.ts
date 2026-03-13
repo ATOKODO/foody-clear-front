@@ -63,10 +63,17 @@ export function buildCycleListItem(
 ): CycleListItem {
   const macroNutritionKeys = resolveMacroNutritionKeys(options.macroNutritionKeys);
   const cycleTotals = getCycleMacroTotals(cycle, macroNutritionKeys);
+  const durationDays = resolveCycleDurationDays(cycle);
   const daySets = resolveCycleDaySets(cycle, options.fallbackDaySets ?? []).map((daySet) =>
     buildDaySetBreakdown(daySet, cycleTotals, macroNutritionKeys, options.fallbackSlots ?? []),
   );
-  const daySetTotals = sumMacroTotals(daySets.map((daySet) => daySet.totals));
+  const missingDayCount = Math.max(durationDays - daySets.length, 0);
+  const daySetTotals = buildEffectiveDailyTotals(
+    daySets.map((daySet) => daySet.totals),
+    cycleTotals,
+    durationDays,
+    missingDayCount,
+  );
   const daySetMetrics = buildMetrics(daySetTotals, cycleTotals);
 
   return {
@@ -74,9 +81,10 @@ export function buildCycleListItem(
     id: cycle.id,
     title: cycle.title,
     color: cycle.color,
-    durationDays: resolveCycleDurationDays(cycle),
+    durationDays,
     durationCount: cycle.durationCount,
     durationType: cycle.durationType,
+    missingDayCount,
     daySetTotals,
     daySetMetrics,
     daySets,
@@ -249,6 +257,46 @@ function sumMacroTotals(values: CycleMacroTotals[]): CycleMacroTotals {
     }),
     { proteins: 0, carbs: 0, lipids: 0 },
   );
+}
+
+function buildEffectiveDailyTotals(
+  daySetTotals: CycleMacroTotals[],
+  cycleTotals: CycleMacroTotals,
+  durationDays: number,
+  missingDayCount: number,
+): CycleMacroTotals {
+  if (durationDays <= 0) {
+    return sumMacroTotals(daySetTotals);
+  }
+
+  const combinedTotals = addMacroTotals(
+    sumMacroTotals(daySetTotals),
+    scaleMacroTotals(cycleTotals, missingDayCount),
+  );
+
+  return scaleMacroTotals(combinedTotals, 1 / durationDays);
+}
+
+function addMacroTotals(
+  left: CycleMacroTotals,
+  right: CycleMacroTotals,
+): CycleMacroTotals {
+  return {
+    proteins: roundNumber(left.proteins + right.proteins),
+    carbs: roundNumber(left.carbs + right.carbs),
+    lipids: roundNumber(left.lipids + right.lipids),
+  };
+}
+
+function scaleMacroTotals(
+  totals: CycleMacroTotals,
+  factor: number,
+): CycleMacroTotals {
+  return {
+    proteins: roundNumber(totals.proteins * factor),
+    carbs: roundNumber(totals.carbs * factor),
+    lipids: roundNumber(totals.lipids * factor),
+  };
 }
 
 function resolveCycleDaySets(cycle: Cycle, fallbackDaySets: DaySet[]): DaySetRecord[] {
