@@ -358,6 +358,47 @@ describe('CycleFeature', () => {
     expect(dialogText).toContain('Les changements sont appliques sans quitter la liste.');
   });
 
+  it('should reload cycles, day sets and slots when linked data changes', () => {
+    component.onLinkedDataChanged();
+
+    httpController.expectOne('http://localhost:3000/day-set').flush([
+      {
+        id: 10,
+        title: 'Training',
+        nutritionValues: [nutritionValue('PROTEIN', 100)],
+        slotIds: [21],
+      },
+    ]);
+    httpController.expectOne('http://localhost:3000/slot').flush([
+      {
+        id: 21,
+        key: 'breakfast',
+        title: 'Petit dejeuner',
+        sortOrder: 1,
+        nutritionValues: [nutritionValue('PROTEIN', 50)],
+      },
+    ]);
+    httpController.expectOne('http://localhost:3000/cycle').flush([
+      {
+        id: 1,
+        title: 'Seche',
+        color: 'green',
+        durationDays: 7,
+        durationCount: 1,
+        durationType: 'semaine',
+        nutritionValues: [nutritionValue('PROTEIN', 180)],
+        daySetOrder: [10],
+      },
+    ]);
+
+    expect(component.daySets.length).toBe(1);
+    expect(component.slots.length).toBe(1);
+    expect(component.cycles.length).toBe(1);
+    expect(component.daySets[0].title).toBe('Training');
+    expect(component.slots[0].title).toBe('Petit dejeuner');
+    expect(component.cycles[0].title).toBe('Seche');
+  });
+
   function clickToggle(index: number): void {
     const toggleButtons = fixture.nativeElement.querySelectorAll('mat-button-toggle button');
     (toggleButtons[index] as HTMLButtonElement).click();

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -23,6 +23,8 @@ import { SlotService } from '../../services/slot-service';
   styleUrl: './slot.feature.scss',
 })
 export class SlotFeature implements OnInit {
+  @Output() readonly dataChanged = new EventEmitter<void>();
+
   slots: Slot[] = [];
   loading = false;
   saving = false;
@@ -103,6 +105,7 @@ export class SlotFeature implements OnInit {
         this.lastResponse = { deleted: true, id: slotId };
         this.lastError = null;
         this.saving = false;
+        this.dataChanged.emit();
 
         if (this.editingSlotId === slotId) {
           this.onCancelForm();
@@ -128,6 +131,7 @@ export class SlotFeature implements OnInit {
           this.lastError = null;
           this.saving = false;
           this.formVisible = false;
+          this.dataChanged.emit();
           this.loadSlots();
         },
         error: (error) => {
@@ -144,6 +148,7 @@ export class SlotFeature implements OnInit {
         this.lastError = null;
         this.saving = false;
         this.formVisible = false;
+        this.dataChanged.emit();
         this.loadSlots();
       },
       error: (error) => {

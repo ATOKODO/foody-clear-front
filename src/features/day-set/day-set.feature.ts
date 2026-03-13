@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -26,6 +26,8 @@ import { SlotService } from '../../services/slot-service';
   styleUrl: './day-set.feature.scss',
 })
 export class DaySetFeature implements OnInit {
+  @Output() readonly dataChanged = new EventEmitter<void>();
+
   daySets: DaySet[] = [];
   slots: Slot[] = [];
   loading = false;
@@ -114,6 +116,7 @@ export class DaySetFeature implements OnInit {
         this.lastResponse = { deleted: true, id: daySetId };
         this.lastError = null;
         this.saving = false;
+        this.dataChanged.emit();
 
         if (this.editingDaySetId === daySetId) {
           this.onCancelForm();
@@ -139,6 +142,7 @@ export class DaySetFeature implements OnInit {
           this.lastError = null;
           this.saving = false;
           this.formVisible = false;
+          this.dataChanged.emit();
           this.loadDaySets();
         },
         error: (error) => {
@@ -155,6 +159,7 @@ export class DaySetFeature implements OnInit {
         this.lastError = null;
         this.saving = false;
         this.formVisible = false;
+        this.dataChanged.emit();
         this.loadDaySets();
       },
       error: (error) => {

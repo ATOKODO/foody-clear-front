@@ -67,9 +67,15 @@
     </div>
   </mat-card>
 
-  <app-day-set-feature *ngIf="activeView === 'daySet'" class="mt-6"></app-day-set-feature>
+  <app-day-set-feature
+    *ngIf="activeView === 'daySet'"
+    class="mt-6"
+    (dataChanged)="onLinkedDataChanged()"></app-day-set-feature>
 
-  <app-slot-feature *ngIf="activeView === 'slot'" class="mt-6"></app-slot-feature>
+  <app-slot-feature
+    *ngIf="activeView === 'slot'"
+    class="mt-6"
+    (dataChanged)="onLinkedDataChanged()"></app-slot-feature>
 </section>
 
 <ng-template #cycleFormDialog>

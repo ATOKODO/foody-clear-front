@@ -241,6 +241,12 @@ export class CycleFeature implements OnInit {
     this.closeFormDialog('cancelled');
   }
 
+  onLinkedDataChanged(): void {
+    this.loadDaySets();
+    this.loadSlots();
+    this.loadCycles();
+  }
+
   private openFormDialog(): void {
     if (!this.cycleFormDialogTemplate || this.dialogRef !== null) {
       this.formVisible = this.dialogRef !== null;
