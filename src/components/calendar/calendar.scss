@@ -336,7 +336,8 @@
 }
 
 .calendar-week-grid {
-  overflow-x: hidden;
+  display: none;
+  overflow-x: auto;
   overflow-y: visible;
   padding: 0.35rem;
   background: rgba(255, 255, 255, 0.84);
@@ -348,7 +349,7 @@
 
   display: grid;
   width: 100%;
-  min-width: 0;
+  min-width: 68rem;
   grid-template-columns: clamp(3.5rem, 4vw, 4.25rem) repeat(7, minmax(0, 1fr));
   grid-template-rows: auto repeat(48, minmax(var(--calendar-week-half-hour-height), auto));
   position: relative;
@@ -678,12 +679,6 @@
   }
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
-  .calendar-week-mobile {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 1023px) {
   .calendar-week-panel {
     border-radius: 1.1rem;
@@ -691,6 +686,16 @@
 
   .calendar-week-summary {
     padding-inline: 0.9rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .calendar-week-mobile {
+    display: none;
+  }
+
+  .calendar-week-grid {
+    display: block;
   }
 }
 
