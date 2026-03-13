@@ -135,7 +135,7 @@
             <p class="calendar-week-summary__eyebrow">Vue semaine</p>
             <h3 class="text-xl font-semibold text-slate-950">Resume de la semaine</h3>
             <p class="mt-1 max-w-2xl text-sm text-slate-600">
-              Les jours remplis remontent tout de suite, les jours vides restent compacts.
+              Chaque jour regroupe cycle, macros et plages dans une seule vue.
             </p>
           </div>
 
@@ -153,99 +153,6 @@
               <span class="calendar-week-overview__label">kcal suivies</span>
             </div>
           </div>
-        </div>
-
-        <div class="calendar-week-summary__cards mt-4">
-          <article
-            *ngFor="let day of weekDays; trackBy: trackByDate"
-            class="calendar-week-card"
-            [class.calendar-week-card--empty]="!hasWeekDaySummaryData(day)"
-            [class.calendar-week-card--today]="day.isToday">
-            <div class="calendar-week-card__header">
-              <div>
-                <p class="calendar-week-card__weekday">
-                  {{ day.dateObj.toFormat('EEE', { locale: 'fr' }) }}
-                </p>
-                <p class="calendar-week-card__date">
-                  {{ day.dateObj.toFormat('d LLL', { locale: 'fr' }) }}
-                </p>
-              </div>
-
-              <span *ngIf="day.isToday" class="calendar-week-card__today-pill">Aujourd'hui</span>
-            </div>
-
-            <ng-container *ngIf="hasWeekDaySummaryData(day); else weekDayNoData">
-              <div class="calendar-week-card__chips">
-                <span
-                  *ngIf="getWeekDayCycleTitle(day) as cycleTitle"
-                  class="calendar-week-chip calendar-week-chip--cycle">
-                  {{ cycleTitle }}
-                  <ng-container *ngIf="getWeekDayCycleProgress(day) as progress">
-                    - {{ progress }}
-                  </ng-container>
-                </span>
-
-                <span
-                  *ngIf="getWeekDayResponse(day.date)?.daySet as daySet"
-                  class="calendar-week-chip calendar-week-chip--dayset">
-                  {{ daySet.title }}
-                </span>
-
-                <span
-                  *ngIf="getWeekDayResponse(day.date)?.totalsMacros?.targetSource as targetSource"
-                  class="calendar-week-chip calendar-week-chip--target">
-                  {{ getTargetSourceBadgeText(targetSource) }}
-                </span>
-              </div>
-
-              <ng-container *ngIf="getWeekDayMacroHighlights(day.date) as macroHighlights">
-                <div *ngIf="macroHighlights.length > 0" class="calendar-week-macros">
-                  <div
-                    *ngFor="let macro of macroHighlights; trackBy: trackByWeekMacro"
-                    class="calendar-week-macro"
-                    [attr.data-tone]="macro.tone">
-                    <span class="calendar-week-macro__label">{{ macro.label }}</span>
-                    <div class="calendar-week-macro__value-row">
-                      <span class="calendar-week-macro__value">{{ macro.value }}</span>
-                      <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="calendar-week-card__meta">
-                  <span class="calendar-week-meta-pill">{{ getWeekDaySlotCount(day.date) }} plages</span>
-                  <span class="calendar-week-meta-pill">{{ getWeekDayProductCount(day.date) }} items</span>
-                  <span *ngIf="macroHighlights.length > 0" class="calendar-week-meta-pill">
-                    {{ macroHighlights.length }} macros
-                  </span>
-                </div>
-              </ng-container>
-
-              <ng-container *ngIf="getWeekDaySlots(day.date) as daySlots">
-                <div *ngIf="daySlots.length > 0" class="calendar-week-card__slots">
-                  <span
-                    *ngFor="let slot of daySlots | slice: 0 : 3; trackBy: trackBySlot"
-                    class="calendar-week-slot">
-                    <span class="calendar-week-slot__title">{{ slot.title }}</span>
-                    <span class="calendar-week-slot__time">{{ formatSlotRange(slot) }}</span>
-                  </span>
-
-                  <span *ngIf="daySlots.length > 3" class="calendar-week-slot calendar-week-slot--more">
-                    +{{ daySlots.length - 3 }} autres
-                  </span>
-                </div>
-              </ng-container>
-            </ng-container>
-
-            <ng-template #weekDayNoData>
-              <div class="calendar-week-card__empty-state">
-                <p class="calendar-week-card__empty-title">Jour leger</p>
-                <p class="calendar-week-card__empty-text">
-                  Aucun cycle, aucun slot et aucun item pour cette journee.
-                </p>
-              </div>
-            </ng-template>
-          </article>
         </div>
 
         <p *ngIf="loadingDayItems" class="mt-3 text-xs text-slate-500">
@@ -299,6 +206,49 @@
               {{ progress }}
             </span>
           </div>
+
+          <ng-container *ngIf="hasWeekDayInsights(day.date)">
+            <ng-container *ngIf="getWeekDayResponse(day.date) as response">
+              <ng-container *ngIf="getWeekDayMacroHighlights(day.date) as macroHighlights">
+                <div class="calendar-week-day-details calendar-week-day-details--mobile">
+                  <div
+                    *ngIf="response.daySet || response.totalsMacros?.targetSource"
+                    class="calendar-week-day-details__chips">
+                    <span *ngIf="response.daySet as daySet" class="calendar-week-chip calendar-week-chip--dayset">
+                      {{ daySet.title }}
+                    </span>
+
+                    <span
+                      *ngIf="response.totalsMacros?.targetSource as targetSource"
+                      class="calendar-week-chip calendar-week-chip--target">
+                      {{ getTargetSourceBadgeText(targetSource) }}
+                    </span>
+                  </div>
+
+                  <div *ngIf="macroHighlights.length > 0" class="calendar-week-macros">
+                    <div
+                      *ngFor="let macro of macroHighlights; trackBy: trackByWeekMacro"
+                      class="calendar-week-macro"
+                      [attr.data-tone]="macro.tone">
+                      <span class="calendar-week-macro__label">{{ macro.label }}</span>
+                      <div class="calendar-week-macro__value-row">
+                        <span class="calendar-week-macro__value">{{ macro.value }}</span>
+                        <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="calendar-week-day-details__meta">
+                    <span class="calendar-week-meta-pill">{{ getWeekDaySlotCount(day.date) }} plages</span>
+                    <span class="calendar-week-meta-pill">{{ getWeekDayProductCount(day.date) }} items</span>
+                    <span *ngIf="macroHighlights.length > 0" class="calendar-week-meta-pill">
+                      {{ macroHighlights.length }} macros
+                    </span>
+                  </div>
+                </div>
+              </ng-container>
+            </ng-container>
+          </ng-container>
 
           <div *ngIf="getWeekTimelineBlocks(day.date).length > 0; else emptyMobileDay" class="calendar-week-mobile__blocks">
             <div
@@ -384,6 +334,49 @@
                 {{ progress }}
               </span>
             </div>
+
+            <ng-container *ngIf="hasWeekDayInsights(day.date)">
+              <ng-container *ngIf="getWeekDayResponse(day.date) as response">
+                <ng-container *ngIf="getWeekDayMacroHighlights(day.date) as macroHighlights">
+                  <div class="calendar-week-day-details calendar-week-day-details--desktop">
+                    <div
+                      *ngIf="response.daySet || response.totalsMacros?.targetSource"
+                      class="calendar-week-day-details__chips">
+                      <span *ngIf="response.daySet as daySet" class="calendar-week-chip calendar-week-chip--dayset">
+                        {{ daySet.title }}
+                      </span>
+
+                      <span
+                        *ngIf="response.totalsMacros?.targetSource as targetSource"
+                        class="calendar-week-chip calendar-week-chip--target">
+                        {{ getTargetSourceBadgeText(targetSource) }}
+                      </span>
+                    </div>
+
+                    <div *ngIf="macroHighlights.length > 0" class="calendar-week-macros">
+                      <div
+                        *ngFor="let macro of macroHighlights; trackBy: trackByWeekMacro"
+                        class="calendar-week-macro"
+                        [attr.data-tone]="macro.tone">
+                        <span class="calendar-week-macro__label">{{ macro.label }}</span>
+                        <div class="calendar-week-macro__value-row">
+                          <span class="calendar-week-macro__value">{{ macro.value }}</span>
+                          <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="calendar-week-day-details__meta">
+                      <span class="calendar-week-meta-pill">{{ getWeekDaySlotCount(day.date) }} plages</span>
+                      <span class="calendar-week-meta-pill">{{ getWeekDayProductCount(day.date) }} items</span>
+                      <span *ngIf="macroHighlights.length > 0" class="calendar-week-meta-pill">
+                        {{ macroHighlights.length }} macros
+                      </span>
+                    </div>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </ng-container>
 
             <div class="calendar-week-grid__day-actions">
               <button

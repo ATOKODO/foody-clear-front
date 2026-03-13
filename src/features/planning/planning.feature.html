@@ -7,21 +7,7 @@
       </p>
     </div>
 
-    <div class="space-y-6 p-4 sm:p-6">
-      <mat-card appearance="outlined" class="rounded-xl">
-        <mat-card-content class="pt-4">
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Base URL</mat-label>
-            <input
-              matInput
-              type="text"
-              [(ngModel)]="baseUrl"
-              [ngModelOptions]="{ standalone: true }"
-              (change)="onBaseUrlChange()"
-              placeholder="http://localhost:3000" />
-          </mat-form-field>
-        </mat-card-content>
-      </mat-card>
+    <div>
 
       <div class="flex flex-wrap items-center gap-2">
         <span *ngIf="loadingCycles" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">

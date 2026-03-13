@@ -473,13 +473,17 @@ export class Calendar implements OnInit, OnChanges {
   hasWeekDaySummaryData(day: CalendarDay): boolean {
     const response = this.getWeekDayResponse(day.date);
 
+    return Boolean(day.assignment || response?.assignment || this.hasWeekDayInsights(day.date));
+  }
+
+  hasWeekDayInsights(dateLocal: string): boolean {
+    const response = this.getWeekDayResponse(dateLocal);
+
     return Boolean(
-      day.assignment ||
-      response?.assignment ||
       response?.daySet ||
-      this.getWeekDaySlotCount(day.date) > 0 ||
-      this.getWeekDayProductCount(day.date) > 0 ||
-      this.getWeekDayMacroHighlights(day.date).length > 0,
+      response?.totalsMacros ||
+      this.getWeekDaySlotCount(dateLocal) > 0 ||
+      this.getWeekDayProductCount(dateLocal) > 0,
     );
   }
 
