@@ -133,6 +133,36 @@ describe('Calendar', () => {
     expect(textContent).toContain('1 items');
   });
 
+  it('should render a modernized month view with summary and assignment cards', () => {
+    const currentDateLocal = component.currentDate.toISODate();
+
+    fixture.componentRef.setInput('cycleAssignments', [
+      {
+        id: 11,
+        cycle: {
+          id: 3,
+          title: 'Prise de Masse',
+          color: 'blue',
+          durationDays: 30,
+          durationCount: 1,
+          durationType: 'mois',
+        },
+        startDateLocal: currentDateLocal ?? '2026-03-13',
+        endDateLocal: currentDateLocal ?? '2026-03-13',
+      },
+    ]);
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement;
+    const textContent = root.textContent;
+
+    expect(root.querySelector('.calendar-month-panel')).toBeTruthy();
+    expect(root.querySelector('.calendar-month-day__assignment')).toBeTruthy();
+    expect(textContent).toContain('Vue mois');
+    expect(textContent).toContain('Prise de Masse');
+    expect(textContent).toContain('jours planifies');
+  });
+
   it('should render a modernized day view with summary and timeline blocks', () => {
     fixture.componentRef.setInput('inputDayResponse', {
       dateLocal: '2026-02-17',

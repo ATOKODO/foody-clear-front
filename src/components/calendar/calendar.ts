@@ -600,6 +600,23 @@ export class Calendar implements OnInit, OnChanges {
     return typeof energy === 'number' ? this.formatCompactNumber(energy, 0) : '0';
   }
 
+  getMonthDayCount(): number {
+    return this.monthDays.filter((day) => day.isCurrentMonth).length;
+  }
+
+  getMonthAssignedDayCount(): number {
+    return this.monthDays.filter((day) => day.isCurrentMonth && day.assignment).length;
+  }
+
+  getMonthCycleCount(): number {
+    return new Set(
+      this.monthDays
+        .filter((day) => day.isCurrentMonth && day.assignment)
+        .map((day) => day.assignment?.cycleName ?? day.assignment?.label ?? '')
+        .filter((label) => label.trim() !== ''),
+    ).size;
+  }
+
   getDayMetricEntries(
     metrics: Record<string, number | InputDayMacroValue> | null | undefined,
   ): CalendarMacroMetricEntry[] {

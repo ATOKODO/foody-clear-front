@@ -72,57 +72,108 @@
       </div>
     </div>
 
-    <div *ngIf="currentView === 'month' && !loading" class="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
-      <div class="grid grid-cols-7 border-b border-gray-200">
-        <div *ngFor="let weekday of WEEKDAY_NAMES" class="py-3 text-center text-sm font-semibold">
-          {{ weekday }}
+    <div
+      *ngIf="currentView === 'month' && !loading"
+      class="calendar-month-panel overflow-hidden rounded-[1.5rem] border border-slate-200 shadow-sm">
+      <div class="calendar-month-summary border-b border-slate-200 p-4 sm:p-5">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p class="calendar-week-summary__eyebrow">Vue mois</p>
+            <h3 class="text-xl font-semibold text-slate-950">{{ currentViewLabel }}</h3>
+            <p class="mt-1 max-w-2xl text-sm text-slate-600">
+              Le mois met en avant les jours actifs, les changements de cycle et l'ajout rapide.
+            </p>
+          </div>
+
+          <div class="calendar-week-overview">
+            <div class="calendar-week-overview__pill">
+              <span class="calendar-week-overview__value">{{ getMonthDayCount() }}</span>
+              <span class="calendar-week-overview__label">jours du mois</span>
+            </div>
+            <div class="calendar-week-overview__pill">
+              <span class="calendar-week-overview__value">{{ getMonthAssignedDayCount() }}</span>
+              <span class="calendar-week-overview__label">jours planifies</span>
+            </div>
+            <div class="calendar-week-overview__pill">
+              <span class="calendar-week-overview__value">{{ getMonthCycleCount() }}</span>
+              <span class="calendar-week-overview__label">cycles actifs</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="grid min-h-[600px] grid-cols-7 auto-rows-fr">
-        <div
-          *ngFor="let day of monthDays"
-          (click)="onDayClick(day)"
-          [ngClass]="{'bg-gray-200 dark:bg-gray-600' : !day.isCurrentMonth}"
-          [class.bg-red-600]="day.isToday && day.isCurrentMonth"
-          [class.cursor-pointer]="day.isCurrentMonth"
-          class="border-b border-r border-gray-200 p-2 transition-colors hover:bg-gray-50 dark:hover:bg-blue-900 min-h-[100px]">
-          <div class="flex h-full flex-col">
-            <div class="mb-2 flex items-center justify-between">
-              <span
-                [class.opacity-50]="!day.isCurrentMonth"
-                [class.opacity-100]="day.isCurrentMonth && !day.isToday"
-                [class.text-blue-600]="day.isToday"
-                [class.font-bold]="day.isToday"
-                class="text-sm">
-                {{ day.dayNumber }}
-              </span>
-
-              <div class="flex items-center gap-2">
-                <span *ngIf="day.isToday" class="rounded-full bg-blue-600 px-2 py-0.5 text-xs text-white">
-                  Aujourd'hui
-                </span>
-                <button
-                  *ngIf="day.isCurrentMonth"
-                  mat-mini-fab
-                  color="primary"
-                  type="button"
-                  class="calendar-add-trigger-month h-8 w-8 !shadow-sm"
-                  (click)="$event.stopPropagation(); onDayClick(day)">
-                  +
-                </button>
-              </div>
+      <div class="calendar-month-grid-wrap">
+        <div class="calendar-month-grid">
+          <div class="calendar-month-grid__header">
+            <div *ngFor="let weekday of WEEKDAY_NAMES" class="calendar-month-grid__weekday">
+              {{ weekday }}
             </div>
+          </div>
 
-            <div *ngIf="day.assignment" [class]="day.assignment.color" class="flex-1 rounded p-2 text-xs text-white">
-              <div class="font-semibold">{{ day.assignment.cycleName || day.assignment.label }}</div>
-              <div *ngIf="day.assignment.dayNumber" class="mt-1 opacity-90">
-                Jour {{ day.assignment.dayNumber }}/{{ day.assignment.totalDays }}
+          <div class="calendar-month-grid__body">
+            <article
+              *ngFor="let day of monthDays; trackBy: trackByDate"
+              (click)="onDayClick(day)"
+              class="calendar-month-day"
+              [class.calendar-month-day--current]="day.isCurrentMonth"
+              [class.calendar-month-day--outside]="!day.isCurrentMonth"
+              [class.calendar-month-day--today]="day.isToday"
+              [class.calendar-month-day--interactive]="day.isCurrentMonth">
+              <div class="calendar-month-day__header">
+                <div class="calendar-month-day__date-group">
+                  <span class="calendar-month-day__number">{{ day.dayNumber }}</span>
+                  <span
+                    *ngIf="day.dayNumber === 1 || !day.isCurrentMonth"
+                    class="calendar-month-day__month-label">
+                    {{ day.dateObj.toFormat('LLL', { locale: 'fr' }) }}
+                  </span>
+                </div>
+
+                <div class="calendar-month-day__actions">
+                  <span *ngIf="day.isToday" class="calendar-month-day__today-pill">Aujourd'hui</span>
+                  <button
+                    *ngIf="day.isCurrentMonth"
+                    mat-mini-fab
+                    color="primary"
+                    type="button"
+                    class="calendar-add-trigger-month h-8 w-8 !shadow-sm"
+                    (click)="$event.stopPropagation(); onDayClick(day)">
+                    +
+                  </button>
+                </div>
               </div>
-              <div *ngIf="day.assignment.calorieTarget" class="mt-1 text-xs opacity-90">
-                {{ day.assignment.actualCalories || 0 }} / {{ day.assignment.calorieTarget }} kcal
+
+              <div class="calendar-month-day__body">
+                <div
+                  *ngIf="day.assignment; else monthDayEmpty"
+                  [ngClass]="day.assignment.color"
+                  class="calendar-month-day__assignment">
+                  <div class="calendar-month-day__assignment-type">Cycle actif</div>
+                  <div class="calendar-month-day__assignment-title">
+                    {{ day.assignment.cycleName || day.assignment.label }}
+                  </div>
+                  <div *ngIf="day.assignment.dayNumber" class="calendar-month-day__assignment-progress">
+                    Jour {{ day.assignment.dayNumber }}/{{ day.assignment.totalDays }}
+                  </div>
+                  <div *ngIf="day.assignment.calorieTarget" class="calendar-month-day__assignment-meta">
+                    {{ day.assignment.actualCalories || 0 }} / {{ day.assignment.calorieTarget }} kcal
+                  </div>
+                </div>
+
+                <ng-template #monthDayEmpty>
+                  <div *ngIf="day.isCurrentMonth; else monthOutsideHint" class="calendar-month-day__empty">
+                    <span class="calendar-month-day__empty-title">Journee libre</span>
+                    <span class="calendar-month-day__empty-text">Ajout rapide disponible</span>
+                  </div>
+                </ng-template>
+
+                <ng-template #monthOutsideHint>
+                  <div class="calendar-month-day__outside-hint">
+                    {{ day.dateObj.toFormat('cccc', { locale: 'fr' }) }}
+                  </div>
+                </ng-template>
               </div>
-            </div>
+            </article>
           </div>
         </div>
       </div>
