@@ -19,3 +19,32 @@
   --mat-form-field-filled-active-indicator-color: rgb(156 163 175);
   --mat-form-field-filled-focus-active-indicator-color: rgb(229 231 235);
 }
+
+.fc-order-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.fc-order-item {
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.fc-order-item.cdk-drag-preview {
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.16);
+}
+
+.fc-order-item.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+
+.fc-order-list.cdk-drop-list-dragging .fc-order-item:not(.cdk-drag-placeholder) {
+  transition: transform 150ms ease;
+}
+
+.fc-drag-handle {
+  cursor: grab;
+}
+
+.fc-drag-handle:active {
+  cursor: grabbing;
+}

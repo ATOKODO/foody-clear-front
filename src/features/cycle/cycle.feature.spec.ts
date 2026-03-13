@@ -80,6 +80,7 @@ describe('CycleFeature', () => {
         id: 1,
         title: 'Seche',
         color: 'green',
+        durationDays: 28,
         durationCount: 4,
         durationType: 'semaine',
         nutritionValues: [
@@ -133,6 +134,7 @@ describe('CycleFeature', () => {
         id: 2,
         title: 'Masse',
         color: 'orange',
+        durationDays: 6,
         durationCount: 6,
         durationType: 'jour',
         nutritionValues: [
@@ -188,6 +190,7 @@ describe('CycleFeature', () => {
         id: 3,
         title: 'Recomp',
         color: 'blue',
+        durationDays: 90,
         durationCount: 3,
         durationType: 'mois',
         nutritionValues: [
@@ -221,6 +224,90 @@ describe('CycleFeature', () => {
 
     expect(item.daySets[0].slots[0].totals.proteins).toBe(25);
     expect(item.daySets[0].slotTotals.proteins).toBe(25);
+  });
+
+  it('should map durationDays and daySetOrder in create dto', () => {
+    const dto = (component as unknown as {
+      toCreateDto: (value: {
+        titre: string;
+        couleur: string;
+        nutritionValues: Array<{
+          nutritionKey: string;
+          amount: number;
+          unit: string;
+          reference: 'PER_100G' | 'PER_100ML';
+        }>;
+        nombre: number;
+        typeDuree: 'jour' | 'semaine' | 'mois';
+        durationDays: number;
+        daySetIds: number[];
+        daySetOrder: number[];
+      }) => unknown;
+    }).toCreateDto({
+      titre: 'Cut',
+      couleur: 'green',
+      nutritionValues: [nutritionValue('PROTEIN', 180)],
+      nombre: 12,
+      typeDuree: 'jour',
+      durationDays: 12,
+      daySetIds: [3, 1],
+      daySetOrder: [3, 1],
+    });
+
+    expect(dto).toEqual({
+      title: 'Cut',
+      color: 'green',
+      nutritionValues: [nutritionValue('PROTEIN', 180)],
+      durationDays: 12,
+      durationCount: 12,
+      durationType: 'jour',
+      daySetIds: [3, 1],
+      daySetOrder: [3, 1],
+    });
+  });
+
+  it('should hydrate edit form with durationDays and ordered day sets', () => {
+    component.cycles = [
+      {
+        id: 9,
+        title: 'Reverse',
+        color: 'pink',
+        durationDays: 10,
+        durationCount: 10,
+        durationType: 'jour',
+        nutritionValues: [nutritionValue('PROTEIN', 120)],
+        daySetOrder: [5, 2],
+      },
+    ];
+
+    component.onEditRequested({
+      id: 9,
+      title: 'Reverse',
+      color: 'pink',
+      proteins: 120,
+      carbs: 0,
+      lipids: 0,
+      durationDays: 10,
+      durationCount: 10,
+      durationType: 'jour',
+      daySetTotals: { proteins: 0, carbs: 0, lipids: 0 },
+      daySetMetrics: [],
+      daySets: [],
+      hasDaySetOverflow: false,
+      hasSlotOverflow: false,
+      hasMissingSlotBreakdown: false,
+    });
+
+    expect(component.formInitialValue).toEqual({
+      titre: 'Reverse',
+      couleur: 'pink',
+      nutritionValues: [nutritionValue('PROTEIN', 120)],
+      nombre: 10,
+      typeDuree: 'jour',
+      durationDays: 10,
+      daySetIds: [5, 2],
+      daySetOrder: [5, 2],
+    });
   });
 
   function clickToggle(index: number): void {

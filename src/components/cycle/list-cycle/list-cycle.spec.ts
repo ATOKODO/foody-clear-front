@@ -259,6 +259,7 @@ describe('ListCycle', () => {
       proteins: 180,
       carbs: 120,
       lipids: 60,
+      durationDays: 28,
       durationCount: 4,
       durationType: 'semaine',
       daySetTotals: { proteins: 100, carbs: 100, lipids: 30 },

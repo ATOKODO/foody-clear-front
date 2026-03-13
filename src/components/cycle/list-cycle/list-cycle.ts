@@ -57,6 +57,7 @@ export interface CycleListItem extends CycleMacroTotals {
   id: number;
   title: string;
   color: string;
+  durationDays: number;
   durationCount: number;
   durationType: TypeDuree;
   daySetTotals: CycleMacroTotals;

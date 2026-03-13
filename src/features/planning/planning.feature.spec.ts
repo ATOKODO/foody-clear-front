@@ -220,4 +220,92 @@ describe('PlanningFeature', () => {
       jasmine.any(String),
     );
   });
+
+  it('should build cycle picker items from nutrition values and nested day sets', () => {
+    component.cycles = [
+      {
+        id: 11,
+        title: 'Seche',
+        color: 'green',
+        durationDays: 28,
+        durationCount: 4,
+        durationType: 'semaine',
+        nutritionValues: [
+          nutritionValue('PROTEIN', 180),
+          nutritionValue('CARBOHYDRATE', 120),
+          nutritionValue('FAT', 60),
+        ],
+        daySets: [
+          {
+            id: 5,
+            title: 'Training',
+            nutritionValues: [
+              nutritionValue('PROTEIN', 100),
+              nutritionValue('CARBOHYDRATE', 90),
+              nutritionValue('FAT', 30),
+            ],
+            slots: [
+              {
+                id: 21,
+                key: 'breakfast',
+                title: 'Petit dejeuner',
+                sortOrder: 1,
+                startTime: '08:00:00',
+                endTime: '09:00:00',
+                nutritionValues: [nutritionValue('PROTEIN', 50)],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const [item] = component.cycleListItems;
+
+    expect(item.proteins).toBe(180);
+    expect(item.carbs).toBe(120);
+    expect(item.daySets[0].title).toBe('Training');
+    expect(item.daySets[0].slots[0].title).toBe('Petit dejeuner');
+  });
+
+  it('should submit assignment payload without endDateLocal', () => {
+    component.cycles = [
+      {
+        id: 11,
+        title: 'Mois fixe',
+        color: 'blue',
+        durationDays: 30,
+        durationCount: 1,
+        durationType: 'mois',
+        nutritionValues: [],
+      },
+    ];
+    component.modalSelectedCycleId = 11;
+    component.modalStartDateLocal = '2026-03-10';
+
+    component.saveAssignmentFromModal();
+
+    expect(cycleAssignmentServiceMock.create).toHaveBeenCalledWith({
+      cycleId: 11,
+      startDateLocal: '2026-03-10',
+    });
+  });
+
+  function nutritionValue(
+    nutritionKey: string,
+    amount: number,
+    unit = 'G',
+  ): {
+    nutritionKey: string;
+    amount: number;
+    unit: string;
+    reference: 'PER_100G';
+  } {
+    return {
+      nutritionKey,
+      amount,
+      unit,
+      reference: 'PER_100G',
+    };
+  }
 });

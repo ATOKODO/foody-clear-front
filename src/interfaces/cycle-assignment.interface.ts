@@ -10,7 +10,7 @@ export interface CycleAssignment {
 export interface CreateCycleAssignmentDto {
   cycleId: number;
   startDateLocal: string;
-  endDateLocal: string;
+  endDateLocal?: string;
 }
 
 export type UpdateCycleAssignmentDto = Partial<CreateCycleAssignmentDto>;

@@ -41,6 +41,7 @@ export class DaySetList implements OnInit, OnChanges {
   @Input() mode: DaySetListMode = 'manage';
   @Input() daySets: DaySetListItem[] | null = null;
   @Input() selectedIds: string[] | null = null;
+  @Input() maxSelections: number | null = null;
 
   @Output() readonly addRequested = new EventEmitter<void>();
   @Output() readonly editRequested = new EventEmitter<DaySetListItem>();
@@ -132,6 +133,15 @@ export class DaySetList implements OnInit, OnChanges {
     return this.selectedIdSet.has(id);
   }
 
+  isSelectionDisabled(item: DaySetListItem): boolean {
+    if (!this.isMultiSelectMode || this.isSelected(item.id)) {
+      return false;
+    }
+
+    const maxSelections = this.getMaxSelections();
+    return maxSelections !== null && this.selectedIdSet.size >= maxSelections;
+  }
+
   isRowActive(item: DaySetListItem, index: number): boolean {
     if (this.isManageMode) {
       return index === 0;
@@ -161,6 +171,10 @@ export class DaySetList implements OnInit, OnChanges {
 
   onCheckboxChange(item: DaySetListItem, checked: boolean): void {
     if (!this.isMultiSelectMode) {
+      return;
+    }
+
+    if (checked && this.isSelectionDisabled(item)) {
       return;
     }
 
@@ -225,6 +239,15 @@ export class DaySetList implements OnInit, OnChanges {
 
   private getSelectedItems(): DaySetListItem[] {
     return this.resolvedDaySets.filter((item) => this.selectedIdSet.has(item.id));
+  }
+
+  private getMaxSelections(): number | null {
+    if (this.maxSelections === null || this.maxSelections === undefined) {
+      return null;
+    }
+
+    const normalized = Math.trunc(this.maxSelections);
+    return normalized >= 0 ? normalized : null;
   }
 
   private getMacro(item: DaySetListItem, key: 'protein' | 'carbs' | 'fat'): number {

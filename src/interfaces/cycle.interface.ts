@@ -17,6 +17,7 @@ export interface Cycle {
   carbs?: number;
   lipids?: number;
   nutritionValues?: CycleNutritionValue[];
+  durationDays: number;
   durationCount: number;
   durationType: CycleDurationType;
   daySetOrder?: number[];
@@ -27,9 +28,11 @@ export interface CreateCycleDto {
   title: string;
   color: string;
   nutritionValues?: CycleNutritionValue[];
+  durationDays: number;
   durationCount: number;
   durationType: CycleDurationType;
   daySetIds?: number[];
+  daySetOrder?: number[];
 }
 
 export type UpdateCycleDto = Partial<CreateCycleDto>;

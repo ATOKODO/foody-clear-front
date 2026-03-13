@@ -22,6 +22,7 @@
             <td mat-cell *matCellDef="let item" class="w-14" (click)="$event.stopPropagation()">
               <mat-checkbox
                 [checked]="isSelected(item.id)"
+                [disabled]="isSelectionDisabled(item)"
                 [attr.aria-label]="'Selectionner ' + item.title"
                 (click)="onCheckboxClick($event, item)">
               </mat-checkbox>
@@ -67,6 +68,7 @@
             mat-row
             *matRowDef="let item; let i = index; columns: displayedColumns"
             [class.dsl-active]="isRowActive(item, i)"
+            [class.dsl-disabled]="isSelectionDisabled(item)"
             [class.dsl-selectable]="isSingleSelectMode || isMultiSelectMode"
             [attr.tabindex]="isSingleSelectMode ? 0 : null"
             [attr.role]="isSingleSelectMode ? 'button' : null"

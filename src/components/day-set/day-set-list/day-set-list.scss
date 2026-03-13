@@ -31,3 +31,7 @@
 .day-set-table .mat-mdc-row.dsl-active {
   background: #e2e8f0;
 }
+
+.day-set-table .mat-mdc-row.dsl-disabled {
+  opacity: 0.6;
+}

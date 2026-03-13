@@ -9,8 +9,7 @@ describe('FormCycle', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FormCycle],
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(FormCycle);
     component = fixture.componentInstance;
@@ -25,10 +24,12 @@ describe('FormCycle', () => {
     expect(component.form.getRawValue()).toEqual({
       titre: '',
       couleur: 'red',
-      nombre: 0,
+      nombre: 1,
       typeDuree: 'jour',
+      durationDays: 1,
     });
     expect(component.nutritionValues.length).toBe(3);
+    expect(component.selectedDaySetOrder).toEqual([]);
   });
 
   it('should patch values in edit mode when cycle is provided', () => {
@@ -41,7 +42,8 @@ describe('FormCycle', () => {
       ],
       nombre: 4,
       typeDuree: 'semaine',
-      daySetIds: [1, 3],
+      durationDays: 28,
+      daySetOrder: [3, 1],
     });
     fixture.detectChanges();
 
@@ -50,14 +52,15 @@ describe('FormCycle', () => {
       couleur: 'green',
       nombre: 4,
       typeDuree: 'semaine',
+      durationDays: 28,
     });
     expect(component.nutritionValues).toEqual([
       { nutritionKey: 'PROTEIN', amount: 180, unit: 'G', reference: 'PER_100G' },
     ]);
-    expect(component.selectedDaySetIds).toEqual([1, 3]);
+    expect(component.selectedDaySetOrder).toEqual([3, 1]);
   });
 
-  it('should emit submitted payload with mode and form value', () => {
+  it('should emit submitted payload with durationDays and ordered day sets', () => {
     const emitted: Array<unknown> = [];
     component.submitted.subscribe((payload) => emitted.push(payload));
 
@@ -66,8 +69,9 @@ describe('FormCycle', () => {
       couleur: 'orange',
       nombre: 6,
       typeDuree: 'jour',
+      durationDays: 6,
     });
-    component.selectedDaySetIds = [2, 4];
+    component.selectedDaySetOrder = [4, 2];
     component.nutritionValues = [
       { nutritionKey: 'PROTEIN', amount: 200, unit: 'G', reference: 'PER_100G' },
       { nutritionKey: 'CARBOHYDRATE', amount: 300, unit: 'G', reference: 'PER_100G' },
@@ -89,28 +93,64 @@ describe('FormCycle', () => {
           ],
           nombre: 6,
           typeDuree: 'jour',
-          daySetIds: [2, 4],
+          durationDays: 6,
+          daySetIds: [4, 2],
+          daySetOrder: [4, 2],
         },
       },
     ]);
   });
 
-  it('should render all key wireframe labels', () => {
+  it('should block submit when selected day sets exceed durationDays', () => {
+    const emitted: Array<unknown> = [];
+    component.submitted.subscribe((payload) => emitted.push(payload));
+
+    component.form.setValue({
+      titre: 'Cycle court',
+      couleur: 'red',
+      nombre: 2,
+      typeDuree: 'jour',
+      durationDays: 2,
+    });
+    component.selectedDaySetOrder = [1, 2, 3];
+
+    component.onSubmit();
+
+    expect(emitted).toEqual([]);
+    expect(component.showSelectionError).toBeTrue();
+  });
+
+  it('should keep current order and append newly selected day sets', () => {
+    component.selectedDaySetOrder = [2, 4];
+
+    component.onDaySetsSelected([
+      { id: '4', title: 'Jour 4' },
+      { id: '2', title: 'Jour 2' },
+      { id: '6', title: 'Jour 6' },
+    ]);
+
+    expect(component.selectedDaySetOrder).toEqual([2, 4, 6]);
+  });
+
+  it('should sync helper fields when durationDays is edited manually', () => {
+    component.form.patchValue({
+      nombre: 2,
+      typeDuree: 'semaine',
+      durationDays: 31,
+    });
+
+    component.onDurationDaysInput();
+
+    expect(component.form.controls.nombre.value).toBe(31);
+    expect(component.form.controls.typeDuree.value).toBe('jour');
+  });
+
+  it('should render the updated duration and ordering labels', () => {
     const text = fixture.nativeElement.textContent;
 
     expect(text).toContain('Ajouter un Cycle');
-    expect(text).toContain('Titre');
-    expect(text).toContain('Couleur');
-    expect(text).toContain('Nutrition values');
-    expect(text).toContain('Nombre');
-    expect(text).toContain('Type de duree');
-    expect(text).toContain('Jour / Semaine / Mois');
-  });
-
-  it('should render expected number of inputs and selects', () => {
-    const nativeElement = fixture.nativeElement as HTMLElement;
-
-    expect(nativeElement.querySelectorAll('input[matInput]').length).toBeGreaterThanOrEqual(4);
-    expect(nativeElement.querySelectorAll('mat-select').length).toBeGreaterThanOrEqual(3);
+    expect(text).toContain('Nombre de jours');
+    expect(text).toContain('Raccourcis de duree');
+    expect(text).toContain('Ordre du cycle');
   });
 });

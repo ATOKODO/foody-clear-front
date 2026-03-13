@@ -20,6 +20,7 @@ import {
   CycleListItem,
   ListCycle,
 } from '../../components/cycle/list-cycle/list-cycle';
+import { buildCycleListItem } from '../../components/cycle/list-cycle/cycle-list-item.mapper';
 import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
 import { Cycle } from '../../interfaces/cycle.interface';
 import { CalendarView } from '../../interfaces/calendar.interface';
@@ -151,26 +152,7 @@ export class PlanningFeature implements OnInit {
   }
 
   get cycleListItems(): CycleListItem[] {
-    return this.cycles.map((cycle) => ({
-      id: cycle.id,
-      title: cycle.title,
-      color: cycle.color,
-      proteins: this.toNumber(cycle.proteins),
-      carbs: this.toNumber(cycle.carbs),
-      lipids: this.toNumber(cycle.lipids),
-      durationCount: cycle.durationCount,
-      durationType: cycle.durationType,
-      daySetTotals: {
-        proteins: 0,
-        carbs: 0,
-        lipids: 0,
-      },
-      daySetMetrics: [],
-      daySets: [],
-      hasDaySetOverflow: false,
-      hasSlotOverflow: false,
-      hasMissingSlotBreakdown: false,
-    }));
+    return this.cycles.map((cycle) => buildCycleListItem(cycle));
   }
 
   get modalSelectedIds(): number[] {
@@ -218,7 +200,6 @@ export class PlanningFeature implements OnInit {
     const payload = {
       cycleId: selectedCycle.id,
       startDateLocal: this.modalStartDateLocal,
-      endDateLocal: this.computeEndDateLocal(this.modalStartDateLocal, selectedCycle),
     };
 
     this.savingAssignment = true;
@@ -480,24 +461,6 @@ export class PlanningFeature implements OnInit {
     this.selectedItemId = itemId;
   }
 
-  private computeEndDateLocal(startDateLocal: string, cycle: Cycle): string {
-    const startDate = DateTime.fromISO(startDateLocal).startOf('day');
-    if (!startDate.isValid) {
-      return startDateLocal;
-    }
-
-    const durationCount = Math.max(1, Math.trunc(cycle.durationCount));
-
-    let endDateExclusive = startDate.plus({ days: durationCount });
-    if (cycle.durationType === 'semaine') {
-      endDateExclusive = startDate.plus({ weeks: durationCount });
-    } else if (cycle.durationType === 'mois') {
-      endDateExclusive = startDate.plus({ months: durationCount });
-    }
-
-    return endDateExclusive.minus({ days: 1 }).toISODate() ?? startDateLocal;
-  }
-
   private isDateLocal(value: string): boolean {
     return value.length === 10 && DateTime.fromISO(value).isValid;
   }
@@ -515,10 +478,6 @@ export class PlanningFeature implements OnInit {
     this.setLastError(error);
     this.modalError = error;
     this.savingAssignment = false;
-  }
-
-  private toNumber(value: unknown): number {
-    return typeof value === 'number' && Number.isFinite(value) ? value : 0;
   }
 
   private resolveTimezone(): string {

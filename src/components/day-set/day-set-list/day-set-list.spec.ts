@@ -97,4 +97,26 @@ describe('DaySetList', () => {
     expect((emitted[emitted.length - 1] as unknown[]).length).toBe(1);
     expect(component.isSelected(component.resolvedDaySets[0].id)).toBeTrue();
   });
+
+  it('should disable unchecked rows when maxSelections is reached', () => {
+    fixture.componentRef.setInput('mode', 'select-multi');
+    fixture.componentRef.setInput('maxSelections', 1);
+    fixture.detectChanges();
+
+    component.onCheckboxChange(component.resolvedDaySets[0], true);
+
+    expect(component.isSelectionDisabled(component.resolvedDaySets[1])).toBeTrue();
+    expect(component.isSelectionDisabled(component.resolvedDaySets[0])).toBeFalse();
+  });
+
+  it('should allow selecting another row again after deselection', () => {
+    fixture.componentRef.setInput('mode', 'select-multi');
+    fixture.componentRef.setInput('maxSelections', 1);
+    fixture.detectChanges();
+
+    component.onCheckboxChange(component.resolvedDaySets[0], true);
+    component.onCheckboxChange(component.resolvedDaySets[0], false);
+
+    expect(component.isSelectionDisabled(component.resolvedDaySets[1])).toBeFalse();
+  });
 });

@@ -32,6 +32,41 @@
     </div>
 
     <div class="space-y-3">
+      <div class="grid gap-4 md:grid-cols-12 md:items-start">
+        <mat-form-field appearance="fill" class="fc-field md:col-span-4">
+          <mat-label>Nombre de jours</mat-label>
+          <input
+            matInput
+            type="number"
+            min="1"
+            formControlName="durationDays"
+            (input)="onDurationDaysInput()" />
+          <mat-error *ngIf="form.controls.durationDays.invalid">
+            Le cycle doit durer au moins 1 jour.
+          </mat-error>
+        </mat-form-field>
+
+        <div class="md:col-span-8">
+          <p class="text-sm font-semibold text-slate-900">Raccourcis de duree</p>
+          <p class="mt-1 text-sm text-slate-600">
+            Ces boutons pre-remplissent le nombre de jours. Tu peux ensuite ajuster la valeur
+            manuellement.
+          </p>
+
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button
+              *ngFor="let preset of durationPresets"
+              mat-stroked-button
+              type="button"
+              (click)="applyDurationPreset(preset)">
+              {{ preset.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-3">
       <div class="flex items-center justify-between gap-3">
         <h3 class="text-base font-semibold text-slate-900">Nutrition values</h3>
         <button mat-stroked-button type="button" (click)="addNutritionValue()">
@@ -99,31 +134,77 @@
       </div>
     </div>
 
-    <div class="grid gap-4 md:grid-cols-12 md:items-start">
-      <mat-form-field appearance="fill" class="fc-field md:col-span-4">
-        <mat-label>Nombre</mat-label>
-        <input matInput type="number" formControlName="nombre" min="0" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill" class="fc-field md:col-span-8">
-        <mat-label>Type de duree</mat-label>
-        <mat-select formControlName="typeDuree">
-          <mat-option *ngFor="let option of durationOptions" [value]="option.value">
-            {{ option.label }}
-          </mat-option>
-        </mat-select>
-        <mat-hint>Jour / Semaine / Mois</mat-hint>
-      </mat-form-field>
-    </div>
-
     <div class="space-y-3">
-      <h3 class="text-base font-semibold text-slate-900">Day sets du cycle</h3>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="text-base font-semibold text-slate-900">Day sets du cycle</h3>
+          <p class="text-sm text-slate-600">
+            Selectionnes: {{ selectedDaySetOrder.length }} / {{ maxSelectableDaySets }}
+          </p>
+        </div>
+
+        <p class="text-sm text-slate-500">
+          Les nouveaux day sets ajoutes sont places en fin de cycle.
+        </p>
+      </div>
+
+      <p *ngIf="showSelectionError && hasSelectedDaySetOverflow" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        Le nombre de day sets selectionnes depasse la duree du cycle. Reduis la selection ou
+        augmente le nombre de jours.
+      </p>
+
       <app-day-set-list
         mode="select-multi"
         [daySets]="daySets"
         [selectedIds]="selectedDaySetIdsAsString"
+        [maxSelections]="maxSelectableDaySets"
         (selectedMany)="onDaySetsSelected($event)">
       </app-day-set-list>
+    </div>
+
+    <div class="space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h3 class="text-base font-semibold text-slate-900">Ordre du cycle</h3>
+        <p class="text-sm text-slate-500">Glisse-depose les day sets selectionnes pour definir leur ordre.</p>
+      </div>
+
+      <div
+        cdkDropList
+        class="fc-order-list"
+        [cdkDropListData]="selectedDaySetsInOrder"
+        (cdkDropListDropped)="onDaySetOrderDropped($event)">
+        <div
+          *ngFor="let daySet of selectedDaySetsInOrder; let index = index; trackBy: trackByDaySetId"
+          cdkDrag
+          class="fc-order-item rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex min-w-0 items-center gap-3">
+              <button
+                cdkDragHandle
+                mat-stroked-button
+                type="button"
+                class="fc-drag-handle">
+                Deplacer
+              </button>
+
+              <div class="min-w-0">
+                <p class="truncate text-sm font-semibold text-slate-900">
+                  {{ index + 1 }}. {{ daySet.title }}
+                </p>
+                <p class="text-xs text-slate-500">Day set #{{ daySet.id }}</p>
+              </div>
+            </div>
+
+            <button mat-stroked-button color="warn" type="button" (click)="removeDaySetFromOrder(+daySet.id)">
+              Retirer
+            </button>
+          </div>
+        </div>
+
+        <p *ngIf="selectedDaySetsInOrder.length === 0" class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500">
+          Aucun day set selectionne.
+        </p>
+      </div>
     </div>
 
     <div class="flex justify-center pt-2">
@@ -131,7 +212,8 @@
         mat-raised-button
         color="primary"
         type="submit"
-        class="rounded-full px-8">
+        class="rounded-full px-8"
+        [disabled]="!canSubmit">
         Valider
       </button>
     </div>
