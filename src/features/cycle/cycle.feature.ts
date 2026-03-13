@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -47,6 +48,7 @@ type CycleHubView = 'cycle' | 'daySet' | 'slot';
     MatButtonModule,
     MatButtonToggleModule,
     MatCardModule,
+    MatDialogModule,
     MatDividerModule,
     MatFormFieldModule,
     MatInputModule,
@@ -58,6 +60,11 @@ type CycleHubView = 'cycle' | 'daySet' | 'slot';
   styleUrl: './cycle.feature.scss',
 })
 export class CycleFeature implements OnInit {
+  @ViewChild('cycleFormDialog')
+  private cycleFormDialogTemplate?: TemplateRef<unknown>;
+
+  private readonly dialog = inject(MatDialog);
+
   baseUrl = '';
   loading = false;
   saving = false;
@@ -80,6 +87,7 @@ export class CycleFeature implements OnInit {
   lastMetaError: unknown = null;
 
   nutritionKeys: NutritionKeyMeta[] = [];
+  private dialogRef: MatDialogRef<unknown> | null = null;
   private macroNutritionKeys = {
     proteins: 'PROTEIN',
     carbs: 'CARBOHYDRATE',
@@ -133,11 +141,21 @@ export class CycleFeature implements OnInit {
     }));
   }
 
+  get formDialogTitle(): string {
+    return this.formMode === 'edit' ? 'Modifier un cycle' : 'Ajouter un cycle';
+  }
+
+  get formDialogSubtitle(): string {
+    return this.formMode === 'edit'
+      ? 'Les changements sont appliques sans quitter la liste.'
+      : 'Creez un cycle sans descendre en bas de page.';
+  }
+
   onAddRequested(): void {
     this.formMode = 'add';
     this.formInitialValue = null;
     this.editingCycleId = null;
-    this.formVisible = true;
+    this.openFormDialog();
   }
 
   onEditRequested(item: CycleListItem): void {
@@ -159,7 +177,7 @@ export class CycleFeature implements OnInit {
       daySetIds: resolveCycleDaySetIds(cycle),
       daySetOrder: resolveCycleDaySetIds(cycle),
     };
-    this.formVisible = true;
+    this.openFormDialog();
   }
 
   onDeleteRequested(item: CycleListItem): void {
@@ -193,7 +211,7 @@ export class CycleFeature implements OnInit {
           this.lastResponse = response;
           this.lastError = null;
           this.saving = false;
-          this.formVisible = false;
+          this.closeFormDialog('submitted');
           this.loadCycles();
         },
         error: (error) => {
@@ -209,7 +227,7 @@ export class CycleFeature implements OnInit {
         this.lastResponse = response;
         this.lastError = null;
         this.saving = false;
-        this.formVisible = false;
+        this.closeFormDialog('submitted');
         this.loadCycles();
       },
       error: (error) => {
@@ -220,6 +238,39 @@ export class CycleFeature implements OnInit {
   }
 
   onCancelForm(): void {
+    this.closeFormDialog('cancelled');
+  }
+
+  private openFormDialog(): void {
+    if (!this.cycleFormDialogTemplate || this.dialogRef !== null) {
+      this.formVisible = this.dialogRef !== null;
+      return;
+    }
+
+    this.formVisible = true;
+    this.dialogRef = this.dialog.open(this.cycleFormDialogTemplate, {
+      width: '1100px',
+      maxWidth: '96vw',
+      autoFocus: false,
+      restoreFocus: true,
+    });
+
+    this.dialogRef.afterClosed().subscribe(() => {
+      this.dialogRef = null;
+      this.resetFormState();
+    });
+  }
+
+  private closeFormDialog(result: 'submitted' | 'cancelled'): void {
+    if (this.dialogRef !== null) {
+      this.dialogRef.close(result);
+      return;
+    }
+
+    this.resetFormState();
+  }
+
+  private resetFormState(): void {
     this.formVisible = false;
     this.formMode = 'add';
     this.formInitialValue = null;

@@ -56,24 +56,6 @@
         (editRequested)="onEditRequested($event)"
         (deleteRequested)="onDeleteRequested($event)">
       </app-list-cycle>
-
-      <mat-card *ngIf="formVisible" appearance="outlined" class="rounded-xl">
-        <mat-card-content class="p-0">
-          <app-form-cycle
-            [mode]="formMode"
-            [cycle]="formInitialValue"
-            [daySets]="daySetListItems"
-            [nutritionKeys]="nutritionKeys"
-            (submitted)="onFormSubmitted($event)">
-          </app-form-cycle>
-        </mat-card-content>
-
-        <mat-card-actions class="flex justify-center pb-6">
-          <button mat-stroked-button type="button" (click)="onCancelForm()">
-            Annuler
-          </button>
-        </mat-card-actions>
-      </mat-card>
     </div>
 
     <mat-progress-bar *ngIf="loading || saving" mode="indeterminate"></mat-progress-bar>
@@ -89,3 +71,31 @@
 
   <app-slot-feature *ngIf="activeView === 'slot'" class="mt-6"></app-slot-feature>
 </section>
+
+<ng-template #cycleFormDialog>
+  <div class="cycle-form-dialog">
+    <div class="cycle-form-dialog__header">
+      <div>
+        <p class="cycle-form-dialog__eyebrow">Cycle</p>
+        <h3 class="cycle-form-dialog__title">{{ formDialogTitle }}</h3>
+        <p class="cycle-form-dialog__subtitle">{{ formDialogSubtitle }}</p>
+      </div>
+
+      <button mat-stroked-button type="button" (click)="onCancelForm()">
+        Fermer
+      </button>
+    </div>
+
+    <mat-dialog-content class="cycle-form-dialog__content">
+      <app-form-cycle
+        [mode]="formMode"
+        [cycle]="formInitialValue"
+        [daySets]="daySetListItems"
+        [nutritionKeys]="nutritionKeys"
+        [showHeading]="false"
+        [inDialog]="true"
+        (submitted)="onFormSubmitted($event)">
+      </app-form-cycle>
+    </mat-dialog-content>
+  </div>
+</ng-template>

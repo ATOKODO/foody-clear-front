@@ -70,6 +70,8 @@ export class FormCycle implements OnInit, OnChanges {
   @Input() cycle: Partial<CycleFormValue> | null = null;
   @Input() nutritionKeys: NutritionKeyMeta[] = [];
   @Input() daySets: DaySetListItem[] = [];
+  @Input() showHeading = true;
+  @Input() inDialog = false;
 
   @Output() readonly submitted = new EventEmitter<{
     mode: CycleFormMode;

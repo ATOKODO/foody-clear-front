@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -12,6 +13,7 @@ describe('CycleFeature', () => {
   let component: CycleFeature;
   let fixture: ComponentFixture<CycleFeature>;
   let httpController: HttpTestingController;
+  let overlayContainer: OverlayContainer;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -26,6 +28,7 @@ describe('CycleFeature', () => {
     fixture = TestBed.createComponent(CycleFeature);
     component = fixture.componentInstance;
     httpController = TestBed.inject(HttpTestingController);
+    overlayContainer = TestBed.inject(OverlayContainer);
 
     fixture.detectChanges();
     flushCycleRequests();
@@ -34,6 +37,7 @@ describe('CycleFeature', () => {
 
   afterEach(() => {
     httpController.verify();
+    overlayContainer.ngOnDestroy();
   });
 
   it('should create', () => {
@@ -311,6 +315,47 @@ describe('CycleFeature', () => {
       daySetIds: [5, 2],
       daySetOrder: [5, 2],
     });
+  });
+
+  it('should open the cycle form in a dialog when editing', () => {
+    component.cycles = [
+      {
+        id: 9,
+        title: 'Reverse',
+        color: 'pink',
+        durationDays: 10,
+        durationCount: 10,
+        durationType: 'jour',
+        nutritionValues: [nutritionValue('PROTEIN', 120)],
+        daySetOrder: [5, 2],
+      },
+    ];
+
+    component.onEditRequested({
+      id: 9,
+      title: 'Reverse',
+      color: 'pink',
+      proteins: 120,
+      carbs: 0,
+      lipids: 0,
+      durationDays: 10,
+      durationCount: 10,
+      durationType: 'jour',
+      missingDayCount: 0,
+      daySetTotals: { proteins: 0, carbs: 0, lipids: 0 },
+      daySetMetrics: [],
+      daySets: [],
+      hasDaySetOverflow: false,
+      hasSlotOverflow: false,
+      hasMissingSlotBreakdown: false,
+    });
+    fixture.detectChanges();
+
+    const dialogText = overlayContainer.getContainerElement().textContent ?? '';
+
+    expect(component.formVisible).toBeTrue();
+    expect(dialogText).toContain('Modifier un cycle');
+    expect(dialogText).toContain('Les changements sont appliques sans quitter la liste.');
   });
 
   function clickToggle(index: number): void {
