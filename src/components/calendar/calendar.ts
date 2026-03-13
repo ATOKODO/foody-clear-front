@@ -23,6 +23,7 @@ import {
 } from '../../interfaces/calendar.interface';
 import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
 import {
+  InputDayMacroValue,
   InputDayDaySetSlotSummary,
   InputDayItemSummary,
   InputDayItemsBySlotEntry,
@@ -84,10 +85,19 @@ export interface CalendarItemClickEvent {
   item: CalendarInsertedProduct;
 }
 
+interface CalendarWeekMacroHighlight {
+  key: string;
+  label: string;
+  value: string;
+  unit: string;
+  tone: 'energy' | 'proteins' | 'carbs' | 'lipids';
+}
+
 @Component({
   selector: 'app-calendar',
   imports: [CommonModule, MatButtonModule],
   templateUrl: './calendar.html',
+  styleUrl: './calendar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Calendar implements OnInit, OnChanges {
@@ -127,6 +137,16 @@ export class Calendar implements OnInit, OnChanges {
   private weekInsertedProductsByDateHour = new Map<string, Map<number, CalendarInsertedProduct[]>>();
   private readonly emptySlots: CalendarDaySlot[] = [];
   private readonly emptyInsertedProducts: CalendarInsertedProduct[] = [];
+  private readonly weekMacroOrder = ['energyKcal', 'proteins', 'carbs', 'lipids'];
+  private readonly weekMacroDefinitions: Record<
+    string,
+    { label: string; unit: string; tone: CalendarWeekMacroHighlight['tone'] }
+  > = {
+    energyKcal: { label: 'Energie', unit: 'kcal', tone: 'energy' },
+    proteins: { label: 'Proteines', unit: 'g', tone: 'proteins' },
+    carbs: { label: 'Glucides', unit: 'g', tone: 'carbs' },
+    lipids: { label: 'Lipides', unit: 'g', tone: 'lipids' },
+  };
 
   ngOnInit(): void {
     this.refreshView();
@@ -428,6 +448,104 @@ export class Calendar implements OnInit, OnChanges {
     return 'Aucune cible';
   }
 
+  getTargetSourceBadgeText(targetSource: InputDayTargetSource): string {
+    if (targetSource === 'cycle') {
+      return 'Cibles cycle';
+    }
+
+    if (targetSource === 'daySet') {
+      return 'Cibles day set';
+    }
+
+    return 'Sans cible';
+  }
+
+  hasWeekDaySummaryData(day: CalendarDay): boolean {
+    const response = this.getWeekDayResponse(day.date);
+
+    return Boolean(
+      day.assignment ||
+      response?.assignment ||
+      response?.daySet ||
+      this.getWeekDaySlotCount(day.date) > 0 ||
+      this.getWeekDayProductCount(day.date) > 0 ||
+      this.getWeekDayMacroHighlights(day.date).length > 0,
+    );
+  }
+
+  getWeekSummaryDayCount(): number {
+    return this.weekDays.filter((day) => this.hasWeekDaySummaryData(day)).length;
+  }
+
+  getWeekSummaryItemCount(): number {
+    return Array.from(this.weekDayResponseByDate.values()).reduce(
+      (total, response) => total + response.items.length,
+      0,
+    );
+  }
+
+  getWeekSummaryEnergyTotal(): string {
+    const total = Array.from(this.weekDayResponseByDate.values()).reduce((sum, response) => {
+      const energy = response.totalsMacros?.dayTotal['energyKcal'];
+      return typeof energy === 'number' ? sum + energy : sum;
+    }, 0);
+
+    return this.formatCompactNumber(total, 0);
+  }
+
+  getWeekDayCycleTitle(day: CalendarDay): string | null {
+    return (
+      day.assignment?.cycleName ??
+      day.assignment?.label ??
+      this.getWeekDayResponse(day.date)?.assignment?.cycleTitle ??
+      null
+    );
+  }
+
+  getWeekDayCycleProgress(day: CalendarDay): string | null {
+    if (day.assignment?.dayNumber) {
+      return day.assignment.totalDays
+        ? `J${day.assignment.dayNumber}/${day.assignment.totalDays}`
+        : `J${day.assignment.dayNumber}`;
+    }
+
+    const dayIndex = this.getWeekDayResponse(day.date)?.assignment?.dayIndex;
+    return typeof dayIndex === 'number' ? `J${dayIndex}` : null;
+  }
+
+  getWeekDayProductCount(dateLocal: string): number {
+    return this.weekDayResponseByDate.get(dateLocal)?.items.length ?? 0;
+  }
+
+  getWeekDaySlotCount(dateLocal: string): number {
+    return this.getWeekDaySlots(dateLocal).length;
+  }
+
+  getWeekDayMacroHighlights(dateLocal: string): CalendarWeekMacroHighlight[] {
+    const dayTotal = this.weekDayResponseByDate.get(dateLocal)?.totalsMacros?.dayTotal;
+    if (!dayTotal) {
+      return [];
+    }
+
+    return this.weekMacroOrder.flatMap((key) => {
+      const definition = this.weekMacroDefinitions[key];
+      const value = dayTotal[key];
+      if (!definition || value === null || value === undefined) {
+        return [];
+      }
+
+      return [
+        {
+          key,
+          label: definition.label,
+          value: this.formatWeekMacroValue(value),
+          unit: definition.unit,
+          tone: definition.tone,
+        },
+      ];
+    });
+  }
+
   private buildViewChangeEvent(): CalendarViewChangeEvent {
     let from = this.currentDate.startOf('day');
     let to = this.currentDate.endOf('day');
@@ -533,6 +651,10 @@ export class Calendar implements OnInit, OnChanges {
 
   trackByInsertedProduct(_: number, product: CalendarInsertedProduct): number {
     return product.id;
+  }
+
+  trackByWeekMacro(_: number, macro: CalendarWeekMacroHighlight): string {
+    return macro.key;
   }
 
   trackByMonth(_: number, month: MonthSummary): string {
@@ -862,6 +984,23 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     return time.length >= 5 ? time.slice(0, 5) : time;
+  }
+
+  private formatWeekMacroValue(value: InputDayMacroValue): string {
+    if (typeof value !== 'number') {
+      return '...';
+    }
+
+    return this.formatCompactNumber(value, Math.abs(value) >= 100 ? 0 : 1);
+  }
+
+  private formatCompactNumber(value: number, maximumFractionDigits: number): string {
+    const hasFraction = Math.abs(value % 1) > Number.EPSILON;
+
+    return new Intl.NumberFormat('fr-FR', {
+      minimumFractionDigits: hasFraction ? Math.min(1, maximumFractionDigits) : 0,
+      maximumFractionDigits,
+    }).format(value);
   }
 
   private applyDayInsertedProducts(

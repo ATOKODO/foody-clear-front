@@ -128,43 +128,126 @@
       </div>
     </div>
 
-    <div *ngIf="currentView === 'week' && !loading" class="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
-      <div class="border-b border-gray-200 bg-slate-50 p-4">
-        <h3 class="text-lg font-semibold">Resume de la semaine</h3>
-        <div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div *ngIf="currentView === 'week' && !loading" class="calendar-week-panel overflow-hidden rounded-[1.5rem] border border-slate-200 shadow-sm">
+      <div class="calendar-week-summary border-b border-slate-200 p-4 sm:p-5">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p class="calendar-week-summary__eyebrow">Vue semaine</p>
+            <h3 class="text-xl font-semibold text-slate-950">Resume de la semaine</h3>
+            <p class="mt-1 max-w-2xl text-sm text-slate-600">
+              Les jours remplis remontent tout de suite, les jours vides restent compacts.
+            </p>
+          </div>
+
+          <div class="calendar-week-overview">
+            <div class="calendar-week-overview__pill">
+              <span class="calendar-week-overview__value">{{ getWeekSummaryDayCount() }}</span>
+              <span class="calendar-week-overview__label">jours utiles</span>
+            </div>
+            <div class="calendar-week-overview__pill">
+              <span class="calendar-week-overview__value">{{ getWeekSummaryItemCount() }}</span>
+              <span class="calendar-week-overview__label">items saisis</span>
+            </div>
+            <div class="calendar-week-overview__pill">
+              <span class="calendar-week-overview__value">{{ getWeekSummaryEnergyTotal() }}</span>
+              <span class="calendar-week-overview__label">kcal suivies</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="calendar-week-summary__cards mt-4">
           <article
             *ngFor="let day of weekDays; trackBy: trackByDate"
-            class="rounded border border-slate-200 bg-white p-3 text-xs text-slate-700">
-            <p class="font-semibold text-slate-900">
-              {{ day.dateObj.toFormat('EEE d LLL', { locale: 'fr' }) }}
-            </p>
-            <ng-container *ngIf="getWeekDayResponse(day.date) as dayResponse; else weekDayNoData">
-              <p *ngIf="dayResponse.assignment as assignment" class="mt-1">
-                Cycle: {{ assignment.cycleTitle }} (jour {{ assignment.dayIndex }})
-              </p>
-              <p *ngIf="dayResponse.daySet as daySet" class="mt-1">
-                DaySet: {{ daySet.title }}
-              </p>
-              <div *ngIf="dayResponse.totalsMacros?.dayTotal as dayTotal" class="mt-2">
-                <p *ngFor="let entry of dayTotal | keyvalue">
-                  {{ entry.key }}: {{ entry.value }}
+            class="calendar-week-card"
+            [class.calendar-week-card--empty]="!hasWeekDaySummaryData(day)"
+            [class.calendar-week-card--today]="day.isToday">
+            <div class="calendar-week-card__header">
+              <div>
+                <p class="calendar-week-card__weekday">
+                  {{ day.dateObj.toFormat('EEE', { locale: 'fr' }) }}
+                </p>
+                <p class="calendar-week-card__date">
+                  {{ day.dateObj.toFormat('d LLL', { locale: 'fr' }) }}
                 </p>
               </div>
+
+              <span *ngIf="day.isToday" class="calendar-week-card__today-pill">Aujourd'hui</span>
+            </div>
+
+            <ng-container *ngIf="hasWeekDaySummaryData(day); else weekDayNoData">
+              <div class="calendar-week-card__chips">
+                <span
+                  *ngIf="getWeekDayCycleTitle(day) as cycleTitle"
+                  class="calendar-week-chip calendar-week-chip--cycle">
+                  {{ cycleTitle }}
+                  <ng-container *ngIf="getWeekDayCycleProgress(day) as progress">
+                    - {{ progress }}
+                  </ng-container>
+                </span>
+
+                <span
+                  *ngIf="getWeekDayResponse(day.date)?.daySet as daySet"
+                  class="calendar-week-chip calendar-week-chip--dayset">
+                  {{ daySet.title }}
+                </span>
+
+                <span
+                  *ngIf="getWeekDayResponse(day.date)?.totalsMacros?.targetSource as targetSource"
+                  class="calendar-week-chip calendar-week-chip--target">
+                  {{ getTargetSourceBadgeText(targetSource) }}
+                </span>
+              </div>
+
+              <ng-container *ngIf="getWeekDayMacroHighlights(day.date) as macroHighlights">
+                <div *ngIf="macroHighlights.length > 0" class="calendar-week-macros">
+                  <div
+                    *ngFor="let macro of macroHighlights; trackBy: trackByWeekMacro"
+                    class="calendar-week-macro"
+                    [attr.data-tone]="macro.tone">
+                    <span class="calendar-week-macro__label">{{ macro.label }}</span>
+                    <div class="calendar-week-macro__value-row">
+                      <span class="calendar-week-macro__value">{{ macro.value }}</span>
+                      <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="calendar-week-card__meta">
+                  <span class="calendar-week-meta-pill">{{ getWeekDaySlotCount(day.date) }} plages</span>
+                  <span class="calendar-week-meta-pill">{{ getWeekDayProductCount(day.date) }} items</span>
+                  <span *ngIf="macroHighlights.length > 0" class="calendar-week-meta-pill">
+                    {{ macroHighlights.length }} macros
+                  </span>
+                </div>
+              </ng-container>
+
               <ng-container *ngIf="getWeekDaySlots(day.date) as daySlots">
-                <div *ngIf="daySlots.length > 0" class="mt-2 flex flex-wrap gap-1">
+                <div *ngIf="daySlots.length > 0" class="calendar-week-card__slots">
                   <span
-                    *ngFor="let slot of daySlots; trackBy: trackBySlot"
-                    class="rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[10px] text-indigo-700">
-                    {{ slot.title }} ({{ formatSlotRange(slot) }})
+                    *ngFor="let slot of daySlots | slice: 0 : 3; trackBy: trackBySlot"
+                    class="calendar-week-slot">
+                    <span class="calendar-week-slot__title">{{ slot.title }}</span>
+                    <span class="calendar-week-slot__time">{{ formatSlotRange(slot) }}</span>
+                  </span>
+
+                  <span *ngIf="daySlots.length > 3" class="calendar-week-slot calendar-week-slot--more">
+                    +{{ daySlots.length - 3 }} autres
                   </span>
                 </div>
               </ng-container>
             </ng-container>
+
             <ng-template #weekDayNoData>
-              <p class="mt-1 text-slate-500">Aucune donnee.</p>
+              <div class="calendar-week-card__empty-state">
+                <p class="calendar-week-card__empty-title">Jour leger</p>
+                <p class="calendar-week-card__empty-text">
+                  Aucun cycle, aucun slot et aucun item pour cette journee.
+                </p>
+              </div>
             </ng-template>
           </article>
         </div>
+
         <p *ngIf="loadingDayItems" class="mt-3 text-xs text-slate-500">
           Chargement des produits de la semaine...
         </p>
@@ -173,8 +256,8 @@
         </p>
       </div>
 
-      <div class="flex">
-        <div class="w-16 flex-shrink-0 border-r border-gray-200">
+      <div class="calendar-week-grid flex">
+        <div class="calendar-week-grid__hours w-16 flex-shrink-0 border-r border-gray-200">
           <div class="h-16 border-b border-gray-200"></div>
           <div
             *ngFor="let hour of HOURS; trackBy: trackByHour"
@@ -187,19 +270,21 @@
           <div class="grid min-w-[700px] grid-cols-7">
             <div
               *ngFor="let day of weekDays; trackBy: trackByDate"
-              class="flex h-16 flex-col items-center justify-center gap-1 border-b border-r border-gray-200 px-1 py-1">
-              <span class="text-xs">{{ day.dateObj.toFormat('EEE', { locale: 'fr' }) }}</span>
+              class="calendar-week-grid__day-header flex min-h-16 flex-col items-center justify-center gap-2 border-b border-r border-gray-200 px-2 py-2">
+              <span class="text-xs font-medium text-slate-500">
+                {{ day.dateObj.toFormat('EEE', { locale: 'fr' }) }}
+              </span>
               <span
                 [class.bg-blue-600]="day.isToday"
                 [class.text-white]="day.isToday"
                 [ngClass]="{'text-gray-900 dark:text-gray-300' : !day.isToday}"
-                class="mt-1 flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold">
+                class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold">
                 {{ day.dayNumber }}
               </span>
               <div class="flex items-center gap-2">
                 <button
                   type="button"
-                  class="calendar-items-trigger-week rounded border border-slate-300 px-2 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-100"
+                  class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-slate-300 px-2.5 py-1 text-[10px] font-medium text-slate-600 hover:bg-slate-100"
                   (click)="$event.stopPropagation(); onManageItems(day.date)">
                   Items
                 </button>
@@ -219,7 +304,7 @@
                 <div
                   *ngFor="let hour of HOURS; trackBy: trackByHour"
                   (click)="onHourClick({ hour: hour, label: hour + ':00', assignment: day.assignment }, day.date)"
-                  class="h-24 cursor-pointer border-b border-gray-200 p-1 transition-colors hover:bg-blue-50 dark:hover:bg-blue-800">
+                  class="calendar-week-grid__hour-cell h-24 cursor-pointer border-b border-gray-200 p-1 transition-colors hover:bg-blue-50 dark:hover:bg-blue-800">
                   <div
                     *ngIf="day.assignment && hour === 12"
                     [class]="day.assignment.color"
