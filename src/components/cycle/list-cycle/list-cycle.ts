@@ -176,6 +176,15 @@ export class ListCycle implements OnInit, OnChanges {
     return `${this.formatAmount(percentage)}%`;
   }
 
+  formatDuration(count: number, type: TypeDuree): string {
+    if (type === 'mois') {
+      return `${count} mois`;
+    }
+
+    const suffix = count > 1 ? 's' : '';
+    return `${count} ${type}${suffix}`;
+  }
+
   getStatusLabel(status: CycleBreakdownStatus): string {
     if (status === 'over') {
       return 'Depasse';

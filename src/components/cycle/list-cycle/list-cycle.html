@@ -12,14 +12,14 @@
     </button>
   </div>
 
-  <div *ngIf="hasItems; else emptyState" class="grid gap-4">
+  <div *ngIf="hasItems; else emptyState" class="grid gap-3">
     <mat-card
       *ngFor="let cycle of resolvedCycles; let i = index; trackBy: trackById"
       appearance="outlined"
       class="lc-card rounded-2xl"
       [class.lc-card-active]="isRowActive(cycle, i)">
       <mat-card-content
-        class="p-4 sm:p-5"
+        class="p-3 sm:p-4"
         [class.cursor-pointer]="isSingleSelectMode"
         [attr.tabindex]="isSingleSelectMode ? 0 : null"
         [attr.role]="isSingleSelectMode ? 'button' : null"
@@ -28,51 +28,124 @@
         <div class="flex items-start gap-3">
           <mat-checkbox
             *ngIf="isMultiSelectMode"
-            class="pt-1"
+            class="pt-0.5"
             [checked]="isSelected(cycle.id)"
             [attr.aria-label]="'Selectionner ' + cycle.title"
             (click)="onCheckboxClick($event, cycle)">
           </mat-checkbox>
 
-          <div class="flex-1 space-y-4">
-            <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-              <div class="space-y-3">
-                <div class="flex items-center gap-3">
-                  <span class="lc-color-dot" [style.backgroundColor]="cycle.color"></span>
-                  <div>
-                    <p class="text-base font-semibold text-slate-900">{{ cycle.title }}</p>
-                    <p class="text-sm text-slate-500">{{ cycle.durationDays }} jour(s)</p>
+          <div class="flex-1 space-y-3">
+            <div class="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+              <div class="min-w-0 flex-1 space-y-3">
+                <div class="flex flex-wrap items-start gap-3">
+                  <span class="lc-color-dot mt-1" [style.backgroundColor]="cycle.color"></span>
+
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <p class="text-base font-semibold text-slate-900">{{ cycle.title }}</p>
+                      <span class="lc-meta-chip">{{ cycle.durationDays }} jour(s)</span>
+                      <span class="lc-meta-chip">
+                        {{ formatDuration(cycle.durationCount, cycle.durationType) }}
+                      </span>
+                      <span class="lc-meta-chip">{{ cycle.daySets.length }} day set(s)</span>
+                    </div>
+
+                    <div class="mt-2 flex flex-wrap gap-2">
+                      <span *ngIf="cycle.missingDayCount > 0" class="lc-overview-badge lc-overview-badge-missing">
+                        {{ cycle.missingDayCount }} jour(s) sans day set
+                      </span>
+                      <span *ngIf="cycle.hasDaySetOverflow" class="lc-overview-badge lc-overview-badge-over">
+                        Day sets > cycle
+                      </span>
+                      <span *ngIf="cycle.hasSlotOverflow" class="lc-overview-badge lc-overview-badge-over">
+                        Slots > day set
+                      </span>
+                      <span *ngIf="cycle.hasMissingSlotBreakdown" class="lc-overview-badge lc-overview-badge-missing">
+                        Decomposition slots partielle
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div class="grid gap-3 sm:grid-cols-3">
-                  <div class="lc-macro-card rounded-xl px-3 py-3 text-sm text-slate-700">
-                    <p class="text-xs uppercase tracking-wide text-slate-500">Proteines</p>
-                    <p class="mt-1 text-lg font-semibold text-slate-900">{{ formatAmount(cycle.proteins) }} g</p>
-                  </div>
+                <div class="grid gap-3 lg:grid-cols-2">
+                  <section class="lc-summary-panel rounded-2xl p-3">
+                    <div>
+                      <p class="lc-section-label">Cible cycle</p>
+                      <p class="text-xs text-slate-500">Macros ciblees sur une journee type du cycle.</p>
+                    </div>
 
-                  <div class="lc-macro-card rounded-xl px-3 py-3 text-sm text-slate-700">
-                    <p class="text-xs uppercase tracking-wide text-slate-500">Glucides</p>
-                    <p class="mt-1 text-lg font-semibold text-slate-900">{{ formatAmount(cycle.carbs) }} g</p>
-                  </div>
+                    <div class="mt-3 grid gap-2 sm:grid-cols-3">
+                      <div class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700">
+                        <p class="text-xs uppercase tracking-wide text-slate-500">Proteines</p>
+                        <p class="mt-1 text-base font-semibold text-slate-900">
+                          {{ formatAmount(cycle.proteins) }} g
+                        </p>
+                      </div>
 
-                  <div class="lc-macro-card rounded-xl px-3 py-3 text-sm text-slate-700">
-                    <p class="text-xs uppercase tracking-wide text-slate-500">Lipides</p>
-                    <p class="mt-1 text-lg font-semibold text-slate-900">{{ formatAmount(cycle.lipids) }} g</p>
-                  </div>
+                      <div class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700">
+                        <p class="text-xs uppercase tracking-wide text-slate-500">Glucides</p>
+                        <p class="mt-1 text-base font-semibold text-slate-900">
+                          {{ formatAmount(cycle.carbs) }} g
+                        </p>
+                      </div>
+
+                      <div class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700">
+                        <p class="text-xs uppercase tracking-wide text-slate-500">Lipides</p>
+                        <p class="mt-1 text-base font-semibold text-slate-900">
+                          {{ formatAmount(cycle.lipids) }} g
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="lc-summary-panel rounded-2xl p-3">
+                    <div class="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <p class="lc-section-label">Moyenne journaliere effective / cible cycle</p>
+                        <p class="text-xs text-slate-500">{{ cycle.daySets.length }} day set(s) rattache(s)</p>
+                      </div>
+
+                      <button
+                        mat-stroked-button
+                        type="button"
+                        class="lc-toggle-btn"
+                        [attr.aria-expanded]="isExpanded(cycle.id)"
+                        (click)="onToggleExpanded($event, cycle.id)">
+                        {{ isExpanded(cycle.id) ? 'Masquer le detail' : 'Voir le detail' }}
+                      </button>
+                    </div>
+
+                    <p *ngIf="cycle.missingDayCount > 0" class="mt-2 text-xs text-amber-700">
+                      {{ cycle.missingDayCount }} jour(s) sans day set reprennent directement la cible du cycle.
+                    </p>
+
+                    <div class="mt-3 grid gap-2 sm:grid-cols-3">
+                      <div
+                        *ngFor="let metric of cycle.daySetMetrics; trackBy: trackByMetric"
+                        class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
+                        [ngClass]="getStatusClass(metric.status)">
+                        <div class="lc-breakdown-head">
+                          <p class="text-xs uppercase tracking-wide text-slate-500">{{ metric.label }}</p>
+                          <span class="lc-status-badge" [ngClass]="getStatusClass(metric.status)">
+                            {{ getStatusLabel(metric.status) }}
+                          </span>
+                        </div>
+
+                        <div class="mt-2 flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+                          <p class="text-sm font-semibold text-slate-900">
+                            {{ formatAmount(metric.value) }} / {{ formatAmount(metric.target) }} g
+                          </p>
+                          <p class="text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
+                            {{ formatPercent(metric.percentage) }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
                 </div>
               </div>
 
-              <div class="flex flex-wrap items-center gap-2">
-                <button
-                  mat-stroked-button
-                  type="button"
-                  class="lc-toggle-btn"
-                  [attr.aria-expanded]="isExpanded(cycle.id)"
-                  (click)="onToggleExpanded($event, cycle.id)">
-                  {{ isExpanded(cycle.id) ? 'Masquer le detail' : 'Voir le detail' }}
-                </button>
-
+              <div class="flex flex-wrap items-center gap-2 xl:max-w-xs xl:justify-end">
                 <ng-container *ngIf="isManageMode">
                   <button mat-stroked-button type="button" (click)="stopPropagation($event); onEdit(cycle)">
                     Modifier
@@ -88,57 +161,17 @@
               </div>
             </div>
 
-            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <p class="text-sm font-semibold text-slate-900">Moyenne journaliere effective / cible cycle</p>
-                  <p class="text-xs text-slate-500">{{ cycle.daySets.length }} day set(s) rattache(s)</p>
-                  <p *ngIf="cycle.missingDayCount > 0" class="mt-1 text-xs text-amber-700">
-                    {{ cycle.missingDayCount }} jour(s) sans day set reprennent directement la cible du cycle.
-                  </p>
-                </div>
-
-                <div class="flex flex-wrap gap-2">
-                  <span *ngIf="cycle.hasDaySetOverflow" class="lc-overview-badge lc-overview-badge-over">
-                    Day sets > cycle
-                  </span>
-                  <span *ngIf="cycle.hasSlotOverflow" class="lc-overview-badge lc-overview-badge-over">
-                    Slots > day set
-                  </span>
-                  <span *ngIf="cycle.hasMissingSlotBreakdown" class="lc-overview-badge lc-overview-badge-missing">
-                    Decomposition slots partielle
-                  </span>
-                </div>
-              </div>
-
-              <div class="mt-3 grid gap-3 sm:grid-cols-3">
-                <div
-                  *ngFor="let metric of cycle.daySetMetrics; trackBy: trackByMetric"
-                  class="lc-breakdown-card rounded-xl p-3"
-                  [ngClass]="getStatusClass(metric.status)">
-                  <div class="flex items-center justify-between gap-2">
-                    <p class="text-xs uppercase tracking-wide text-slate-500">{{ metric.label }}</p>
-                    <span class="lc-status-badge" [ngClass]="getStatusClass(metric.status)">
-                      {{ getStatusLabel(metric.status) }}
-                    </span>
-                  </div>
-                  <p class="mt-2 text-lg font-semibold text-slate-900">{{ formatAmount(metric.value) }} g</p>
-                  <p class="text-xs text-slate-500">sur {{ formatAmount(metric.target) }} g</p>
-                  <p class="mt-1 text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
-                    {{ formatPercent(metric.percentage) }}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div *ngIf="isExpanded(cycle.id)" class="lc-detail-panel border-t border-slate-200 pt-4">
-              <div *ngIf="cycle.daySets.length > 0; else noDaySets" class="grid gap-4">
+            <div *ngIf="isExpanded(cycle.id)" class="lc-detail-panel border-t border-slate-200 pt-3">
+              <div *ngIf="cycle.daySets.length > 0; else noDaySets" class="grid gap-3">
                 <div
                   *ngFor="let daySet of cycle.daySets; trackBy: trackByDaySetId"
-                  class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                    <div>
-                      <p class="lc-dayset-title text-sm font-semibold text-slate-900">{{ daySet.title }}</p>
+                  class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                  <div class="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="min-w-0">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <p class="lc-dayset-title text-sm font-semibold text-slate-900">{{ daySet.title }}</p>
+                        <span class="lc-meta-chip">{{ daySet.slots.length }} slot(s)</span>
+                      </div>
                       <p class="text-xs text-slate-500">Part du day set dans le cycle</p>
                     </div>
 
@@ -154,99 +187,116 @@
                     </div>
                   </div>
 
-                  <div class="mt-3 grid gap-3 sm:grid-cols-3">
-                    <div
-                      *ngFor="let metric of daySet.metrics; trackBy: trackByMetric"
-                      class="lc-breakdown-card rounded-xl p-3"
-                      [ngClass]="getStatusClass(metric.status)">
-                      <div class="flex items-center justify-between gap-2">
-                        <p class="text-xs uppercase tracking-wide text-slate-500">{{ metric.label }}</p>
-                        <span class="lc-status-badge" [ngClass]="getStatusClass(metric.status)">
-                          {{ getStatusLabel(metric.status) }}
-                        </span>
-                      </div>
-                      <p class="mt-2 text-base font-semibold text-slate-900">{{ formatAmount(metric.value) }} g</p>
-                      <p class="text-xs text-slate-500">sur {{ formatAmount(metric.target) }} g</p>
-                      <p class="mt-1 text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
-                        {{ formatPercent(metric.percentage) }}
-                      </p>
-                    </div>
-                  </div>
+                  <div class="mt-3 grid gap-3 lg:grid-cols-2">
+                    <section class="lc-subsection rounded-xl p-3">
+                      <p class="lc-section-label">Part du day set dans le cycle</p>
 
-                  <div class="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4">
-                    <div class="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-                      <div>
-                        <p class="text-sm font-semibold text-slate-900">Totaux slots / day set</p>
-                        <p class="text-xs text-slate-500">{{ daySet.slots.length }} slot(s) resolu(s)</p>
-                      </div>
-                    </div>
-
-                    <div *ngIf="hasSlotMetrics(daySet); else slotMetricsUnavailable" class="mt-3 grid gap-3 sm:grid-cols-3">
-                      <div
-                        *ngFor="let metric of daySet.slotMetrics; trackBy: trackByMetric"
-                        class="lc-breakdown-card rounded-xl p-3"
-                        [ngClass]="getStatusClass(metric.status)">
-                        <div class="flex items-center justify-between gap-2">
-                          <p class="text-xs uppercase tracking-wide text-slate-500">{{ metric.label }}</p>
-                          <span class="lc-status-badge" [ngClass]="getStatusClass(metric.status)">
-                            {{ getStatusLabel(metric.status) }}
-                          </span>
-                        </div>
-                        <p class="mt-2 text-base font-semibold text-slate-900">{{ formatAmount(metric.value) }} g</p>
-                        <p class="text-xs text-slate-500">sur {{ formatAmount(metric.target) }} g</p>
-                        <p class="mt-1 text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
-                          {{ formatPercent(metric.percentage) }}
-                        </p>
-                      </div>
-                    </div>
-
-                    <ng-template #slotMetricsUnavailable>
-                      <p class="lc-slot-missing mt-3 text-sm text-amber-700">
-                        Decomposition des slots indisponible pour ce day set.
-                      </p>
-                    </ng-template>
-                  </div>
-
-                  <div *ngIf="daySet.slots.length > 0; else noResolvedSlots" class="mt-4 grid gap-3">
-                    <div
-                      *ngFor="let slot of daySet.slots; trackBy: trackBySlotId"
-                      class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                      <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <p class="lc-slot-title text-sm font-semibold text-slate-900">{{ slot.title }}</p>
-                          <p *ngIf="slot.timeRange" class="text-xs text-slate-500">
-                            {{ slot.timeRange }}
-                          </p>
-                        </div>
-
-                        <p *ngIf="slot.key" class="text-xs uppercase tracking-wide text-slate-400">
-                          {{ slot.key }}
-                        </p>
-                      </div>
-
-                      <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                      <div class="mt-2 grid gap-2 sm:grid-cols-3">
                         <div
-                          *ngFor="let metric of slot.metrics; trackBy: trackByMetric"
-                          class="lc-breakdown-card rounded-xl p-3"
+                          *ngFor="let metric of daySet.metrics; trackBy: trackByMetric"
+                          class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
                           [ngClass]="getStatusClass(metric.status)">
-                          <div class="flex items-center justify-between gap-2">
+                          <div class="lc-breakdown-head">
                             <p class="text-xs uppercase tracking-wide text-slate-500">{{ metric.label }}</p>
                             <span class="lc-status-badge" [ngClass]="getStatusClass(metric.status)">
                               {{ getStatusLabel(metric.status) }}
                             </span>
                           </div>
-                          <p class="mt-2 text-base font-semibold text-slate-900">{{ formatAmount(metric.value) }} g</p>
-                          <p class="text-xs text-slate-500">sur {{ formatAmount(metric.target) }} g</p>
-                          <p class="mt-1 text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
-                            {{ formatPercent(metric.percentage) }}
+
+                          <div class="mt-2 flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+                            <p class="text-sm font-semibold text-slate-900">
+                              {{ formatAmount(metric.value) }} / {{ formatAmount(metric.target) }} g
+                            </p>
+                            <p class="text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
+                              {{ formatPercent(metric.percentage) }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section class="lc-subsection rounded-xl p-3">
+                      <div class="flex items-start justify-between gap-3">
+                        <div>
+                          <p class="lc-section-label">Totaux slots / day set</p>
+                          <p class="text-xs text-slate-500">{{ daySet.slots.length }} slot(s) resolu(s)</p>
+                        </div>
+                      </div>
+
+                      <div *ngIf="hasSlotMetrics(daySet); else slotMetricsUnavailable" class="mt-2 grid gap-2 sm:grid-cols-3">
+                        <div
+                          *ngFor="let metric of daySet.slotMetrics; trackBy: trackByMetric"
+                          class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
+                          [ngClass]="getStatusClass(metric.status)">
+                          <div class="lc-breakdown-head">
+                            <p class="text-xs uppercase tracking-wide text-slate-500">{{ metric.label }}</p>
+                            <span class="lc-status-badge" [ngClass]="getStatusClass(metric.status)">
+                              {{ getStatusLabel(metric.status) }}
+                            </span>
+                          </div>
+
+                          <div class="mt-2 flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+                            <p class="text-sm font-semibold text-slate-900">
+                              {{ formatAmount(metric.value) }} / {{ formatAmount(metric.target) }} g
+                            </p>
+                            <p class="text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
+                              {{ formatPercent(metric.percentage) }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <ng-template #slotMetricsUnavailable>
+                        <p class="lc-slot-missing mt-2 text-sm text-amber-700">
+                          Decomposition des slots indisponible pour ce day set.
+                        </p>
+                      </ng-template>
+                    </section>
+                  </div>
+
+                  <div *ngIf="daySet.slots.length > 0; else noResolvedSlots" class="mt-3 grid gap-2">
+                    <div
+                      *ngFor="let slot of daySet.slots; trackBy: trackBySlotId"
+                      class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                        <div class="min-w-0">
+                          <div class="flex flex-wrap items-center gap-2">
+                            <p class="lc-slot-title text-sm font-semibold text-slate-900">{{ slot.title }}</p>
+                            <span *ngIf="slot.key" class="lc-slot-key">{{ slot.key }}</span>
+                          </div>
+                          <p *ngIf="slot.timeRange" class="text-xs text-slate-500">
+                            {{ slot.timeRange }}
                           </p>
+                        </div>
+                      </div>
+
+                      <div class="mt-2 grid gap-2 sm:grid-cols-3">
+                        <div
+                          *ngFor="let metric of slot.metrics; trackBy: trackByMetric"
+                          class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
+                          [ngClass]="getStatusClass(metric.status)">
+                          <div class="lc-breakdown-head">
+                            <p class="text-xs uppercase tracking-wide text-slate-500">{{ metric.label }}</p>
+                            <span class="lc-status-badge" [ngClass]="getStatusClass(metric.status)">
+                              {{ getStatusLabel(metric.status) }}
+                            </span>
+                          </div>
+
+                          <div class="mt-2 flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
+                            <p class="text-sm font-semibold text-slate-900">
+                              {{ formatAmount(metric.value) }} / {{ formatAmount(metric.target) }} g
+                            </p>
+                            <p class="text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
+                              {{ formatPercent(metric.percentage) }}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   <ng-template #noResolvedSlots>
-                    <p *ngIf="!daySet.hasMissingSlotBreakdown" class="mt-4 text-sm text-slate-500">
+                    <p *ngIf="!daySet.hasMissingSlotBreakdown" class="mt-3 text-sm text-slate-500">
                       Aucun slot rattache a ce day set.
                     </p>
                   </ng-template>
