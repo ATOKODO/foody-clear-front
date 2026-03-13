@@ -256,7 +256,102 @@
         </p>
       </div>
 
-      <div class="calendar-week-grid">
+      <div class="calendar-week-mobile lg:hidden">
+        <article
+          *ngFor="let day of weekDays; trackBy: trackByDate"
+          class="calendar-week-mobile__day"
+          [class.calendar-week-mobile__day--today]="day.isToday">
+          <div class="calendar-week-mobile__header">
+            <div>
+              <p class="calendar-week-mobile__weekday">
+                {{ day.dateObj.toFormat('EEEE', { locale: 'fr' }) }}
+              </p>
+              <div class="calendar-week-mobile__date-row">
+                <span class="calendar-week-mobile__date">{{ day.dayNumber }}</span>
+                <span *ngIf="day.isToday" class="calendar-week-mobile__today-pill">Aujourd'hui</span>
+              </div>
+            </div>
+
+            <div class="calendar-week-mobile__actions">
+              <button
+                type="button"
+                class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-slate-300 px-2.5 py-1 text-[10px] font-medium text-slate-600 hover:bg-slate-100"
+                (click)="$event.stopPropagation(); onManageItems(day.date)">
+                Items
+              </button>
+              <button
+                mat-mini-fab
+                color="primary"
+                type="button"
+                class="calendar-add-trigger-week h-8 w-8 !shadow-sm"
+                (click)="$event.stopPropagation(); onDayClick(day)">
+                +
+              </button>
+            </div>
+          </div>
+
+          <div
+            *ngIf="getWeekDayCycleTitle(day) as cycleTitle"
+            class="calendar-week-mobile__assignment"
+            [ngClass]="day.assignment?.color ?? 'bg-slate-500'">
+            <span class="truncate">{{ cycleTitle }}</span>
+            <span *ngIf="getWeekDayCycleProgress(day) as progress" class="calendar-week-mobile__assignment-progress">
+              {{ progress }}
+            </span>
+          </div>
+
+          <div *ngIf="getWeekTimelineBlocks(day.date).length > 0; else emptyMobileDay" class="calendar-week-mobile__blocks">
+            <div
+              *ngFor="let block of getWeekTimelineBlocks(day.date); trackBy: trackByWeekTimelineBlock"
+              class="calendar-week-block calendar-week-block--mobile"
+              [class.calendar-week-block--orphan]="block.kind === 'orphan'"
+              [attr.data-tone]="block.tone"
+              (click)="onWeekTimelineBlockClick(day, block, $event)">
+              <div class="calendar-week-block__header">
+                <div class="calendar-week-block__heading">
+                  <span class="calendar-week-block__title">{{ block.title }}</span>
+                  <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
+                </div>
+                <span class="calendar-week-block__count">
+                  {{ block.items.length }} item{{ block.items.length > 1 ? 's' : '' }}
+                </span>
+              </div>
+
+              <div *ngIf="block.items.length > 0; else emptyMobileBlock" class="calendar-week-block__items">
+                <div
+                  *ngFor="let product of block.items; trackBy: trackByInsertedProduct"
+                  (click)="onItemClick(product, day.date, $event)"
+                  class="calendar-week-block__item">
+                  <div class="calendar-week-block__item-top">
+                    <span class="calendar-week-block__item-name">{{ product.productName }}</span>
+                    <span class="calendar-week-block__item-time">
+                      {{ formatItemTime(product.occurredAt, product.insertedAt) }}
+                    </span>
+                  </div>
+                  <div class="calendar-week-block__item-meta">
+                    qte: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
+                  </div>
+                </div>
+              </div>
+
+              <ng-template #emptyMobileBlock>
+                <p class="calendar-week-block__empty">Aucun item saisi sur cette plage.</p>
+              </ng-template>
+            </div>
+          </div>
+
+          <ng-template #emptyMobileDay>
+            <div class="calendar-week-mobile__empty">
+              <p class="calendar-week-mobile__empty-title">Aucune plage sur cette journee</p>
+              <p class="calendar-week-mobile__empty-text">
+                Utilise le bouton + pour ajouter une action ou ouvrir les items du jour.
+              </p>
+            </div>
+          </ng-template>
+        </article>
+      </div>
+
+      <div class="calendar-week-grid hidden lg:block">
         <div class="calendar-week-grid__timeline">
           <div class="calendar-week-grid__corner">
             <span>Heures</span>
