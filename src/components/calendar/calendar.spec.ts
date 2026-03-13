@@ -133,6 +133,85 @@ describe('Calendar', () => {
     expect(textContent).toContain('1 items');
   });
 
+  it('should render a modernized day view with summary and timeline blocks', () => {
+    fixture.componentRef.setInput('inputDayResponse', {
+      dateLocal: '2026-02-17',
+      timezone: 'UTC',
+      assignment: {
+        id: 8,
+        cycleId: 2,
+        cycleTitle: 'Seche',
+        startDateLocal: '2026-02-16',
+        endDateLocal: '2026-02-22',
+        dayIndex: 2,
+      },
+      daySet: {
+        id: 1,
+        title: 'Jour standard',
+        nutritionValue: null,
+        slots: [
+          {
+            slotId: 11,
+            slotKey: 'breakfast',
+            title: 'Petit dejeuner',
+            sortOrder: 1,
+            startTime: '08:00:00',
+            endTime: '09:00:00',
+            nutritionValue: null,
+          },
+        ],
+      },
+      items: [
+        {
+          id: 44,
+          productId: 8,
+          productName: 'Skyr',
+          inventoryId: 4,
+          qty: 120,
+          qtyUnit: 'g',
+          qtyNormalized: 120,
+          insertedAt: '2026-02-17T08:25:00Z',
+          occurredAt: '2026-02-17T08:15:00Z',
+          slotId: 11,
+          slotKey: 'breakfast',
+          nutritionValue: {},
+        },
+      ],
+      totalsMacros: {
+        bySlot: [],
+        dayTotal: {
+          energyKcal: 420,
+          proteins: 30,
+          carbs: 18,
+          lipids: 9,
+        },
+        targets: {
+          proteins: 150,
+        },
+        deltaToTargets: {
+          proteins: -120,
+        },
+        incompleteNutritionKeys: [],
+        targetSource: 'daySet',
+      },
+      itemsBySlot: [],
+      slots: [],
+    });
+    component.switchView('day');
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement;
+    const textContent = root.textContent;
+
+    expect(root.querySelector('.calendar-day-panel')).toBeTruthy();
+    expect(root.querySelector('.calendar-day-summary__assignment')).toBeTruthy();
+    expect(root.querySelectorAll('.calendar-day-block').length).toBe(1);
+    expect(root.querySelectorAll('.calendar-day-hour-chip').length).toBe(24);
+    expect(textContent).toContain('Vue jour');
+    expect(textContent).toContain('Jour standard');
+    expect(textContent).toContain('Detail par plage');
+  });
+
   it('should include occurredAt when an hour is clicked', () => {
     const emitted: Array<{ occurredAt: string | null }> = [];
     component.hourClick.subscribe((event) => emitted.push(event));

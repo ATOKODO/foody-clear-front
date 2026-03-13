@@ -93,6 +93,19 @@ interface CalendarWeekMacroHighlight {
   tone: 'energy' | 'proteins' | 'carbs' | 'lipids';
 }
 
+interface CalendarDayAssignmentHighlight {
+  title: string;
+  progress: string | null;
+  colorClass: string;
+}
+
+interface CalendarMacroMetricEntry {
+  key: string;
+  label: string;
+  value: string;
+  unit: string;
+}
+
 interface CalendarWeekTimelineBlock {
   id: string;
   kind: 'slot' | 'orphan';
@@ -536,28 +549,110 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getWeekDayMacroHighlights(dateLocal: string): CalendarWeekMacroHighlight[] {
-    const dayTotal = this.weekDayResponseByDate.get(dateLocal)?.totalsMacros?.dayTotal;
-    if (!dayTotal) {
+    return this.buildMacroHighlights(
+      this.weekDayResponseByDate.get(dateLocal)?.totalsMacros?.dayTotal ?? null,
+    );
+  }
+
+  getDayMacroHighlights(): CalendarWeekMacroHighlight[] {
+    return this.buildMacroHighlights(this.inputDayResponse?.totalsMacros?.dayTotal ?? null);
+  }
+
+  getDayAssignmentHighlight(): CalendarDayAssignmentHighlight | null {
+    const currentDateLocal = this.currentDate.toISODate();
+    if (currentDateLocal) {
+      const assignment = this.buildCalendarAssignmentForDate(currentDateLocal);
+      if (assignment) {
+        return {
+          title: assignment.cycleName ?? assignment.label ?? 'Cycle actif',
+          progress: assignment.dayNumber
+            ? assignment.totalDays
+              ? `Jour ${assignment.dayNumber}/${assignment.totalDays}`
+              : `Jour ${assignment.dayNumber}`
+            : null,
+          colorClass: assignment.color ?? 'bg-slate-700',
+        };
+      }
+    }
+
+    const assignment = this.inputDayResponse?.assignment;
+    if (!assignment) {
+      return null;
+    }
+
+    return {
+      title: assignment.cycleTitle,
+      progress: `Jour ${assignment.dayIndex}`,
+      colorClass: 'bg-slate-700',
+    };
+  }
+
+  getDayItemCount(): number {
+    return this.inputDayResponse?.items.length ?? 0;
+  }
+
+  getDaySlotCount(): number {
+    return this.daySlots.length;
+  }
+
+  getDayEnergyTotal(): string {
+    const energy = this.inputDayResponse?.totalsMacros?.dayTotal['energyKcal'];
+    return typeof energy === 'number' ? this.formatCompactNumber(energy, 0) : '0';
+  }
+
+  getDayMetricEntries(
+    metrics: Record<string, number | InputDayMacroValue> | null | undefined,
+  ): CalendarMacroMetricEntry[] {
+    if (!metrics) {
       return [];
     }
 
-    return this.weekMacroOrder.flatMap((key) => {
-      const definition = this.weekMacroDefinitions[key];
-      const value = dayTotal[key];
-      if (!definition || value === null || value === undefined) {
-        return [];
+    const entries = Object.entries(metrics).sort(([leftKey], [rightKey]) => {
+      const leftIndex = this.weekMacroOrder.indexOf(leftKey);
+      const rightIndex = this.weekMacroOrder.indexOf(rightKey);
+
+      if (leftIndex === -1 && rightIndex === -1) {
+        return leftKey.localeCompare(rightKey, 'fr');
       }
 
-      return [
-        {
-          key,
-          label: definition.label,
-          value: this.formatWeekMacroValue(value),
-          unit: definition.unit,
-          tone: definition.tone,
-        },
-      ];
+      if (leftIndex === -1) {
+        return 1;
+      }
+
+      if (rightIndex === -1) {
+        return -1;
+      }
+
+      return leftIndex - rightIndex;
     });
+
+    return entries.map(([key, value]) => {
+      const definition = this.weekMacroDefinitions[key];
+
+      return {
+        key,
+        label: definition?.label ?? key,
+        value: this.formatMetricValue(value),
+        unit: definition?.unit ?? '',
+      };
+    });
+  }
+
+  getDayTimelineBlocks(): CalendarWeekTimelineBlock[] {
+    const dateLocal = this.inputDayResponse?.dateLocal ?? this.currentDate.toISODate() ?? '';
+    if (dateLocal.trim() === '') {
+      return this.emptyWeekTimelineBlocks;
+    }
+
+    const slots = this.resolveDaySlots();
+    const insertedProducts = this.buildCalendarInsertedProducts(
+      this.resolveItemsBySlotEntries(),
+      this.inputDayResponse?.items ?? [],
+      dateLocal,
+      slots,
+    );
+
+    return this.buildWeekTimelineBlocks(dateLocal, slots, insertedProducts);
   }
 
   private buildViewChangeEvent(): CalendarViewChangeEvent {
@@ -672,6 +767,10 @@ export class Calendar implements OnInit, OnChanges {
     return macro.key;
   }
 
+  trackByMacroMetricEntry(_: number, entry: CalendarMacroMetricEntry): string {
+    return entry.key;
+  }
+
   trackByWeekTimelineBlock(_: number, block: CalendarWeekTimelineBlock): string {
     return block.id;
   }
@@ -695,6 +794,24 @@ export class Calendar implements OnInit, OnChanges {
         assignment: day.assignment,
       },
       day.date,
+    );
+  }
+
+  onDayTimelineBlockClick(block: CalendarWeekTimelineBlock, event: Event): void {
+    event.stopPropagation();
+
+    const dateLocal = this.inputDayResponse?.dateLocal ?? this.currentDate.toISODate() ?? '';
+    if (dateLocal.trim() === '') {
+      return;
+    }
+
+    const hour = Math.max(0, Math.min(23, Math.floor(block.startMinute / 60)));
+    this.onHourClick(
+      {
+        hour,
+        label: `${hour.toString().padStart(2, '0')}:00`,
+      },
+      dateLocal,
     );
   }
 
@@ -1019,6 +1136,44 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     return this.formatCompactNumber(value, Math.abs(value) >= 100 ? 0 : 1);
+  }
+
+  private buildMacroHighlights(
+    dayTotal: Record<string, InputDayMacroValue> | null,
+  ): CalendarWeekMacroHighlight[] {
+    if (!dayTotal) {
+      return [];
+    }
+
+    return this.weekMacroOrder.flatMap((key) => {
+      const definition = this.weekMacroDefinitions[key];
+      const value = dayTotal[key];
+      if (!definition || value === null || value === undefined) {
+        return [];
+      }
+
+      return [
+        {
+          key,
+          label: definition.label,
+          value: this.formatWeekMacroValue(value),
+          unit: definition.unit,
+          tone: definition.tone,
+        },
+      ];
+    });
+  }
+
+  private formatMetricValue(value: number | InputDayMacroValue): string {
+    if (typeof value === 'number') {
+      return this.formatCompactNumber(value, Math.abs(value) >= 100 ? 0 : 1);
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+      return value;
+    }
+
+    return '--';
   }
 
   private formatCompactNumber(value: number, maximumFractionDigits: number): string {
