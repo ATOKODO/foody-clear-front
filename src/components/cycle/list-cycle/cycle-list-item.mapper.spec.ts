@@ -23,7 +23,7 @@ describe('buildCycleListItem', () => {
   it('should respect daySetOrder when resolving day sets', () => {
     const item = buildCycleListItem(
       createCycle({
-        daySetOrder: [2, 1],
+        daySetOrder: [0, 2, 0, 1, 0, 0, 0],
         daySets: [
           createDaySet({
             id: 1,
@@ -40,6 +40,7 @@ describe('buildCycleListItem', () => {
     );
 
     expect(item.daySets.map((daySet) => daySet.id)).toEqual([2, 1]);
+    expect(item.missingDayCount).toBe(5);
   });
 
   it('should reconstruct nested slots and their ratios', () => {

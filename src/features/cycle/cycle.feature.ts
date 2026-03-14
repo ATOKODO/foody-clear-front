@@ -19,6 +19,7 @@ import {
   buildCycleListItem,
   getCycleMacroTotals,
   resolveCycleDaySetIds,
+  resolveCycleDaySetTimeline,
   resolveCycleDurationDays,
 } from '../../components/cycle/list-cycle/cycle-list-item.mapper';
 import { DaySetListItem } from '../../components/day-set/day-set-list/day-set-list';
@@ -175,7 +176,7 @@ export class CycleFeature implements OnInit {
       typeDuree: cycle.durationType,
       durationDays: resolveCycleDurationDays(cycle),
       daySetIds: resolveCycleDaySetIds(cycle),
-      daySetOrder: resolveCycleDaySetIds(cycle),
+      daySetOrder: resolveCycleDaySetTimeline(cycle),
     };
     this.openFormDialog();
   }
@@ -382,7 +383,7 @@ export class CycleFeature implements OnInit {
       durationCount: value.nombre,
       durationType: value.typeDuree,
       daySetIds: this.normalizeDaySetIds(value.daySetOrder),
-      daySetOrder: this.normalizeDaySetIds(value.daySetOrder),
+      daySetOrder: this.normalizeDaySetTimeline(value.daySetOrder),
     };
   }
 
@@ -468,6 +469,12 @@ export class CycleFeature implements OnInit {
 
   private normalizeDaySetIds(daySetIds: number[] | null | undefined): number[] {
     return Array.from(new Set((daySetIds ?? []).filter((id) => Number.isInteger(id) && id > 0)));
+  }
+
+  private normalizeDaySetTimeline(daySetOrder: number[] | null | undefined): number[] {
+    return (daySetOrder ?? [])
+      .map((id) => Math.trunc(Number(id)))
+      .filter((id) => Number.isInteger(id) && id >= 0);
   }
 
   private normalizePositiveInteger(value: unknown, fallback: number): number {

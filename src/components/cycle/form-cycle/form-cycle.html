@@ -143,19 +143,17 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 class="text-base font-semibold text-slate-900">Day sets du cycle</h3>
-          <p class="text-sm text-slate-600">
-            Selectionnes: {{ selectedDaySetOrder.length }} / {{ maxSelectableDaySets }}
-          </p>
+          <p class="text-sm text-slate-600">Selectionnes: {{ selectedDaySetIds.length }} / {{ maxSelectableDaySets }}</p>
         </div>
 
         <p class="text-sm text-slate-500">
-          Les nouveaux day sets ajoutes sont places en fin de cycle.
+          Les day sets coches remplacent le premier jour encore base sur le cycle.
         </p>
       </div>
 
       <p *ngIf="showSelectionError && hasSelectedDaySetOverflow" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-        Le nombre de day sets selectionnes depasse la duree du cycle. Reduis la selection ou
-        augmente le nombre de jours.
+        Certains day sets sont places au-dela de la duree du cycle. Deplace-les dans la zone valide
+        ou retire-les avant d'enregistrer.
       </p>
 
       <app-day-set-list
@@ -170,18 +168,22 @@
     <div class="space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <h3 class="text-base font-semibold text-slate-900">Ordre du cycle</h3>
-        <p class="text-sm text-slate-500">Glisse-depose les day sets selectionnes pour definir leur ordre.</p>
+        <p class="text-sm text-slate-500">Glisse-depose les jours pour placer les day sets au milieu des jours par defaut.</p>
       </div>
 
       <div
         cdkDropList
         class="fc-order-list"
-        [cdkDropListData]="selectedDaySetsInOrder"
+        [cdkDropListData]="timelineSlots"
         (cdkDropListDropped)="onDaySetOrderDropped($event)">
         <div
-          *ngFor="let daySet of selectedDaySetsInOrder; let index = index; trackBy: trackByDaySetId"
+          *ngFor="let slot of timelineSlots; trackBy: trackByTimelineSlot"
           cdkDrag
-          class="fc-order-item rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+          class="fc-order-item rounded-xl border px-4 py-3 shadow-sm"
+          [class.border-red-300]="slot.isOverflow"
+          [class.bg-red-50]="slot.isOverflow"
+          [class.border-slate-200]="!slot.isOverflow"
+          [class.bg-white]="!slot.isOverflow">
           <div class="flex items-center justify-between gap-3">
             <div class="flex min-w-0 items-center gap-3">
               <button
@@ -194,20 +196,35 @@
 
               <div class="min-w-0">
                 <p class="truncate text-sm font-semibold text-slate-900">
-                  {{ index + 1 }}. {{ daySet.title }}
+                  Jour {{ slot.dayNumber }}. {{ slot.title }}
                 </p>
-                <p class="text-xs text-slate-500">Day set #{{ daySet.id }}</p>
+                <p *ngIf="slot.isDefault; else assignedDaySet" class="text-xs text-slate-500">
+                  Jour base sur l'objectif du cycle.
+                </p>
+                <ng-template #assignedDaySet>
+                  <p class="text-xs" [class.text-red-700]="slot.isOverflow" [class.text-slate-500]="!slot.isOverflow">
+                    <ng-container *ngIf="slot.isOverflow; else inRangeDaySet">
+                      Position hors duree du cycle. Deplace ce day set avant d'enregistrer.
+                    </ng-container>
+                    <ng-template #inRangeDaySet>Day set #{{ slot.daySetId }}</ng-template>
+                  </p>
+                </ng-template>
               </div>
             </div>
 
-            <button mat-stroked-button color="warn" type="button" (click)="removeDaySetFromOrder(+daySet.id)">
+            <button
+              *ngIf="!slot.isDefault"
+              mat-stroked-button
+              color="warn"
+              type="button"
+              (click)="removeDaySetFromOrder(slot.daySetId)">
               Retirer
             </button>
           </div>
         </div>
 
-        <p *ngIf="selectedDaySetsInOrder.length === 0" class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500">
-          Aucun day set selectionne.
+        <p *ngIf="timelineSlots.length === 0" class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500">
+          Aucun jour configure.
         </p>
       </div>
     </div>

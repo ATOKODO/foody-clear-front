@@ -260,7 +260,7 @@ describe('CycleFeature', () => {
       typeDuree: 'jour',
       durationDays: 12,
       daySetIds: [3, 1],
-      daySetOrder: [3, 1],
+      daySetOrder: [0, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
     });
 
     expect(dto).toEqual({
@@ -271,7 +271,7 @@ describe('CycleFeature', () => {
       durationCount: 12,
       durationType: 'jour',
       daySetIds: [3, 1],
-      daySetOrder: [3, 1],
+      daySetOrder: [0, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
     });
   });
 
@@ -285,7 +285,7 @@ describe('CycleFeature', () => {
         durationCount: 10,
         durationType: 'jour',
         nutritionValues: [nutritionValue('PROTEIN', 120)],
-        daySetOrder: [5, 2],
+        daySetOrder: [0, 5, 0, 2, 0, 0, 0, 0, 0, 0],
       },
     ];
 
@@ -316,7 +316,7 @@ describe('CycleFeature', () => {
       typeDuree: 'jour',
       durationDays: 10,
       daySetIds: [5, 2],
-      daySetOrder: [5, 2],
+      daySetOrder: [0, 5, 0, 2, 0, 0, 0, 0, 0, 0],
     });
   });
 
@@ -330,7 +330,7 @@ describe('CycleFeature', () => {
         durationCount: 10,
         durationType: 'jour',
         nutritionValues: [nutritionValue('PROTEIN', 120)],
-        daySetOrder: [5, 2],
+        daySetOrder: [0, 5, 0, 2, 0, 0, 0, 0, 0, 0],
       },
     ];
 

@@ -29,7 +29,7 @@ describe('FormCycle', () => {
       durationDays: 1,
     });
     expect(component.nutritionValues.length).toBe(3);
-    expect(component.selectedDaySetOrder).toEqual([]);
+    expect(component.daySetTimeline).toEqual([0]);
   });
 
   it('should patch values in edit mode when cycle is provided', () => {
@@ -41,9 +41,9 @@ describe('FormCycle', () => {
         { nutritionKey: 'PROTEIN', amount: 180, unit: 'G', reference: 'PER_100G' },
       ],
       nombre: 4,
-      typeDuree: 'semaine',
-      durationDays: 28,
-      daySetOrder: [3, 1],
+      typeDuree: 'jour',
+      durationDays: 4,
+      daySetOrder: [3, 0, 1, 0],
     });
     fixture.detectChanges();
 
@@ -51,16 +51,16 @@ describe('FormCycle', () => {
       titre: 'Seche',
       couleur: 'green',
       nombre: 4,
-      typeDuree: 'semaine',
-      durationDays: 28,
+      typeDuree: 'jour',
+      durationDays: 4,
     });
     expect(component.nutritionValues).toEqual([
       { nutritionKey: 'PROTEIN', amount: 180, unit: 'G', reference: 'PER_100G' },
     ]);
-    expect(component.selectedDaySetOrder).toEqual([3, 1]);
+    expect(component.daySetTimeline).toEqual([3, 0, 1, 0]);
   });
 
-  it('should emit submitted payload with durationDays and ordered day sets', () => {
+  it('should emit submitted payload with the full daySet timeline', () => {
     const emitted: Array<unknown> = [];
     component.submitted.subscribe((payload) => emitted.push(payload));
 
@@ -71,7 +71,7 @@ describe('FormCycle', () => {
       typeDuree: 'jour',
       durationDays: 6,
     });
-    component.selectedDaySetOrder = [4, 2];
+    component.daySetTimeline = [0, 4, 0, 2, 0, 0];
     component.nutritionValues = [
       { nutritionKey: 'PROTEIN', amount: 200, unit: 'G', reference: 'PER_100G' },
       { nutritionKey: 'CARBOHYDRATE', amount: 300, unit: 'G', reference: 'PER_100G' },
@@ -95,13 +95,13 @@ describe('FormCycle', () => {
           typeDuree: 'jour',
           durationDays: 6,
           daySetIds: [4, 2],
-          daySetOrder: [4, 2],
+          daySetOrder: [0, 4, 0, 2, 0, 0],
         },
       },
     ]);
   });
 
-  it('should block submit when selected day sets exceed durationDays', () => {
+  it('should block submit when assigned day sets remain beyond durationDays', () => {
     const emitted: Array<unknown> = [];
     component.submitted.subscribe((payload) => emitted.push(payload));
 
@@ -112,7 +112,7 @@ describe('FormCycle', () => {
       typeDuree: 'jour',
       durationDays: 2,
     });
-    component.selectedDaySetOrder = [1, 2, 3];
+    component.daySetTimeline = [1, 0, 3];
 
     component.onSubmit();
 
@@ -120,8 +120,11 @@ describe('FormCycle', () => {
     expect(component.showSelectionError).toBeTrue();
   });
 
-  it('should keep current order and append newly selected day sets', () => {
-    component.selectedDaySetOrder = [2, 4];
+  it('should place a newly selected day set in the first default slot', () => {
+    component.form.patchValue({
+      durationDays: 4,
+    });
+    component.daySetTimeline = [0, 2, 0, 4];
 
     component.onDaySetsSelected([
       { id: '4', title: 'Jour 4' },
@@ -129,20 +132,34 @@ describe('FormCycle', () => {
       { id: '6', title: 'Jour 6' },
     ]);
 
-    expect(component.selectedDaySetOrder).toEqual([2, 4, 6]);
+    expect(component.daySetTimeline).toEqual([6, 2, 0, 4]);
   });
 
-  it('should sync helper fields when durationDays is edited manually', () => {
+  it('should turn an unchecked day set slot back into a cycle default day', () => {
     component.form.patchValue({
-      nombre: 2,
-      typeDuree: 'semaine',
-      durationDays: 31,
+      durationDays: 4,
     });
+    component.daySetTimeline = [0, 2, 0, 4];
+
+    component.onDaySetsSelected([{ id: '4', title: 'Jour 4' }]);
+
+    expect(component.daySetTimeline).toEqual([0, 0, 0, 4]);
+  });
+
+  it('should keep overflowing day sets visible when durationDays is reduced', () => {
+    component.form.patchValue({
+      nombre: 4,
+      typeDuree: 'jour',
+      durationDays: 2,
+    });
+    component.daySetTimeline = [1, 0, 2, 0];
 
     component.onDurationDaysInput();
 
-    expect(component.form.controls.nombre.value).toBe(31);
+    expect(component.form.controls.nombre.value).toBe(2);
     expect(component.form.controls.typeDuree.value).toBe('jour');
+    expect(component.daySetTimeline).toEqual([1, 0, 2]);
+    expect(component.hasSelectedDaySetOverflow).toBeTrue();
   });
 
   it('should render the updated duration and ordering labels', () => {
@@ -152,5 +169,6 @@ describe('FormCycle', () => {
     expect(text).toContain('Nombre de jours');
     expect(text).toContain('Raccourcis de duree');
     expect(text).toContain('Ordre du cycle');
+    expect(text).toContain('Objectif du cycle');
   });
 });

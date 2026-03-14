@@ -64,10 +64,11 @@ export function buildCycleListItem(
   const macroNutritionKeys = resolveMacroNutritionKeys(options.macroNutritionKeys);
   const cycleTotals = getCycleMacroTotals(cycle, macroNutritionKeys);
   const durationDays = resolveCycleDurationDays(cycle);
+  const daySetTimeline = resolveCycleDaySetTimeline(cycle);
   const daySets = resolveCycleDaySets(cycle, options.fallbackDaySets ?? []).map((daySet) =>
     buildDaySetBreakdown(daySet, cycleTotals, macroNutritionKeys, options.fallbackSlots ?? []),
   );
-  const missingDayCount = Math.max(durationDays - daySets.length, 0);
+  const missingDayCount = daySetTimeline.filter((daySetId) => daySetId === 0).length;
   const daySetTotals = buildEffectiveDailyTotals(
     daySets.map((daySet) => daySet.totals),
     cycleTotals,
@@ -132,23 +133,29 @@ export function resolveCycleDurationDays(
 }
 
 export function resolveCycleDaySetIds(
-  cycle: Pick<Cycle, 'daySetOrder' | 'daySets'>,
+  cycle: Pick<Cycle, 'daySetOrder' | 'daySets' | 'durationDays' | 'durationCount' | 'durationType'>,
 ): number[] {
-  if (Array.isArray(cycle.daySetOrder) && cycle.daySetOrder.length > 0) {
-    return normalizeDaySetIds(cycle.daySetOrder);
-  }
+  return normalizeDaySetIds(resolveCycleDaySetTimeline(cycle));
+}
 
-  const daySetIds = (cycle.daySets ?? [])
-    .map((daySet) => {
-      if (typeof daySet !== 'object' || daySet === null || !('id' in daySet)) {
-        return NaN;
-      }
+export function resolveCycleDaySetTimeline(
+  cycle: Pick<Cycle, 'daySetOrder' | 'daySets' | 'durationDays' | 'durationCount' | 'durationType'>,
+): number[] {
+  const durationDays = resolveCycleDurationDays(cycle);
+  const rawTimeline =
+    Array.isArray(cycle.daySetOrder) && cycle.daySetOrder.length > 0
+      ? cycle.daySetOrder
+      : (cycle.daySets ?? [])
+          .map((daySet) => {
+            if (typeof daySet !== 'object' || daySet === null || !('id' in daySet)) {
+              return NaN;
+            }
 
-      return Number((daySet as { id: unknown }).id);
-    })
-    .filter((id): id is number => Number.isFinite(id));
+            return Number((daySet as { id: unknown }).id);
+          })
+          .filter((id): id is number => Number.isFinite(id));
 
-  return normalizeDaySetIds(daySetIds);
+  return normalizeDaySetTimeline(rawTimeline, durationDays);
 }
 
 function buildDaySetBreakdown(
@@ -314,17 +321,9 @@ function resolveCycleDaySets(cycle: Cycle, fallbackDaySets: DaySet[]): DaySetRec
   const embeddedById = new Map(embeddedDaySets.map((daySet) => [daySet.id, daySet]));
 
   if (Array.isArray(cycle.daySetOrder) && cycle.daySetOrder.length > 0) {
-    const orderedDaySets = cycle.daySetOrder
+    return resolveCycleDaySetIds(cycle)
       .map((id) => mergeDaySetRecords(embeddedById.get(id) ?? null, globalById.get(id) ?? null))
       .filter((daySet): daySet is DaySetRecord => daySet !== null);
-
-    const orderedIds = new Set(orderedDaySets.map((daySet) => daySet.id));
-    const extraEmbedded = embeddedDaySets
-      .filter((daySet) => !orderedIds.has(daySet.id))
-      .map((daySet) => mergeDaySetRecords(daySet, globalById.get(daySet.id) ?? null))
-      .filter((daySet): daySet is DaySetRecord => daySet !== null);
-
-    return [...orderedDaySets, ...extraEmbedded];
   }
 
   if (embeddedDaySets.length > 0) {
@@ -705,6 +704,20 @@ function roundNumber(value: number): number {
 
 function normalizeDaySetIds(daySetIds: number[] | null | undefined): number[] {
   return Array.from(new Set((daySetIds ?? []).filter((id) => Number.isInteger(id) && id > 0)));
+}
+
+function normalizeDaySetTimeline(daySetOrder: number[] | null | undefined, durationDays: number): number[] {
+  const timeline = Array.isArray(daySetOrder)
+    ? daySetOrder
+        .slice(0, Math.max(0, durationDays))
+        .map((id) => (Number.isInteger(id) && id > 0 ? id : 0))
+    : [];
+
+  while (timeline.length < Math.max(0, durationDays)) {
+    timeline.push(0);
+  }
+
+  return timeline;
 }
 
 function normalizePositiveInteger(value: unknown, fallback: number): number {

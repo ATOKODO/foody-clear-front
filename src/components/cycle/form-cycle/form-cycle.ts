@@ -40,6 +40,15 @@ export interface CycleFormValue {
   daySetOrder: number[];
 }
 
+type CycleTimelineSlot = {
+  index: number;
+  dayNumber: number;
+  daySetId: number;
+  title: string;
+  isDefault: boolean;
+  isOverflow: boolean;
+};
+
 type DurationPreset = {
   label: string;
   days: number;
@@ -65,6 +74,7 @@ type DurationPreset = {
 })
 export class FormCycle implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
+  private readonly defaultDaySetId = 0;
 
   @Input() mode: CycleFormMode = 'add';
   @Input() cycle: Partial<CycleFormValue> | null = null;
@@ -79,7 +89,7 @@ export class FormCycle implements OnInit, OnChanges {
   }>();
 
   nutritionValues: CycleNutritionValue[] = [];
-  selectedDaySetOrder: number[] = [];
+  daySetTimeline: number[] = [];
   showSelectionError = false;
   readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
     { label: 'Pour 100 g', value: 'PER_100G' },
@@ -144,31 +154,29 @@ export class FormCycle implements OnInit, OnChanges {
   }
 
   get selectedDaySetIds(): number[] {
-    return [...this.selectedDaySetOrder];
+    return this.extractAssignedDaySetIds(this.daySetTimeline);
   }
 
   get selectedDaySetIdsAsString(): string[] {
-    return this.selectedDaySetOrder.map((id) => String(id));
+    return this.selectedDaySetIds.map((id) => String(id));
   }
 
-  get selectedDaySetsInOrder(): DaySetListItem[] {
-    const daySetById = new Map(this.daySets.map((daySet) => [Number(daySet.id), daySet]));
-
-    return this.selectedDaySetOrder.map((id) => {
-      const item = daySetById.get(id);
-      if (item) {
-        return item;
-      }
-
-      return {
-        id: String(id),
-        title: `Day Set ${id}`,
-      };
-    });
+  get timelineSlots(): CycleTimelineSlot[] {
+    return this.daySetTimeline.map((daySetId, index) => ({
+      index,
+      dayNumber: index + 1,
+      daySetId,
+      title:
+        daySetId > this.defaultDaySetId ? this.getDaySetTitle(daySetId) : 'Objectif du cycle',
+      isDefault: daySetId === this.defaultDaySetId,
+      isOverflow: index >= this.maxSelectableDaySets,
+    }));
   }
 
   get hasSelectedDaySetOverflow(): boolean {
-    return this.selectedDaySetOrder.length > this.maxSelectableDaySets;
+    return this.daySetTimeline.some(
+      (daySetId, index) => index >= this.maxSelectableDaySets && daySetId > this.defaultDaySetId,
+    );
   }
 
   get canSubmit(): boolean {
@@ -186,7 +194,7 @@ export class FormCycle implements OnInit, OnChanges {
       .map((value) => this.normalizeNutritionValue(value))
       .filter((value) => value.nutritionKey !== '');
     const durationDays = this.normalizePositiveInteger(this.form.controls.durationDays.value, 1);
-    const daySetOrder = this.normalizeDaySetIds(this.selectedDaySetOrder);
+    const daySetOrder = this.serializeDaySetTimeline(durationDays);
 
     this.submitted.emit({
       mode: this.mode,
@@ -194,7 +202,7 @@ export class FormCycle implements OnInit, OnChanges {
         ...this.form.getRawValue(),
         nutritionValues,
         durationDays,
-        daySetIds: [...daySetOrder],
+        daySetIds: this.extractAssignedDaySetIds(daySetOrder),
         daySetOrder,
       },
     });
@@ -207,11 +215,31 @@ export class FormCycle implements OnInit, OnChanges {
         .filter((id) => Number.isFinite(id)),
     );
     const nextSelectionSet = new Set(nextSelection);
-    const keptSelection = this.selectedDaySetOrder.filter((id) => nextSelectionSet.has(id));
-    const keptSet = new Set(keptSelection);
-    const appendedSelection = nextSelection.filter((id) => !keptSet.has(id));
+    const nextTimeline = this.daySetTimeline.map((daySetId) =>
+      daySetId > this.defaultDaySetId && !nextSelectionSet.has(daySetId)
+        ? this.defaultDaySetId
+        : daySetId,
+    );
+    const assignedIds = new Set(this.extractAssignedDaySetIds(nextTimeline));
 
-    this.selectedDaySetOrder = [...keptSelection, ...appendedSelection];
+    nextSelection.forEach((daySetId) => {
+      if (assignedIds.has(daySetId)) {
+        return;
+      }
+
+      const nextDefaultIndex = nextTimeline.findIndex(
+        (slotDaySetId, index) =>
+          index < this.maxSelectableDaySets && slotDaySetId === this.defaultDaySetId,
+      );
+      if (nextDefaultIndex === -1) {
+        return;
+      }
+
+      nextTimeline[nextDefaultIndex] = daySetId;
+      assignedIds.add(daySetId);
+    });
+
+    this.daySetTimeline = this.reconcileDaySetTimeline(nextTimeline);
     this.showSelectionError = this.hasSelectedDaySetOverflow;
   }
 
@@ -224,6 +252,7 @@ export class FormCycle implements OnInit, OnChanges {
       },
       { emitEvent: false },
     );
+    this.daySetTimeline = this.reconcileDaySetTimeline(this.daySetTimeline);
     this.showSelectionError = this.hasSelectedDaySetOverflow;
   }
 
@@ -236,21 +265,26 @@ export class FormCycle implements OnInit, OnChanges {
       },
       { emitEvent: false },
     );
+    this.daySetTimeline = this.reconcileDaySetTimeline(this.daySetTimeline);
     this.showSelectionError = this.hasSelectedDaySetOverflow;
   }
 
-  onDaySetOrderDropped(event: CdkDragDrop<DaySetListItem[]>): void {
+  onDaySetOrderDropped(event: CdkDragDrop<CycleTimelineSlot[]>): void {
     if (event.previousIndex === event.currentIndex) {
       return;
     }
 
-    const updatedOrder = [...this.selectedDaySetOrder];
+    const updatedOrder = [...this.daySetTimeline];
     moveItemInArray(updatedOrder, event.previousIndex, event.currentIndex);
-    this.selectedDaySetOrder = updatedOrder;
+    this.daySetTimeline = updatedOrder;
   }
 
   removeDaySetFromOrder(daySetId: number): void {
-    this.selectedDaySetOrder = this.selectedDaySetOrder.filter((id) => id !== daySetId);
+    this.daySetTimeline = this.reconcileDaySetTimeline(
+      this.daySetTimeline.map((assignedDaySetId) =>
+        assignedDaySetId === daySetId ? this.defaultDaySetId : assignedDaySetId,
+      ),
+    );
     this.showSelectionError = this.hasSelectedDaySetOverflow;
   }
 
@@ -284,8 +318,8 @@ export class FormCycle implements OnInit, OnChanges {
     return allowedUnits.length > 0 ? allowedUnits : ['G', 'MG'];
   }
 
-  trackByDaySetId(_: number, daySet: DaySetListItem): string {
-    return daySet.id;
+  trackByTimelineSlot(_: number, slot: CycleTimelineSlot): string {
+    return `${slot.index}-${slot.daySetId}`;
   }
 
   private applyInputState(): void {
@@ -297,7 +331,7 @@ export class FormCycle implements OnInit, OnChanges {
       typeDuree: 'jour',
       durationDays: 1,
       daySetIds: [],
-      daySetOrder: [],
+      daySetOrder: [this.defaultDaySetId],
     };
 
     if (this.mode === 'edit' && this.cycle) {
@@ -305,8 +339,9 @@ export class FormCycle implements OnInit, OnChanges {
         this.cycle.durationDays ?? this.cycle.nombre ?? defaults.durationDays,
         defaults.durationDays,
       );
-      const daySetOrder = this.normalizeDaySetIds(
+      const daySetOrder = this.normalizeDaySetTimeline(
         this.cycle.daySetOrder ?? this.cycle.daySetIds ?? defaults.daySetOrder,
+        durationDays,
       );
 
       this.form.reset({
@@ -316,7 +351,7 @@ export class FormCycle implements OnInit, OnChanges {
         typeDuree: this.cycle.typeDuree ?? defaults.typeDuree,
         durationDays,
       });
-      this.selectedDaySetOrder = daySetOrder;
+      this.daySetTimeline = this.reconcileDaySetTimeline(daySetOrder);
       this.nutritionValues =
         this.cycle.nutritionValues && this.cycle.nutritionValues.length > 0
           ? this.cloneNutritionValues(this.cycle.nutritionValues)
@@ -332,7 +367,7 @@ export class FormCycle implements OnInit, OnChanges {
       typeDuree: defaults.typeDuree,
       durationDays: defaults.durationDays,
     });
-    this.selectedDaySetOrder = [...defaults.daySetOrder];
+    this.daySetTimeline = this.reconcileDaySetTimeline(defaults.daySetOrder);
     this.nutritionValues = this.cloneNutritionValues(defaults.nutritionValues);
     this.showSelectionError = false;
   }
@@ -406,6 +441,60 @@ export class FormCycle implements OnInit, OnChanges {
 
   private normalizeDaySetIds(daySetIds: number[]): number[] {
     return Array.from(new Set(daySetIds.filter((id) => Number.isInteger(id) && id > 0)));
+  }
+
+  private normalizeDaySetTimeline(daySetIds: number[] | null | undefined, durationDays: number): number[] {
+    const timeline = (daySetIds ?? [])
+      .map((id) => Math.trunc(Number(id)))
+      .filter((id) => Number.isInteger(id) && id >= this.defaultDaySetId);
+
+    while (timeline.length < durationDays) {
+      timeline.push(this.defaultDaySetId);
+    }
+
+    return timeline;
+  }
+
+  private reconcileDaySetTimeline(daySetTimeline: number[]): number[] {
+    const timeline = [...daySetTimeline];
+
+    while (timeline.length < this.maxSelectableDaySets) {
+      timeline.push(this.defaultDaySetId);
+    }
+
+    while (
+      timeline.length > this.maxSelectableDaySets &&
+      timeline[timeline.length - 1] === this.defaultDaySetId
+    ) {
+      timeline.pop();
+    }
+
+    return timeline;
+  }
+
+  private serializeDaySetTimeline(durationDays: number): number[] {
+    const timeline = [...this.daySetTimeline.slice(0, durationDays)];
+
+    while (timeline.length < durationDays) {
+      timeline.push(this.defaultDaySetId);
+    }
+
+    return timeline.map((id) =>
+      Number.isInteger(id) && id > this.defaultDaySetId ? id : this.defaultDaySetId,
+    );
+  }
+
+  private extractAssignedDaySetIds(daySetTimeline: number[]): number[] {
+    return Array.from(
+      new Set(
+        daySetTimeline.filter((daySetId) => Number.isInteger(daySetId) && daySetId > 0),
+      ),
+    );
+  }
+
+  private getDaySetTitle(daySetId: number): string {
+    const matchingDaySet = this.daySets.find((daySet) => Number(daySet.id) === daySetId);
+    return matchingDaySet?.title ?? `Day Set ${daySetId}`;
   }
 
   private normalizePositiveInteger(value: unknown, fallback: number): number {
