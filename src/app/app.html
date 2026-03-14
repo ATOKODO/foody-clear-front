@@ -1,12 +1,57 @@
-<div class="flex min-h-12 flex-wrap items-center gap-3 bg-gray-500 px-5 py-2">
-    <button mat-flat-button type="button" (click)="goToProduct()">Product</button>
-    <button mat-flat-button type="button" (click)="goToInventory()">Inventory</button>
-    <button mat-flat-button type="button" (click)="goToCycle()">Cycle</button>
-    <button mat-flat-button type="button" (click)="goToPlanning()">Planning</button>
-    <button mat-stroked-button type="button" [matMenuTriggerFor]="moreMenu">More</button>
-</div>
+<mat-toolbar class="app-toolbar mat-elevation-z2">
+    <div class="app-toolbar__brand">
+        <span class="app-toolbar__title">Foody Clear</span>
+        <span class="app-toolbar__subtitle">Administration</span>
+    </div>
+
+    <div class="app-toolbar__actions app-toolbar__actions--desktop">
+        <button mat-button type="button" (click)="goToProduct()">Product</button>
+        <button mat-button type="button" (click)="goToInventory()">Inventory</button>
+        <button mat-button type="button" (click)="goToCycle()">Cycle</button>
+        <button mat-button type="button" (click)="goToPlanning()">Planning</button>
+        <button mat-stroked-button type="button" [matMenuTriggerFor]="moreMenu">More</button>
+    </div>
+
+    <button
+        class="app-toolbar__menu-trigger"
+        mat-icon-button
+        type="button"
+        aria-label="Open navigation menu"
+        [matMenuTriggerFor]="mobileMenu"
+    >
+        <svg
+            class="app-toolbar__menu-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            aria-hidden="true"
+        >
+            <path d="M4 7h16"></path>
+            <path d="M4 12h16"></path>
+            <path d="M4 17h16"></path>
+        </svg>
+    </button>
+</mat-toolbar>
 
 <mat-menu #moreMenu="matMenu">
+    <button mat-menu-item type="button" (click)="goToCategory()">Category</button>
+    <button mat-menu-item type="button" (click)="goToGenericProduct()">Generic Product</button>
+    <button mat-menu-item type="button" (click)="goToTag()">Tag</button>
+    <button mat-menu-item type="button" (click)="goToDaySet()">Day Set</button>
+    <button mat-menu-item type="button" (click)="goToSlot()">Slot</button>
+    <button mat-menu-item type="button" (click)="goToInputDay()">Input Day</button>
+    <button mat-menu-item type="button" (click)="goToCalendar()">Calendar</button>
+    <button mat-menu-item type="button" (click)="goToNutritionValue()">Nutrition Value</button>
+</mat-menu>
+
+<mat-menu #mobileMenu="matMenu">
+    <button mat-menu-item type="button" (click)="goToProduct()">Product</button>
+    <button mat-menu-item type="button" (click)="goToInventory()">Inventory</button>
+    <button mat-menu-item type="button" (click)="goToCycle()">Cycle</button>
+    <button mat-menu-item type="button" (click)="goToPlanning()">Planning</button>
     <button mat-menu-item type="button" (click)="goToCategory()">Category</button>
     <button mat-menu-item type="button" (click)="goToGenericProduct()">Generic Product</button>
     <button mat-menu-item type="button" (click)="goToTag()">Tag</button>

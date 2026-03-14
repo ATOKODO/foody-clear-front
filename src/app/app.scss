@@ -1,0 +1,97 @@
+:host {
+  display: block;
+}
+
+.app-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  min-height: 72px;
+  height: auto;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #dbe2ea;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  color: #0f172a;
+}
+
+.app-toolbar__brand {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.app-toolbar__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+.app-toolbar__subtitle {
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  color: #64748b;
+}
+
+.app-toolbar__actions {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.app-toolbar__menu-trigger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 4px 12px rgb(15 23 42 / 0.08);
+  color: #0f172a;
+  line-height: 0;
+}
+
+.app-toolbar__menu-icon {
+  display: block;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .app-toolbar {
+    min-height: 64px;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.875rem;
+  }
+
+  .app-toolbar__brand {
+    min-width: 0;
+  }
+
+  .app-toolbar__title {
+    font-size: 1.05rem;
+  }
+
+  .app-toolbar__subtitle {
+    display: none;
+  }
+
+  .app-toolbar__actions--desktop {
+    display: none;
+  }
+
+  .app-toolbar__menu-trigger {
+    display: inline-flex;
+  }
+}
