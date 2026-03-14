@@ -600,6 +600,34 @@ export class Calendar implements OnInit, OnChanges {
     return typeof energy === 'number' ? this.formatCompactNumber(energy, 0) : '0';
   }
 
+  getYearMonthCount(): number {
+    return this.yearMonths.length;
+  }
+
+  getYearAssignedDayCount(): number {
+    return this.yearMonths.reduce(
+      (total, month) => total + this.getYearMonthAssignedDayCount(month),
+      0,
+    );
+  }
+
+  getYearActiveMonthCount(): number {
+    return this.yearMonths.filter((month) => month.hasAssignments).length;
+  }
+
+  getYearMonthAssignedDayCount(month: MonthSummary): number {
+    return month.days.filter((day) => day.isCurrentMonth && day.assignment).length;
+  }
+
+  getYearMonthCycleCount(month: MonthSummary): number {
+    return new Set(
+      month.days
+        .filter((day) => day.isCurrentMonth && day.assignment)
+        .map((day) => day.assignment?.cycleName ?? day.assignment?.label ?? '')
+        .filter((label) => label.trim() !== ''),
+    ).size;
+  }
+
   getMonthDayCount(): number {
     return this.monthDays.filter((day) => day.isCurrentMonth).length;
   }

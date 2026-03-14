@@ -51,23 +51,101 @@
       <div class="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
     </div>
 
-    <div *ngIf="currentView === 'year' && !loading" class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-      <div
-        *ngFor="let month of yearMonths; trackBy: trackByMonth"
-        (click)="onMonthClick(month)"
-        class="cursor-pointer rounded-lg border border-gray-200 p-4 shadow-sm transition-shadow hover:shadow-md">
-        <h3 class="mb-3 text-sm font-semibold capitalize">{{ month.name }}</h3>
-
-        <div class="grid grid-cols-7 gap-1">
-          <div
-            *ngFor="let day of month.days"
-            [class.opacity-30]="!day.isCurrentMonth"
-            [class.bg-blue-100]="day.isToday"
-            [class.bg-orange-100]="day.assignment && day.assignment.type === 'cheat_day'"
-            [class.bg-green-100]="day.assignment && day.assignment.type === 'cycle'"
-            class="aspect-square rounded text-xs flex items-center justify-center">
-            {{ day.dayNumber }}
+    <div
+      *ngIf="currentView === 'year' && !loading"
+      class="calendar-year-panel overflow-hidden rounded-[1.5rem] border border-slate-200 shadow-sm">
+      <div class="calendar-year-summary border-b border-slate-200 p-4 sm:p-5">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p class="calendar-week-summary__eyebrow">Vue annee</p>
+            <h3 class="text-xl font-semibold text-slate-950">{{ currentViewLabel }}</h3>
+            <p class="mt-1 max-w-2xl text-sm text-slate-600">
+              L'annee condense les mois actifs, les jours planifies et les bascules de cycle dans une seule lecture.
+            </p>
           </div>
+
+          <div class="calendar-week-overview">
+            <div class="calendar-week-overview__pill">
+              <span class="calendar-week-overview__value">{{ getYearMonthCount() }}</span>
+              <span class="calendar-week-overview__label">mois couverts</span>
+            </div>
+            <div class="calendar-week-overview__pill">
+              <span class="calendar-week-overview__value">{{ getYearAssignedDayCount() }}</span>
+              <span class="calendar-week-overview__label">jours planifies</span>
+            </div>
+            <div class="calendar-week-overview__pill">
+              <span class="calendar-week-overview__value">{{ getYearActiveMonthCount() }}</span>
+              <span class="calendar-week-overview__label">mois actifs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="calendar-year-grid-wrap">
+        <div class="calendar-year-grid">
+          <button
+            *ngFor="let month of yearMonths; trackBy: trackByMonth"
+            type="button"
+            (click)="onMonthClick(month)"
+            class="calendar-year-card"
+            [class.calendar-year-card--active]="month.hasAssignments"
+            [class.calendar-year-card--current]="month.month === currentDate.month">
+            <div class="calendar-year-card__top">
+              <div class="min-w-0">
+                <p class="calendar-year-card__eyebrow">
+                  <span class="calendar-year-card__eyebrow-value">{{ month.month | number: '2.0-0' }}</span>
+                  <span>/</span>
+                  <span class="calendar-year-card__eyebrow-value">{{ month.year }}</span>
+                </p>
+                <h3 class="calendar-year-card__title">{{ month.name }}</h3>
+              </div>
+
+              <span class="calendar-year-card__status" [class.calendar-year-card__status--active]="month.hasAssignments">
+                {{ month.hasAssignments ? 'Actif' : 'Libre' }}
+              </span>
+            </div>
+
+            <div class="calendar-year-card__insights">
+              <span class="calendar-year-chip">
+                <span class="calendar-year-chip__value">{{ getYearMonthAssignedDayCount(month) }}</span>
+                <span class="calendar-year-chip__label">jour{{ getYearMonthAssignedDayCount(month) > 1 ? 's' : '' }}</span>
+              </span>
+              <span class="calendar-year-chip" [class.calendar-year-chip--accent]="getYearMonthCycleCount(month) > 0">
+                <span class="calendar-year-chip__value">{{ getYearMonthCycleCount(month) }}</span>
+                <span class="calendar-year-chip__label">cycle{{ getYearMonthCycleCount(month) > 1 ? 's' : '' }}</span>
+              </span>
+              <span *ngIf="month.month === currentDate.month" class="calendar-year-chip calendar-year-chip--current">
+                Mois courant
+              </span>
+            </div>
+
+            <div class="calendar-year-mini-grid">
+              <div *ngFor="let weekday of WEEKDAY_NAMES" class="calendar-year-mini-grid__weekday">
+                {{ weekday.charAt(0) }}
+              </div>
+
+              <div
+                *ngFor="let day of month.days; trackBy: trackByDate"
+                class="calendar-year-mini-day"
+                [class.calendar-year-mini-day--outside]="!day.isCurrentMonth"
+                [class.calendar-year-mini-day--today]="day.isToday"
+                [class.calendar-year-mini-day--assigned]="day.isCurrentMonth && !!day.assignment"
+                [ngClass]="day.isCurrentMonth && day.assignment ? day.assignment.color : null">
+                <span class="calendar-year-mini-day__label">{{ day.dayNumber }}</span>
+              </div>
+            </div>
+
+            <div class="calendar-year-card__footer">
+              <span class="calendar-year-card__footer-copy">
+                {{
+                  month.hasAssignments
+                    ? 'Les jours actifs restent visibles dans le mini-calendrier.'
+                    : 'Aucun cycle planifie sur ce mois.'
+                }}
+              </span>
+              <span class="calendar-year-card__footer-link">Ouvrir le mois</span>
+            </div>
+          </button>
         </div>
       </div>
     </div>
