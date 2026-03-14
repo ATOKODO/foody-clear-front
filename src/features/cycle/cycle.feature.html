@@ -14,7 +14,9 @@
       </div>
 
       <mat-button-toggle-group
-        [(ngModel)]="activeView"
+        [ngModel]="activeView"
+        [hideSingleSelectionIndicator]="true"
+        (ngModelChange)="activeView = $event"
         aria-label="Selection de la vue active"
         class="cycle-view-toggle"
         name="cycle-view">
