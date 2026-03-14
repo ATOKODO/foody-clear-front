@@ -1,5 +1,40 @@
 <section class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-  <mat-card class="overflow-hidden rounded-2xl">
+  <div class="product-hub-header rounded-3xl px-6 py-6 text-white shadow-lg">
+    <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      <div class="max-w-3xl">
+        <p
+          class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-300"
+        >
+          Catalog hub
+        </p>
+        <h1 class="mt-2 text-2xl font-semibold sm:text-3xl">
+          Products, categories et tags
+        </h1>
+        <p class="mt-2 text-sm text-slate-300 sm:text-base">
+          Pilotez les ecrans produits relies depuis une vue unique.
+        </p>
+      </div>
+
+      <mat-button-toggle-group
+        [(ngModel)]="activeView"
+        aria-label="Selection de la vue produit active"
+        class="product-view-toggle"
+        name="product-view"
+      >
+        <mat-button-toggle value="product">Product</mat-button-toggle>
+        <mat-button-toggle value="category">Category</mat-button-toggle>
+        <mat-button-toggle value="genericProduct">
+          Generic product
+        </mat-button-toggle>
+        <mat-button-toggle value="tag">Tag</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+  </div>
+
+  <mat-card
+    *ngIf="activeView === 'product'"
+    class="mt-6 overflow-hidden rounded-2xl"
+  >
     <div class="flex items-center justify-between bg-slate-900 px-6 py-5 text-white">
       <div>
         <h2 class="text-xl font-semibold">Products</h2>
@@ -82,4 +117,13 @@
       </mat-card>
     </div>
   </mat-card>
+
+  <app-category *ngIf="activeView === 'category'" class="mt-6"></app-category>
+
+  <app-generic-product
+    *ngIf="activeView === 'genericProduct'"
+    class="mt-6"
+  ></app-generic-product>
+
+  <app-tag *ngIf="activeView === 'tag'" class="mt-6"></app-tag>
 </section>

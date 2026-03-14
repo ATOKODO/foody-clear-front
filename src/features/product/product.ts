@@ -2,10 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { Category } from '../category/category';
+import { GenericProduct } from '../generic-product/generic-product';
+import { Tag } from '../tag/tag';
 import {
   ProductForm,
   ProductFormMode,
@@ -34,18 +38,24 @@ import {
 } from '../../services/meta-service';
 import { NutritionReference } from '../../interfaces/cycle.interface';
 
+type ProductHubView = 'product' | 'category' | 'genericProduct' | 'tag';
+
 @Component({
   selector: 'app-product',
   imports: [
     CommonModule,
     FormsModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    Category,
+    GenericProduct,
     ProductList,
     ProductForm,
+    Tag,
   ],
   templateUrl: './product.html',
   styleUrl: './product.scss',
@@ -57,6 +67,7 @@ export class Product implements OnInit {
   loadingMeta = false;
 
   products: ProductApiModel[] = [];
+  activeView: ProductHubView = 'product';
 
   formVisible = false;
   formMode: ProductFormMode = 'add';

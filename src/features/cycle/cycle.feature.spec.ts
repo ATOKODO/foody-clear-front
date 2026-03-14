@@ -45,9 +45,12 @@ describe('CycleFeature', () => {
   });
 
   it('should render the toggle and show cycle by default', () => {
-    const toggleLabels = Array.from(
-      fixture.nativeElement.querySelectorAll('mat-button-toggle'),
-    ).map((toggle) => toggle.textContent?.trim());
+    const toggleElements = fixture.nativeElement.querySelectorAll(
+      'mat-button-toggle',
+    ) as NodeListOf<Element>;
+    const toggleLabels = Array.from(toggleElements).map((toggle) =>
+      toggle.textContent?.trim(),
+    );
 
     expect(toggleLabels).toEqual(['Cycle', 'Day Set', 'Slots']);
     expect(component.activeView).toBe('cycle');

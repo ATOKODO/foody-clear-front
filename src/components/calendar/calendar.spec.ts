@@ -172,8 +172,10 @@ describe('Calendar', () => {
     fixture.detectChanges();
 
     const targetMonth = component.yearMonths.find((month) => month.month === 1);
+    expect(targetMonth).toBeDefined();
+
     const trigger = fixture.nativeElement.querySelector(
-      `.calendar-year-card__footer-action[data-month="${targetMonth?.month}"][data-year="${targetMonth?.year}"]`,
+      `.calendar-year-card__footer-action[data-month="${targetMonth!.month}"][data-year="${targetMonth!.year}"]`,
     );
 
     trigger.click();
@@ -181,7 +183,7 @@ describe('Calendar', () => {
 
     expect(component.currentView).toBe('month');
     expect(component.currentDate.month).toBe(1);
-    expect(component.currentDate.year).toBe(targetMonth?.year);
+    expect(component.currentDate.year).toBe(targetMonth!.year);
   });
 
   it('should emit the clicked day date from the year mini calendar', () => {
@@ -192,16 +194,22 @@ describe('Calendar', () => {
     fixture.detectChanges();
 
     const january = component.yearMonths.find((month) => month.month === 1);
-    const targetDay = january?.days.find((day) => day.isCurrentMonth && day.dayNumber === 14);
+    expect(january).toBeDefined();
+
+    const targetDay = january!.days.find(
+      (day) => day.isCurrentMonth && day.dayNumber === 14,
+    );
+    expect(targetDay).toBeDefined();
+
     const trigger = fixture.nativeElement.querySelector(
-      `.calendar-year-mini-day--interactive[data-date="${targetDay?.date}"]`,
+      `.calendar-year-mini-day--interactive[data-date="${targetDay!.date}"]`,
     );
 
     trigger.click();
 
     expect(emitted.length).toBe(1);
     expect(emitted[0].view).toBe('year');
-    expect(emitted[0].day.date).toBe(targetDay?.date);
+    expect(emitted[0].day.date).toBe(targetDay!.date);
     expect(emitted[0].day.dayNumber).toBe(14);
   });
 
