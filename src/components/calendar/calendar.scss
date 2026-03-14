@@ -425,7 +425,7 @@
 
 .calendar-month-day {
   display: flex;
-  min-height: 10.5rem;
+  min-height: 13.2rem;
   min-width: 0;
   flex-direction: column;
   gap: 0.7rem;
@@ -513,11 +513,12 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
+  gap: 0.55rem;
 }
 
 .calendar-month-day__assignment {
   display: flex;
-  min-height: 100%;
+  flex: 0 0 auto;
   min-width: 0;
   flex-direction: column;
   justify-content: space-between;
@@ -554,7 +555,8 @@
 .calendar-month-day__empty,
 .calendar-month-day__outside-hint {
   display: flex;
-  flex: 1;
+  flex: 0 0 auto;
+  min-height: 5.6rem;
   flex-direction: column;
   justify-content: flex-end;
   border: 1px dashed rgba(203, 213, 225, 0.95);
@@ -579,6 +581,115 @@
 .calendar-month-day__outside-hint {
   justify-content: center;
   text-transform: capitalize;
+}
+
+.calendar-month-day__macro-summary {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 0.2rem;
+}
+
+.calendar-month-day__macro-source {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.calendar-month-day__macro-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.calendar-month-day__macro-card {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 0.85rem;
+  padding: 0.42rem 0.48rem;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.calendar-month-day__macro-card[data-tone='energy'] {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.72), rgba(255, 255, 255, 0.94));
+}
+
+.calendar-month-day__macro-card[data-tone='proteins'] {
+  background: linear-gradient(135deg, rgba(220, 252, 231, 0.74), rgba(255, 255, 255, 0.94));
+}
+
+.calendar-month-day__macro-card[data-tone='carbs'] {
+  background: linear-gradient(135deg, rgba(219, 234, 254, 0.74), rgba(255, 255, 255, 0.94));
+}
+
+.calendar-month-day__macro-card[data-tone='lipids'] {
+  background: linear-gradient(135deg, rgba(252, 231, 243, 0.72), rgba(255, 255, 255, 0.94));
+}
+
+.calendar-month-day__macro-card[data-status='under'] {
+  border-color: rgba(59, 130, 246, 0.32);
+}
+
+.calendar-month-day__macro-card[data-status='exact'] {
+  border-color: rgba(34, 197, 94, 0.32);
+}
+
+.calendar-month-day__macro-card[data-status='over'] {
+  border-color: rgba(249, 115, 22, 0.34);
+}
+
+.calendar-month-day__macro-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
+.calendar-month-day__macro-abbr {
+  min-width: 0;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #334155;
+}
+
+.calendar-month-day__macro-percent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.14rem 0.38rem;
+  background: rgba(148, 163, 184, 0.14);
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: #334155;
+}
+
+.calendar-month-day__macro-card[data-status='under'] .calendar-month-day__macro-percent {
+  background: rgba(219, 234, 254, 0.96);
+  color: #1d4ed8;
+}
+
+.calendar-month-day__macro-card[data-status='exact'] .calendar-month-day__macro-percent {
+  background: rgba(220, 252, 231, 0.96);
+  color: #15803d;
+}
+
+.calendar-month-day__macro-card[data-status='over'] .calendar-month-day__macro-percent {
+  background: rgba(255, 237, 213, 0.96);
+  color: #c2410c;
+}
+
+.calendar-month-day__macro-values {
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #0f172a;
 }
 
 .calendar-week-panel {
@@ -703,16 +814,51 @@
 }
 
 .calendar-week-macro__label {
-  font-size: 0.68rem;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  border-radius: 999px;
+  padding: 0.18rem 0.42rem;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 0.66rem;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #64748b;
+  color: #334155;
 }
 
-.calendar-week-macro__value-row {
+.calendar-week-macro__top {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.45rem;
+}
+
+.calendar-week-macro__percent-value {
+  font-size: 1.16rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.calendar-week-macro[data-status='under'] .calendar-week-macro__percent-value {
+  color: #1d4ed8;
+}
+
+.calendar-week-macro[data-status='exact'] .calendar-week-macro__percent-value {
+  color: #15803d;
+}
+
+.calendar-week-macro[data-status='over'] .calendar-week-macro__percent-value {
+  color: #c2410c;
+}
+
+.calendar-week-macro__comparison {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: 0.3rem;
   color: #0f172a;
 }
@@ -721,6 +867,14 @@
   font-size: 1rem;
   font-weight: 700;
   line-height: 1;
+}
+
+.calendar-week-macro__separator,
+.calendar-week-macro__target {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #334155;
 }
 
 .calendar-week-macro__unit {
@@ -789,9 +943,15 @@
   font-size: 0.82rem;
 }
 
+.calendar-week-day-details--desktop .calendar-week-macro__target,
+.calendar-week-day-details--desktop .calendar-week-macro__separator,
 .calendar-week-day-details--desktop .calendar-week-macro__unit,
 .calendar-week-day-details--desktop .calendar-week-meta-pill {
   font-size: 0.64rem;
+}
+
+.calendar-week-day-details--desktop .calendar-week-macro__percent-value {
+  font-size: 0.94rem;
 }
 
 .calendar-week-day-details--desktop .calendar-week-meta-pill {
@@ -1683,7 +1843,7 @@
   }
 
   .calendar-month-day {
-    min-height: 9rem;
+    min-height: 11.5rem;
     padding: 0.55rem;
   }
 

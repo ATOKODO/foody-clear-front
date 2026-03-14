@@ -26,6 +26,7 @@ import { Cycle } from '../../interfaces/cycle.interface';
 import { CalendarView } from '../../interfaces/calendar.interface';
 import {
   InputDayItemsBySlotEntry,
+  InputMonthResponse,
   InputDayResponse,
   InputWeekResponse,
 } from '../../interfaces/input-day.interface';
@@ -63,6 +64,7 @@ export class PlanningFeature implements OnInit {
   cycleAssignments: CycleAssignment[] = [];
   inputDayResponse: InputDayResponse | null = null;
   inputWeekResponse: InputWeekResponse | null = null;
+  inputMonthResponse: InputMonthResponse | null = null;
   inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
   inputDayTimezone = DateTime.local().zoneName || 'UTC';
 
@@ -321,6 +323,11 @@ export class PlanningFeature implements OnInit {
       return;
     }
 
+    if (this.currentCalendarView === 'month' && this.currentRangeFromLocal) {
+      this.loadInputMonth(this.currentRangeFromLocal);
+      return;
+    }
+
     if (this.currentCalendarView === 'week' && this.currentRangeFromLocal) {
       this.loadInputWeek(this.currentRangeFromLocal);
       return;
@@ -332,6 +339,11 @@ export class PlanningFeature implements OnInit {
   private loadInputDataForView(event: CalendarViewChangeEvent): void {
     if (event.view === 'day') {
       this.loadInputDay(event.anchorDateLocal);
+      return;
+    }
+
+    if (event.view === 'month') {
+      this.loadInputMonth(event.fromDateLocal);
       return;
     }
 
@@ -352,6 +364,8 @@ export class PlanningFeature implements OnInit {
     const requestId = ++this.inputDayRequestId;
     this.loadingDayItems = true;
     this.dayItemsError = null;
+    this.inputDayResponse = null;
+    this.inputMonthResponse = null;
     this.inputWeekResponse = null;
     this.inputDayItemsBySlot = [];
 
@@ -378,6 +392,43 @@ export class PlanningFeature implements OnInit {
     });
   }
 
+  private loadInputMonth(dateLocal: string): void {
+    if (!this.isDateLocal(dateLocal)) {
+      this.clearInputDayState();
+      return;
+    }
+
+    const requestId = ++this.inputDayRequestId;
+    this.loadingDayItems = true;
+    this.dayItemsError = null;
+    this.inputDayResponse = null;
+    this.inputMonthResponse = null;
+    this.inputWeekResponse = null;
+    this.inputDayItemsBySlot = [];
+
+    this.inputDayService.getInputMonth(dateLocal, this.resolveTimezone()).subscribe({
+      next: (response) => {
+        if (requestId !== this.inputDayRequestId) {
+          return;
+        }
+
+        this.inputMonthResponse = response;
+        this.inputDayTimezone = response.timezone?.trim() || this.resolveTimezone();
+        this.loadingDayItems = false;
+      },
+      error: (error) => {
+        if (requestId !== this.inputDayRequestId) {
+          return;
+        }
+
+        this.inputMonthResponse = null;
+        this.inputDayItemsBySlot = [];
+        this.dayItemsError = error;
+        this.loadingDayItems = false;
+      },
+    });
+  }
+
   private loadInputWeek(startDateLocal: string): void {
     if (!this.isDateLocal(startDateLocal)) {
       this.clearInputDayState();
@@ -387,7 +438,9 @@ export class PlanningFeature implements OnInit {
     const requestId = ++this.inputDayRequestId;
     this.loadingDayItems = true;
     this.dayItemsError = null;
+    this.inputMonthResponse = null;
     this.inputDayResponse = null;
+    this.inputWeekResponse = null;
     this.inputDayItemsBySlot = [];
 
     this.inputDayService.getInputWeek(startDateLocal, this.resolveTimezone()).subscribe({
@@ -417,6 +470,7 @@ export class PlanningFeature implements OnInit {
     this.inputDayRequestId++;
     this.inputDayResponse = null;
     this.inputWeekResponse = null;
+    this.inputMonthResponse = null;
     this.inputDayItemsBySlot = [];
     this.inputDayTimezone = DateTime.local().zoneName || 'UTC';
     this.loadingDayItems = false;

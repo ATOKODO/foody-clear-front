@@ -60,6 +60,14 @@ describe('PlanningFeature', () => {
     baseUrl: 'http://localhost:3000',
     setBaseUrl: jasmine.createSpy('setBaseUrl'),
     getInputDay: jasmine.createSpy('getInputDay').and.returnValue(of(dayResponse)),
+    getInputMonth: jasmine.createSpy('getInputMonth').and.returnValue(
+      of({
+        startDateLocal: '2026-02-01',
+        endDateLocal: '2026-02-28',
+        timezone: 'UTC',
+        days: [dayResponse],
+      }),
+    ),
     getInputWeek: jasmine.createSpy('getInputWeek').and.returnValue(
       of({
         startDateLocal: '2026-02-16',
@@ -221,6 +229,20 @@ describe('PlanningFeature', () => {
     );
   });
 
+  it('should reload month input data after base url change when month view is active', () => {
+    component.currentCalendarView = 'month';
+    component.currentAnchorDateLocal = '2026-02-18';
+    component.currentRangeFromLocal = '2026-02-01';
+    component.currentRangeToLocal = '2026-02-28';
+
+    component.onBaseUrlChange();
+
+    expect(inputDayServiceMock.getInputMonth).toHaveBeenCalledWith(
+      '2026-02-01',
+      jasmine.any(String),
+    );
+  });
+
   it('should refresh cycles, assignments and input data when planning is refreshed', () => {
     component.currentCalendarView = 'day';
     component.currentAnchorDateLocal = '2026-02-18';
@@ -242,6 +264,46 @@ describe('PlanningFeature', () => {
       '2026-02-18',
       jasmine.any(String),
     );
+  });
+
+  it('should refresh month input data when planning is refreshed in month view', () => {
+    component.currentCalendarView = 'month';
+    component.currentAnchorDateLocal = '2026-02-18';
+    component.currentRangeFromLocal = '2026-02-01';
+    component.currentRangeToLocal = '2026-02-28';
+
+    cycleServiceMock.findAll.calls.reset();
+    cycleAssignmentServiceMock.findInRange.calls.reset();
+    inputDayServiceMock.getInputMonth.calls.reset();
+
+    component.refreshPlanningData();
+
+    expect(cycleServiceMock.findAll).toHaveBeenCalled();
+    expect(cycleAssignmentServiceMock.findInRange).toHaveBeenCalledWith(
+      '2026-02-01',
+      '2026-02-28',
+    );
+    expect(inputDayServiceMock.getInputMonth).toHaveBeenCalledWith(
+      '2026-02-01',
+      jasmine.any(String),
+    );
+  });
+
+  it('should load month input data when the calendar switches to month view', () => {
+    inputDayServiceMock.getInputMonth.calls.reset();
+
+    component.onCalendarViewChanged({
+      view: 'month',
+      anchorDateLocal: '2026-02-18',
+      fromDateLocal: '2026-02-01',
+      toDateLocal: '2026-02-28',
+    });
+
+    expect(inputDayServiceMock.getInputMonth).toHaveBeenCalledWith(
+      '2026-02-01',
+      jasmine.any(String),
+    );
+    expect(component.inputMonthResponse?.startDateLocal).toBe('2026-02-01');
   });
 
   it('should refresh planning data when window focus returns', () => {

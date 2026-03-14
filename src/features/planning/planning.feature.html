@@ -17,7 +17,13 @@
           Chargement planning...
         </span>
         <span *ngIf="loadingDayItems" class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">
-          {{ currentCalendarView === 'week' ? 'Chargement input-week...' : 'Chargement input-day...' }}
+          {{
+            currentCalendarView === 'month'
+              ? 'Chargement input-month...'
+              : currentCalendarView === 'week'
+                ? 'Chargement input-week...'
+                : 'Chargement input-day...'
+          }}
         </span>
         <span *ngIf="savingAssignment" class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
           Sauvegarde assignement...
@@ -36,6 +42,7 @@
         [cycleAssignments]="cycleAssignments"
         [inputDayResponse]="inputDayResponse"
         [inputWeekResponse]="inputWeekResponse"
+        [inputMonthResponse]="inputMonthResponse"
         [inputDayItemsBySlot]="inputDayItemsBySlot"
         [inputDayTimezone]="inputDayTimezone"
         [loadingDayItems]="loadingDayItems"

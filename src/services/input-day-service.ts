@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {
   CreateInputDayItemsDto,
   InputDayItemCommand,
+  InputMonthResponse,
   InputDayResponse,
   InputWeekResponse,
   UpdateInputDayItemDto,
@@ -38,6 +39,18 @@ export class InputDayService {
 
     return this.http.get<InputWeekResponse>(
       `${this.baseUrl}/input-days/week/${startDateLocal}`,
+      { params },
+    );
+  }
+
+  getInputMonth(dateLocal: string, timezone?: string): Observable<InputMonthResponse> {
+    let params = new HttpParams();
+    if (timezone && timezone.trim() !== '') {
+      params = params.set('timezone', timezone.trim());
+    }
+
+    return this.http.get<InputMonthResponse>(
+      `${this.baseUrl}/input-days/month/${dateLocal}`,
       { params },
     );
   }

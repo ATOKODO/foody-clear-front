@@ -28,6 +28,7 @@ import {
   InputDayDaySetSlotSummary,
   InputDayItemSummary,
   InputDayItemsBySlotEntry,
+  InputMonthResponse,
   InputDayResponse,
   InputDaySlotSummary,
   InputDayTargetSource,
@@ -107,6 +108,18 @@ interface CalendarMacroMetricEntry {
   unit: string;
 }
 
+interface CalendarMacroComparison {
+  key: string;
+  label: string;
+  abbr: string;
+  value: string;
+  target: string;
+  percentage: string;
+  status: 'under' | 'exact' | 'over';
+  unit: string;
+  tone: 'energy' | 'proteins' | 'carbs' | 'lipids';
+}
+
 interface CalendarWeekTimelineBlock {
   id: string;
   kind: 'slot' | 'orphan';
@@ -129,6 +142,7 @@ export class Calendar implements OnInit, OnChanges {
   @Input() cycleAssignments: CycleAssignment[] = [];
   @Input() inputDayResponse: InputDayResponse | null = null;
   @Input() inputWeekResponse: InputWeekResponse | null = null;
+  @Input() inputMonthResponse: InputMonthResponse | null = null;
   @Input() inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
   @Input() loadingDayItems = false;
   @Input() dayItemsError: unknown = null;
@@ -156,20 +170,25 @@ export class Calendar implements OnInit, OnChanges {
   daySlots: CalendarDaySlot[] = [];
 
   private assignmentById = new Map<string, CycleAssignment>();
-  private weekDayResponseByDate = new Map<string, InputDayResponse>();
-  private weekDaySlotsByDate = new Map<string, CalendarDaySlot[]>();
-  private weekTimelineBlocksByDate = new Map<string, CalendarWeekTimelineBlock[]>();
+  private visibleDayResponseByDate = new Map<string, InputDayResponse>();
+  private visibleDaySlotsByDate = new Map<string, CalendarDaySlot[]>();
+  private visibleTimelineBlocksByDate = new Map<string, CalendarWeekTimelineBlock[]>();
   private readonly emptySlots: CalendarDaySlot[] = [];
   private readonly emptyWeekTimelineBlocks: CalendarWeekTimelineBlock[] = [];
   private readonly weekMacroOrder = ['energyKcal', 'proteins', 'carbs', 'lipids'];
   private readonly weekMacroDefinitions: Record<
     string,
-    { label: string; unit: string; tone: CalendarWeekMacroHighlight['tone'] }
+    {
+      label: string;
+      abbr: string;
+      unit: string;
+      tone: CalendarWeekMacroHighlight['tone'];
+    }
   > = {
-    energyKcal: { label: 'Energie', unit: 'kcal', tone: 'energy' },
-    proteins: { label: 'Proteines', unit: 'g', tone: 'proteins' },
-    carbs: { label: 'Glucides', unit: 'g', tone: 'carbs' },
-    lipids: { label: 'Lipides', unit: 'g', tone: 'lipids' },
+    energyKcal: { label: 'Energie', abbr: 'kcal', unit: 'kcal', tone: 'energy' },
+    proteins: { label: 'Proteines', abbr: 'P', unit: 'g', tone: 'proteins' },
+    carbs: { label: 'Glucides', abbr: 'G', unit: 'g', tone: 'carbs' },
+    lipids: { label: 'Lipides', abbr: 'L', unit: 'g', tone: 'lipids' },
   };
 
   ngOnInit(): void {
@@ -185,6 +204,7 @@ export class Calendar implements OnInit, OnChanges {
     if (
       changes['inputDayResponse'] ||
       changes['inputWeekResponse'] ||
+      changes['inputMonthResponse'] ||
       changes['inputDayItemsBySlot'] ||
       changes['inputDayTimezone']
     ) {
@@ -529,14 +549,14 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getWeekSummaryItemCount(): number {
-    return Array.from(this.weekDayResponseByDate.values()).reduce(
+    return Array.from(this.visibleDayResponseByDate.values()).reduce(
       (total, response) => total + response.items.length,
       0,
     );
   }
 
   getWeekSummaryEnergyTotal(): string {
-    const total = Array.from(this.weekDayResponseByDate.values()).reduce((sum, response) => {
+    const total = Array.from(this.visibleDayResponseByDate.values()).reduce((sum, response) => {
       const energy = response.totalsMacros?.dayTotal['energyKcal'];
       return typeof energy === 'number' ? sum + energy : sum;
     }, 0);
@@ -565,17 +585,28 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getWeekDayProductCount(dateLocal: string): number {
-    return this.weekDayResponseByDate.get(dateLocal)?.items.length ?? 0;
+    return this.visibleDayResponseByDate.get(dateLocal)?.items.length ?? 0;
   }
 
   getWeekDaySlotCount(dateLocal: string): number {
     return this.getWeekDaySlots(dateLocal).length;
   }
 
-  getWeekDayMacroHighlights(dateLocal: string): CalendarWeekMacroHighlight[] {
-    return this.buildMacroHighlights(
-      this.weekDayResponseByDate.get(dateLocal)?.totalsMacros?.dayTotal ?? null,
-    );
+  getWeekDayMacroComparisons(dateLocal: string): CalendarMacroComparison[] {
+    return this.buildMacroComparisons(this.visibleDayResponseByDate.get(dateLocal) ?? null);
+  }
+
+  getMonthDayMacroComparisons(dateLocal: string): CalendarMacroComparison[] {
+    return this.buildMacroComparisons(this.visibleDayResponseByDate.get(dateLocal) ?? null);
+  }
+
+  getMonthDayMacroSourceLabel(dateLocal: string): string | null {
+    const response = this.visibleDayResponseByDate.get(dateLocal) ?? null;
+    if (!response?.totalsMacros?.targets) {
+      return null;
+    }
+
+    return response.daySet?.title ?? this.getTargetSourceBadgeText(response.totalsMacros.targetSource);
   }
 
   getDayMacroHighlights(): CalendarWeekMacroHighlight[] {
@@ -772,7 +803,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   private applyInputDayData(): void {
-    this.applyWeekInputDayData();
+    this.applyVisibleInputDayData();
 
     if (this.currentView !== 'day') {
       this.daySlots = [];
@@ -787,15 +818,15 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getWeekDayResponse(dateLocal: string): InputDayResponse | null {
-    return this.weekDayResponseByDate.get(dateLocal) ?? null;
+    return this.visibleDayResponseByDate.get(dateLocal) ?? null;
   }
 
   getWeekDaySlots(dateLocal: string): CalendarDaySlot[] {
-    return this.weekDaySlotsByDate.get(dateLocal) ?? this.emptySlots;
+    return this.visibleDaySlotsByDate.get(dateLocal) ?? this.emptySlots;
   }
 
   getWeekTimelineBlocks(dateLocal: string): CalendarWeekTimelineBlock[] {
-    return this.weekTimelineBlocksByDate.get(dateLocal) ?? this.emptyWeekTimelineBlocks;
+    return this.visibleTimelineBlocksByDate.get(dateLocal) ?? this.emptyWeekTimelineBlocks;
   }
 
   getWeekHourGridRowStart(hour: number): number {
@@ -832,7 +863,7 @@ export class Calendar implements OnInit, OnChanges {
     return product.id;
   }
 
-  trackByWeekMacro(_: number, macro: CalendarWeekMacroHighlight): string {
+  trackByWeekMacro(_: number, macro: { key: string }): string {
     return macro.key;
   }
 
@@ -884,20 +915,20 @@ export class Calendar implements OnInit, OnChanges {
     );
   }
 
-  private applyWeekInputDayData(): void {
-    this.weekDayResponseByDate.clear();
-    this.weekDaySlotsByDate.clear();
-    this.weekTimelineBlocksByDate.clear();
+  private applyVisibleInputDayData(): void {
+    this.visibleDayResponseByDate.clear();
+    this.visibleDaySlotsByDate.clear();
+    this.visibleTimelineBlocksByDate.clear();
 
-    this.resolveWeekDayResponses().forEach((response) => {
+    this.resolveVisibleDayResponses().forEach((response) => {
       if (!response.dateLocal || response.dateLocal.trim() === '') {
         return;
       }
 
-      this.weekDayResponseByDate.set(response.dateLocal, response);
+      this.visibleDayResponseByDate.set(response.dateLocal, response);
 
       const slots = this.resolveDaySlotsForResponse(response);
-      this.weekDaySlotsByDate.set(response.dateLocal, slots);
+      this.visibleDaySlotsByDate.set(response.dateLocal, slots);
 
       const entries = this.resolveItemsBySlotEntriesForResponse(response);
       const insertedProducts = this.buildCalendarInsertedProducts(
@@ -907,20 +938,26 @@ export class Calendar implements OnInit, OnChanges {
         slots,
       );
 
-      this.weekTimelineBlocksByDate.set(
+      this.visibleTimelineBlocksByDate.set(
         response.dateLocal,
         this.buildWeekTimelineBlocks(response.dateLocal, slots, insertedProducts),
       );
     });
   }
 
-  private resolveWeekDayResponses(): InputDayResponse[] {
-    if (this.inputWeekResponse?.days && this.inputWeekResponse.days.length > 0) {
-      return this.inputWeekResponse.days;
+  private resolveVisibleDayResponses(): InputDayResponse[] {
+    if (this.currentView === 'month') {
+      return this.inputMonthResponse?.days ?? [];
     }
 
-    if (this.currentView === 'week' && this.inputDayResponse) {
-      return [this.inputDayResponse];
+    if (this.currentView === 'week') {
+      if (this.inputWeekResponse?.days && this.inputWeekResponse.days.length > 0) {
+        return this.inputWeekResponse.days;
+      }
+
+      if (this.inputDayResponse) {
+        return [this.inputDayResponse];
+      }
     }
 
     return [];
@@ -1231,6 +1268,75 @@ export class Calendar implements OnInit, OnChanges {
         },
       ];
     });
+  }
+
+  private buildMacroComparisons(response: InputDayResponse | null): CalendarMacroComparison[] {
+    const dayTotal = response?.totalsMacros?.dayTotal ?? null;
+    const targets = response?.totalsMacros?.targets ?? null;
+    if (!dayTotal || !targets) {
+      return [];
+    }
+
+    return this.weekMacroOrder.flatMap((key) => {
+      const definition = this.weekMacroDefinitions[key];
+      const value = dayTotal[key];
+      const target = targets[key];
+      if (!definition || typeof value !== 'number' || typeof target !== 'number') {
+        return [];
+      }
+
+      const normalizedValue = this.roundComparisonNumber(value);
+      const normalizedTarget = this.roundComparisonNumber(target);
+      const percentage =
+        normalizedTarget > 0
+          ? this.roundComparisonNumber((normalizedValue / normalizedTarget) * 100)
+          : null;
+
+      return [
+        {
+          key,
+          label: definition.label,
+          abbr: definition.abbr,
+          value: this.formatMetricValue(normalizedValue),
+          target: this.formatMetricValue(normalizedTarget),
+          percentage: this.formatComparisonPercentage(percentage),
+          status: this.resolveMacroComparisonStatus(normalizedValue, normalizedTarget),
+          unit: definition.unit,
+          tone: definition.tone,
+        },
+      ];
+    });
+  }
+
+  private resolveMacroComparisonStatus(
+    value: number,
+    target: number,
+  ): CalendarMacroComparison['status'] {
+    if (target === 0) {
+      return value > 0 ? 'over' : 'exact';
+    }
+
+    if (value > target) {
+      return 'over';
+    }
+
+    if (value === target) {
+      return 'exact';
+    }
+
+    return 'under';
+  }
+
+  private formatComparisonPercentage(percentage: number | null): string {
+    if (percentage === null) {
+      return 'Cible 0';
+    }
+
+    return `${this.formatCompactNumber(percentage, 2)}%`;
+  }
+
+  private roundComparisonNumber(value: number): number {
+    return Math.round(value * 100) / 100;
   }
 
   private formatMetricValue(value: number | InputDayMacroValue): string {

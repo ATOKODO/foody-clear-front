@@ -124,11 +124,21 @@ describe('Calendar', () => {
     fixture.detectChanges();
 
     const textContent = fixture.nativeElement.textContent;
+    const mobileMacros = fixture.nativeElement.querySelectorAll(
+      '.calendar-week-mobile .calendar-week-macro',
+    );
+    const desktopMacros = fixture.nativeElement.querySelectorAll(
+      '.calendar-week-grid .calendar-week-macro',
+    );
 
     expect(fixture.nativeElement.querySelectorAll('.calendar-week-card').length).toBe(0);
+    expect(mobileMacros.length).toBe(1);
+    expect(desktopMacros.length).toBe(1);
     expect(textContent).toContain('Base');
     expect(textContent).toContain('Cibles day set');
     expect(textContent).toMatch(/1.?047/);
+    expect(textContent).toMatch(/1.?900/);
+    expect(textContent).toMatch(/55[,.]11%/);
     expect(textContent).toContain('1 plages');
     expect(textContent).toContain('1 items');
   });
@@ -241,6 +251,78 @@ describe('Calendar', () => {
     expect(textContent).toContain('Vue mois');
     expect(textContent).toContain('Prise de Masse');
     expect(textContent).toContain('jours planifies');
+  });
+
+  it('should render month macro comparisons only on current-month days', () => {
+    component.currentDate = component.currentDate.set({ year: 2026, month: 2, day: 14 });
+    component.loadView();
+    fixture.componentRef.setInput('inputMonthResponse', {
+      startDateLocal: '2026-02-01',
+      endDateLocal: '2026-02-28',
+      timezone: 'UTC',
+      days: [
+        {
+          dateLocal: '2026-02-14',
+          timezone: 'UTC',
+          assignment: {
+            id: 5,
+            cycleId: 2,
+            cycleTitle: 'Seche',
+            startDateLocal: '2026-02-10',
+            endDateLocal: '2026-02-16',
+            dayIndex: 5,
+          },
+          daySet: {
+            id: 1,
+            title: 'Training',
+            nutritionValue: {
+              energyKcal: 2200,
+              proteins: 180,
+              carbs: 140,
+              lipids: 70,
+            },
+            slots: [],
+          },
+          items: [],
+          totalsMacros: {
+            bySlot: [],
+            dayTotal: {
+              energyKcal: 1980,
+              proteins: 162,
+              carbs: 154,
+              lipids: 70,
+            },
+            targets: {
+              energyKcal: 2200,
+              proteins: 180,
+              carbs: 140,
+              lipids: 70,
+            },
+            deltaToTargets: {
+              energyKcal: -220,
+              proteins: -18,
+              carbs: 14,
+              lipids: 0,
+            },
+            incompleteNutritionKeys: [],
+            targetSource: 'daySet',
+          },
+          itemsBySlot: [],
+          slots: [],
+        },
+      ],
+    });
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement;
+    const textContent = root.textContent;
+
+    expect(root.querySelectorAll('.calendar-month-day__macro-card').length).toBe(4);
+    expect(root.querySelectorAll('.calendar-month-day--outside .calendar-month-day__macro-card').length).toBe(0);
+    expect(textContent).toContain('Training');
+    expect(textContent).toMatch(/90%/);
+    expect(textContent).toMatch(/110%/);
+    expect(textContent).toMatch(/1.?980\s*\/\s*2.?200/);
   });
 
   it('should render a modernized day view with summary and timeline blocks', () => {

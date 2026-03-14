@@ -141,3 +141,10 @@ export interface InputWeekResponse {
   timezone: string;
   days: InputDayResponse[];
 }
+
+export interface InputMonthResponse {
+  startDateLocal: string;
+  endDateLocal: string;
+  timezone: string;
+  days: InputDayResponse[];
+}
