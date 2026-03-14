@@ -600,15 +600,6 @@ export class Calendar implements OnInit, OnChanges {
     return this.buildMacroComparisons(this.visibleDayResponseByDate.get(dateLocal) ?? null);
   }
 
-  getMonthDayMacroSourceLabel(dateLocal: string): string | null {
-    const response = this.visibleDayResponseByDate.get(dateLocal) ?? null;
-    if (!response?.totalsMacros?.targets) {
-      return null;
-    }
-
-    return response.daySet?.title ?? this.getTargetSourceBadgeText(response.totalsMacros.targetSource);
-  }
-
   getDayMacroHighlights(): CalendarWeekMacroHighlight[] {
     return this.buildMacroHighlights(this.inputDayResponse?.totalsMacros?.dayTotal ?? null);
   }

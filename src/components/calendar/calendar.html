@@ -234,16 +234,55 @@
                   *ngIf="day.assignment; else monthDayEmpty"
                   [ngClass]="day.assignment.color"
                   class="calendar-month-day__assignment">
-                  <div class="calendar-month-day__assignment-type">Cycle actif</div>
-                  <div class="calendar-month-day__assignment-title">
-                    {{ day.assignment.cycleName || day.assignment.label }}
+                  <div class="calendar-month-day__assignment-head">
+                    <div class="calendar-month-day__assignment-type">Cycle actif</div>
+                    <div class="calendar-month-day__assignment-title">
+                      {{ day.assignment.cycleName || day.assignment.label }}
+                    </div>
+                    <div *ngIf="day.assignment.dayNumber" class="calendar-month-day__assignment-progress">
+                      Jour {{ day.assignment.dayNumber }}/{{ day.assignment.totalDays }}
+                    </div>
+                    <div *ngIf="day.assignment.calorieTarget" class="calendar-month-day__assignment-meta">
+                      {{ day.assignment.actualCalories || 0 }} / {{ day.assignment.calorieTarget }} kcal
+                    </div>
                   </div>
-                  <div *ngIf="day.assignment.dayNumber" class="calendar-month-day__assignment-progress">
-                    Jour {{ day.assignment.dayNumber }}/{{ day.assignment.totalDays }}
-                  </div>
-                  <div *ngIf="day.assignment.calorieTarget" class="calendar-month-day__assignment-meta">
-                    {{ day.assignment.actualCalories || 0 }} / {{ day.assignment.calorieTarget }} kcal
-                  </div>
+
+                  <ng-container *ngIf="getWeekDayResponse(day.date) as response">
+                    <ng-container *ngIf="day.isCurrentMonth && getMonthDayMacroComparisons(day.date) as macroComparisons">
+                      <div *ngIf="macroComparisons.length > 0" class="calendar-month-day__assignment-insights">
+                        <div
+                          *ngIf="response.daySet || response.totalsMacros?.targetSource"
+                          class="calendar-month-day__assignment-chips">
+                          <span *ngIf="response.daySet as daySet" class="calendar-week-chip calendar-week-chip--dayset">
+                            {{ daySet.title }}
+                          </span>
+
+                          <span
+                            *ngIf="response.totalsMacros?.targetSource as targetSource"
+                            class="calendar-week-chip calendar-week-chip--target">
+                            {{ getTargetSourceBadgeText(targetSource) }}
+                          </span>
+                        </div>
+
+                        <div class="calendar-month-day__assignment-macro-grid">
+                          <article
+                            *ngFor="let macro of macroComparisons; trackBy: trackByWeekMacro"
+                            class="calendar-month-day__assignment-macro-card"
+                            [attr.data-tone]="macro.tone"
+                            [attr.data-status]="macro.status"
+                            [attr.title]="macro.label">
+                            <div class="calendar-month-day__assignment-macro-top">
+                              <span class="calendar-month-day__assignment-macro-abbr">{{ macro.abbr }}</span>
+                              <span class="calendar-month-day__assignment-macro-percent">{{ macro.percentage }}</span>
+                            </div>
+                            <div class="calendar-month-day__assignment-macro-values">
+                              {{ macro.value }} / {{ macro.target }} {{ macro.unit }}
+                            </div>
+                          </article>
+                        </div>
+                      </div>
+                    </ng-container>
+                  </ng-container>
                 </div>
 
                 <ng-template #monthDayEmpty>
@@ -258,30 +297,6 @@
                     {{ day.dateObj.toFormat('cccc', { locale: 'fr' }) }}
                   </div>
                 </ng-template>
-
-                <ng-container *ngIf="day.isCurrentMonth && getMonthDayMacroComparisons(day.date) as macroComparisons">
-                  <div *ngIf="macroComparisons.length > 0" class="calendar-month-day__macro-summary">
-                    <div *ngIf="getMonthDayMacroSourceLabel(day.date) as sourceLabel" class="calendar-month-day__macro-source">
-                      {{ sourceLabel }}
-                    </div>
-
-                    <div class="calendar-month-day__macro-grid">
-                      <article
-                        *ngFor="let macro of macroComparisons; trackBy: trackByWeekMacro"
-                        class="calendar-month-day__macro-card"
-                        [attr.data-tone]="macro.tone"
-                        [attr.data-status]="macro.status">
-                        <div class="calendar-month-day__macro-top">
-                          <span class="calendar-month-day__macro-abbr">{{ macro.abbr }}</span>
-                          <span class="calendar-month-day__macro-percent">{{ macro.percentage }}</span>
-                        </div>
-                        <div class="calendar-month-day__macro-values">
-                          {{ macro.value }} / {{ macro.target }}
-                        </div>
-                      </article>
-                    </div>
-                  </div>
-                </ng-container>
               </div>
             </article>
           </div>

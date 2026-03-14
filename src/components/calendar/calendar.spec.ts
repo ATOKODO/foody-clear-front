@@ -317,8 +317,8 @@ describe('Calendar', () => {
     const root = fixture.nativeElement;
     const textContent = root.textContent;
 
-    expect(root.querySelectorAll('.calendar-month-day__macro-card').length).toBe(4);
-    expect(root.querySelectorAll('.calendar-month-day--outside .calendar-month-day__macro-card').length).toBe(0);
+    expect(root.querySelectorAll('.calendar-month-day__assignment-macro-card').length).toBe(4);
+    expect(root.querySelectorAll('.calendar-month-day--outside .calendar-month-day__assignment-macro-card').length).toBe(0);
     expect(textContent).toContain('Training');
     expect(textContent).toMatch(/90%/);
     expect(textContent).toMatch(/110%/);
