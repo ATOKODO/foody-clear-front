@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DateTime } from 'luxon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -17,6 +18,7 @@ import {
 import { CycleListItem, ListCycle } from '../../components/cycle/list-cycle/list-cycle';
 import {
   buildCycleListItem,
+  deriveCycleDurationPresentation,
   getCycleMacroTotals,
   resolveCycleDaySetIds,
   resolveCycleDaySetTimeline,
@@ -25,8 +27,11 @@ import {
 import { DaySetListItem } from '../../components/day-set/day-set-list/day-set-list';
 import {
   CreateCycleDto,
+  CycleAssignmentGapMode,
+  CycleAssignmentRescheduleScope,
   Cycle,
   CycleNutritionValue,
+  UpdateCycleDto,
 } from '../../interfaces/cycle.interface';
 import { DaySet } from '../../interfaces/day-set.interface';
 import { Slot } from '../../interfaces/slot.interface';
@@ -38,6 +43,13 @@ import { DaySetFeature } from '../day-set/day-set.feature';
 import { SlotFeature } from '../slot/slot.feature';
 
 type CycleHubView = 'cycle' | 'daySet' | 'slot';
+type CycleImpactDialogResult = 'submitted' | 'cancelled';
+
+type CycleUpdateImpactOptions = {
+  assignmentRescheduleScope: CycleAssignmentRescheduleScope;
+  assignmentGapMode: CycleAssignmentGapMode;
+  assignmentEffectiveDateLocal?: string;
+};
 
 @Component({
   selector: 'app-cycle',
@@ -64,6 +76,9 @@ export class CycleFeature implements OnInit {
   @ViewChild('cycleFormDialog')
   private cycleFormDialogTemplate?: TemplateRef<unknown>;
 
+  @ViewChild('cycleImpactDialog')
+  private cycleImpactDialogTemplate?: TemplateRef<unknown>;
+
   private readonly dialog = inject(MatDialog);
 
   baseUrl = '';
@@ -89,11 +104,16 @@ export class CycleFeature implements OnInit {
 
   nutritionKeys: NutritionKeyMeta[] = [];
   private dialogRef: MatDialogRef<unknown> | null = null;
+  private impactDialogRef: MatDialogRef<unknown> | null = null;
   private macroNutritionKeys = {
     proteins: 'PROTEIN',
     carbs: 'CARBOHYDRATE',
     lipids: 'FAT',
   };
+  private pendingCycleUpdatePayload: CreateCycleDto | null = null;
+
+  impactScope: CycleAssignmentRescheduleScope = 'future';
+  impactGapMode: CycleAssignmentGapMode = 'preserve';
 
   constructor(
     private readonly cycleSrv: CycleService,
@@ -152,6 +172,10 @@ export class CycleFeature implements OnInit {
       : 'Creez un cycle sans descendre en bas de page.';
   }
 
+  get impactEffectiveDateLocal(): string {
+    return this.resolveTodayDateLocal();
+  }
+
   onAddRequested(): void {
     this.formMode = 'add';
     this.formInitialValue = null;
@@ -165,6 +189,8 @@ export class CycleFeature implements OnInit {
       return;
     }
 
+    const durationPresentation = deriveCycleDurationPresentation(resolveCycleDurationDays(cycle));
+
     this.formMode = 'edit';
     this.editingCycleId = cycle.id;
     this.selectedCycleId = cycle.id;
@@ -172,9 +198,9 @@ export class CycleFeature implements OnInit {
       titre: cycle.title,
       couleur: cycle.color,
       nutritionValues: this.getEditableNutritionValues(cycle),
-      nombre: cycle.durationCount,
-      typeDuree: cycle.durationType,
-      durationDays: resolveCycleDurationDays(cycle),
+      nombre: durationPresentation.durationCount,
+      typeDuree: durationPresentation.durationType,
+      durationDays: durationPresentation.durationDays,
       daySetIds: resolveCycleDaySetIds(cycle),
       daySetOrder: resolveCycleDaySetTimeline(cycle),
     };
@@ -204,25 +230,18 @@ export class CycleFeature implements OnInit {
 
   onFormSubmitted(event: { mode: CycleFormMode; value: CycleFormValue }): void {
     const payload = this.toCreateDto(event.value);
-    this.saving = true;
 
     if (event.mode === 'edit' && this.editingCycleId !== null) {
-      this.cycleSrv.update(this.editingCycleId, payload).subscribe({
-        next: (response) => {
-          this.lastResponse = response;
-          this.lastError = null;
-          this.saving = false;
-          this.closeFormDialog('submitted');
-          this.loadCycles();
-        },
-        error: (error) => {
-          this.lastError = error;
-          this.saving = false;
-        },
-      });
+      if (this.shouldConfirmImpact(payload)) {
+        this.openImpactDialog(payload);
+        return;
+      }
+
+      this.submitCycleUpdate(this.editingCycleId, payload);
       return;
     }
 
+    this.saving = true;
     this.cycleSrv.create(payload).subscribe({
       next: (response) => {
         this.lastResponse = response;
@@ -240,6 +259,23 @@ export class CycleFeature implements OnInit {
 
   onCancelForm(): void {
     this.closeFormDialog('cancelled');
+  }
+
+  confirmImpactUpdate(): void {
+    if (this.pendingCycleUpdatePayload === null || this.editingCycleId === null) {
+      return;
+    }
+
+    this.submitCycleUpdate(this.editingCycleId, this.pendingCycleUpdatePayload, {
+      assignmentRescheduleScope: this.impactScope,
+      assignmentGapMode: this.impactGapMode,
+      assignmentEffectiveDateLocal:
+        this.impactScope === 'future' ? this.resolveTodayDateLocal() : undefined,
+    });
+  }
+
+  cancelImpactUpdate(): void {
+    this.closeImpactDialog('cancelled');
   }
 
   onLinkedDataChanged(): void {
@@ -269,6 +305,10 @@ export class CycleFeature implements OnInit {
   }
 
   private closeFormDialog(result: 'submitted' | 'cancelled'): void {
+    if (this.impactDialogRef !== null) {
+      this.impactDialogRef.close(result);
+    }
+
     if (this.dialogRef !== null) {
       this.dialogRef.close(result);
       return;
@@ -277,11 +317,50 @@ export class CycleFeature implements OnInit {
     this.resetFormState();
   }
 
+  private openImpactDialog(payload: CreateCycleDto): void {
+    this.pendingCycleUpdatePayload = payload;
+    this.impactScope = 'future';
+    this.impactGapMode = 'preserve';
+
+    if (!this.cycleImpactDialogTemplate || this.impactDialogRef !== null) {
+      return;
+    }
+
+    this.impactDialogRef = this.dialog.open(this.cycleImpactDialogTemplate, {
+      width: '560px',
+      maxWidth: '96vw',
+      autoFocus: false,
+      restoreFocus: true,
+      disableClose: this.saving,
+    });
+
+    this.impactDialogRef.afterClosed().subscribe(() => {
+      this.impactDialogRef = null;
+      this.pendingCycleUpdatePayload = null;
+    });
+  }
+
+  private closeImpactDialog(result: CycleImpactDialogResult): void {
+    if (this.impactDialogRef !== null) {
+      this.impactDialogRef.close(result);
+      return;
+    }
+
+    this.pendingCycleUpdatePayload = null;
+  }
+
   private resetFormState(): void {
+    if (this.impactDialogRef !== null) {
+      this.impactDialogRef.close('cancelled');
+    }
+
     this.formVisible = false;
     this.formMode = 'add';
     this.formInitialValue = null;
     this.editingCycleId = null;
+    this.pendingCycleUpdatePayload = null;
+    this.impactScope = 'future';
+    this.impactGapMode = 'preserve';
   }
 
   private loadCycles(): void {
@@ -364,6 +443,9 @@ export class CycleFeature implements OnInit {
   }
 
   private toCreateDto(value: CycleFormValue): CreateCycleDto {
+    const durationPresentation = deriveCycleDurationPresentation(
+      this.normalizePositiveInteger(value.durationDays, 1),
+    );
     const nutritionValues = value.nutritionValues
       .map((nutritionValue) =>
         this.buildNutritionValue(
@@ -379,12 +461,55 @@ export class CycleFeature implements OnInit {
       title: value.titre,
       color: value.couleur,
       nutritionValues,
-      durationDays: this.normalizePositiveInteger(value.durationDays, 1),
-      durationCount: value.nombre,
-      durationType: value.typeDuree,
+      durationDays: durationPresentation.durationDays,
+      durationCount: durationPresentation.durationCount,
+      durationType: durationPresentation.durationType,
       daySetIds: this.normalizeDaySetIds(value.daySetOrder),
       daySetOrder: this.normalizeDaySetTimeline(value.daySetOrder),
     };
+  }
+
+  private submitCycleUpdate(
+    cycleId: number,
+    payload: CreateCycleDto,
+    impactOptions?: CycleUpdateImpactOptions,
+  ): void {
+    const updatePayload: UpdateCycleDto = {
+      ...payload,
+      ...impactOptions,
+    };
+
+    this.saving = true;
+    this.cycleSrv.update(cycleId, updatePayload).subscribe({
+      next: (response) => {
+        this.lastResponse = response;
+        this.lastError = null;
+        this.saving = false;
+        this.closeFormDialog('submitted');
+        this.loadCycles();
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.saving = false;
+      },
+    });
+  }
+
+  private shouldConfirmImpact(payload: CreateCycleDto): boolean {
+    if (this.editingCycleId === null) {
+      return false;
+    }
+
+    const existingCycle = this.cycles.find((cycle) => cycle.id === this.editingCycleId);
+    if (!existingCycle) {
+      return false;
+    }
+
+    return resolveCycleDurationDays(existingCycle) !== payload.durationDays;
+  }
+
+  private resolveTodayDateLocal(): string {
+    return DateTime.local().toFormat('yyyy-LL-dd');
   }
 
   private buildNutritionValues(

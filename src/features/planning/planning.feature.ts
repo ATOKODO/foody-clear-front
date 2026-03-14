@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -97,17 +97,28 @@ export class PlanningFeature implements OnInit {
 
   ngOnInit(): void {
     this.baseUrl = this.cycleAssignmentService.baseUrl;
+    this.cycleService.setBaseUrl(this.baseUrl);
     this.inputDayService.setBaseUrl(this.baseUrl);
-    this.loadCycles();
+    this.refreshPlanningData();
   }
 
   onBaseUrlChange(): void {
     this.cycleService.setBaseUrl(this.baseUrl);
     this.cycleAssignmentService.setBaseUrl(this.baseUrl);
     this.inputDayService.setBaseUrl(this.baseUrl);
-    this.loadCycles();
-    this.reloadAssignmentsForCurrentRange();
-    this.reloadInputDataForCurrentView();
+    this.refreshPlanningData();
+  }
+
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    this.refreshPlanningData();
+  }
+
+  @HostListener('document:visibilitychange')
+  onVisibilityChange(): void {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      this.refreshPlanningData();
+    }
   }
 
   onCalendarViewChanged(event: CalendarViewChangeEvent): void {
@@ -246,6 +257,12 @@ export class PlanningFeature implements OnInit {
   }
 
   onEmbeddedItemsChanged(_: { dateLocal: string }): void {
+    this.reloadInputDataForCurrentView();
+  }
+
+  refreshPlanningData(): void {
+    this.loadCycles();
+    this.reloadAssignmentsForCurrentRange();
     this.reloadInputDataForCurrentView();
   }
 

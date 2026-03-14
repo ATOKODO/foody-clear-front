@@ -37,6 +37,12 @@ type SlotResolution = {
   hasMissingSlotBreakdown: boolean;
 };
 
+export interface CycleDurationPresentation {
+  durationDays: number;
+  durationCount: number;
+  durationType: Cycle['durationType'];
+}
+
 export type MacroNutritionKeys = Record<MacroKey, string>;
 
 export interface BuildCycleListItemOptions {
@@ -64,6 +70,7 @@ export function buildCycleListItem(
   const macroNutritionKeys = resolveMacroNutritionKeys(options.macroNutritionKeys);
   const cycleTotals = getCycleMacroTotals(cycle, macroNutritionKeys);
   const durationDays = resolveCycleDurationDays(cycle);
+  const durationPresentation = deriveCycleDurationPresentation(durationDays);
   const daySetTimeline = resolveCycleDaySetTimeline(cycle);
   const daySets = resolveCycleDaySets(cycle, options.fallbackDaySets ?? []).map((daySet) =>
     buildDaySetBreakdown(daySet, cycleTotals, macroNutritionKeys, options.fallbackSlots ?? []),
@@ -82,9 +89,9 @@ export function buildCycleListItem(
     id: cycle.id,
     title: cycle.title,
     color: cycle.color,
-    durationDays,
-    durationCount: cycle.durationCount,
-    durationType: cycle.durationType,
+    durationDays: durationPresentation.durationDays,
+    durationCount: durationPresentation.durationCount,
+    durationType: durationPresentation.durationType,
     missingDayCount,
     daySetTotals,
     daySetMetrics,
@@ -130,6 +137,32 @@ export function resolveCycleDurationDays(
   }
 
   return durationCount;
+}
+
+export function deriveCycleDurationPresentation(durationDays: number): CycleDurationPresentation {
+  const normalizedDurationDays = normalizePositiveInteger(durationDays, 1);
+
+  if (normalizedDurationDays % 30 === 0) {
+    return {
+      durationDays: normalizedDurationDays,
+      durationCount: normalizedDurationDays / 30,
+      durationType: 'mois',
+    };
+  }
+
+  if (normalizedDurationDays % 7 === 0) {
+    return {
+      durationDays: normalizedDurationDays,
+      durationCount: normalizedDurationDays / 7,
+      durationType: 'semaine',
+    };
+  }
+
+  return {
+    durationDays: normalizedDurationDays,
+    durationCount: normalizedDurationDays,
+    durationType: 'jour',
+  };
 }
 
 export function resolveCycleDaySetIds(

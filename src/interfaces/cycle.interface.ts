@@ -1,4 +1,6 @@
 export type CycleDurationType = 'jour' | 'semaine' | 'mois';
+export type CycleAssignmentRescheduleScope = 'future' | 'all';
+export type CycleAssignmentGapMode = 'preserve' | 'compact';
 
 export type NutritionReference = 'PER_100G' | 'PER_100ML';
 
@@ -35,4 +37,8 @@ export interface CreateCycleDto {
   daySetOrder?: number[];
 }
 
-export type UpdateCycleDto = Partial<CreateCycleDto>;
+export type UpdateCycleDto = Partial<CreateCycleDto> & {
+  assignmentRescheduleScope?: CycleAssignmentRescheduleScope;
+  assignmentGapMode?: CycleAssignmentGapMode;
+  assignmentEffectiveDateLocal?: string;
+};

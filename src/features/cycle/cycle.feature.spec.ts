@@ -320,6 +320,51 @@ describe('CycleFeature', () => {
     });
   });
 
+  it('should derive the edit duration presentation from durationDays', () => {
+    component.cycles = [
+      {
+        id: 10,
+        title: 'Canon',
+        color: 'blue',
+        durationDays: 14,
+        durationCount: 14,
+        durationType: 'jour',
+        nutritionValues: [nutritionValue('PROTEIN', 140)],
+        daySetOrder: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      },
+    ];
+
+    component.onEditRequested({
+      id: 10,
+      title: 'Canon',
+      color: 'blue',
+      proteins: 140,
+      carbs: 0,
+      lipids: 0,
+      durationDays: 14,
+      durationCount: 14,
+      durationType: 'jour',
+      missingDayCount: 14,
+      daySetTotals: { proteins: 0, carbs: 0, lipids: 0 },
+      daySetMetrics: [],
+      daySets: [],
+      hasDaySetOverflow: false,
+      hasSlotOverflow: false,
+      hasMissingSlotBreakdown: false,
+    });
+
+    expect(component.formInitialValue).toEqual({
+      titre: 'Canon',
+      couleur: 'blue',
+      nutritionValues: [nutritionValue('PROTEIN', 140)],
+      nombre: 2,
+      typeDuree: 'semaine',
+      durationDays: 14,
+      daySetIds: [],
+      daySetOrder: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    });
+  });
+
   it('should open the cycle form in a dialog when editing', () => {
     component.cycles = [
       {
@@ -359,6 +404,91 @@ describe('CycleFeature', () => {
     expect(component.formVisible).toBeTrue();
     expect(dialogText).toContain('Modifier un cycle');
     expect(dialogText).toContain('Les changements sont appliques sans quitter la liste.');
+  });
+
+  it('should confirm impact and send reschedule options when durationDays changes on edit', () => {
+    component.cycles = [
+      {
+        id: 9,
+        title: 'Reverse',
+        color: 'pink',
+        durationDays: 7,
+        durationCount: 1,
+        durationType: 'semaine',
+        nutritionValues: [nutritionValue('PROTEIN', 120)],
+        daySetOrder: [0, 0, 0, 0, 0, 0, 0],
+      },
+    ];
+
+    component.onEditRequested({
+      id: 9,
+      title: 'Reverse',
+      color: 'pink',
+      proteins: 120,
+      carbs: 0,
+      lipids: 0,
+      durationDays: 7,
+      durationCount: 1,
+      durationType: 'semaine',
+      missingDayCount: 7,
+      daySetTotals: { proteins: 0, carbs: 0, lipids: 0 },
+      daySetMetrics: [],
+      daySets: [],
+      hasDaySetOverflow: false,
+      hasSlotOverflow: false,
+      hasMissingSlotBreakdown: false,
+    });
+    fixture.detectChanges();
+
+    component.onFormSubmitted({
+      mode: 'edit',
+      value: {
+        titre: 'Reverse',
+        couleur: 'pink',
+        nutritionValues: [nutritionValue('PROTEIN', 120)],
+        nombre: 10,
+        typeDuree: 'jour',
+        durationDays: 10,
+        daySetIds: [],
+        daySetOrder: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      },
+    });
+    fixture.detectChanges();
+
+    expect(httpController.match('http://localhost:3000/cycle/9').length).toBe(0);
+    expect(overlayContainer.getContainerElement().textContent ?? '').toContain(
+      'Impact sur les assignations',
+    );
+
+    component.confirmImpactUpdate();
+
+    const updateRequest = httpController.expectOne('http://localhost:3000/cycle/9');
+    expect(updateRequest.request.method).toBe('PATCH');
+    expect(updateRequest.request.body).toEqual({
+      title: 'Reverse',
+      color: 'pink',
+      nutritionValues: [nutritionValue('PROTEIN', 120)],
+      durationDays: 10,
+      durationCount: 10,
+      durationType: 'jour',
+      daySetIds: [],
+      daySetOrder: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      assignmentRescheduleScope: 'future',
+      assignmentGapMode: 'preserve',
+      assignmentEffectiveDateLocal: component.impactEffectiveDateLocal,
+    });
+    updateRequest.flush({
+      id: 9,
+      title: 'Reverse',
+      color: 'pink',
+      durationDays: 10,
+      durationCount: 10,
+      durationType: 'jour',
+      nutritionValues: [nutritionValue('PROTEIN', 120)],
+      daySetOrder: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    });
+
+    httpController.expectOne('http://localhost:3000/cycle').flush([]);
   });
 
   it('should reload cycles, day sets and slots when linked data changes', () => {

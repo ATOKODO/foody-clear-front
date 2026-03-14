@@ -221,6 +221,37 @@ describe('PlanningFeature', () => {
     );
   });
 
+  it('should refresh cycles, assignments and input data when planning is refreshed', () => {
+    component.currentCalendarView = 'day';
+    component.currentAnchorDateLocal = '2026-02-18';
+    component.currentRangeFromLocal = '2026-02-16';
+    component.currentRangeToLocal = '2026-02-22';
+
+    cycleServiceMock.findAll.calls.reset();
+    cycleAssignmentServiceMock.findInRange.calls.reset();
+    inputDayServiceMock.getInputDay.calls.reset();
+
+    component.refreshPlanningData();
+
+    expect(cycleServiceMock.findAll).toHaveBeenCalled();
+    expect(cycleAssignmentServiceMock.findInRange).toHaveBeenCalledWith(
+      '2026-02-16',
+      '2026-02-22',
+    );
+    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith(
+      '2026-02-18',
+      jasmine.any(String),
+    );
+  });
+
+  it('should refresh planning data when window focus returns', () => {
+    const refreshSpy = spyOn(component, 'refreshPlanningData');
+
+    component.onWindowFocus();
+
+    expect(refreshSpy).toHaveBeenCalled();
+  });
+
   it('should build cycle picker items from nutrition values and nested day sets', () => {
     component.cycles = [
       {

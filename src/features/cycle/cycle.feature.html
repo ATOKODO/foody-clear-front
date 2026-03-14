@@ -107,3 +107,65 @@
     </mat-dialog-content>
   </div>
 </ng-template>
+
+<ng-template #cycleImpactDialog>
+  <div class="cycle-form-dialog">
+    <div class="cycle-form-dialog__header">
+      <div>
+        <p class="cycle-form-dialog__eyebrow">Planning</p>
+        <h3 class="cycle-form-dialog__title">Impact sur les assignations</h3>
+        <p class="cycle-form-dialog__subtitle">
+          La duree du cycle change. Choisis comment recalculer la timeline.
+        </p>
+      </div>
+    </div>
+
+    <mat-dialog-content class="cycle-form-dialog__content space-y-5">
+      <section class="space-y-3">
+        <div>
+          <p class="text-sm font-semibold text-slate-900">Portee du recalcul</p>
+          <p class="mt-1 text-sm text-slate-600">
+            `Futures` applique le changement a partir d'aujourd'hui ({{ impactEffectiveDateLocal }}).
+            `Toutes` rejoue toute la timeline.
+          </p>
+        </div>
+
+        <mat-button-toggle-group
+          [(ngModel)]="impactScope"
+          [hideSingleSelectionIndicator]="true"
+          class="w-full"
+          name="impactScope">
+          <mat-button-toggle value="future">Futures</mat-button-toggle>
+          <mat-button-toggle value="all">Toutes</mat-button-toggle>
+        </mat-button-toggle-group>
+      </section>
+
+      <section class="space-y-3">
+        <div>
+          <p class="text-sm font-semibold text-slate-900">Gestion des trous</p>
+          <p class="mt-1 text-sm text-slate-600">
+            `Conserver` laisse les trous existants. `Compacter` recolle toute la suite sans vide.
+          </p>
+        </div>
+
+        <mat-button-toggle-group
+          [(ngModel)]="impactGapMode"
+          [hideSingleSelectionIndicator]="true"
+          class="w-full"
+          name="impactGapMode">
+          <mat-button-toggle value="preserve">Conserver</mat-button-toggle>
+          <mat-button-toggle value="compact">Compacter</mat-button-toggle>
+        </mat-button-toggle-group>
+      </section>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end" class="gap-2">
+      <button mat-stroked-button type="button" (click)="cancelImpactUpdate()" [disabled]="saving">
+        Annuler
+      </button>
+      <button mat-raised-button color="primary" type="button" (click)="confirmImpactUpdate()" [disabled]="saving">
+        Appliquer
+      </button>
+    </mat-dialog-actions>
+  </div>
+</ng-template>

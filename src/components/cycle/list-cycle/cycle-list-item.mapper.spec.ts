@@ -258,6 +258,28 @@ describe('buildCycleListItem', () => {
     expect(item.daySetMetrics.every((metric) => metric.status === 'exact')).toBeTrue();
   });
 
+  it('should derive the secondary duration label from durationDays', () => {
+    const weekItem = buildCycleListItem(
+      createCycle({
+        durationDays: 14,
+        durationCount: 14,
+        durationType: 'jour',
+      }),
+    );
+    const monthItem = buildCycleListItem(
+      createCycle({
+        durationDays: 30,
+        durationCount: 30,
+        durationType: 'jour',
+      }),
+    );
+
+    expect(weekItem.durationCount).toBe(2);
+    expect(weekItem.durationType).toBe('semaine');
+    expect(monthItem.durationCount).toBe(1);
+    expect(monthItem.durationType).toBe('mois');
+  });
+
   function createCycle(overrides: Partial<Cycle> = {}): Cycle {
     return {
       id: 1,
