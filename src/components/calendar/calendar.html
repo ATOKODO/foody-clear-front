@@ -31,18 +31,16 @@
         </div>
       </div>
 
-      <div class="flex gap-1 rounded-lg bg-gray-600 p-1">
-        <button
-          *ngFor="let view of VIEWS"
-          (click)="switchView(view)"
-          [class.bg-black]="currentView === view"
-          [class.shadow-sm]="currentView === view"
-          [class.text-gray-100]="currentView === view"
-          [class.text-gray-400]="currentView !== view"
-          class="rounded-md px-4 py-2 text-sm font-medium capitalize transition-all">
-          {{ view === 'year' ? 'Annee' : view === 'month' ? 'Mois' : view === 'week' ? 'Semaine' : 'Jour' }}
-        </button>
-      </div>
+      <mat-button-toggle-group
+        [value]="currentView"
+        (change)="switchView($event.value)"
+        aria-label="Selection de la vue calendrier"
+        class="calendar-view-toggle"
+        hideSingleSelectionIndicator>
+        <mat-button-toggle *ngFor="let view of VIEWS" [value]="view">
+          {{ getViewLabel(view) }}
+        </mat-button-toggle>
+      </mat-button-toggle-group>
     </div>
   </header>
 

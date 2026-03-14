@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { DateTime } from 'luxon';
 import {
   CalendarView,
@@ -119,7 +120,7 @@ interface CalendarWeekTimelineBlock {
 
 @Component({
   selector: 'app-calendar',
-  imports: [CommonModule, MatButtonModule],
+  imports: [CommonModule, MatButtonModule, MatButtonToggleModule],
   templateUrl: './calendar.html',
   styleUrl: './calendar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -422,6 +423,22 @@ export class Calendar implements OnInit, OnChanges {
       default:
         return '';
     }
+  }
+
+  getViewLabel(view: CalendarView): string {
+    if (view === 'year') {
+      return 'Annee';
+    }
+
+    if (view === 'month') {
+      return 'Mois';
+    }
+
+    if (view === 'week') {
+      return 'Semaine';
+    }
+
+    return 'Jour';
   }
 
   private refreshView(): void {
