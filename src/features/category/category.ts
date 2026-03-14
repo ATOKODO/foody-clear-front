@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -37,6 +37,8 @@ import {
   styleUrl: './category.scss',
 })
 export class Category implements OnInit {
+  @Output() readonly dataChanged = new EventEmitter<void>();
+
   baseUrl = '';
   loading = false;
   saving = false;
@@ -113,6 +115,7 @@ export class Category implements OnInit {
         this.lastResponse = { deleted: true, id: categoryId };
         this.lastError = null;
         this.saving = false;
+        this.dataChanged.emit();
 
         if (this.editingCategoryId === categoryId) {
           this.onCancelForm();
@@ -137,6 +140,7 @@ export class Category implements OnInit {
           this.lastResponse = response;
           this.lastError = null;
           this.saving = false;
+          this.dataChanged.emit();
           this.onCancelForm();
           this.loadCategories();
         },
@@ -154,6 +158,7 @@ export class Category implements OnInit {
         this.lastResponse = response;
         this.lastError = null;
         this.saving = false;
+        this.dataChanged.emit();
         this.onCancelForm();
         this.loadCategories();
       },

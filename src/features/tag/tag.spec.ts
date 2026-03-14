@@ -17,6 +17,12 @@ describe('Tag', () => {
   };
 
   beforeEach(async () => {
+    tagServiceMock.setBaseUrl.calls.reset();
+    tagServiceMock.findAll.calls.reset();
+    tagServiceMock.create.calls.reset();
+    tagServiceMock.update.calls.reset();
+    tagServiceMock.remove.calls.reset();
+
     await TestBed.configureTestingModule({
       imports: [Tag],
       providers: [{ provide: TagService, useValue: tagServiceMock }],
@@ -29,5 +35,18 @@ describe('Tag', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should emit dataChanged after creating a tag', () => {
+    const emitSpy = spyOn(component.dataChanged, 'emit');
+
+    component.onFormSubmitted({
+      mode: 'add',
+      value: {
+        name: 'Bio',
+      },
+    });
+
+    expect(emitSpy).toHaveBeenCalled();
   });
 });

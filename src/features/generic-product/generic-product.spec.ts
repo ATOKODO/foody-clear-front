@@ -36,6 +36,12 @@ describe('GenericProduct', () => {
   };
 
   beforeEach(async () => {
+    genericProductServiceMock.setBaseUrl.calls.reset();
+    genericProductServiceMock.findAll.calls.reset();
+    genericProductServiceMock.create.calls.reset();
+    genericProductServiceMock.update.calls.reset();
+    genericProductServiceMock.remove.calls.reset();
+
     await TestBed.configureTestingModule({
       imports: [GenericProduct],
       providers: [{ provide: GenericProductService, useValue: genericProductServiceMock }],
@@ -51,6 +57,7 @@ describe('GenericProduct', () => {
   });
 
   it('should include quantity enum fields in create payload', () => {
+    const emitSpy = spyOn(component.dataChanged, 'emit');
     const formValue: GenericProductFormValue = {
       name: 'Pain de mie',
       minQuantityUnit: 2,
@@ -68,5 +75,6 @@ describe('GenericProduct', () => {
       minQuantityMetric: 60,
       minQuantityMetricType: 'g',
     });
+    expect(emitSpy).toHaveBeenCalled();
   });
 });

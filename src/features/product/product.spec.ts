@@ -55,6 +55,8 @@ describe('Product', () => {
   };
 
   beforeEach(async () => {
+    resetSpyCalls();
+
     await TestBed.configureTestingModule({
       imports: [Product],
       providers: [
@@ -111,6 +113,114 @@ describe('Product', () => {
     expect(component.activeView).toBe('tag');
     expect(fixture.nativeElement.querySelector('app-tag')).not.toBeNull();
   });
+
+  it('should reload products when returning to product after linked data changes', () => {
+    productServiceMock.findAll.calls.reset();
+
+    component.onActiveViewChange('category');
+    component.onLinkedDataChanged();
+
+    expect(component.linkedDataDirty).toBeTrue();
+    expect(productServiceMock.findAll).not.toHaveBeenCalled();
+
+    component.onActiveViewChange('product');
+
+    expect(component.activeView).toBe('product');
+    expect(component.linkedDataDirty).toBeFalse();
+    expect(productServiceMock.findAll).toHaveBeenCalledTimes(1);
+  });
+
+  it('should refresh the current product form state after reloading products', () => {
+    component.products = [
+      buildProduct({
+        id: 1,
+        name: 'Ancien produit',
+        category: { id: 3, name: 'Ancienne categorie' },
+      }),
+    ];
+    component.onEditRequested({
+      id: '1',
+      name: 'Ancien produit',
+      barcode: null,
+      unitType: 'Paquet',
+      quantityPerUnit: 1,
+      quantityUnit: 'g',
+      portionCount: null,
+      portionUnit: null,
+      portionQuantityNormalized: null,
+      price: null,
+      tagNames: [],
+      nutritionValuesCount: 0,
+      category: 'Ancienne categorie',
+      genericProduct: null,
+    });
+    productServiceMock.findAll.and.returnValue(
+      of([
+        buildProduct({
+          id: 1,
+          name: 'Produit rafraichi',
+          category: { id: 7, name: 'Nouvelle categorie' },
+        }),
+      ]),
+    );
+
+    component.onRefreshRequested();
+
+    expect(component.formInitialValue?.name).toBe('Produit rafraichi');
+    expect(component.formInitialValue?.categoryId).toBe(7);
+  });
+
+  function buildProduct(overrides: Partial<Record<string, unknown>> = {}) {
+    return {
+      id: 1,
+      name: 'Produit',
+      barcode: null,
+      category: null,
+      tags: [],
+      genericProduct: null,
+      unitType: 'Paquet',
+      quantityPerUnit: 1,
+      quantityUnit: 'g',
+      portionCount: null,
+      portionUnit: null,
+      portionQuantityNormalized: null,
+      price: null,
+      url: null,
+      memo: null,
+      nutritionValues: [],
+      ...overrides,
+    };
+  }
+
+  function resetSpyCalls(): void {
+    productServiceMock.setBaseUrl.calls.reset();
+    productServiceMock.findAll.calls.reset();
+    productServiceMock.create.calls.reset();
+    productServiceMock.update.calls.reset();
+    productServiceMock.remove.calls.reset();
+
+    metaServiceMock.setBaseUrl.calls.reset();
+    metaServiceMock.getQuantityUnits.calls.reset();
+    metaServiceMock.getNutritionKeys.calls.reset();
+
+    categoryServiceMock.setBaseUrl.calls.reset();
+    categoryServiceMock.findAll.calls.reset();
+    categoryServiceMock.create.calls.reset();
+    categoryServiceMock.update.calls.reset();
+    categoryServiceMock.remove.calls.reset();
+
+    genericProductServiceMock.setBaseUrl.calls.reset();
+    genericProductServiceMock.findAll.calls.reset();
+    genericProductServiceMock.create.calls.reset();
+    genericProductServiceMock.update.calls.reset();
+    genericProductServiceMock.remove.calls.reset();
+
+    tagServiceMock.setBaseUrl.calls.reset();
+    tagServiceMock.findAll.calls.reset();
+    tagServiceMock.create.calls.reset();
+    tagServiceMock.update.calls.reset();
+    tagServiceMock.remove.calls.reset();
+  }
 
   function clickToggle(index: number): void {
     const toggleButtons = fixture.nativeElement.querySelectorAll('mat-button-toggle button');

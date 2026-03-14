@@ -33,6 +33,12 @@ describe('Category', () => {
   };
 
   beforeEach(async () => {
+    categoryServiceMock.setBaseUrl.calls.reset();
+    categoryServiceMock.findAll.calls.reset();
+    categoryServiceMock.create.calls.reset();
+    categoryServiceMock.update.calls.reset();
+    categoryServiceMock.remove.calls.reset();
+
     await TestBed.configureTestingModule({
       imports: [Category],
       providers: [{ provide: CategoryService, useValue: categoryServiceMock }],
@@ -45,5 +51,21 @@ describe('Category', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should emit dataChanged after creating a category', () => {
+    const emitSpy = spyOn(component.dataChanged, 'emit');
+
+    component.onFormSubmitted({
+      mode: 'add',
+      value: {
+        name: 'Fruits',
+        warnBeforeDays: 3,
+        recentlyExpiredDays: 1,
+        minQuantity: 1,
+      },
+    });
+
+    expect(emitSpy).toHaveBeenCalled();
   });
 });

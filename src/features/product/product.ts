@@ -65,6 +65,7 @@ export class Product implements OnInit {
   loading = false;
   saving = false;
   loadingMeta = false;
+  linkedDataDirty = false;
 
   products: ProductApiModel[] = [];
   activeView: ProductHubView = 'product';
@@ -121,6 +122,19 @@ export class Product implements OnInit {
 
   onRefreshRequested(): void {
     this.loadProducts();
+  }
+
+  onActiveViewChange(nextView: ProductHubView): void {
+    this.activeView = nextView;
+
+    if (nextView === 'product' && this.linkedDataDirty) {
+      this.linkedDataDirty = false;
+      this.loadProducts();
+    }
+  }
+
+  onLinkedDataChanged(): void {
+    this.linkedDataDirty = true;
   }
 
   onAddRequested(): void {
@@ -263,10 +277,17 @@ export class Product implements OnInit {
         this.loading = false;
 
         if (
-          this.editingProductId !== null &&
-          !this.products.some((product) => product.id === this.editingProductId)
+          this.editingProductId !== null
         ) {
-          this.onCancelForm();
+          const currentProduct =
+            this.products.find((product) => product.id === this.editingProductId) ?? null;
+
+          if (!currentProduct) {
+            this.onCancelForm();
+            return;
+          }
+
+          this.formInitialValue = this.toFormValue(currentProduct);
         }
       },
       error: (error) => {

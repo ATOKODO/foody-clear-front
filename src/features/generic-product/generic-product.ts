@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -38,6 +38,8 @@ import type { PortionUnit, QuantityUnit } from '../../services/product-service';
   styleUrl: './generic-product.scss',
 })
 export class GenericProduct implements OnInit {
+  @Output() readonly dataChanged = new EventEmitter<void>();
+
   baseUrl = '';
   loading = false;
   saving = false;
@@ -117,6 +119,7 @@ export class GenericProduct implements OnInit {
         this.lastResponse = { deleted: true, id: genericProductId };
         this.lastError = null;
         this.saving = false;
+        this.dataChanged.emit();
 
         if (this.editingGenericProductId === genericProductId) {
           this.onCancelForm();
@@ -144,6 +147,7 @@ export class GenericProduct implements OnInit {
           this.lastResponse = response;
           this.lastError = null;
           this.saving = false;
+          this.dataChanged.emit();
           this.onCancelForm();
           this.loadGenericProducts();
         },
@@ -161,6 +165,7 @@ export class GenericProduct implements OnInit {
         this.lastResponse = response;
         this.lastError = null;
         this.saving = false;
+        this.dataChanged.emit();
         this.onCancelForm();
         this.loadGenericProducts();
       },

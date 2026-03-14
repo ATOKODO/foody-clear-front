@@ -16,8 +16,9 @@
       </div>
 
       <mat-button-toggle-group
-        [(ngModel)]="activeView"
+        [ngModel]="activeView"
         [hideSingleSelectionIndicator]="true"
+        (ngModelChange)="onActiveViewChange($event)"
         aria-label="Selection de la vue produit active"
         class="product-view-toggle"
         name="product-view"
@@ -119,12 +120,16 @@
     </div>
   </mat-card>
 
-  <app-category *ngIf="activeView === 'category'" class="mt-6"></app-category>
+  <app-category
+    *ngIf="activeView === 'category'"
+    class="mt-6"
+    (dataChanged)="onLinkedDataChanged()"></app-category>
 
   <app-generic-product
     *ngIf="activeView === 'genericProduct'"
     class="mt-6"
+    (dataChanged)="onLinkedDataChanged()"
   ></app-generic-product>
 
-  <app-tag *ngIf="activeView === 'tag'" class="mt-6"></app-tag>
+  <app-tag *ngIf="activeView === 'tag'" class="mt-6" (dataChanged)="onLinkedDataChanged()"></app-tag>
 </section>
