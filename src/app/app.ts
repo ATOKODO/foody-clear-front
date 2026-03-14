@@ -1,16 +1,18 @@
 import { Component, inject } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
 import { Router, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, MatButtonModule, MatMenuModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
   protected title = 'foody-clear-front';
 
-    private router = inject(Router);
+  private router = inject(Router);
 
   goToProduct() {
     this.router.navigate(['/product']);
