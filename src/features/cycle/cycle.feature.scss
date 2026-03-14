@@ -103,6 +103,25 @@
   padding: 0;
 }
 
+.cycle-impact-toggle {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-self: flex-start;
+  border-radius: 9999px;
+}
+
+.cycle-impact-toggle mat-button-toggle {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+}
+
+:host ::ng-deep .cycle-impact-toggle .mat-button-toggle-label-content {
+  padding-inline: 1rem;
+  white-space: nowrap;
+}
+
 @media (min-width: 640px) {
   .cycle-view-toggle {
     display: flex;
@@ -130,5 +149,14 @@
   .cycle-form-dialog__header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .cycle-impact-toggle {
+    display: flex;
+    width: 100%;
+  }
+
+  .cycle-impact-toggle mat-button-toggle {
+    flex: 1 1 0;
   }
 }
