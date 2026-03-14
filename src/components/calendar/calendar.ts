@@ -351,7 +351,7 @@ export class Calendar implements OnInit, OnChanges {
     const sourceAssignments = this.cycleAssignments.filter((assignment) =>
       this.isDateRangeOverlappingMonth(assignment, month),
     );
-    const dateLocal = DateTime.local(month.year, month.month, 1).toISODate() ?? '';
+    const dateLocal = this.resolveMonthStartDateTime(month).toISODate() ?? '';
 
     this.monthClick.emit({
       view: this.currentView,
@@ -360,6 +360,13 @@ export class Calendar implements OnInit, OnChanges {
       month,
       sourceAssignments,
     });
+  }
+
+  openMonthView(month: MonthSummary): void {
+    this.currentDate = this.resolveMonthStartDateTime(month);
+    this.currentView = 'month';
+    this.refreshView();
+    this.viewChanged.emit(this.buildViewChangeEvent());
   }
 
   onManageItems(dateLocal: string): void {
@@ -1559,7 +1566,7 @@ export class Calendar implements OnInit, OnChanges {
     assignment: CycleAssignment,
     month: MonthSummary,
   ): boolean {
-    const monthStart = DateTime.local(month.year, month.month, 1).startOf('day');
+    const monthStart = this.resolveMonthStartDateTime(month).startOf('day');
     const monthEnd = monthStart.endOf('month').startOf('day');
     const startDate = DateTime.fromISO(assignment.startDateLocal).startOf('day');
     const endDate = DateTime.fromISO(assignment.endDateLocal).startOf('day');
@@ -1569,6 +1576,16 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     return startDate <= monthEnd && endDate >= monthStart;
+  }
+
+  private resolveMonthStartDateTime(month: MonthSummary): DateTime<true> {
+    const monthStart = DateTime.local(month.year, month.month, 1);
+
+    if (monthStart.isValid) {
+      return monthStart;
+    }
+
+    return DateTime.now().startOf('month');
   }
 
   private resolveCycleColorClass(color: string): string {

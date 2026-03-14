@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
-import { Calendar } from './calendar';
+import { Calendar, CalendarDayClickEvent } from './calendar';
 
 describe('Calendar', () => {
   let component: Calendar;
@@ -165,6 +165,44 @@ describe('Calendar', () => {
     expect(textContent).toContain('Vue annee');
     expect(textContent).toContain('mois couverts');
     expect(textContent).toContain('jours planifies');
+  });
+
+  it('should switch to the clicked month from the year footer action', () => {
+    component.switchView('year');
+    fixture.detectChanges();
+
+    const targetMonth = component.yearMonths.find((month) => month.month === 1);
+    const trigger = fixture.nativeElement.querySelector(
+      `.calendar-year-card__footer-action[data-month="${targetMonth?.month}"][data-year="${targetMonth?.year}"]`,
+    );
+
+    trigger.click();
+    fixture.detectChanges();
+
+    expect(component.currentView).toBe('month');
+    expect(component.currentDate.month).toBe(1);
+    expect(component.currentDate.year).toBe(targetMonth?.year);
+  });
+
+  it('should emit the clicked day date from the year mini calendar', () => {
+    const emitted: Array<CalendarDayClickEvent> = [];
+    component.dayClick.subscribe((event) => emitted.push(event));
+
+    component.switchView('year');
+    fixture.detectChanges();
+
+    const january = component.yearMonths.find((month) => month.month === 1);
+    const targetDay = january?.days.find((day) => day.isCurrentMonth && day.dayNumber === 14);
+    const trigger = fixture.nativeElement.querySelector(
+      `.calendar-year-mini-day--interactive[data-date="${targetDay?.date}"]`,
+    );
+
+    trigger.click();
+
+    expect(emitted.length).toBe(1);
+    expect(emitted[0].view).toBe('year');
+    expect(emitted[0].day.date).toBe(targetDay?.date);
+    expect(emitted[0].day.dayNumber).toBe(14);
   });
 
   it('should render a modernized month view with summary and assignment cards', () => {

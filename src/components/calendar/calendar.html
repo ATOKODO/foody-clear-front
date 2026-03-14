@@ -81,10 +81,8 @@
 
       <div class="calendar-year-grid-wrap">
         <div class="calendar-year-grid">
-          <button
+          <article
             *ngFor="let month of yearMonths; trackBy: trackByMonth"
-            type="button"
-            (click)="onMonthClick(month)"
             class="calendar-year-card"
             [class.calendar-year-card--active]="month.hasAssignments"
             [class.calendar-year-card--current]="month.month === currentDate.month">
@@ -122,15 +120,20 @@
                 {{ weekday.charAt(0) }}
               </div>
 
-              <div
+              <button
                 *ngFor="let day of month.days; trackBy: trackByDate"
+                type="button"
                 class="calendar-year-mini-day"
+                [class.calendar-year-mini-day--interactive]="day.isCurrentMonth"
                 [class.calendar-year-mini-day--outside]="!day.isCurrentMonth"
                 [class.calendar-year-mini-day--today]="day.isToday"
                 [class.calendar-year-mini-day--assigned]="day.isCurrentMonth && !!day.assignment"
-                [ngClass]="day.isCurrentMonth && day.assignment ? day.assignment.color : null">
+                [ngClass]="day.isCurrentMonth && day.assignment ? day.assignment.color : null"
+                [attr.data-date]="day.date"
+                [disabled]="!day.isCurrentMonth"
+                (click)="onDayClick(day)">
                 <span class="calendar-year-mini-day__label">{{ day.dayNumber }}</span>
-              </div>
+              </button>
             </div>
 
             <div class="calendar-year-card__footer">
@@ -141,9 +144,16 @@
                     : 'Aucun cycle planifie sur ce mois.'
                 }}
               </span>
-              <span class="calendar-year-card__footer-link">Ouvrir le mois</span>
+              <button
+                type="button"
+                class="calendar-year-card__footer-action"
+                [attr.data-month]="month.month"
+                [attr.data-year]="month.year"
+                (click)="openMonthView(month)">
+                Ouvrir le mois
+              </button>
             </div>
-          </button>
+          </article>
         </div>
       </div>
     </div>
