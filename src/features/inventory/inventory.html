@@ -1,15 +1,24 @@
 <section class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
   <mat-card class="overflow-hidden rounded-2xl">
-    <div class="flex items-center justify-between bg-slate-900 px-6 py-5 text-white">
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 px-6 py-5 text-white"
+    >
       <div>
         <h2 class="text-xl font-semibold">Inventories</h2>
         <p class="mt-1 text-sm text-slate-300">
           Gestion des inventories.
         </p>
       </div>
-         <button mat-raised-button color="primary" type="button" (click)="onRefreshRequested()">
-              Rafraichir
-            </button>
+      <button
+        mat-raised-button
+        color="primary"
+        class="rounded-full"
+        type="button"
+        (click)="onRefreshRequested()"
+        [disabled]="loading || loadingProducts || loadingInventoryProducts || saving"
+      >
+        Rafraichir
+      </button>
     </div>
 
     <div class="">

@@ -37,7 +37,9 @@
     *ngIf="activeView === 'product'"
     class="mt-6 overflow-hidden rounded-2xl"
   >
-    <div class="flex items-center justify-between bg-slate-900 px-6 py-5 text-white">
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 px-6 py-5 text-white"
+    >
       <div>
         <h2 class="text-xl font-semibold">Products</h2>
         <p class="mt-1 text-sm text-slate-300">Gestion des produits.</p>
@@ -45,8 +47,10 @@
       <button
         mat-raised-button
         color="primary"
+        class="rounded-full"
         type="button"
         (click)="onRefreshRequested()"
+        [disabled]="loading || loadingMeta || saving"
       >
         Rafraichir
       </button>

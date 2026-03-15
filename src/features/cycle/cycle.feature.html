@@ -28,8 +28,23 @@
   </div>
 
   <mat-card *ngIf="activeView === 'cycle'" class="mt-6 overflow-hidden rounded-2xl">
-    <div class="bg-slate-900 px-6 py-5 text-white">
-      <h2 class="text-xl font-semibold">Cycle</h2>
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 px-6 py-5 text-white"
+    >
+      <div>
+        <h2 class="text-xl font-semibold">Cycle</h2>
+        <p class="mt-1 text-sm text-slate-300">Gestion des cycles.</p>
+      </div>
+      <button
+        mat-raised-button
+        color="primary"
+        class="rounded-full"
+        type="button"
+        (click)="onRefreshRequested()"
+        [disabled]="loading || loadingMeta || saving"
+      >
+        Rafraichir
+      </button>
     </div>
 
     <div>

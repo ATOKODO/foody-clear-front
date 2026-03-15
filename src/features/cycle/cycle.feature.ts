@@ -176,6 +176,13 @@ export class CycleFeature implements OnInit {
     return this.resolveTodayDateLocal();
   }
 
+  onRefreshRequested(): void {
+    this.loadNutritionKeys();
+    this.loadDaySets();
+    this.loadSlots();
+    this.loadCycles();
+  }
+
   onAddRequested(): void {
     this.formMode = 'add';
     this.formInitialValue = null;
