@@ -170,5 +170,6 @@ describe('FormCycle', () => {
     expect(text).toContain('Raccourcis de duree');
     expect(text).toContain('Ordre du cycle');
     expect(text).toContain('Objectif du cycle');
+    expect(text).not.toContain('Reference');
   });
 });

@@ -84,7 +84,7 @@
       </p>
 
       <div *ngFor="let value of nutritionValues; let i = index" class="grid gap-3 md:grid-cols-12 md:items-start">
-        <mat-form-field appearance="fill" class="fc-field md:col-span-4">
+        <mat-form-field appearance="fill" class="fc-field md:col-span-5">
           <mat-label>Cle</mat-label>
           <mat-select
             [(ngModel)]="value.nutritionKey"
@@ -99,7 +99,7 @@
           </mat-hint>
         </mat-form-field>
 
-        <mat-form-field appearance="fill" class="fc-field md:col-span-2">
+        <mat-form-field appearance="fill" class="fc-field md:col-span-3">
           <mat-label>Amount</mat-label>
           <input
             matInput
@@ -109,24 +109,13 @@
             [ngModelOptions]="{ standalone: true }" />
         </mat-form-field>
 
-        <mat-form-field appearance="fill" class="fc-field md:col-span-2">
+        <mat-form-field appearance="fill" class="fc-field md:col-span-3">
           <mat-label>Unite</mat-label>
           <mat-select
             [(ngModel)]="value.unit"
             [ngModelOptions]="{ standalone: true }">
             <mat-option *ngFor="let unit of getUnitsForKey(value.nutritionKey)" [value]="unit">
               {{ unit }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="fc-field md:col-span-3">
-          <mat-label>Reference</mat-label>
-          <mat-select
-            [(ngModel)]="value.reference"
-            [ngModelOptions]="{ standalone: true }">
-            <mat-option *ngFor="let reference of referenceOptions" [value]="reference.value">
-              {{ reference.label }}
             </mat-option>
           </mat-select>
         </mat-form-field>

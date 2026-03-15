@@ -20,7 +20,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { NutritionKeyMeta } from '../../../services/meta-service';
-import { CycleNutritionValue, NutritionReference } from '../../../interfaces/cycle.interface';
+import { CycleNutritionValue } from '../../../interfaces/cycle.interface';
 import {
   DaySetList,
   DaySetListItem,
@@ -91,10 +91,6 @@ export class FormCycle implements OnInit, OnChanges {
   nutritionValues: CycleNutritionValue[] = [];
   daySetTimeline: number[] = [];
   showSelectionError = false;
-  readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
-    { label: 'Pour 100 g', value: 'PER_100G' },
-    { label: 'Pour 100 ml', value: 'PER_100ML' },
-  ];
 
   readonly colorOptions = [
     { label: 'Rouge', value: 'red' },
