@@ -5,6 +5,7 @@ import {
   CreateInventoryDto,
   Inventory,
   InventoryProduct,
+  ReconcileInventoryProductsDto,
   UpdateInventoryDto,
   UpdateInventoryProductsDto,
 } from '../interfaces/inventory.interface';
@@ -45,6 +46,10 @@ export class InventoryService {
 
   removeProducts(id: number, dto: UpdateInventoryProductsDto): Observable<Inventory> {
     return this.http.patch<Inventory>(`${this.baseUrl}/inventory/${id}/products/remove`, dto);
+  }
+
+  reconcileProducts(id: number, dto: ReconcileInventoryProductsDto): Observable<Inventory> {
+    return this.http.patch<Inventory>(`${this.baseUrl}/inventory/${id}/products/reconcile`, dto);
   }
 
   remove(id: number): Observable<void> {

@@ -388,91 +388,16 @@ export class Inventory implements OnInit {
       return;
     }
 
-    const currentQtyByProductId = new Map(
-      this.editingInventoryProducts.map((item) => [
-        item.productId,
-        {
-          qty:
-            typeof item.qtyOnHandInUnits === 'number' && Number.isFinite(item.qtyOnHandInUnits)
-              ? item.qtyOnHandInUnits
-              : 0,
-          qtyUnit: 'unit' as const,
-        },
-      ] as const),
-    );
-    const desiredQtyByProductId = new Map(
-      this.manageProductRows.map((row) => [row.productId, row] as const),
-    );
-
-    const productIdsToRemove = Array.from(currentQtyByProductId.entries())
-      .filter(([productId, currentState]) => {
-        const desiredRow = desiredQtyByProductId.get(productId);
-        return (
-          desiredRow == null ||
-          (desiredRow.qty ?? 0) !== currentState.qty ||
-          desiredRow.qtyUnit !== currentState.qtyUnit
-        );
-      })
-      .map(([productId]) => productId);
-
-    const productsToAdd = this.toProductQtyPayload(
-      this.manageProductRows.filter((row) => {
-        const currentState = currentQtyByProductId.get(row.productId);
-        return (
-          row.qty != null &&
-          row.qty > 0 &&
-          (currentState == null ||
-            row.qty !== currentState.qty ||
-            row.qtyUnit !== currentState.qtyUnit)
-        );
-      }),
-    );
-
-    if (productIdsToRemove.length === 0 && productsToAdd.length === 0) {
-      this.manageProductsFormError = null;
-      return;
-    }
-
     this.saving = true;
-    const continueWithAdd = () => {
-      if (productsToAdd.length === 0) {
-        this.lastResponse = { updated: true, inventoryId, removedProductIds: productIdsToRemove };
-        this.lastError = null;
-        this.saving = false;
-        this.loadInventories();
-        this.loadInventoryProducts(inventoryId);
-        return;
-      }
-
-      this.inventorySrv.addProducts(inventoryId, {
-        products: productsToAdd,
-      }).subscribe({
-        next: (response) => {
-          this.lastResponse = response;
-          this.lastError = null;
-          this.saving = false;
-          this.loadInventories();
-          this.loadInventoryProducts(inventoryId);
-        },
-        error: (error) => {
-          this.lastError = error;
-          this.saving = false;
-        },
-      });
-    };
-
-    if (productIdsToRemove.length === 0) {
-      continueWithAdd();
-      return;
-    }
-
-    this.inventorySrv.removeProducts(inventoryId, {
-      productIds: productIdsToRemove,
+    this.inventorySrv.reconcileProducts(inventoryId, {
+      products: this.toProductQtyPayload(this.manageProductRows),
     }).subscribe({
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
-        continueWithAdd();
+        this.saving = false;
+        this.loadInventories();
+        this.loadInventoryProducts(inventoryId);
       },
       error: (error) => {
         this.lastError = error;
@@ -483,14 +408,13 @@ export class Inventory implements OnInit {
 
   emptyInventory(): void {
     const inventoryId = this.editingInventoryId;
-    const productIds = this.editingInventoryProducts.map((item) => item.productId);
-    if (inventoryId == null || productIds.length === 0) {
+    if (inventoryId == null) {
       return;
     }
 
     this.saving = true;
-    this.inventorySrv.removeProducts(inventoryId, {
-      productIds,
+    this.inventorySrv.reconcileProducts(inventoryId, {
+      products: [],
     }).subscribe({
       next: (response) => {
         this.lastResponse = response;
@@ -1024,6 +948,7 @@ export class Inventory implements OnInit {
       portionUnit: product.portionUnit ?? null,
       portionQuantityNormalized: product.portionQuantityNormalized ?? null,
       price: product.price ?? null,
+      priceUnit: product.priceUnit ?? null,
       tagNames: this.resolveTagNames(product.tags),
       nutritionValuesCount: Array.isArray(product.nutritionValues)
         ? product.nutritionValues.length

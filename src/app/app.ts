@@ -62,4 +62,8 @@ export class App {
   goToPlanning() {
     this.router.navigate(['/planning']);
   }
+
+  goToStatistic() {
+    this.router.navigate(['/statistic']);
+  }
 }

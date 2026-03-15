@@ -31,6 +31,7 @@ export interface ProductListItem {
   portionUnit?: string | null;
   portionQuantityNormalized?: number | null;
   price?: number | null;
+  priceUnit?: string | null;
   tagNames?: string[];
   nutritionValuesCount?: number;
   category?: string | null;
@@ -73,6 +74,7 @@ export class ProductList implements OnInit, OnChanges {
       quantityPerUnit: 500,
       quantityUnit: 'g',
       price: 2.99,
+      priceUnit: 'kg',
       tagNames: ['Bio', 'Local'],
       nutritionValuesCount: 3,
       category: 'Legumes',
@@ -86,6 +88,7 @@ export class ProductList implements OnInit, OnChanges {
       quantityPerUnit: 1,
       quantityUnit: 'piece',
       price: 1.49,
+      priceUnit: 'unite',
       tagNames: ['Fruit'],
       nutritionValuesCount: 2,
       category: 'Fruits',
@@ -193,7 +196,9 @@ export class ProductList implements OnInit, OnChanges {
       return '-';
     }
 
-    return String(Math.round(item.price * 100) / 100);
+    const rounded = Math.round(item.price * 100) / 100;
+    const unit = item.priceUnit?.trim();
+    return unit ? `${rounded} / ${unit}` : String(rounded);
   }
 
   getAvailableQuantityDisplay(item: ProductListItem): string {

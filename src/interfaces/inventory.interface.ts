@@ -68,3 +68,7 @@ export interface UpdateInventoryProductsDto {
   productIds?: number[];
   products?: InventoryProductQtyDto[];
 }
+
+export interface ReconcileInventoryProductsDto {
+  products: InventoryProductQtyDto[];
+}

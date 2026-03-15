@@ -20,6 +20,7 @@ import { GenericProduct as ProductGenericProductOption } from '../../../services
 import { NutritionKeyMeta, QuantityUnitMeta } from '../../../services/meta-service';
 import {
   PortionUnit,
+  ProductPriceUnit,
   ProductUnitType,
   QuantityUnit,
 } from '../../../services/product-service';
@@ -48,6 +49,8 @@ export interface ProductFormValue {
   portionUnit: PortionUnit | null;
   portionQuantityNormalized: number | null;
   price: number | null;
+  priceUnit: ProductPriceUnit | null;
+  priceEffectiveFrom: string | null;
   url: string | null;
   memo: string | null;
   nutritionValues: ProductFormNutritionValue[];
@@ -103,6 +106,20 @@ export class ProductForm implements OnInit, OnChanges {
     'bouteille',
     'portion',
   ];
+  readonly priceUnitOptions: Array<{ label: string; value: ProductPriceUnit }> = [
+    { label: 'EUR/kg', value: 'kg' },
+    { label: 'EUR/g', value: 'g' },
+    { label: 'EUR/l', value: 'l' },
+    { label: 'EUR/ml', value: 'ml' },
+    { label: 'EUR/unite', value: 'unite' },
+    { label: 'EUR/paquet', value: 'paquet' },
+    { label: 'EUR/bouteille', value: 'bouteille' },
+    { label: 'EUR/boite', value: 'boite' },
+    { label: 'EUR/sachet', value: 'sachet' },
+    { label: 'EUR/canette', value: 'canette' },
+    { label: 'EUR/bocal', value: 'bocal' },
+    { label: 'EUR/autre', value: 'autre' },
+  ];
   readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
     { label: 'Pour 100 g', value: 'PER_100G' },
     { label: 'Pour 100 ml', value: 'PER_100ML' },
@@ -121,6 +138,8 @@ export class ProductForm implements OnInit, OnChanges {
     portionUnit: [''],
     portionQuantityNormalized: [''],
     price: [''],
+    priceUnit: [''],
+    priceEffectiveFrom: [''],
     url: [''],
     memo: [''],
   });
@@ -160,10 +179,21 @@ export class ProductForm implements OnInit, OnChanges {
     const portionQuantityNormalized = this.normalizeNullablePositiveNumber(
       rawValue.portionQuantityNormalized,
     );
+    const price = this.normalizeNullableNumber(rawValue.price);
+    const priceUnit = this.normalizeNullablePriceUnit(rawValue.priceUnit);
+    const priceEffectiveFrom = this.normalizeNullableString(rawValue.priceEffectiveFrom);
 
     this.form.controls.portionUnit.setErrors(null);
     if ((portionCount != null || portionQuantityNormalized != null) && portionUnit == null) {
       this.form.controls.portionUnit.setErrors({ requiredWithPortion: true });
+      return;
+    }
+
+    this.form.controls.price.setErrors(null);
+    this.form.controls.priceUnit.setErrors(null);
+    if ((price != null && priceUnit == null) || (price == null && priceUnit != null)) {
+      this.form.controls.price.setErrors({ requiredWithPrice: true });
+      this.form.controls.priceUnit.setErrors({ requiredWithPrice: true });
       return;
     }
 
@@ -187,7 +217,9 @@ export class ProductForm implements OnInit, OnChanges {
         portionCount,
         portionUnit,
         portionQuantityNormalized,
-        price: this.normalizeNullableNumber(rawValue.price),
+        price,
+        priceUnit,
+        priceEffectiveFrom: this.mode === 'edit' ? priceEffectiveFrom : null,
         url: this.normalizeNullableString(rawValue.url),
         memo: this.normalizeNullableString(rawValue.memo),
         nutritionValues,
@@ -239,6 +271,8 @@ export class ProductForm implements OnInit, OnChanges {
       portionUnit: null,
       portionQuantityNormalized: null,
       price: null,
+      priceUnit: null,
+      priceEffectiveFrom: null,
       url: null,
       memo: null,
       nutritionValues: this.getDefaultNutritionValues(),
@@ -262,6 +296,8 @@ export class ProductForm implements OnInit, OnChanges {
             ? String(this.product.portionQuantityNormalized)
             : '',
         price: this.product.price != null ? String(this.product.price) : '',
+        priceUnit: this.product.priceUnit ?? '',
+        priceEffectiveFrom: this.product.priceEffectiveFrom ?? '',
         url: this.product.url ?? defaults.url ?? '',
         memo: this.product.memo ?? defaults.memo ?? '',
       });
@@ -285,6 +321,8 @@ export class ProductForm implements OnInit, OnChanges {
       portionUnit: '',
       portionQuantityNormalized: '',
       price: '',
+      priceUnit: '',
+      priceEffectiveFrom: '',
       url: defaults.url ?? '',
       memo: defaults.memo ?? '',
     });
@@ -435,6 +473,17 @@ export class ProductForm implements OnInit, OnChanges {
   private normalizeNullablePositiveNumber(value: unknown): number | null {
     const normalized = this.normalizeNullableNumber(value);
     return normalized != null && normalized > 0 ? normalized : null;
+  }
+
+  private normalizeNullablePriceUnit(value: unknown): ProductPriceUnit | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim().toLowerCase();
+    return this.priceUnitOptions.some((option) => option.value === candidate)
+      ? (candidate as ProductPriceUnit)
+      : null;
   }
 
   private normalizeQuantityUnit(value: unknown): QuantityUnit | null {

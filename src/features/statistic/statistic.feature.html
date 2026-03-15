@@ -1,0 +1,304 @@
+<section class="stat-page">
+  <header class="stat-hero">
+    <div>
+      <p class="stat-eyebrow">Foody Clear</p>
+      <h1>Statistics</h1>
+      <p class="stat-subtitle">
+        Timeline des achats, progression sur les objectifs et evolution du prix des produits.
+      </p>
+    </div>
+
+    <div class="stat-hero__actions">
+      <button mat-stroked-button type="button" (click)="applyQuickRange(7)">7 jours</button>
+      <button mat-stroked-button type="button" (click)="applyQuickRange(30)">30 jours</button>
+      <button mat-stroked-button type="button" (click)="applyQuickRange(90)">90 jours</button>
+      <button mat-raised-button color="primary" type="button" (click)="refresh()">Actualiser</button>
+    </div>
+  </header>
+
+  <mat-card appearance="outlined" class="stat-card">
+    <div class="stat-filters">
+      <mat-form-field appearance="fill">
+        <mat-label>API base URL</mat-label>
+        <input matInput [(ngModel)]="baseUrl" (blur)="onBaseUrlChange()" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Du</mat-label>
+        <input matInput type="date" [(ngModel)]="fromDateLocal" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Au</mat-label>
+        <input matInput type="date" [(ngModel)]="toDateLocal" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Timezone</mat-label>
+        <input matInput [(ngModel)]="timezone" />
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" type="button" (click)="refresh()">
+        Charger
+      </button>
+    </div>
+  </mat-card>
+
+  <div class="stat-banner">
+    L'historique des achats commence a l'activation de la feature. Le stock deja present n'est pas retro-injecte.
+  </div>
+
+  <mat-button-toggle-group
+    [(ngModel)]="activeView"
+    class="stat-view-switch"
+    aria-label="Changer de vue statistiques">
+    <mat-button-toggle *ngFor="let view of views" [value]="view.value">
+      {{ view.label }}
+    </mat-button-toggle>
+  </mat-button-toggle-group>
+
+  <mat-progress-bar *ngIf="loadingTimeline || loadingPriceHistory || loadingProducts" mode="indeterminate"></mat-progress-bar>
+
+  <ng-container *ngIf="activeView === 'expenses'">
+    <div class="stat-grid stat-grid--summary" *ngIf="timelineResponse as timeline">
+      <mat-card appearance="outlined" class="stat-card stat-kpi">
+        <p>Montant total</p>
+        <strong>{{ formatCurrency(timeline.summary.totalAmount) }}</strong>
+      </mat-card>
+      <mat-card appearance="outlined" class="stat-card stat-kpi">
+        <p>Achats traces</p>
+        <strong>{{ timeline.summary.purchaseCount }}</strong>
+      </mat-card>
+      <mat-card appearance="outlined" class="stat-card stat-kpi">
+        <p>Achats incomplets</p>
+        <strong>{{ timeline.summary.incompletePurchaseCount }}</strong>
+      </mat-card>
+    </div>
+
+    <mat-card appearance="outlined" class="stat-card" *ngIf="timelineResponse as timeline">
+      <div class="stat-card__head">
+        <div>
+          <h2>Timeline des depenses</h2>
+          <p>{{ timeline.fromDateLocal }} au {{ timeline.toDateLocal }} | {{ timeline.timezone }}</p>
+        </div>
+      </div>
+
+      <div class="expense-timeline">
+        <button
+          *ngFor="let day of timeline.days"
+          type="button"
+          class="expense-bar"
+          [class.is-active]="selectedTimelineDay?.dateLocal === day.dateLocal"
+          (click)="selectTimelineDay(day.dateLocal)">
+          <span class="expense-bar__amount">{{ formatCurrency(day.expenses.totalAmount) }}</span>
+          <span class="expense-bar__rail">
+            <span class="expense-bar__fill" [style.height.%]="getBarHeight(day.expenses.totalAmount, expenseMax)"></span>
+          </span>
+          <span class="expense-bar__date">{{ formatDate(day.dateLocal) }}</span>
+          <span class="expense-bar__meta">{{ day.expenses.purchaseCount }} achat(s)</span>
+        </button>
+      </div>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="stat-card" *ngIf="selectedTimelineDay as day">
+      <div class="stat-card__head">
+        <div>
+          <h2>Detail du {{ day.dateLocal }}</h2>
+          <p>{{ day.expenses.events.length }} evenement(s) | {{ selectedDayExpenseTotal }}</p>
+        </div>
+      </div>
+
+      <div class="detail-list" *ngIf="day.expenses.events.length > 0; else noExpenseEvents">
+        <article class="detail-item" *ngFor="let event of day.expenses.events">
+          <div>
+            <strong>{{ event.productName }}</strong>
+            <p>{{ event.inventoryName || 'Inventaire inconnu' }}</p>
+            <p>{{ formatDateTime(event.occurredAt) }} | {{ event.qty }} {{ event.qtyUnit }}</p>
+          </div>
+          <div class="detail-item__aside">
+            <span *ngIf="event.pricingStatus === 'complete'; else incompletePrice">
+              {{ formatCurrency(event.expenseAmount) }}
+            </span>
+            <ng-template #incompletePrice>
+              <span class="status-chip status-chip--warn">prix incomplet</span>
+            </ng-template>
+          </div>
+        </article>
+      </div>
+    </mat-card>
+  </ng-container>
+
+  <ng-container *ngIf="activeView === 'targets'">
+    <mat-card appearance="outlined" class="stat-card">
+      <div class="stat-card__head">
+        <div>
+          <h2>Objectifs / input-day</h2>
+          <p>Comparaison journaliere entre reel et cible.</p>
+        </div>
+        <mat-button-toggle-group [(ngModel)]="activeMetric" aria-label="Choisir la metrique">
+          <mat-button-toggle *ngFor="let metric of metricOptions" [value]="metric.key">
+            {{ metric.label }}
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+
+      <div class="target-timeline" *ngIf="timelineResponse as timeline">
+        <button
+          *ngFor="let day of timeline.days"
+          type="button"
+          class="target-bar"
+          [class.is-active]="selectedTimelineDay?.dateLocal === day.dateLocal"
+          (click)="selectTimelineDay(day.dateLocal)">
+          <span class="target-bar__date">{{ formatDate(day.dateLocal) }}</span>
+          <span class="target-bar__stacks">
+            <span class="target-bar__goal" [style.height.%]="getTargetGoalHeight(day)"></span>
+            <span class="target-bar__actual" [style.height.%]="getTargetActualHeight(day)"></span>
+          </span>
+          <span class="target-bar__meta">{{ day.inputs.targetSource }}</span>
+        </button>
+      </div>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="stat-card" *ngIf="selectedTimelineDay as day">
+      <div class="stat-card__head">
+        <div>
+          <h2>Detail du {{ day.dateLocal }}</h2>
+          <p>{{ metricLabel }} | source {{ day.inputs.targetSource }}</p>
+        </div>
+      </div>
+
+      <div class="stat-grid stat-grid--summary">
+        <div class="target-detail-box">
+          <span>Reel</span>
+          <strong>{{ selectedDayTargetActual }}</strong>
+        </div>
+        <div class="target-detail-box">
+          <span>Cible</span>
+          <strong>{{ selectedDayTargetGoal }}</strong>
+        </div>
+        <div class="target-detail-box">
+          <span>Delta</span>
+          <strong>{{ selectedDayTargetDelta }}</strong>
+        </div>
+      </div>
+
+      <div class="target-detail-meta">
+        <p *ngIf="day.inputs.assignment">
+          Cycle: {{ day.inputs.assignment.cycleTitle }} (jour {{ day.inputs.assignment.dayIndex }})
+        </p>
+        <p *ngIf="day.inputs.daySet">Day set: {{ day.inputs.daySet.title }}</p>
+        <p>Items saisis: {{ day.inputs.itemCount }}</p>
+        <p *ngIf="day.inputs.incompleteNutritionKeys.length > 0">
+          Incomplet: {{ day.inputs.incompleteNutritionKeys.join(', ') }}
+        </p>
+      </div>
+    </mat-card>
+  </ng-container>
+
+  <ng-container *ngIf="activeView === 'prices'">
+    <mat-card appearance="outlined" class="stat-card">
+      <div class="stat-card__head">
+        <div>
+          <h2>Evolution du prix produit</h2>
+          <p>Historique versionne des prix avec delta absolu et pourcentage.</p>
+        </div>
+      </div>
+
+      <div class="stat-filters">
+        <mat-form-field appearance="fill">
+          <mat-label>Produit</mat-label>
+          <mat-select [(ngModel)]="selectedPriceProductId" (selectionChange)="onPriceProductChange()">
+            <mat-option *ngFor="let product of products" [value]="product.id">
+              {{ product.name }} (#{{ product.id }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="stat-grid stat-grid--summary" *ngIf="priceHistoryResponse as history">
+        <div class="target-detail-box">
+          <span>Prix courant</span>
+          <strong>
+            {{ history.currentPrice.price != null ? formatCurrency(history.currentPrice.price) : '--' }}
+            {{ formatPriceChangeUnit(history.currentPrice.priceUnit) }}
+          </strong>
+        </div>
+        <div class="target-detail-box">
+          <span>Variation</span>
+          <strong>
+            <ng-container *ngIf="history.stats.absoluteDelta !== null; else noPriceDelta">
+              {{ formatCurrency(history.stats.absoluteDelta) }}
+            </ng-container>
+            <ng-template #noPriceDelta>--</ng-template>
+          </strong>
+        </div>
+        <div class="target-detail-box">
+          <span>Changements</span>
+          <strong>{{ history.stats.changeCount }}</strong>
+        </div>
+        <div class="target-detail-box">
+          <span>Min / Max</span>
+          <strong>
+            {{ history.stats.minPrice !== null ? formatCurrency(history.stats.minPrice) : '--' }}
+            /
+            {{ history.stats.maxPrice !== null ? formatCurrency(history.stats.maxPrice) : '--' }}
+          </strong>
+        </div>
+      </div>
+
+      <ng-container *ngIf="priceHistoryResponse as history; else noPriceHistory">
+        <div class="price-timeline" *ngIf="history.changes.length > 0; else noPriceChanges">
+          <article class="price-timeline__item" *ngFor="let change of history.changes">
+            <div class="price-timeline__dot"></div>
+            <div class="price-timeline__content">
+              <div class="price-timeline__top">
+                <strong>{{ formatCurrency(change.price) }} {{ formatPriceChangeUnit(change.priceUnit) }}</strong>
+                <span>{{ formatDateTime(change.effectiveFrom) }}</span>
+              </div>
+              <p>
+                Ancien:
+                <span *ngIf="change.previousPrice !== null; else noPrevPrice">
+                  {{ formatCurrency(change.previousPrice) }} {{ formatPriceChangeUnit(change.previousPriceUnit) }}
+                </span>
+                <ng-template #noPrevPrice>--</ng-template>
+              </p>
+              <p>
+                Delta:
+                <span *ngIf="change.absoluteDelta !== null; else noAbsDelta">
+                  {{ formatCurrency(change.absoluteDelta) }}
+                </span>
+                <ng-template #noAbsDelta>--</ng-template>
+                |
+                <span *ngIf="change.relativeDeltaPct !== null; else noPctDelta">
+                  {{ change.relativeDeltaPct }}%
+                </span>
+                <ng-template #noPctDelta>--</ng-template>
+              </p>
+            </div>
+          </article>
+        </div>
+      </ng-container>
+    </mat-card>
+  </ng-container>
+
+  <mat-card appearance="outlined" class="stat-card stat-card--error" *ngIf="timelineError || priceHistoryError || productError">
+    <h2>Erreur</h2>
+    <p>{{ timelineError || priceHistoryError || productError | json }}</p>
+  </mat-card>
+
+  <ng-template #noExpenseEvents>
+    <p class="empty-copy">Aucun achat sur cette journee.</p>
+  </ng-template>
+
+  <ng-template #noPriceHistory>
+    <p class="empty-copy">
+      Aucun historique de prix disponible pour {{ selectedProductName }} sur cette periode.
+    </p>
+  </ng-template>
+
+  <ng-template #noPriceChanges>
+    <p class="empty-copy">
+      Aucun changement de prix pour {{ selectedProductName }} sur cette periode.
+    </p>
+  </ng-template>
+</section>

@@ -15,6 +15,19 @@ export type ProductUnitType =
 export type QuantityUnit = 'mg' | 'g' | 'kg' | 'ml' | 'l' | 'unit' | 'pack';
 
 export type PortionUnit = 'tranche' | 'piece' | 'part' | 'bouteille' | 'portion';
+export type ProductPriceUnit =
+  | 'kg'
+  | 'g'
+  | 'l'
+  | 'ml'
+  | 'unite'
+  | 'paquet'
+  | 'bouteille'
+  | 'boite'
+  | 'sachet'
+  | 'canette'
+  | 'bocal'
+  | 'autre';
 
 export interface NutritionValueCreated {
   id?: number;
@@ -41,6 +54,7 @@ export interface CreateProductDto {
   portionUnit?: PortionUnit | null;
   portionQuantityNormalized?: number | null;
   price?: number | null;
+  priceUnit?: ProductPriceUnit | null;
   url?: string | null;
   memo?: string | null;
   nutritionValuesCreated?: NutritionValueCreated[];
@@ -51,6 +65,7 @@ export interface UpdateProductDto extends Partial<Omit<CreateProductDto, 'nutrit
   clearCategory?: boolean;
   tagIdsToAdd?: number[];
   tagIdsToRemove?: number[];
+  priceEffectiveFrom?: string | null;
 }
 
 export interface Product {
@@ -68,6 +83,7 @@ export interface Product {
   portionUnit?: PortionUnit | null;
   portionQuantityNormalized?: number | null;
   price?: number | null;
+  priceUnit?: ProductPriceUnit | null;
   url?: string | null;
   memo?: string | null;
   nutritionValues?: unknown[];

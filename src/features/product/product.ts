@@ -34,6 +34,7 @@ import {
   NutritionValueCreated,
   NutritionValueUpdated,
   PortionUnit,
+  ProductPriceUnit,
   Product as ProductApiModel,
   ProductUnitType,
   ProductService,
@@ -137,6 +138,7 @@ export class Product implements OnInit {
       portionUnit: product.portionUnit ?? null,
       portionQuantityNormalized: product.portionQuantityNormalized ?? null,
       price: product.price ?? null,
+      priceUnit: product.priceUnit ?? null,
       tagNames: this.resolveTagNames(product.tags),
       nutritionValuesCount: this.extractNutritionValues(product).length,
       category: this.resolveLinkedEntityName(product.category),
@@ -442,6 +444,7 @@ export class Product implements OnInit {
       portionUnit: value.portionUnit,
       portionQuantityNormalized: value.portionQuantityNormalized,
       price: value.price,
+      priceUnit: value.priceUnit,
       url: value.url,
       memo: value.memo,
       nutritionValuesCreated: this.toNutritionValuesCreated(value.nutritionValues),
@@ -471,6 +474,8 @@ export class Product implements OnInit {
       portionUnit: value.portionUnit,
       portionQuantityNormalized: value.portionQuantityNormalized,
       price: value.price,
+      priceUnit: value.priceUnit,
+      priceEffectiveFrom: value.priceEffectiveFrom,
       url: value.url,
       memo: value.memo,
       nutritionValuesUpdated: this.toNutritionValuesUpdated(value.nutritionValues),
@@ -554,6 +559,8 @@ export class Product implements OnInit {
         typeof product.price === 'number' && Number.isFinite(product.price)
           ? product.price
           : null,
+      priceUnit: this.normalizePriceUnit(product.priceUnit),
+      priceEffectiveFrom: null,
       url: product.url ?? null,
       memo: product.memo ?? null,
       nutritionValues: this.extractNutritionValues(product),
@@ -991,6 +998,32 @@ export class Product implements OnInit {
     const candidate = value.trim().toLowerCase();
     return allowed.includes(candidate as PortionUnit)
       ? (candidate as PortionUnit)
+      : null;
+  }
+
+  private normalizePriceUnit(value: unknown): ProductPriceUnit | null {
+    const allowed: ProductPriceUnit[] = [
+      'kg',
+      'g',
+      'l',
+      'ml',
+      'unite',
+      'paquet',
+      'bouteille',
+      'boite',
+      'sachet',
+      'canette',
+      'bocal',
+      'autre',
+    ];
+
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim().toLowerCase();
+    return allowed.includes(candidate as ProductPriceUnit)
+      ? (candidate as ProductPriceUnit)
       : null;
   }
 }
