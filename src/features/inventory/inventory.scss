@@ -6,7 +6,6 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 900;
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.55), rgba(2, 6, 23, 0.7));
   backdrop-filter: blur(2px);
 }
@@ -14,10 +13,29 @@
 .modal-shell {
   position: fixed;
   inset: 0;
-  z-index: 901;
   display: grid;
   place-items: center;
   padding: 1rem;
+}
+
+.modal-backdrop--inventory {
+  z-index: 900;
+}
+
+.modal-shell--inventory {
+  z-index: 901;
+}
+
+.modal-card--inventory {
+  width: min(1080px, calc(100vw - 2rem));
+}
+
+.modal-backdrop--nested {
+  z-index: 910;
+}
+
+.modal-shell--nested {
+  z-index: 911;
 }
 
 .modal-card {

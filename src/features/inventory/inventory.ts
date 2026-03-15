@@ -513,6 +513,14 @@ export class Inventory implements OnInit {
     };
   }
 
+  closeFormModal(): void {
+    if (this.saving) {
+      return;
+    }
+
+    this.onCancelForm();
+  }
+
   onCancelForm(): void {
     this.formVisible = false;
     this.formMode = 'add';
