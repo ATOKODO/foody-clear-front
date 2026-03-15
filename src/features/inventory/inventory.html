@@ -52,240 +52,242 @@
         (editRequested)="onEditRequested($event)"
         (deleteRequested)="onDeleteRequested($event)">
       </app-inventory-list>
-
-      <mat-card *ngIf="formVisible" appearance="outlined" class="rounded-xl">
-        <mat-card-content class="space-y-6 p-0">
-          <app-inventory-form
-            [mode]="formMode"
-            [inventory]="formInitialValue"
-            (submitted)="onFormSubmitted($event)"
-            (menuClicked)="onMenuClicked()">
-            <button
-              *ngIf="formMode === 'edit'"
-              inventory-form-header-actions
-              mat-raised-button
-              color="primary"
-              type="button"
-              (click)="openAddProductsModal()"
-              [disabled]="saving || loadingProducts || loadingInventoryProducts">
-              Ouvrir l'ajout
-            </button>
-
-            <section
-              *ngIf="formMode === 'edit'"
-              inventory-form-under-name
-              class="inventory-manage-products mt-4 space-y-4 rounded-xl border border-slate-200 bg-white p-5">
-              <div>
-                <h3 class="text-base font-semibold text-slate-900">Gerer les produits</h3>
-                <p class="mt-1 text-sm text-slate-600">
-                  Modifie les quantites existantes, retire des lignes ou vide tout l'inventory.
-                </p>
-              </div>
-
-              <p *ngIf="loadingInventoryProducts" class="text-sm text-slate-500">
-                Chargement des produits lies...
-              </p>
-
-              <div *ngIf="manageProductRows.length > 0; else noManagedProducts" class="overflow-x-auto rounded-xl border border-slate-200">
-                <table class="inventory-products-table w-full min-w-[820px] text-sm">
-                  <thead class="bg-slate-50 text-left text-slate-700">
-                    <tr>
-                      <th class="px-3 py-2">Produit</th>
-                      <th class="px-3 py-2">Qty actuelle</th>
-                      <th class="px-3 py-2">Stock normalise</th>
-                      <th class="px-3 py-2">Nouvelle qty</th>
-                      <th class="px-3 py-2 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      *ngFor="let row of manageProductRows; trackBy: trackBySelectedProductRow"
-                      class="border-t border-slate-100 align-top">
-                      <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
-                      <td class="px-3 py-2 text-slate-700">{{ row.currentQtyDisplay }}</td>
-                      <td class="px-3 py-2 text-slate-700">
-                        {{ row.currentNormalizedQty ?? '-' }}
-                        <span class="text-slate-500">{{ row.quantityUnit ?? '' }}</span>
-                      </td>
-                      <td class="px-3 py-2">
-                        <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
-                          <mat-form-field appearance="fill" class="w-full">
-                            <mat-label>Quantite</mat-label>
-                            <input
-                              matInput
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              [(ngModel)]="row.qty"
-                              [ngModelOptions]="{ standalone: true }"
-                              (ngModelChange)="onManagedProductQtyChange()" />
-                          </mat-form-field>
-                          <mat-form-field appearance="fill" class="w-full">
-                            <mat-label>Unite</mat-label>
-                            <mat-select
-                              [(ngModel)]="row.qtyUnit"
-                              [ngModelOptions]="{ standalone: true }"
-                              (ngModelChange)="onManagedProductQtyChange()">
-                              <mat-option *ngFor="let option of row.qtyUnitOptions" [value]="option.value">
-                                {{ option.label }}
-                              </mat-option>
-                            </mat-select>
-                          </mat-form-field>
-                        </div>
-                        <p *ngIf="row.qtyUnitHelpText" class="mt-1 text-xs text-slate-500">
-                          {{ row.qtyUnitHelpText }}
-                        </p>
-                      </td>
-                      <td class="px-3 py-2 text-right">
-                        <button
-                          mat-stroked-button
-                          color="warn"
-                          type="button"
-                          (click)="removeManagedProduct(row.productId)">
-                          Retirer de la liste
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <ng-template #noManagedProducts>
-                <p class="text-sm text-slate-600">
-                  Aucun produit lie a cet inventory.
-                </p>
-              </ng-template>
-
-              <p *ngIf="manageProductsFormError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {{ manageProductsFormError }}
-              </p>
-
-              <div class="flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-4">
-                <button
-                  mat-stroked-button
-                  color="warn"
-                  type="button"
-                  (click)="emptyInventory()"
-                  [disabled]="saving || editingInventoryProducts.length === 0">
-                  Vider l'inventory
-                </button>
-                <button
-                  mat-raised-button
-                  color="primary"
-                  type="button"
-                  (click)="saveManagedProducts()"
-                  [disabled]="!canSaveManagedProducts">
-                  Enregistrer
-                </button>
-              </div>
-            </section>
-          </app-inventory-form>
-
-          <section *ngIf="formMode === 'add'" class="space-y-4 border-t border-slate-200 px-4 pb-6 sm:px-8">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <h3 class="text-base font-semibold text-slate-900">Produits initiaux</h3>
-                <p class="text-sm text-slate-600">
-                  Selectionne les produits a lier a l'inventory des sa creation.
-                </p>
-              </div>
-              <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                {{ createSelectedProductIds.length }} selectionne(s)
-              </span>
-            </div>
-
-            <p *ngIf="loadingProducts" class="text-sm text-slate-500">Chargement des produits...</p>
-
-            <app-product-list
-              [mode]="'select-multi'"
-              [products]="productListItems"
-              [selectedIds]="createSelectedProductIds"
-              [compact]="true"
-              (selectedMany)="onCreateProductsSelected($event)">
-            </app-product-list>
-
-            <div *ngIf="createSelectedProductRows.length > 0; else noCreateSelectedProducts" class="overflow-x-auto rounded-xl border border-slate-200">
-              <table class="w-full min-w-[640px] text-sm">
-                <thead class="bg-slate-50 text-left text-slate-700">
-                  <tr>
-                    <th class="px-3 py-2">Produit</th>
-                    <th class="px-3 py-2">Qty</th>
-                    <th class="px-3 py-2 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    *ngFor="let row of createSelectedProductRows; trackBy: trackBySelectedProductRow"
-                    class="border-t border-slate-100 align-top">
-                    <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
-                    <td class="px-3 py-2">
-                      <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
-                        <mat-form-field appearance="fill" class="w-full">
-                          <mat-label>Quantite</mat-label>
-                          <input
-                            matInput
-                            type="number"
-                            min="0.01"
-                            step="0.01"
-                            [(ngModel)]="row.qty"
-                            [ngModelOptions]="{ standalone: true }"
-                            (ngModelChange)="onCreateProductQtyChange()" />
-                        </mat-form-field>
-                        <mat-form-field appearance="fill" class="w-full">
-                          <mat-label>Unite</mat-label>
-                          <mat-select
-                            [(ngModel)]="row.qtyUnit"
-                            [ngModelOptions]="{ standalone: true }"
-                            (ngModelChange)="onCreateProductQtyChange()">
-                            <mat-option *ngFor="let option of row.qtyUnitOptions" [value]="option.value">
-                              {{ option.label }}
-                            </mat-option>
-                          </mat-select>
-                        </mat-form-field>
-                      </div>
-                      <p *ngIf="row.qtyUnitHelpText" class="mt-1 text-xs text-slate-500">
-                        {{ row.qtyUnitHelpText }}
-                      </p>
-                    </td>
-                    <td class="px-3 py-2 text-right">
-                      <button
-                        mat-stroked-button
-                        color="warn"
-                        type="button"
-                        (click)="removeCreateSelectedProduct(row.productId)">
-                        Retirer
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <ng-template #noCreateSelectedProducts>
-              <p class="text-sm text-slate-600">
-                Selectionne un ou plusieurs produits puis renseigne leur quantite initiale.
-              </p>
-            </ng-template>
-
-            <p *ngIf="createProductsFormError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {{ createProductsFormError }}
-            </p>
-          </section>
-        </mat-card-content>
-
-        <mat-card-actions class="flex justify-center pb-6">
-          <button mat-stroked-button type="button" (click)="onCancelForm()">
-            Annuler
-          </button>
-        </mat-card-actions>
-      </mat-card>
-
     </div>
   </mat-card>
 </section>
 
-<div class="modal-backdrop" *ngIf="isAddProductsModalOpen" (click)="closeActiveModal()"></div>
-<div class="modal-shell" *ngIf="isAddProductsModalOpen">
+<div class="modal-backdrop modal-backdrop--inventory" *ngIf="formVisible" (click)="closeFormModal()"></div>
+<div class="modal-shell modal-shell--inventory" *ngIf="formVisible">
+  <mat-card appearance="outlined" class="modal-card modal-card--inventory rounded-xl" (click)="$event.stopPropagation()">
+    <mat-card-content class="space-y-6 p-0">
+      <app-inventory-form
+        [mode]="formMode"
+        [inventory]="formInitialValue"
+        (submitted)="onFormSubmitted($event)"
+        (menuClicked)="onMenuClicked()">
+        <button
+          *ngIf="formMode === 'edit'"
+          inventory-form-header-actions
+          mat-raised-button
+          color="primary"
+          type="button"
+          (click)="openAddProductsModal()"
+          [disabled]="saving || loadingProducts || loadingInventoryProducts">
+          Ouvrir l'ajout
+        </button>
+
+        <section
+          *ngIf="formMode === 'edit'"
+          inventory-form-under-name
+          class="inventory-manage-products mt-4 space-y-4 rounded-xl border border-slate-200 bg-white p-5">
+          <div>
+            <h3 class="text-base font-semibold text-slate-900">Gerer les produits</h3>
+            <p class="mt-1 text-sm text-slate-600">
+              Modifie les quantites existantes, retire des lignes ou vide tout l'inventory.
+            </p>
+          </div>
+
+          <p *ngIf="loadingInventoryProducts" class="text-sm text-slate-500">
+            Chargement des produits lies...
+          </p>
+
+          <div *ngIf="manageProductRows.length > 0; else noManagedProducts" class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="inventory-products-table w-full min-w-[820px] text-sm">
+              <thead class="bg-slate-50 text-left text-slate-700">
+                <tr>
+                  <th class="px-3 py-2">Produit</th>
+                  <th class="px-3 py-2">Qty actuelle</th>
+                  <th class="px-3 py-2">Stock normalise</th>
+                  <th class="px-3 py-2">Nouvelle qty</th>
+                  <th class="px-3 py-2 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="let row of manageProductRows; trackBy: trackBySelectedProductRow"
+                  class="border-t border-slate-100 align-top">
+                  <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
+                  <td class="px-3 py-2 text-slate-700">{{ row.currentQtyDisplay }}</td>
+                  <td class="px-3 py-2 text-slate-700">
+                    {{ row.currentNormalizedQty ?? '-' }}
+                    <span class="text-slate-500">{{ row.quantityUnit ?? '' }}</span>
+                  </td>
+                  <td class="px-3 py-2">
+                    <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+                      <mat-form-field appearance="fill" class="w-full">
+                        <mat-label>Quantite</mat-label>
+                        <input
+                          matInput
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          [(ngModel)]="row.qty"
+                          [ngModelOptions]="{ standalone: true }"
+                          (ngModelChange)="onManagedProductQtyChange()" />
+                      </mat-form-field>
+                      <mat-form-field appearance="fill" class="w-full">
+                        <mat-label>Unite</mat-label>
+                        <mat-select
+                          [(ngModel)]="row.qtyUnit"
+                          [ngModelOptions]="{ standalone: true }"
+                          (ngModelChange)="onManagedProductQtyChange()">
+                          <mat-option *ngFor="let option of row.qtyUnitOptions" [value]="option.value">
+                            {{ option.label }}
+                          </mat-option>
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+                    <p *ngIf="row.qtyUnitHelpText" class="mt-1 text-xs text-slate-500">
+                      {{ row.qtyUnitHelpText }}
+                    </p>
+                  </td>
+                  <td class="px-3 py-2 text-right">
+                    <button
+                      mat-stroked-button
+                      color="warn"
+                      type="button"
+                      (click)="removeManagedProduct(row.productId)">
+                      Retirer de la liste
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noManagedProducts>
+            <p class="text-sm text-slate-600">
+              Aucun produit lie a cet inventory.
+            </p>
+          </ng-template>
+
+          <p *ngIf="manageProductsFormError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {{ manageProductsFormError }}
+          </p>
+
+          <div class="flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-4">
+            <button
+              mat-stroked-button
+              color="warn"
+              type="button"
+              (click)="emptyInventory()"
+              [disabled]="saving || editingInventoryProducts.length === 0">
+              Vider l'inventory
+            </button>
+            <button
+              mat-raised-button
+              color="primary"
+              type="button"
+              (click)="saveManagedProducts()"
+              [disabled]="!canSaveManagedProducts">
+              Enregistrer
+            </button>
+          </div>
+        </section>
+      </app-inventory-form>
+
+      <section *ngIf="formMode === 'add'" class="space-y-4 border-t border-slate-200 px-4 pb-6 sm:px-8">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 class="text-base font-semibold text-slate-900">Produits initiaux</h3>
+            <p class="text-sm text-slate-600">
+              Selectionne les produits a lier a l'inventory des sa creation.
+            </p>
+          </div>
+          <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+            {{ createSelectedProductIds.length }} selectionne(s)
+          </span>
+        </div>
+
+        <p *ngIf="loadingProducts" class="text-sm text-slate-500">Chargement des produits...</p>
+
+        <app-product-list
+          [mode]="'select-multi'"
+          [products]="productListItems"
+          [selectedIds]="createSelectedProductIds"
+          [compact]="true"
+          (selectedMany)="onCreateProductsSelected($event)">
+        </app-product-list>
+
+        <div *ngIf="createSelectedProductRows.length > 0; else noCreateSelectedProducts" class="overflow-x-auto rounded-xl border border-slate-200">
+          <table class="w-full min-w-[640px] text-sm">
+            <thead class="bg-slate-50 text-left text-slate-700">
+              <tr>
+                <th class="px-3 py-2">Produit</th>
+                <th class="px-3 py-2">Qty</th>
+                <th class="px-3 py-2 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let row of createSelectedProductRows; trackBy: trackBySelectedProductRow"
+                class="border-t border-slate-100 align-top">
+                <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
+                <td class="px-3 py-2">
+                  <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+                    <mat-form-field appearance="fill" class="w-full">
+                      <mat-label>Quantite</mat-label>
+                      <input
+                        matInput
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        [(ngModel)]="row.qty"
+                        [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="onCreateProductQtyChange()" />
+                    </mat-form-field>
+                    <mat-form-field appearance="fill" class="w-full">
+                      <mat-label>Unite</mat-label>
+                      <mat-select
+                        [(ngModel)]="row.qtyUnit"
+                        [ngModelOptions]="{ standalone: true }"
+                        (ngModelChange)="onCreateProductQtyChange()">
+                        <mat-option *ngFor="let option of row.qtyUnitOptions" [value]="option.value">
+                          {{ option.label }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                  <p *ngIf="row.qtyUnitHelpText" class="mt-1 text-xs text-slate-500">
+                    {{ row.qtyUnitHelpText }}
+                  </p>
+                </td>
+                <td class="px-3 py-2 text-right">
+                  <button
+                    mat-stroked-button
+                    color="warn"
+                    type="button"
+                    (click)="removeCreateSelectedProduct(row.productId)">
+                    Retirer
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #noCreateSelectedProducts>
+          <p class="text-sm text-slate-600">
+            Selectionne un ou plusieurs produits puis renseigne leur quantite initiale.
+          </p>
+        </ng-template>
+
+        <p *ngIf="createProductsFormError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {{ createProductsFormError }}
+        </p>
+      </section>
+    </mat-card-content>
+
+    <mat-card-actions class="flex justify-center px-4 pb-6">
+      <button mat-stroked-button type="button" (click)="closeFormModal()" [disabled]="saving">
+        Annuler
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>
+
+<div class="modal-backdrop modal-backdrop--nested" *ngIf="isAddProductsModalOpen" (click)="closeActiveModal()"></div>
+<div class="modal-shell modal-shell--nested" *ngIf="isAddProductsModalOpen">
   <mat-card class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
     <mat-card-header>
       <mat-card-title>Ajouter des produits</mat-card-title>
