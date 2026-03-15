@@ -1,15 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { Category } from '../category/category';
-import { GenericProduct } from '../generic-product/generic-product';
-import { Tag } from '../tag/tag';
+import { Category as CategoryFeature } from '../category/category';
+import { GenericProduct as GenericProductFeature } from '../generic-product/generic-product';
+import { Tag as TagFeature } from '../tag/tag';
 import {
   ProductForm,
   ProductFormMode,
@@ -20,6 +21,14 @@ import {
   ProductList,
   ProductListItem,
 } from '../../components/product/product-list/product-list';
+import {
+  Category as CategoryApiModel,
+  CategoryService,
+} from '../../services/category-service';
+import {
+  GenericProduct as GenericProductApiModel,
+  GenericProductService,
+} from '../../services/generic-product-service';
 import {
   CreateProductDto,
   NutritionValueCreated,
@@ -37,6 +46,7 @@ import {
   QuantityUnitMeta,
 } from '../../services/meta-service';
 import { NutritionReference } from '../../interfaces/cycle.interface';
+import { Tag as TagApiModel, TagService } from '../../services/tag-service';
 
 type ProductHubView = 'product' | 'category' | 'genericProduct' | 'tag';
 
@@ -48,19 +58,25 @@ type ProductHubView = 'product' | 'category' | 'genericProduct' | 'tag';
     MatButtonModule,
     MatButtonToggleModule,
     MatCardModule,
+    MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
-    Category,
-    GenericProduct,
+    CategoryFeature,
+    GenericProductFeature,
     ProductList,
     ProductForm,
-    Tag,
+    TagFeature,
   ],
   templateUrl: './product.html',
   styleUrl: './product.scss',
 })
 export class Product implements OnInit {
+  @ViewChild('productFormDialog')
+  private productFormDialogTemplate?: TemplateRef<unknown>;
+
+  private readonly dialog = inject(MatDialog);
+
   baseUrl = '';
   loading = false;
   saving = false;
@@ -68,6 +84,9 @@ export class Product implements OnInit {
   linkedDataDirty = false;
 
   products: ProductApiModel[] = [];
+  categoryOptions: CategoryApiModel[] = [];
+  genericProductOptions: GenericProductApiModel[] = [];
+  tagOptions: TagApiModel[] = [];
   activeView: ProductHubView = 'product';
 
   formVisible = false;
@@ -81,23 +100,28 @@ export class Product implements OnInit {
   lastResponse: unknown = null;
   lastError: unknown = null;
   lastMetaError: unknown = null;
+  private dialogRef: MatDialogRef<unknown> | null = null;
 
   constructor(
+    private readonly categorySrv: CategoryService,
+    private readonly genericProductSrv: GenericProductService,
     private readonly productSrv: ProductService,
     private readonly metaSrv: MetaService,
+    private readonly tagSrv: TagService,
   ) {}
 
   ngOnInit(): void {
     this.baseUrl = this.productSrv.baseUrl;
-    this.metaSrv.setBaseUrl(this.baseUrl);
+    this.syncBaseUrls();
     this.loadMeta();
+    this.loadLinkedOptions();
     this.loadProducts();
   }
 
   onBaseUrlChange(): void {
-    this.productSrv.setBaseUrl(this.baseUrl);
-    this.metaSrv.setBaseUrl(this.baseUrl);
+    this.syncBaseUrls();
     this.loadMeta();
+    this.loadLinkedOptions();
     this.loadProducts();
   }
 
@@ -121,6 +145,7 @@ export class Product implements OnInit {
   }
 
   onRefreshRequested(): void {
+    this.loadLinkedOptions();
     this.loadProducts();
   }
 
@@ -129,6 +154,7 @@ export class Product implements OnInit {
 
     if (nextView === 'product' && this.linkedDataDirty) {
       this.linkedDataDirty = false;
+      this.loadLinkedOptions();
       this.loadProducts();
     }
   }
@@ -141,7 +167,8 @@ export class Product implements OnInit {
     this.formMode = 'add';
     this.editingProductId = null;
     this.formInitialValue = null;
-    this.formVisible = true;
+    this.loadLinkedOptions();
+    this.openFormDialog();
   }
 
   onEditRequested(item: ProductListItem): void {
@@ -158,7 +185,8 @@ export class Product implements OnInit {
     this.formMode = 'edit';
     this.editingProductId = product.id;
     this.formInitialValue = this.toFormValue(product);
-    this.formVisible = true;
+    this.loadLinkedOptions();
+    this.openFormDialog();
   }
 
   onDeleteRequested(item: ProductListItem): void {
@@ -199,7 +227,7 @@ export class Product implements OnInit {
           this.lastResponse = response;
           this.lastError = null;
           this.saving = false;
-          this.formVisible = false;
+          this.closeFormDialog();
           this.loadProducts();
         },
         error: (error) => {
@@ -216,7 +244,7 @@ export class Product implements OnInit {
         this.lastResponse = response;
         this.lastError = null;
         this.saving = false;
-        this.formVisible = false;
+        this.closeFormDialog();
         this.loadProducts();
       },
       error: (error) => {
@@ -234,10 +262,113 @@ export class Product implements OnInit {
   }
 
   onCancelForm(): void {
+    if (this.dialogRef) {
+      this.dialogRef.close();
+      return;
+    }
+
+    this.resetFormState();
+  }
+
+  get formDialogTitle(): string {
+    return this.formMode === 'edit' ? 'Modifier un produit' : 'Ajouter un produit';
+  }
+
+  get formDialogSubtitle(): string {
+    return this.formMode === 'edit'
+      ? 'Mettez a jour le produit sans quitter la liste.'
+      : 'Creez un produit dans une modale avec les relations deja selectionnables.';
+  }
+
+  private syncBaseUrls(): void {
+    this.categorySrv.setBaseUrl(this.baseUrl);
+    this.genericProductSrv.setBaseUrl(this.baseUrl);
+    this.productSrv.setBaseUrl(this.baseUrl);
+    this.metaSrv.setBaseUrl(this.baseUrl);
+    this.tagSrv.setBaseUrl(this.baseUrl);
+  }
+
+  private openFormDialog(): void {
+    if (!this.productFormDialogTemplate) {
+      this.formVisible = true;
+      return;
+    }
+
+    this.formVisible = true;
+    const dialogRef = this.dialog.open(this.productFormDialogTemplate, {
+      width: 'min(1100px, 96vw)',
+      maxWidth: '96vw',
+      autoFocus: false,
+    });
+
+    this.dialogRef = dialogRef;
+    dialogRef.afterClosed().subscribe(() => {
+      if (this.dialogRef !== dialogRef) {
+        return;
+      }
+
+      this.dialogRef = null;
+      this.resetFormState();
+    });
+  }
+
+  private closeFormDialog(): void {
+    if (this.dialogRef) {
+      this.dialogRef.close();
+      return;
+    }
+
+    this.resetFormState();
+  }
+
+  private resetFormState(): void {
     this.formVisible = false;
     this.formMode = 'add';
     this.formInitialValue = null;
     this.editingProductId = null;
+  }
+
+  private loadLinkedOptions(): void {
+    this.loadCategories();
+    this.loadGenericProducts();
+    this.loadTags();
+  }
+
+  private loadCategories(): void {
+    this.categorySrv.findAll().subscribe({
+      next: (response) => {
+        this.categoryOptions = this.sortByName(
+          this.extractCategoriesFromResponse(response),
+        );
+      },
+      error: () => {
+        this.categoryOptions = [];
+      },
+    });
+  }
+
+  private loadGenericProducts(): void {
+    this.genericProductSrv.findAll().subscribe({
+      next: (response) => {
+        this.genericProductOptions = this.sortByName(
+          this.extractGenericProductsFromResponse(response),
+        );
+      },
+      error: () => {
+        this.genericProductOptions = [];
+      },
+    });
+  }
+
+  private loadTags(): void {
+    this.tagSrv.findAll().subscribe({
+      next: (response) => {
+        this.tagOptions = this.sortByName(this.extractTagsFromResponse(response));
+      },
+      error: () => {
+        this.tagOptions = [];
+      },
+    });
   }
 
   private loadMeta(): void {
@@ -590,6 +721,129 @@ export class Product implements OnInit {
     }
 
     return 'Aucun';
+  }
+
+  private extractCategoriesFromResponse(value: unknown): CategoryApiModel[] {
+    if (Array.isArray(value)) {
+      return value.filter((item): item is CategoryApiModel => this.isCategoryLike(item));
+    }
+
+    if (this.isCategoryLike(value)) {
+      return [value];
+    }
+
+    if (!value || typeof value !== 'object') {
+      return [];
+    }
+
+    const raw = value as Record<string, unknown>;
+    const nestedCandidates = ['data', 'items', 'categories', 'results', 'payload'];
+    for (const key of nestedCandidates) {
+      const nested = raw[key];
+      if (Array.isArray(nested)) {
+        const categories = nested.filter((item): item is CategoryApiModel =>
+          this.isCategoryLike(item),
+        );
+        if (categories.length > 0) {
+          return categories;
+        }
+      }
+    }
+
+    return [];
+  }
+
+  private extractGenericProductsFromResponse(value: unknown): GenericProductApiModel[] {
+    if (Array.isArray(value)) {
+      return value.filter((item): item is GenericProductApiModel =>
+        this.isGenericProductLike(item),
+      );
+    }
+
+    if (this.isGenericProductLike(value)) {
+      return [value];
+    }
+
+    if (!value || typeof value !== 'object') {
+      return [];
+    }
+
+    const raw = value as Record<string, unknown>;
+    const nestedCandidates = ['data', 'items', 'genericProducts', 'results', 'payload'];
+    for (const key of nestedCandidates) {
+      const nested = raw[key];
+      if (Array.isArray(nested)) {
+        const genericProducts = nested.filter((item): item is GenericProductApiModel =>
+          this.isGenericProductLike(item),
+        );
+        if (genericProducts.length > 0) {
+          return genericProducts;
+        }
+      }
+    }
+
+    return [];
+  }
+
+  private extractTagsFromResponse(value: unknown): TagApiModel[] {
+    if (Array.isArray(value)) {
+      return value.filter((item): item is TagApiModel => this.isTagLike(item));
+    }
+
+    if (this.isTagLike(value)) {
+      return [value];
+    }
+
+    if (!value || typeof value !== 'object') {
+      return [];
+    }
+
+    const raw = value as Record<string, unknown>;
+    const nestedCandidates = ['data', 'items', 'tags', 'results', 'payload'];
+    for (const key of nestedCandidates) {
+      const nested = raw[key];
+      if (Array.isArray(nested)) {
+        const tags = nested.filter((item): item is TagApiModel => this.isTagLike(item));
+        if (tags.length > 0) {
+          return tags;
+        }
+      }
+    }
+
+    return [];
+  }
+
+  private isCategoryLike(value: unknown): value is CategoryApiModel {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const category = value as Partial<CategoryApiModel>;
+    return typeof category.id === 'number' && typeof category.name === 'string';
+  }
+
+  private isGenericProductLike(value: unknown): value is GenericProductApiModel {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const genericProduct = value as Partial<GenericProductApiModel>;
+    return typeof genericProduct.id === 'number' && typeof genericProduct.name === 'string';
+  }
+
+  private isTagLike(value: unknown): value is TagApiModel {
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+
+    const tag = value as Partial<TagApiModel>;
+    return typeof tag.id === 'number' && typeof tag.name === 'string';
+  }
+
+  private sortByName<T extends { name: string }>(values: T[]): T[] {
+    return [...values].sort((left, right) =>
+      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
+    );
   }
 
   private extractNutritionKeyValue(raw: Record<string, unknown>): string | null {

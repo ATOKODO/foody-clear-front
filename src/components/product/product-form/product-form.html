@@ -1,5 +1,7 @@
 <section class="mx-auto max-w-5xl px-4 py-8 text-gray-900" aria-label="Ajouter ou modifier un produit">
-  <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
+  <div
+    *ngIf="showHeading"
+    class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
     <h2 class="text-xl font-medium">{{ heading }}</h2>
     <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
   </div>
@@ -19,18 +21,37 @@
 
     <div class="grid gap-4 md:grid-cols-12">
       <mat-form-field appearance="fill" class="pf-field md:col-span-4">
-        <mat-label>categoryId</mat-label>
-        <input matInput type="number" formControlName="categoryId" />
+        <mat-label>Categorie</mat-label>
+        <mat-select formControlName="categoryId">
+          <mat-option [value]="''">Aucune</mat-option>
+          <mat-option *ngFor="let category of categories" [value]="category.id">
+            {{ category.name }} (#{{ category.id }})
+          </mat-option>
+        </mat-select>
+        <mat-hint *ngIf="categories.length === 0">Aucune categorie disponible</mat-hint>
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="pf-field md:col-span-4">
-        <mat-label>genericProductId</mat-label>
-        <input matInput type="number" formControlName="genericProductId" />
+        <mat-label>Generic product</mat-label>
+        <mat-select formControlName="genericProductId">
+          <mat-option [value]="''">Aucun</mat-option>
+          <mat-option *ngFor="let genericProduct of genericProducts" [value]="genericProduct.id">
+            {{ genericProduct.name }} (#{{ genericProduct.id }})
+          </mat-option>
+        </mat-select>
+        <mat-hint *ngIf="genericProducts.length === 0">
+          Aucun generic product disponible
+        </mat-hint>
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="pf-field md:col-span-4">
-        <mat-label>tagIds (CSV)</mat-label>
-        <input matInput type="text" formControlName="tagIdsCsv" placeholder="2,5,9" />
+        <mat-label>Tags</mat-label>
+        <mat-select formControlName="tagIds" multiple>
+          <mat-option *ngFor="let tag of tags" [value]="tag.id">
+            {{ tag.name }} (#{{ tag.id }})
+          </mat-option>
+        </mat-select>
+        <mat-hint *ngIf="tags.length === 0">Aucun tag disponible</mat-hint>
       </mat-form-field>
     </div>
 

@@ -31,6 +31,8 @@ describe('ProductForm', () => {
     fixture.componentRef.setInput('product', {
       name: 'Salade',
       barcode: '123',
+      categoryId: 3,
+      genericProductId: 8,
       tagIds: [2, 5],
       nutritionValues: [
         { id: 12, nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },
@@ -39,7 +41,9 @@ describe('ProductForm', () => {
     fixture.detectChanges();
 
     expect(component.form.getRawValue().name).toBe('Salade');
-    expect(component.form.getRawValue().tagIdsCsv).toBe('2,5');
+    expect(component.form.getRawValue().categoryId).toBe(3);
+    expect(component.form.getRawValue().genericProductId).toBe(8);
+    expect(component.form.getRawValue().tagIds).toEqual([2, 5]);
     expect(component.nutritionValues.length).toBe(1);
   });
 
@@ -49,10 +53,12 @@ describe('ProductForm', () => {
 
     component.form.patchValue({
       name: 'Salade',
+      categoryId: 3,
+      genericProductId: 8,
       unitType: 'Paquet',
       quantityPerUnit: 500,
       quantityUnit: 'g',
-      tagIdsCsv: '2,5',
+      tagIds: [2, 5],
     });
     component.nutritionValues = [
       { nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },
@@ -65,6 +71,8 @@ describe('ProductForm', () => {
         mode: 'add',
         value: jasmine.objectContaining({
           name: 'Salade',
+          categoryId: 3,
+          genericProductId: 8,
           tagIds: [2, 5],
           nutritionValues: [
             { nutritionKey: 'PROTEIN', amount: 20, unit: 'G', reference: 'PER_100G' },

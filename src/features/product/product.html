@@ -97,26 +97,6 @@
         (deleteRequested)="onDeleteRequested($event)"
       >
       </app-product-list>
-
-      <mat-card *ngIf="formVisible" appearance="outlined" class="rounded-xl">
-        <mat-card-content class="p-0">
-          <app-product-form
-            [mode]="formMode"
-            [product]="formInitialValue"
-            [quantityUnits]="quantityUnitOptions"
-            [nutritionKeys]="nutritionKeyOptions"
-            (submitted)="onFormSubmitted($event)"
-            (menuClicked)="onMenuClicked()"
-          >
-          </app-product-form>
-        </mat-card-content>
-
-        <mat-card-actions class="flex justify-center pb-6">
-          <button mat-stroked-button type="button" (click)="onCancelForm()">
-            Annuler
-          </button>
-        </mat-card-actions>
-      </mat-card>
     </div>
   </mat-card>
 
@@ -133,3 +113,34 @@
 
   <app-tag *ngIf="activeView === 'tag'" class="mt-6" (dataChanged)="onLinkedDataChanged()"></app-tag>
 </section>
+
+<ng-template #productFormDialog>
+  <div class="product-form-dialog">
+    <div class="product-form-dialog__header">
+      <div>
+        <p class="product-form-dialog__eyebrow">Product</p>
+        <h3 class="product-form-dialog__title">{{ formDialogTitle }}</h3>
+        <p class="product-form-dialog__subtitle">{{ formDialogSubtitle }}</p>
+      </div>
+
+      <button mat-stroked-button type="button" (click)="onCancelForm()" [disabled]="saving">
+        Fermer
+      </button>
+    </div>
+
+    <mat-dialog-content class="product-form-dialog__content">
+      <app-product-form
+        [mode]="formMode"
+        [product]="formInitialValue"
+        [showHeading]="false"
+        [categories]="categoryOptions"
+        [genericProducts]="genericProductOptions"
+        [tags]="tagOptions"
+        [quantityUnits]="quantityUnitOptions"
+        [nutritionKeys]="nutritionKeyOptions"
+        (submitted)="onFormSubmitted($event)"
+        (menuClicked)="onMenuClicked()">
+      </app-product-form>
+    </mat-dialog-content>
+  </div>
+</ng-template>

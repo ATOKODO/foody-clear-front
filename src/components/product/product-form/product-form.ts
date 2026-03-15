@@ -15,12 +15,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { NutritionReference } from '../../../interfaces/cycle.interface';
+import { Category as ProductCategoryOption } from '../../../services/category-service';
+import { GenericProduct as ProductGenericProductOption } from '../../../services/generic-product-service';
 import { NutritionKeyMeta, QuantityUnitMeta } from '../../../services/meta-service';
 import {
   PortionUnit,
   ProductUnitType,
   QuantityUnit,
 } from '../../../services/product-service';
+import { Tag as ProductTagOption } from '../../../services/tag-service';
 
 export type ProductFormMode = 'add' | 'edit';
 
@@ -69,8 +72,12 @@ export class ProductForm implements OnInit, OnChanges {
 
   @Input() mode: ProductFormMode = 'add';
   @Input() product: Partial<ProductFormValue> | null = null;
+  @Input() categories: ProductCategoryOption[] = [];
+  @Input() genericProducts: ProductGenericProductOption[] = [];
   @Input() nutritionKeys: NutritionKeyMeta[] = [];
   @Input() quantityUnits: QuantityUnitMeta[] = [];
+  @Input() showHeading = true;
+  @Input() tags: ProductTagOption[] = [];
 
   @Output() readonly submitted = new EventEmitter<{
     mode: ProductFormMode;
@@ -104,9 +111,9 @@ export class ProductForm implements OnInit, OnChanges {
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required]],
     barcode: [''],
-    categoryId: [''],
-    tagIdsCsv: [''],
-    genericProductId: [''],
+    categoryId: ['' as number | ''],
+    tagIds: [[] as number[]],
+    genericProductId: ['' as number | ''],
     unitType: ['', [Validators.required]],
     quantityPerUnit: [0, [Validators.required, Validators.min(0.000001)]],
     quantityUnit: ['', [Validators.required]],
@@ -170,7 +177,7 @@ export class ProductForm implements OnInit, OnChanges {
         name: rawValue.name.trim(),
         barcode: this.normalizeNullableString(rawValue.barcode),
         categoryId: this.normalizeNullableInteger(rawValue.categoryId),
-        tagIds: this.parseCsvIds(rawValue.tagIdsCsv),
+        tagIds: this.normalizeIntegerArray(rawValue.tagIds),
         genericProductId: this.normalizeNullableInteger(rawValue.genericProductId),
         unitType: rawValue.unitType.trim() as ProductUnitType,
         quantityPerUnit: Number.isFinite(rawValue.quantityPerUnit)
@@ -241,11 +248,9 @@ export class ProductForm implements OnInit, OnChanges {
       this.form.reset({
         name: this.product.name ?? defaults.name,
         barcode: this.product.barcode ?? defaults.barcode ?? '',
-        categoryId:
-          this.product.categoryId != null ? String(this.product.categoryId) : '',
-        tagIdsCsv: this.toTagIdsCsv(this.product.tagIds ?? defaults.tagIds),
-        genericProductId:
-          this.product.genericProductId != null ? String(this.product.genericProductId) : '',
+        categoryId: this.product.categoryId ?? '',
+        tagIds: this.normalizeIntegerArray(this.product.tagIds ?? defaults.tagIds),
+        genericProductId: this.product.genericProductId ?? '',
         unitType: this.product.unitType ?? defaults.unitType,
         quantityPerUnit: this.product.quantityPerUnit ?? defaults.quantityPerUnit,
         quantityUnit: this.product.quantityUnit ?? defaults.quantityUnit,
@@ -271,7 +276,7 @@ export class ProductForm implements OnInit, OnChanges {
       name: defaults.name,
       barcode: defaults.barcode ?? '',
       categoryId: '',
-      tagIdsCsv: this.toTagIdsCsv(defaults.tagIds),
+      tagIds: defaults.tagIds,
       genericProductId: '',
       unitType: defaults.unitType,
       quantityPerUnit: defaults.quantityPerUnit,
@@ -358,21 +363,14 @@ export class ProductForm implements OnInit, OnChanges {
     return key.allowedUnits.filter((unit) => unit.trim() !== '');
   }
 
-  private toTagIdsCsv(tagIds: number[]): string {
-    return tagIds.join(',');
-  }
-
-  private parseCsvIds(csv: unknown): number[] {
-    if (typeof csv !== 'string') {
+  private normalizeIntegerArray(value: unknown): number[] {
+    if (!Array.isArray(value)) {
       return [];
     }
 
-    const ids = csv
-      .split(',')
-      .map((value) => value.trim())
-      .filter((value) => value !== '')
-      .map((value) => Number(value))
-      .filter((value) => Number.isInteger(value) && value > 0);
+    const ids = value
+      .map((item) => Number(item))
+      .filter((item) => Number.isInteger(item) && item > 0);
 
     return Array.from(new Set(ids));
   }
