@@ -32,6 +32,7 @@ import {
   InputDayResponse,
   InputDaySlotSummary,
   InputDayTargetSource,
+  InputDayTotalsMacrosSummary,
   InputWeekResponse,
 } from '../../interfaces/input-day.interface';
 import {
@@ -538,6 +539,9 @@ export class Calendar implements OnInit, OnChanges {
 
     return Boolean(
       response?.daySet ||
+      response?.templateAssociation ||
+      response?.projectedTotalsMacros ||
+      (response?.templateItems?.length ?? 0) > 0 ||
       response?.totalsMacros ||
       this.getWeekDaySlotCount(dateLocal) > 0 ||
       this.getWeekDayProductCount(dateLocal) > 0,
@@ -553,6 +557,12 @@ export class Calendar implements OnInit, OnChanges {
       (total, response) => total + response.items.length,
       0,
     );
+  }
+
+  getWeekSummaryTemplateDayCount(): number {
+    return Array.from(this.visibleDayResponseByDate.values()).filter((response) =>
+      this.hasTemplateData(response),
+    ).length;
   }
 
   getWeekSummaryEnergyTotal(): string {
@@ -596,12 +606,24 @@ export class Calendar implements OnInit, OnChanges {
     return this.buildMacroComparisons(this.visibleDayResponseByDate.get(dateLocal) ?? null);
   }
 
+  getWeekDayProjectedMacroComparisons(dateLocal: string): CalendarMacroComparison[] {
+    return this.buildProjectedMacroComparisons(this.visibleDayResponseByDate.get(dateLocal) ?? null);
+  }
+
   getMonthDayMacroComparisons(dateLocal: string): CalendarMacroComparison[] {
     return this.buildMacroComparisons(this.visibleDayResponseByDate.get(dateLocal) ?? null);
   }
 
+  getMonthDayProjectedMacroComparisons(dateLocal: string): CalendarMacroComparison[] {
+    return this.buildProjectedMacroComparisons(this.visibleDayResponseByDate.get(dateLocal) ?? null);
+  }
+
   getDayMacroHighlights(): CalendarWeekMacroHighlight[] {
     return this.buildMacroHighlights(this.inputDayResponse?.totalsMacros?.dayTotal ?? null);
+  }
+
+  getDayProjectedMacroHighlights(): CalendarWeekMacroHighlight[] {
+    return this.buildMacroHighlights(this.inputDayResponse?.projectedTotalsMacros?.dayTotal ?? null);
   }
 
   getDayAssignmentHighlight(): CalendarDayAssignmentHighlight | null {
@@ -643,6 +665,11 @@ export class Calendar implements OnInit, OnChanges {
 
   getDayEnergyTotal(): string {
     const energy = this.inputDayResponse?.totalsMacros?.dayTotal['energyKcal'];
+    return typeof energy === 'number' ? this.formatCompactNumber(energy, 0) : '0';
+  }
+
+  getProjectedDayEnergyTotal(): string {
+    const energy = this.inputDayResponse?.projectedTotalsMacros?.dayTotal['energyKcal'];
     return typeof energy === 'number' ? this.formatCompactNumber(energy, 0) : '0';
   }
 
@@ -689,6 +716,63 @@ export class Calendar implements OnInit, OnChanges {
         .map((day) => day.assignment?.cycleName ?? day.assignment?.label ?? '')
         .filter((label) => label.trim() !== ''),
     ).size;
+  }
+
+  getMonthTemplateDayCount(): number {
+    return Array.from(this.visibleDayResponseByDate.values()).filter((response) =>
+      this.hasTemplateData(response),
+    ).length;
+  }
+
+  getTemplateChipLabel(response: InputDayResponse | null): string | null {
+    const title = response?.templateAssociation?.template.title?.trim();
+    return title ? title : null;
+  }
+
+  getTemplateSourceBadgeText(response: InputDayResponse | null): string | null {
+    const source = response?.templateAssociation?.source;
+    if (source === 'manual') {
+      return 'Template manuel';
+    }
+
+    if (source === 'daySet') {
+      return 'Template day-set';
+    }
+
+    return null;
+  }
+
+  getPendingTemplateItemCount(response: InputDayResponse | null): number {
+    return (response?.templateItems ?? []).filter((item) => item.status === 'pending').length;
+  }
+
+  getDayTemplateItemCount(): number {
+    return this.inputDayResponse?.templateItems?.length ?? 0;
+  }
+
+  getDayPendingTemplateItemCount(): number {
+    return this.getPendingTemplateItemCount(this.inputDayResponse);
+  }
+
+  getMonthDayTitle(day: CalendarDay): string {
+    return (
+      day.assignment?.cycleName ??
+      day.assignment?.label ??
+      this.getWeekDayResponse(day.date)?.templateAssociation?.template.title ??
+      'Jour suivi'
+    );
+  }
+
+  getMonthDayType(day: CalendarDay): string {
+    return day.assignment ? 'Cycle actif' : 'Jour suivi';
+  }
+
+  getMonthDayProgressText(day: CalendarDay): string | null {
+    if (day.assignment?.dayNumber) {
+      return `Jour ${day.assignment.dayNumber}/${day.assignment.totalDays}`;
+    }
+
+    return this.getTemplateSourceBadgeText(this.getWeekDayResponse(day.date));
   }
 
   getDayMetricEntries(
@@ -1262,8 +1346,20 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   private buildMacroComparisons(response: InputDayResponse | null): CalendarMacroComparison[] {
-    const dayTotal = response?.totalsMacros?.dayTotal ?? null;
-    const targets = response?.totalsMacros?.targets ?? null;
+    return this.buildMacroComparisonsFromTotals(response?.totalsMacros ?? null);
+  }
+
+  private buildProjectedMacroComparisons(
+    response: InputDayResponse | null,
+  ): CalendarMacroComparison[] {
+    return this.buildMacroComparisonsFromTotals(response?.projectedTotalsMacros ?? null);
+  }
+
+  private buildMacroComparisonsFromTotals(
+    totals: InputDayTotalsMacrosSummary | null,
+  ): CalendarMacroComparison[] {
+    const dayTotal = totals?.dayTotal ?? null;
+    const targets = totals?.targets ?? null;
     if (!dayTotal || !targets) {
       return [];
     }
@@ -1297,6 +1393,14 @@ export class Calendar implements OnInit, OnChanges {
         },
       ];
     });
+  }
+
+  private hasTemplateData(response: InputDayResponse | null): boolean {
+    return Boolean(
+      response?.templateAssociation ||
+      response?.projectedTotalsMacros ||
+      (response?.templateItems?.length ?? 0) > 0,
+    );
   }
 
   private resolveMacroComparisonStatus(

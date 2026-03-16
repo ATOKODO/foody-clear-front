@@ -184,6 +184,10 @@
               <span class="calendar-week-overview__value">{{ getMonthCycleCount() }}</span>
               <span class="calendar-week-overview__label">cycles actifs</span>
             </div>
+            <div class="calendar-week-overview__pill">
+              <span class="calendar-week-overview__value">{{ getMonthTemplateDayCount() }}</span>
+              <span class="calendar-week-overview__label">jours template</span>
+            </div>
           </div>
         </div>
       </div>
@@ -231,27 +235,29 @@
 
               <div class="calendar-month-day__body">
                 <div
-                  *ngIf="day.assignment; else monthDayEmpty"
-                  [ngClass]="day.assignment.color"
+                  *ngIf="day.assignment || (day.isCurrentMonth && hasWeekDayInsights(day.date)); else monthDayEmpty"
+                  [ngClass]="day.assignment?.color ?? 'bg-slate-100'"
                   class="calendar-month-day__assignment">
                   <div class="calendar-month-day__assignment-head">
-                    <div class="calendar-month-day__assignment-type">Cycle actif</div>
+                    <div class="calendar-month-day__assignment-type">{{ getMonthDayType(day) }}</div>
                     <div class="calendar-month-day__assignment-title">
-                      {{ day.assignment.cycleName || day.assignment.label }}
+                      {{ getMonthDayTitle(day) }}
                     </div>
-                    <div *ngIf="day.assignment.dayNumber" class="calendar-month-day__assignment-progress">
-                      Jour {{ day.assignment.dayNumber }}/{{ day.assignment.totalDays }}
+                    <div *ngIf="getMonthDayProgressText(day) as progress" class="calendar-month-day__assignment-progress">
+                      {{ progress }}
                     </div>
-                    <div *ngIf="day.assignment.calorieTarget" class="calendar-month-day__assignment-meta">
-                      {{ day.assignment.actualCalories || 0 }} / {{ day.assignment.calorieTarget }} kcal
+                    <div *ngIf="day.assignment?.calorieTarget" class="calendar-month-day__assignment-meta">
+                      {{ day.assignment?.actualCalories || 0 }} / {{ day.assignment?.calorieTarget }} kcal
                     </div>
                   </div>
 
                   <ng-container *ngIf="getWeekDayResponse(day.date) as response">
                     <ng-container *ngIf="day.isCurrentMonth && getMonthDayMacroComparisons(day.date) as macroComparisons">
-                      <div *ngIf="macroComparisons.length > 0" class="calendar-month-day__assignment-insights">
+                      <div
+                        *ngIf="macroComparisons.length > 0 || getMonthDayProjectedMacroComparisons(day.date).length > 0 || response.templateAssociation"
+                        class="calendar-month-day__assignment-insights">
                         <div
-                          *ngIf="response.daySet || response.totalsMacros?.targetSource"
+                          *ngIf="response.daySet || response.totalsMacros?.targetSource || response.templateAssociation"
                           class="calendar-month-day__assignment-chips">
                           <span *ngIf="response.daySet as daySet" class="calendar-week-chip calendar-week-chip--dayset">
                             {{ daySet.title }}
@@ -262,26 +268,79 @@
                             class="calendar-week-chip calendar-week-chip--target">
                             {{ getTargetSourceBadgeText(targetSource) }}
                           </span>
+
+                          <span
+                            *ngIf="getTemplateChipLabel(response) as templateLabel"
+                            class="calendar-week-chip calendar-week-chip--template">
+                            {{ templateLabel }}
+                          </span>
+
+                          <span
+                            *ngIf="getTemplateSourceBadgeText(response) as templateSource"
+                            class="calendar-week-chip calendar-week-chip--template-source">
+                            {{ templateSource }}
+                          </span>
                         </div>
 
-                        <div class="calendar-month-day__assignment-macro-grid">
-                          <article
-                            *ngFor="let macro of macroComparisons; trackBy: trackByWeekMacro"
-                            class="calendar-month-day__assignment-macro-card"
-                            [attr.data-tone]="macro.tone"
-                            [attr.data-status]="macro.status"
-                            [attr.title]="macro.label">
-                            <div class="calendar-month-day__assignment-macro-top">
-                              <span class="calendar-month-day__assignment-macro-abbr">{{ macro.abbr }}</span>
-                              <span class="calendar-month-day__assignment-macro-percent">{{ macro.percentage }}</span>
-                            </div>
-                            <div class="calendar-month-day__assignment-macro-values">
-                              {{ macro.value }} / {{ macro.target }} {{ macro.unit }}
-                            </div>
-                          </article>
+                        <div *ngIf="macroComparisons.length > 0" class="space-y-2">
+                          <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                            Effectif
+                          </p>
+                          <div class="calendar-month-day__assignment-macro-grid">
+                            <article
+                              *ngFor="let macro of macroComparisons; trackBy: trackByWeekMacro"
+                              class="calendar-month-day__assignment-macro-card"
+                              [attr.data-tone]="macro.tone"
+                              [attr.data-status]="macro.status"
+                              [attr.title]="macro.label">
+                              <div class="calendar-month-day__assignment-macro-top">
+                                <span class="calendar-month-day__assignment-macro-abbr">{{ macro.abbr }}</span>
+                                <span class="calendar-month-day__assignment-macro-percent">{{ macro.percentage }}</span>
+                              </div>
+                              <div class="calendar-month-day__assignment-macro-values">
+                                {{ macro.value }} / {{ macro.target }} {{ macro.unit }}
+                              </div>
+                            </article>
+                          </div>
                         </div>
+
+                        <ng-container *ngIf="getMonthDayProjectedMacroComparisons(day.date) as projectedMacroComparisons">
+                          <div *ngIf="projectedMacroComparisons.length > 0" class="space-y-2">
+                            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                              Effectif + template
+                            </p>
+                            <div class="calendar-month-day__assignment-macro-grid">
+                              <article
+                                *ngFor="let macro of projectedMacroComparisons; trackBy: trackByWeekMacro"
+                                class="calendar-month-day__assignment-macro-card"
+                                [attr.data-tone]="macro.tone"
+                                [attr.data-status]="macro.status"
+                                [attr.title]="macro.label">
+                                <div class="calendar-month-day__assignment-macro-top">
+                                  <span class="calendar-month-day__assignment-macro-abbr">{{ macro.abbr }}</span>
+                                  <span class="calendar-month-day__assignment-macro-percent">{{ macro.percentage }}</span>
+                                </div>
+                                <div class="calendar-month-day__assignment-macro-values">
+                                  {{ macro.value }} / {{ macro.target }} {{ macro.unit }}
+                                </div>
+                              </article>
+                            </div>
+                          </div>
+                        </ng-container>
+
+                        <p
+                          *ngIf="getPendingTemplateItemCount(response) > 0"
+                          class="text-[11px] font-medium text-amber-700">
+                          {{ getPendingTemplateItemCount(response) }} ligne(s) template en attente.
+                        </p>
                       </div>
                     </ng-container>
+                  </ng-container>
+
+                  <ng-container *ngIf="!getWeekDayResponse(day.date) && !day.assignment">
+                    <div class="text-sm text-slate-500">
+                      Aucune donnee de suivi pour cette journee.
+                    </div>
                   </ng-container>
                 </div>
 
@@ -303,7 +362,7 @@
         </div>
       </div>
     </div>
-
+ 
     <div *ngIf="currentView === 'week' && !loading" class="calendar-week-panel overflow-hidden rounded-[1.5rem] border border-slate-200 shadow-sm">
       <div class="calendar-week-summary border-b border-slate-200 p-4 sm:p-5">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -327,6 +386,10 @@
             <div class="calendar-week-overview__pill">
               <span class="calendar-week-overview__value">{{ getWeekSummaryEnergyTotal() }}</span>
               <span class="calendar-week-overview__label">kcal suivies</span>
+            </div>
+            <div class="calendar-week-overview__pill">
+              <span class="calendar-week-overview__value">{{ getWeekSummaryTemplateDayCount() }}</span>
+              <span class="calendar-week-overview__label">jours template</span>
             </div>
           </div>
         </div>
@@ -388,7 +451,7 @@
               <ng-container *ngIf="getWeekDayMacroComparisons(day.date) as macroComparisons">
                 <div class="calendar-week-day-details calendar-week-day-details--mobile">
                   <div
-                    *ngIf="response.daySet || response.totalsMacros?.targetSource"
+                    *ngIf="response.daySet || response.totalsMacros?.targetSource || response.templateAssociation"
                     class="calendar-week-day-details__chips">
                     <span *ngIf="response.daySet as daySet" class="calendar-week-chip calendar-week-chip--dayset">
                       {{ daySet.title }}
@@ -399,35 +462,82 @@
                       class="calendar-week-chip calendar-week-chip--target">
                       {{ getTargetSourceBadgeText(targetSource) }}
                     </span>
+
+                    <span
+                      *ngIf="getTemplateChipLabel(response) as templateLabel"
+                      class="calendar-week-chip calendar-week-chip--template">
+                      {{ templateLabel }}
+                    </span>
+
+                    <span
+                      *ngIf="getTemplateSourceBadgeText(response) as templateSource"
+                      class="calendar-week-chip calendar-week-chip--template-source">
+                      {{ templateSource }}
+                    </span>
                   </div>
 
-                  <div *ngIf="macroComparisons.length > 0" class="calendar-week-macros">
-                    <article
-                      *ngFor="let macro of macroComparisons; trackBy: trackByWeekMacro"
-                      class="calendar-week-macro"
-                      [attr.data-tone]="macro.tone"
-                      [attr.data-status]="macro.status"
-                      [attr.title]="macro.label">
-                      <div class="calendar-week-macro__top">
-                        <span class="calendar-week-macro__label">{{ macro.abbr }}</span>
-                      </div>
+                  <div *ngIf="macroComparisons.length > 0" class="space-y-2">
+                    <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Effectif</p>
+                    <div class="calendar-week-macros">
+                      <article
+                        *ngFor="let macro of macroComparisons; trackBy: trackByWeekMacro"
+                        class="calendar-week-macro"
+                        [attr.data-tone]="macro.tone"
+                        [attr.data-status]="macro.status"
+                        [attr.title]="macro.label">
+                        <div class="calendar-week-macro__top">
+                          <span class="calendar-week-macro__label">{{ macro.abbr }}</span>
+                        </div>
 
-                      <div class="calendar-week-macro__percent-value">{{ macro.percentage }}</div>
+                        <div class="calendar-week-macro__percent-value">{{ macro.percentage }}</div>
 
-                      <div class="calendar-week-macro__comparison">
-                        <span class="calendar-week-macro__value">{{ macro.value }}</span>
-                        <span class="calendar-week-macro__separator">/</span>
-                        <span class="calendar-week-macro__target">{{ macro.target }}</span>
-                        <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
-                      </div>
-                    </article>
+                        <div class="calendar-week-macro__comparison">
+                          <span class="calendar-week-macro__value">{{ macro.value }}</span>
+                          <span class="calendar-week-macro__separator">/</span>
+                          <span class="calendar-week-macro__target">{{ macro.target }}</span>
+                          <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
+                        </div>
+                      </article>
+                    </div>
                   </div>
+
+                  <ng-container *ngIf="getWeekDayProjectedMacroComparisons(day.date) as projectedMacroComparisons">
+                    <div *ngIf="projectedMacroComparisons.length > 0" class="space-y-2">
+                      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                        Effectif + template
+                      </p>
+                      <div class="calendar-week-macros">
+                        <article
+                          *ngFor="let macro of projectedMacroComparisons; trackBy: trackByWeekMacro"
+                          class="calendar-week-macro"
+                          [attr.data-tone]="macro.tone"
+                          [attr.data-status]="macro.status"
+                          [attr.title]="macro.label">
+                          <div class="calendar-week-macro__top">
+                            <span class="calendar-week-macro__label">{{ macro.abbr }}</span>
+                          </div>
+
+                          <div class="calendar-week-macro__percent-value">{{ macro.percentage }}</div>
+
+                          <div class="calendar-week-macro__comparison">
+                            <span class="calendar-week-macro__value">{{ macro.value }}</span>
+                            <span class="calendar-week-macro__separator">/</span>
+                            <span class="calendar-week-macro__target">{{ macro.target }}</span>
+                            <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
+                          </div>
+                        </article>
+                      </div>
+                    </div>
+                  </ng-container>
 
                   <div class="calendar-week-day-details__meta">
                     <span class="calendar-week-meta-pill">{{ getWeekDaySlotCount(day.date) }} plages</span>
                     <span class="calendar-week-meta-pill">{{ getWeekDayProductCount(day.date) }} items</span>
                     <span *ngIf="macroComparisons.length > 0" class="calendar-week-meta-pill">
                       {{ macroComparisons.length }} macros
+                    </span>
+                    <span *ngIf="getPendingTemplateItemCount(response) > 0" class="calendar-week-meta-pill">
+                      {{ getPendingTemplateItemCount(response) }} template
                     </span>
                   </div>
                 </div>
@@ -525,7 +635,7 @@
                 <ng-container *ngIf="getWeekDayMacroComparisons(day.date) as macroComparisons">
                   <div class="calendar-week-day-details calendar-week-day-details--desktop">
                     <div
-                      *ngIf="response.daySet || response.totalsMacros?.targetSource"
+                      *ngIf="response.daySet || response.totalsMacros?.targetSource || response.templateAssociation"
                       class="calendar-week-day-details__chips">
                       <span *ngIf="response.daySet as daySet" class="calendar-week-chip calendar-week-chip--dayset">
                         {{ daySet.title }}
@@ -536,35 +646,82 @@
                         class="calendar-week-chip calendar-week-chip--target">
                         {{ getTargetSourceBadgeText(targetSource) }}
                       </span>
+
+                      <span
+                        *ngIf="getTemplateChipLabel(response) as templateLabel"
+                        class="calendar-week-chip calendar-week-chip--template">
+                        {{ templateLabel }}
+                      </span>
+
+                      <span
+                        *ngIf="getTemplateSourceBadgeText(response) as templateSource"
+                        class="calendar-week-chip calendar-week-chip--template-source">
+                        {{ templateSource }}
+                      </span>
                     </div>
 
-                    <div *ngIf="macroComparisons.length > 0" class="calendar-week-macros">
-                      <article
-                        *ngFor="let macro of macroComparisons; trackBy: trackByWeekMacro"
-                        class="calendar-week-macro"
-                        [attr.data-tone]="macro.tone"
-                        [attr.data-status]="macro.status"
-                        [attr.title]="macro.label">
-                        <div class="calendar-week-macro__top">
-                          <span class="calendar-week-macro__label">{{ macro.abbr }}</span>
-                        </div>
+                    <div *ngIf="macroComparisons.length > 0" class="space-y-2">
+                      <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Effectif</p>
+                      <div class="calendar-week-macros">
+                        <article
+                          *ngFor="let macro of macroComparisons; trackBy: trackByWeekMacro"
+                          class="calendar-week-macro"
+                          [attr.data-tone]="macro.tone"
+                          [attr.data-status]="macro.status"
+                          [attr.title]="macro.label">
+                          <div class="calendar-week-macro__top">
+                            <span class="calendar-week-macro__label">{{ macro.abbr }}</span>
+                          </div>
 
-                        <div class="calendar-week-macro__percent-value">{{ macro.percentage }}</div>
+                          <div class="calendar-week-macro__percent-value">{{ macro.percentage }}</div>
 
-                        <div class="calendar-week-macro__comparison">
-                          <span class="calendar-week-macro__value">{{ macro.value }}</span>
-                          <span class="calendar-week-macro__separator">/</span>
-                          <span class="calendar-week-macro__target">{{ macro.target }}</span>
-                          <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
-                        </div>
-                      </article>
+                          <div class="calendar-week-macro__comparison">
+                            <span class="calendar-week-macro__value">{{ macro.value }}</span>
+                            <span class="calendar-week-macro__separator">/</span>
+                            <span class="calendar-week-macro__target">{{ macro.target }}</span>
+                            <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
+                          </div>
+                        </article>
+                      </div>
                     </div>
+
+                    <ng-container *ngIf="getWeekDayProjectedMacroComparisons(day.date) as projectedMacroComparisons">
+                      <div *ngIf="projectedMacroComparisons.length > 0" class="space-y-2">
+                        <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                          Effectif + template
+                        </p>
+                        <div class="calendar-week-macros">
+                          <article
+                            *ngFor="let macro of projectedMacroComparisons; trackBy: trackByWeekMacro"
+                            class="calendar-week-macro"
+                            [attr.data-tone]="macro.tone"
+                            [attr.data-status]="macro.status"
+                            [attr.title]="macro.label">
+                            <div class="calendar-week-macro__top">
+                              <span class="calendar-week-macro__label">{{ macro.abbr }}</span>
+                            </div>
+
+                            <div class="calendar-week-macro__percent-value">{{ macro.percentage }}</div>
+
+                            <div class="calendar-week-macro__comparison">
+                              <span class="calendar-week-macro__value">{{ macro.value }}</span>
+                              <span class="calendar-week-macro__separator">/</span>
+                              <span class="calendar-week-macro__target">{{ macro.target }}</span>
+                              <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
+                            </div>
+                          </article>
+                        </div>
+                      </div>
+                    </ng-container>
 
                     <div class="calendar-week-day-details__meta">
                       <span class="calendar-week-meta-pill">{{ getWeekDaySlotCount(day.date) }} plages</span>
                       <span class="calendar-week-meta-pill">{{ getWeekDayProductCount(day.date) }} items</span>
                       <span *ngIf="macroComparisons.length > 0" class="calendar-week-meta-pill">
                         {{ macroComparisons.length }} macros
+                      </span>
+                      <span *ngIf="getPendingTemplateItemCount(response) > 0" class="calendar-week-meta-pill">
+                        {{ getPendingTemplateItemCount(response) }} template
                       </span>
                     </div>
                   </div>
@@ -723,10 +880,18 @@
                 <span class="calendar-week-overview__value">{{ getDayEnergyTotal() }}</span>
                 <span class="calendar-week-overview__label">kcal suivies</span>
               </div>
+              <div *ngIf="getDayTemplateItemCount() > 0" class="calendar-week-overview__pill">
+                <span class="calendar-week-overview__value">{{ getDayPendingTemplateItemCount() }}</span>
+                <span class="calendar-week-overview__label">template pending</span>
+              </div>
+              <div *ngIf="inputDayResponse?.projectedTotalsMacros" class="calendar-week-overview__pill">
+                <span class="calendar-week-overview__value">{{ getProjectedDayEnergyTotal() }}</span>
+                <span class="calendar-week-overview__label">kcal projetees</span>
+              </div>
             </div>
 
             <div
-              *ngIf="inputDayResponse?.daySet || inputDayResponse?.totalsMacros?.targetSource"
+              *ngIf="inputDayResponse?.daySet || inputDayResponse?.totalsMacros?.targetSource || inputDayResponse?.templateAssociation"
               class="calendar-day-summary__chips">
               <span *ngIf="inputDayResponse?.daySet as daySet" class="calendar-week-chip calendar-week-chip--dayset">
                 {{ daySet.title }}
@@ -736,6 +901,18 @@
                 *ngIf="inputDayResponse?.totalsMacros?.targetSource as targetSource"
                 class="calendar-week-chip calendar-week-chip--target">
                 {{ getTargetSourceBadgeText(targetSource) }}
+              </span>
+
+              <span
+                *ngIf="getTemplateChipLabel(inputDayResponse) as templateLabel"
+                class="calendar-week-chip calendar-week-chip--template">
+                {{ templateLabel }}
+              </span>
+
+              <span
+                *ngIf="getTemplateSourceBadgeText(inputDayResponse) as templateSource"
+                class="calendar-week-chip calendar-week-chip--template-source">
+                {{ templateSource }}
               </span>
             </div>
 
@@ -757,57 +934,126 @@
           <section class="calendar-day-summary__panel">
             <p class="calendar-day-summary__panel-title">Repere macros</p>
 
-            <ng-container *ngIf="getDayMacroHighlights() as macroHighlights">
-              <div *ngIf="macroHighlights.length > 0" class="calendar-day-summary__macros calendar-week-macros">
-                <div
-                  *ngFor="let macro of macroHighlights; trackBy: trackByWeekMacro"
-                  class="calendar-week-macro"
-                  [attr.data-tone]="macro.tone">
-                  <span class="calendar-week-macro__label">{{ macro.label }}</span>
-                  <div class="calendar-week-macro__value-row">
-                    <span class="calendar-week-macro__value">{{ macro.value }}</span>
-                    <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
-                  </div>
+            <div class="space-y-4">
+              <section *ngIf="inputDayResponse?.totalsMacros as totals" class="space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Effectif / day-set</p>
+                  <span class="text-xs text-slate-500">{{ getTargetSourceText(totals.targetSource) }}</span>
                 </div>
-              </div>
-            </ng-container>
 
-            <div *ngIf="inputDayResponse?.totalsMacros as totals" class="calendar-day-summary__metrics">
-              <ng-container *ngIf="getDayMetricEntries(totals.targets) as targetEntries">
-                <article *ngIf="targetEntries.length > 0" class="calendar-day-metric-card">
-                  <p class="calendar-day-metric-card__title">Cibles</p>
-
-                  <div class="calendar-day-metric-card__rows">
+                <ng-container *ngIf="getDayMacroHighlights() as macroHighlights">
+                  <div *ngIf="macroHighlights.length > 0" class="calendar-day-summary__macros calendar-week-macros">
                     <div
-                      *ngFor="let entry of targetEntries; trackBy: trackByMacroMetricEntry"
-                      class="calendar-day-metric-card__row">
-                      <span class="calendar-day-metric-card__label">{{ entry.label }}</span>
-                      <span class="calendar-day-metric-card__value">
-                        {{ entry.value }}
-                        <span *ngIf="entry.unit" class="calendar-day-metric-card__unit">{{ entry.unit }}</span>
-                      </span>
+                      *ngFor="let macro of macroHighlights; trackBy: trackByWeekMacro"
+                      class="calendar-week-macro"
+                      [attr.data-tone]="macro.tone">
+                      <span class="calendar-week-macro__label">{{ macro.label }}</span>
+                      <div class="calendar-week-macro__value-row">
+                        <span class="calendar-week-macro__value">{{ macro.value }}</span>
+                        <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
+                      </div>
                     </div>
                   </div>
-                </article>
-              </ng-container>
+                </ng-container>
 
-              <ng-container *ngIf="getDayMetricEntries(totals.deltaToTargets) as deltaEntries">
-                <article *ngIf="deltaEntries.length > 0" class="calendar-day-metric-card">
-                  <p class="calendar-day-metric-card__title">Delta</p>
+                <div class="calendar-day-summary__metrics">
+                  <ng-container *ngIf="getDayMetricEntries(totals.targets) as targetEntries">
+                    <article *ngIf="targetEntries.length > 0" class="calendar-day-metric-card">
+                      <p class="calendar-day-metric-card__title">Cibles</p>
 
-                  <div class="calendar-day-metric-card__rows">
+                      <div class="calendar-day-metric-card__rows">
+                        <div
+                          *ngFor="let entry of targetEntries; trackBy: trackByMacroMetricEntry"
+                          class="calendar-day-metric-card__row">
+                          <span class="calendar-day-metric-card__label">{{ entry.label }}</span>
+                          <span class="calendar-day-metric-card__value">
+                            {{ entry.value }}
+                            <span *ngIf="entry.unit" class="calendar-day-metric-card__unit">{{ entry.unit }}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  </ng-container>
+
+                  <ng-container *ngIf="getDayMetricEntries(totals.deltaToTargets) as deltaEntries">
+                    <article *ngIf="deltaEntries.length > 0" class="calendar-day-metric-card">
+                      <p class="calendar-day-metric-card__title">Delta</p>
+
+                      <div class="calendar-day-metric-card__rows">
+                        <div
+                          *ngFor="let entry of deltaEntries; trackBy: trackByMacroMetricEntry"
+                          class="calendar-day-metric-card__row">
+                          <span class="calendar-day-metric-card__label">{{ entry.label }}</span>
+                          <span class="calendar-day-metric-card__value">
+                            {{ entry.value }}
+                            <span *ngIf="entry.unit" class="calendar-day-metric-card__unit">{{ entry.unit }}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  </ng-container>
+                </div>
+              </section>
+
+              <section *ngIf="inputDayResponse?.projectedTotalsMacros as projectedTotals" class="space-y-3 border-t border-slate-200 pt-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Effectif + template / day-set</p>
+                  <span class="text-xs text-slate-500">{{ getTargetSourceText(projectedTotals.targetSource) }}</span>
+                </div>
+
+                <ng-container *ngIf="getDayProjectedMacroHighlights() as projectedMacroHighlights">
+                  <div *ngIf="projectedMacroHighlights.length > 0" class="calendar-day-summary__macros calendar-week-macros">
                     <div
-                      *ngFor="let entry of deltaEntries; trackBy: trackByMacroMetricEntry"
-                      class="calendar-day-metric-card__row">
-                      <span class="calendar-day-metric-card__label">{{ entry.label }}</span>
-                      <span class="calendar-day-metric-card__value">
-                        {{ entry.value }}
-                        <span *ngIf="entry.unit" class="calendar-day-metric-card__unit">{{ entry.unit }}</span>
-                      </span>
+                      *ngFor="let macro of projectedMacroHighlights; trackBy: trackByWeekMacro"
+                      class="calendar-week-macro"
+                      [attr.data-tone]="macro.tone">
+                      <span class="calendar-week-macro__label">{{ macro.label }}</span>
+                      <div class="calendar-week-macro__value-row">
+                        <span class="calendar-week-macro__value">{{ macro.value }}</span>
+                        <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
+                      </div>
                     </div>
                   </div>
-                </article>
-              </ng-container>
+                </ng-container>
+
+                <div class="calendar-day-summary__metrics">
+                  <ng-container *ngIf="getDayMetricEntries(projectedTotals.targets) as projectedTargetEntries">
+                    <article *ngIf="projectedTargetEntries.length > 0" class="calendar-day-metric-card">
+                      <p class="calendar-day-metric-card__title">Cibles</p>
+
+                      <div class="calendar-day-metric-card__rows">
+                        <div
+                          *ngFor="let entry of projectedTargetEntries; trackBy: trackByMacroMetricEntry"
+                          class="calendar-day-metric-card__row">
+                          <span class="calendar-day-metric-card__label">{{ entry.label }}</span>
+                          <span class="calendar-day-metric-card__value">
+                            {{ entry.value }}
+                            <span *ngIf="entry.unit" class="calendar-day-metric-card__unit">{{ entry.unit }}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  </ng-container>
+
+                  <ng-container *ngIf="getDayMetricEntries(projectedTotals.deltaToTargets) as projectedDeltaEntries">
+                    <article *ngIf="projectedDeltaEntries.length > 0" class="calendar-day-metric-card">
+                      <p class="calendar-day-metric-card__title">Delta</p>
+
+                      <div class="calendar-day-metric-card__rows">
+                        <div
+                          *ngFor="let entry of projectedDeltaEntries; trackBy: trackByMacroMetricEntry"
+                          class="calendar-day-metric-card__row">
+                          <span class="calendar-day-metric-card__label">{{ entry.label }}</span>
+                          <span class="calendar-day-metric-card__value">
+                            {{ entry.value }}
+                            <span *ngIf="entry.unit" class="calendar-day-metric-card__unit">{{ entry.unit }}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  </ng-container>
+                </div>
+              </section>
             </div>
           </section>
         </div>

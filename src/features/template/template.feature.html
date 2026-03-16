@@ -1,1 +1,400 @@
-<p>template works!</p>
+<section class="mx-auto w-full max-w-[1700px] px-3 py-6 sm:px-4 lg:px-5 xl:px-6">
+  <mat-card class="overflow-hidden rounded-2xl">
+    <div class="bg-slate-900 px-6 py-5 text-white">
+      <h2 class="text-xl font-semibold">Templates</h2>
+      <p class="mt-1 text-sm text-slate-300">
+        Journees previsionnelles, comparaison day-set et verification stock multi-inventaires.
+      </p>
+    </div>
+
+    <div class="space-y-6 p-4 sm:p-6">
+      <mat-card appearance="outlined" class="rounded-xl">
+        <mat-card-content class="grid gap-4 pt-4 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-sm font-semibold text-slate-900">Templates existants</p>
+              <button mat-stroked-button type="button" (click)="startCreateTemplate()">
+                Nouveau
+              </button>
+            </div>
+
+            <div class="space-y-2">
+              <button
+                *ngFor="let template of templates"
+                mat-stroked-button
+                type="button"
+                class="template-feature__template-button"
+                [class.template-feature__template-button--active]="template.id === selectedTemplateId"
+                (click)="selectTemplate(template.id)">
+                <span class="block text-left text-sm font-medium">{{ template.title }}</span>
+                <span class="block text-left text-xs text-slate-500">{{ template.items.length }} ligne(s)</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex flex-wrap items-center gap-2">
+              <button mat-raised-button color="primary" type="button" (click)="startCreateTemplate()">
+                Nouveau template
+              </button>
+
+              <button
+                *ngIf="selectedTemplateId !== null"
+                mat-stroked-button
+                type="button"
+                (click)="openSelectedTemplateEditor()">
+                Modifier le template
+              </button>
+            </div>
+
+            <mat-form-field *ngIf="selectedTemplateId !== null" appearance="fill" class="w-full md:w-96">
+              <mat-label>Comparer au day-set</mat-label>
+              <mat-select [(ngModel)]="compareDaySetId" (selectionChange)="onCompareDaySetChange()">
+                <mat-option [value]="null">Aucune comparaison</mat-option>
+                <mat-option *ngFor="let daySet of daySetOptions" [value]="daySet.id">
+                  {{ daySet.title }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <p *ngIf="selectedTemplate as template" class="text-sm text-slate-600">
+              Template selectionne: <span class="font-medium text-slate-900">{{ template.title }}</span>
+            </p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <div *ngIf="selectedTemplate as template" class="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <mat-card appearance="outlined" class="rounded-xl">
+          <mat-card-header>
+            <mat-card-title>Lignes du template</mat-card-title>
+            <mat-card-subtitle>{{ template.title }}</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content class="pt-2">
+            <div *ngIf="template.items.length > 0; else noTemplateItems" class="overflow-x-auto rounded-xl border border-slate-200">
+              <table class="min-w-full text-sm">
+                <thead class="bg-slate-50 text-left text-slate-700">
+                  <tr>
+                    <th class="px-3 py-2">Produit</th>
+                    <th class="px-3 py-2">Qty</th>
+                    <th class="px-3 py-2">Slot</th>
+                    <th class="px-3 py-2">Stock global</th>
+                    <th class="px-3 py-2">Detail inventaires</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of template.items" class="border-t border-slate-100 align-top">
+                    <td class="px-3 py-2">
+                      <p class="font-medium text-slate-900">{{ item.productName }}</p>
+                      <p class="text-xs text-slate-500">#{{ item.productId }}</p>
+                    </td>
+                    <td class="px-3 py-2">
+                      {{ formatNutritionAmount(item.qty) }}
+                      <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
+                    </td>
+                    <td class="px-3 py-2">{{ resolveTemplateItemSlotLabel(item) }}</td>
+                    <td class="px-3 py-2">
+                      <span
+                        class="rounded-full px-2 py-1 text-xs font-medium"
+                        [class.bg-emerald-100]="item.stockAvailability.enoughStock"
+                        [class.text-emerald-700]="item.stockAvailability.enoughStock"
+                        [class.bg-red-100]="!item.stockAvailability.enoughStock"
+                        [class.text-red-700]="!item.stockAvailability.enoughStock">
+                        {{ item.stockAvailability.enoughStock ? 'Stock OK' : 'Stock insuffisant' }}
+                      </span>
+                      <p class="mt-2 text-xs text-slate-600">
+                        {{ formatNutritionAmount(item.stockAvailability.totalAvailableNormalized) }}
+                        dispo /
+                        {{ formatNutritionAmount(item.stockAvailability.requestedQtyNormalized) }}
+                        demande
+                      </p>
+                    </td>
+                    <td class="px-3 py-2">
+                      <details>
+                        <summary class="cursor-pointer text-xs font-medium text-slate-700">Voir le detail</summary>
+                        <div class="mt-2 space-y-1">
+                          <p *ngFor="let stock of item.stockByInventory" class="text-xs text-slate-600">
+                            {{ stock.inventoryName }}:
+                            {{ formatNutritionAmount(stock.qtyAvailableNormalized) }}
+                            <span class="font-medium" [class.text-emerald-700]="stock.enoughStock" [class.text-red-700]="!stock.enoughStock">
+                              ({{ stock.enoughStock ? 'OK' : 'KO' }})
+                            </span>
+                          </p>
+                        </div>
+                      </details>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <div class="space-y-6">
+          <mat-card appearance="outlined" class="rounded-xl">
+            <mat-card-content class="space-y-3 p-4">
+              <p class="text-sm font-semibold text-slate-900">Comparaison nutritionnelle</p>
+              <p class="text-xs text-slate-500">
+                {{ getTargetSourceText(template.totalsMacros?.targetSource ?? 'none') }}
+              </p>
+
+              <div *ngIf="template.comparisonDaySet as daySet" class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p class="text-sm font-semibold text-slate-900">{{ daySet.title }}</p>
+                <p class="text-xs text-slate-500">Day-set de reference pour la comparaison.</p>
+              </div>
+
+              <div *ngIf="template.totalsMacros as totals" class="grid gap-3 md:grid-cols-3">
+                <div class="rounded-lg border border-slate-200 p-3">
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Template total</p>
+                  <p *ngFor="let entry of totals.dayTotal | keyvalue" class="text-sm text-slate-700">
+                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                    {{ formatMacroValue(entry.value) }}
+                  </p>
+                </div>
+
+                <div class="rounded-lg border border-slate-200 p-3">
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Targets</p>
+                  <p *ngIf="!hasEntries(totals.targets)" class="text-sm text-slate-500">Aucune cible.</p>
+                  <p *ngFor="let entry of totals.targets | keyvalue" class="text-sm text-slate-700">
+                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                    {{ formatNutritionAmount(entry.value) }}
+                  </p>
+                </div>
+
+                <div class="rounded-lg border border-slate-200 p-3">
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Delta</p>
+                  <p *ngIf="!hasEntries(totals.deltaToTargets)" class="text-sm text-slate-500">Aucun delta.</p>
+                  <p *ngFor="let entry of totals.deltaToTargets | keyvalue" class="text-sm text-slate-700">
+                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                    {{ formatMacroValue(entry.value) }}
+                  </p>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <ng-container *ngIf="template.totalsMacros as totals">
+            <mat-card *ngIf="totals.bySlot.length > 0" appearance="outlined" class="rounded-xl">
+              <mat-card-content class="space-y-3 p-4">
+                <p class="text-sm font-semibold text-slate-900">Par slot</p>
+                <div
+                  *ngFor="let slotTotals of totals.bySlot"
+                  class="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p class="text-sm font-medium text-slate-900">
+                    {{ slotTotals.slot.title }} ({{ slotTotals.slot.slotKey }})
+                  </p>
+                  <p class="text-xs text-slate-600">
+                    {{ slotTotals.slot.startTime ?? '--' }} - {{ slotTotals.slot.endTime ?? '--' }}
+                  </p>
+                  <div *ngIf="getSlotMacroEntries(slotTotals).length > 0" class="text-sm text-slate-700">
+                    <p class="font-medium text-slate-900">Consomme</p>
+                    <p *ngFor="let entry of getSlotMacroEntries(slotTotals)">
+                      {{ entry.key }}: {{ formatMacroValue(entry.value) }}
+                    </p>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </ng-container>
+        </div>
+      </div>
+
+      <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        {{ lastError | json }}
+      </p>
+    </div>
+
+    <mat-progress-bar
+      *ngIf="loadingTemplates || loadingProducts || loadingDaySets || loadingSlots || savingTemplate || savingItem"
+      mode="indeterminate">
+    </mat-progress-bar>
+  </mat-card>
+</section>
+
+<ng-template #templateEditorDialog>
+  <div class="template-form-dialog">
+    <div class="template-form-dialog__header">
+      <div>
+        <p class="template-form-dialog__eyebrow">Template</p>
+        <h3 class="template-form-dialog__title">{{ formDialogTitle }}</h3>
+        <p class="template-form-dialog__subtitle">{{ formDialogSubtitle }}</p>
+      </div>
+
+      <button mat-stroked-button type="button" (click)="closeEditorDialog()" [disabled]="savingTemplate || savingItem">
+        Fermer
+      </button>
+    </div>
+
+    <mat-dialog-content class="template-form-dialog__content space-y-6">
+      <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+        <mat-form-field appearance="fill" class="w-full">
+          <mat-label>Titre du template</mat-label>
+          <input matInput [(ngModel)]="draftTitle" placeholder="Jour training" />
+        </mat-form-field>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          (click)="saveTemplate()"
+          [disabled]="!canSaveTemplate">
+          {{ editingTemplateId !== null ? 'Sauvegarder' : 'Creer' }}
+        </button>
+
+        <button
+          *ngIf="editingTemplateId !== null"
+          mat-stroked-button
+          color="warn"
+          type="button"
+          (click)="removeTemplate(editingTemplateId)">
+          Supprimer
+        </button>
+      </div>
+
+      <p class="text-sm text-slate-600">
+        Le template reste neutre vis-a-vis du stock. Les quantites restent previsionnelles tant qu'elles ne sont pas converties dans un input day.
+      </p>
+
+      <ng-container *ngIf="editedTemplate as template; else createTemplateHint">
+        <mat-card appearance="outlined" class="rounded-xl">
+          <mat-card-header>
+            <mat-card-title>{{ itemDraft.id !== null ? 'Modifier une ligne' : 'Ajouter une ligne' }}</mat-card-title>
+            <mat-card-subtitle>{{ template.title }}</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content class="space-y-4 pt-2">
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Produit</mat-label>
+                <mat-select [(ngModel)]="itemDraft.productId">
+                  <mat-option [value]="null">Selectionner</mat-option>
+                  <mat-option *ngFor="let product of productOptions" [value]="product.id">
+                    {{ product.name }} (#{{ product.id }})
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Quantite</mat-label>
+                <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="itemDraft.qty" />
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Unite</mat-label>
+                <mat-select [(ngModel)]="itemDraft.qtyUnit">
+                  <mat-option [value]="null">Auto</mat-option>
+                  <mat-option *ngFor="let unit of qtyUnitOptions" [value]="unit">
+                    {{ unit }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Slot explicite</mat-label>
+                <mat-select [(ngModel)]="itemDraft.slotId">
+                  <mat-option [value]="null">Sans slot</mat-option>
+                  <mat-option *ngFor="let slot of slotOptions" [value]="slot.id">
+                    {{ slot.sortOrder }}. {{ slot.title }} ({{ slot.key }})
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>slotKey libre</mat-label>
+                <input matInput [(ngModel)]="itemDraft.slotKey" placeholder="ex: snack" />
+              </mat-form-field>
+            </div>
+
+            <p *ngIf="itemError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {{ itemError }}
+            </p>
+
+            <div class="flex flex-wrap justify-end gap-2">
+              <button mat-stroked-button type="button" (click)="resetItemDraft()">
+                Reinitialiser
+              </button>
+              <button mat-raised-button color="primary" type="button" (click)="saveItem()" [disabled]="!canSaveItem">
+                {{ itemDraft.id !== null ? 'Mettre a jour' : 'Ajouter' }}
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card appearance="outlined" class="rounded-xl">
+          <mat-card-header>
+            <mat-card-title>Lignes du template</mat-card-title>
+            <mat-card-subtitle>Edition dans la modale</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content class="pt-2">
+            <div *ngIf="template.items.length > 0; else noModalTemplateItems" class="overflow-x-auto rounded-xl border border-slate-200">
+              <table class="min-w-full text-sm">
+                <thead class="bg-slate-50 text-left text-slate-700">
+                  <tr>
+                    <th class="px-3 py-2">Produit</th>
+                    <th class="px-3 py-2">Qty</th>
+                    <th class="px-3 py-2">Slot</th>
+                    <th class="px-3 py-2">Stock global</th>
+                    <th class="px-3 py-2 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of template.items" class="border-t border-slate-100 align-top">
+                    <td class="px-3 py-2">
+                      <p class="font-medium text-slate-900">{{ item.productName }}</p>
+                      <p class="text-xs text-slate-500">#{{ item.productId }}</p>
+                    </td>
+                    <td class="px-3 py-2">
+                      {{ formatNutritionAmount(item.qty) }}
+                      <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
+                    </td>
+                    <td class="px-3 py-2">{{ resolveTemplateItemSlotLabel(item) }}</td>
+                    <td class="px-3 py-2">
+                      <span
+                        class="rounded-full px-2 py-1 text-xs font-medium"
+                        [class.bg-emerald-100]="item.stockAvailability.enoughStock"
+                        [class.text-emerald-700]="item.stockAvailability.enoughStock"
+                        [class.bg-red-100]="!item.stockAvailability.enoughStock"
+                        [class.text-red-700]="!item.stockAvailability.enoughStock">
+                        {{ item.stockAvailability.enoughStock ? 'Stock OK' : 'Stock insuffisant' }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-2">
+                      <div class="flex justify-end gap-2">
+                        <button mat-stroked-button type="button" (click)="editItem(item)">
+                          Modifier
+                        </button>
+                        <button mat-stroked-button color="warn" type="button" (click)="removeItem(item.id)">
+                          Retirer
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </ng-container>
+
+      <ng-template #createTemplateHint>
+        <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+          Commence par creer le template pour pouvoir ajouter ses lignes.
+        </div>
+      </ng-template>
+    </mat-dialog-content>
+  </div>
+</ng-template>
+
+<ng-template #noTemplateItems>
+  <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+    Aucune ligne dans ce template.
+  </p>
+</ng-template>
+
+<ng-template #noModalTemplateItems>
+  <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+    Aucune ligne dans ce template.
+  </p>
+</ng-template>

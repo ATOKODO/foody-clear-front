@@ -71,6 +71,25 @@ export class InputDayService {
     return this.http.patch(`${this.baseUrl}/input-days/${dateLocal}/items/${itemId}`, dto);
   }
 
+  setTemplate(dateLocal: string, templateId: number | null): Observable<InputDayResponse> {
+    return this.http.put<InputDayResponse>(`${this.baseUrl}/input-days/${dateLocal}/template`, {
+      templateId,
+    });
+  }
+
+  convertTemplateItem(
+    dateLocal: string,
+    templateItemId: number,
+    inventoryId: number,
+  ): Observable<InputDayResponse> {
+    return this.http.post<InputDayResponse>(
+      `${this.baseUrl}/input-days/${dateLocal}/template-items/${templateItemId}/convert`,
+      {
+        inventoryId,
+      },
+    );
+  }
+
   removeItem(dateLocal: string, itemId: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/input-days/${dateLocal}/items/${itemId}`);
   }

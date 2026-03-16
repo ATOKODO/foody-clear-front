@@ -18,6 +18,8 @@ import { Slot } from '../../interfaces/slot.interface';
 import { DaySetService } from '../../services/day-set-service';
 import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
 import { SlotService } from '../../services/slot-service';
+import { TemplateSummary } from '../../interfaces/template.interface';
+import { TemplateService } from '../../services/template-service';
 
 @Component({
   selector: 'app-day-set-feature',
@@ -43,16 +45,19 @@ export class DaySetFeature implements OnInit {
   loadingMeta = false;
   lastMetaError: unknown = null;
   nutritionKeys: NutritionKeyMeta[] = [];
+  templates: TemplateSummary[] = [];
 
   constructor(
     private readonly daySetSrv: DaySetService,
     private readonly metaSrv: MetaService,
     private readonly slotSrv: SlotService,
+    private readonly templateSrv: TemplateService,
   ) {}
 
   ngOnInit(): void {
     this.loadNutritionKeys();
     this.loadSlots();
+    this.loadTemplates();
     this.loadDaySets();
   }
 
@@ -61,6 +66,7 @@ export class DaySetFeature implements OnInit {
       id: String(daySet.id),
       title: daySet.title,
       nutritionValues: daySet.nutritionValues ?? [],
+      templateTitle: daySet.template?.title ?? null,
     }));
   }
 
@@ -100,6 +106,7 @@ export class DaySetFeature implements OnInit {
       title: daySet.title,
       nutritionValues: this.getEditableNutritionValues(daySet),
       slotIds: this.resolveDaySetSlotIds(daySet),
+      templateId: daySet.template?.id ?? daySet.templateId ?? null,
     };
     this.formVisible = true;
   }
@@ -237,7 +244,24 @@ export class DaySetFeature implements OnInit {
       title: value.title,
       nutritionValues: this.normalizeNutritionValues(value.nutritionValues),
       slotIds: this.normalizeSlotIds(value.slotIds),
+      templateId: value.templateId,
     };
+  }
+
+  private loadTemplates(): void {
+    this.templateSrv.findAll().subscribe({
+      next: (response) => {
+        this.templates = response
+          .map((template) => ({
+            id: template.id,
+            title: template.title,
+          }))
+          .sort((left, right) => left.title.localeCompare(right.title, 'fr'));
+      },
+      error: () => {
+        this.templates = [];
+      },
+    });
   }
 
   private normalizeNutritionValues(values: CycleNutritionValue[]): CycleNutritionValue[] {

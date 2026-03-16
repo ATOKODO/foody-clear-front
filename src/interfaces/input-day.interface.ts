@@ -74,7 +74,43 @@ export interface InputDayItemSummary {
   occurredAt: string | null;
   slotId: number | null;
   slotKey: string | null;
+  templateItemId?: number | null;
   nutritionValue: InputDayNutritionValue;
+}
+
+export interface InputDayTemplateStockByInventory {
+  inventoryId: number;
+  inventoryName: string;
+  qtyAvailableNormalized: number;
+  enoughStock: boolean;
+}
+
+export interface InputDayTemplateItemSummary {
+  id: number;
+  productId: number;
+  productName: string;
+  qty: number;
+  qtyUnit: ProductQuantityInputUnit | null;
+  qtyNormalized: number;
+  slotId: number | null;
+  slotKey: string | null;
+  status: 'pending' | 'converted';
+  convertedItemId: number | null;
+  stockAvailability: {
+    enoughStock: boolean;
+    totalAvailableNormalized: number;
+    requestedQtyNormalized: number;
+  };
+  stockByInventory: InputDayTemplateStockByInventory[];
+  nutritionValue: InputDayNutritionValue;
+}
+
+export interface InputDayTemplateAssociationSummary {
+  source: 'manual' | 'daySet';
+  template: {
+    id: number;
+    title: string;
+  };
 }
 
 export interface InputDayDaySetSlotSummary {
@@ -129,8 +165,11 @@ export interface InputDayResponse {
   timezone: string;
   assignment: InputDayAssignmentSummary | null;
   daySet: InputDayDaySetSummary | null;
+  templateAssociation?: InputDayTemplateAssociationSummary | null;
+  templateItems?: InputDayTemplateItemSummary[];
   items: InputDayItemSummary[];
   totalsMacros: InputDayTotalsMacrosSummary | null;
+  projectedTotalsMacros?: InputDayTotalsMacrosSummary | null;
   itemsBySlot?: InputDayItemsBySlotEntry[];
   slots?: InputDayDaySetSlotSummary[];
 }

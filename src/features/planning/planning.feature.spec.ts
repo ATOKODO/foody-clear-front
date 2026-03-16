@@ -8,6 +8,7 @@ import { CycleAssignementService } from '../../services/cycle-assignement-servic
 import { InputDayService } from '../../services/input-day-service';
 import { ProductService } from '../../services/product-service';
 import { InventoryService } from '../../services/inventory-service';
+import { TemplateService } from '../../services/template-service';
 import { InputDayResponse } from '../../interfaces/input-day.interface';
 import { InputDayFeature } from '../input-day/input-day.feature';
 
@@ -80,6 +81,8 @@ describe('PlanningFeature', () => {
     createItems: jasmine.createSpy('createItems').and.returnValue(of([])),
     updateItem: jasmine.createSpy('updateItem').and.returnValue(of(null)),
     removeItem: jasmine.createSpy('removeItem').and.returnValue(of(void 0)),
+    setTemplate: jasmine.createSpy('setTemplate').and.returnValue(of(dayResponse)),
+    convertTemplateItem: jasmine.createSpy('convertTemplateItem').and.returnValue(of(dayResponse)),
   };
 
   const productServiceMock = {
@@ -95,6 +98,12 @@ describe('PlanningFeature', () => {
     findProducts: jasmine.createSpy('findProducts').and.returnValue(of([])),
   };
 
+  const templateServiceMock = {
+    baseUrl: 'http://localhost:3000',
+    setBaseUrl: jasmine.createSpy('setBaseUrl'),
+    findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PlanningFeature],
@@ -104,6 +113,7 @@ describe('PlanningFeature', () => {
         { provide: InputDayService, useValue: inputDayServiceMock },
         { provide: ProductService, useValue: productServiceMock },
         { provide: InventoryService, useValue: inventoryServiceMock },
+        { provide: TemplateService, useValue: templateServiceMock },
       ],
     }).compileComponents();
 

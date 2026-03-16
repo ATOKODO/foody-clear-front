@@ -6,6 +6,7 @@ import { InputDayResponse } from '../../interfaces/input-day.interface';
 import { InputDayService } from '../../services/input-day-service';
 import { ProductService } from '../../services/product-service';
 import { InventoryService } from '../../services/inventory-service';
+import { TemplateService } from '../../services/template-service';
 
 describe('InputDayFeature', () => {
   let component: InputDayFeature;
@@ -60,6 +61,8 @@ describe('InputDayFeature', () => {
     createItems: jasmine.createSpy('createItems').and.returnValue(of([])),
     updateItem: jasmine.createSpy('updateItem').and.returnValue(of(null)),
     removeItem: jasmine.createSpy('removeItem').and.returnValue(of(void 0)),
+    setTemplate: jasmine.createSpy('setTemplate').and.returnValue(of(dayResponse)),
+    convertTemplateItem: jasmine.createSpy('convertTemplateItem').and.returnValue(of(dayResponse)),
   };
 
   const productServiceMock = {
@@ -128,6 +131,12 @@ describe('InputDayFeature', () => {
     }),
   };
 
+  const templateServiceMock = {
+    baseUrl: 'http://localhost:3000',
+    setBaseUrl: jasmine.createSpy('setBaseUrl'),
+    findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [InputDayFeature],
@@ -135,6 +144,7 @@ describe('InputDayFeature', () => {
         { provide: InputDayService, useValue: inputDayServiceMock },
         { provide: ProductService, useValue: productServiceMock },
         { provide: InventoryService, useValue: inventoryServiceMock },
+        { provide: TemplateService, useValue: templateServiceMock },
       ],
     }).compileComponents();
 

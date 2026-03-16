@@ -20,6 +20,7 @@ export interface DaySetListItem {
   id: string;
   title: string;
   nutritionValues?: CycleNutritionValue[];
+  templateTitle?: string | null;
   protein?: number;
   carbs?: number;
   fat?: number;

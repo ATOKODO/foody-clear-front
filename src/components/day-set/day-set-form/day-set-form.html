@@ -10,6 +10,16 @@
       <input matInput type="text" formControlName="title" placeholder="Lundi" />
     </mat-form-field>
 
+    <mat-form-field appearance="fill" class="dsf-field w-full">
+      <mat-label>Template associe</mat-label>
+      <mat-select [(ngModel)]="selectedTemplateId" [ngModelOptions]="{ standalone: true }">
+        <mat-option [value]="null">Aucun template</mat-option>
+        <mat-option *ngFor="let template of templates" [value]="template.id">
+          {{ template.title }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
     <div class="space-y-3">
       <div class="flex items-center justify-between gap-3">
         <h3 class="text-base font-semibold text-slate-900">Nutrition values</h3>

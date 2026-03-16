@@ -55,6 +55,10 @@ export class App {
     this.router.navigate(['/slot']);
   }
 
+  goToTemplate() {
+    this.router.navigate(['/template']);
+  }
+
   goToCalendar() {
     this.router.navigate(['/calendar']);
   }

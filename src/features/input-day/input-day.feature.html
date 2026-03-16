@@ -509,6 +509,153 @@
       </mat-card>
 
       <mat-card appearance="outlined" class="rounded-xl">
+        <mat-card-content class="space-y-4 p-4">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-900">Template associe</p>
+              <p class="text-sm text-slate-600">{{ activeTemplateLabel }}</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
+              <mat-form-field appearance="fill" class="w-full min-w-[16rem] sm:w-72">
+                <mat-label>Override template</mat-label>
+                <mat-select [(ngModel)]="manualTemplateSelectionId" [ngModelOptions]="{ standalone: true }">
+                  <mat-option [value]="null">Aucun override</mat-option>
+                  <mat-option *ngFor="let template of templates" [value]="template.id">
+                    {{ template.title }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <button mat-raised-button color="primary" type="button" (click)="applyManualTemplateSelection()">
+                Appliquer
+              </button>
+
+              <button
+                *ngIf="hasManualTemplateOverride"
+                mat-stroked-button
+                type="button"
+                (click)="clearManualTemplateOverride()">
+                Retirer l override
+              </button>
+            </div>
+          </div>
+
+          <p *ngIf="templateError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {{ templateError }}
+          </p>
+
+          <p *ngIf="templateActionError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {{ templateActionError }}
+          </p>
+
+          <div *ngIf="templateItems.length > 0; else noTemplateItems" class="overflow-x-auto rounded-lg border border-slate-200">
+            <table class="min-w-full text-sm">
+              <thead class="bg-slate-50 text-left text-slate-700">
+                <tr>
+                  <th class="px-3 py-2">Produit</th>
+                  <th class="px-3 py-2">Qty</th>
+                  <th class="px-3 py-2">Slot</th>
+                  <th class="px-3 py-2">Statut</th>
+                  <th class="px-3 py-2">Stock global</th>
+                  <th class="px-3 py-2">Inventory actif</th>
+                  <th class="px-3 py-2">Inventaires</th>
+                  <th class="px-3 py-2 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of templateItems; trackBy: trackByTemplateItem" class="border-t border-slate-100 align-top">
+                  <td class="px-3 py-2">
+                    <p class="font-medium text-slate-900">{{ item.productName }}</p>
+                    <p class="text-xs text-slate-500">#{{ item.productId }}</p>
+                  </td>
+                  <td class="px-3 py-2">
+                    {{ formatNutritionAmount(item.qty) }}
+                    <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
+                  </td>
+                  <td class="px-3 py-2">
+                    {{ resolveTemplateItemSlotTitle(item) }}
+                    <span class="text-xs text-slate-500">({{ resolveTemplateItemSlotKey(item) }})</span>
+                  </td>
+                  <td class="px-3 py-2">
+                    <span
+                      class="rounded-full px-2 py-1 text-xs font-medium"
+                      [class.bg-sky-100]="item.status === 'pending'"
+                      [class.text-sky-700]="item.status === 'pending'"
+                      [class.bg-emerald-100]="item.status === 'converted'"
+                      [class.text-emerald-700]="item.status === 'converted'">
+                      {{ item.status === 'converted' ? 'Converti' : 'Previsionnel' }}
+                    </span>
+                  </td>
+                  <td class="px-3 py-2">
+                    <span
+                      class="rounded-full px-2 py-1 text-xs font-medium"
+                      [class.bg-emerald-100]="item.stockAvailability.enoughStock"
+                      [class.text-emerald-700]="item.stockAvailability.enoughStock"
+                      [class.bg-red-100]="!item.stockAvailability.enoughStock"
+                      [class.text-red-700]="!item.stockAvailability.enoughStock">
+                      {{ item.stockAvailability.enoughStock ? 'Stock OK' : 'Stock insuffisant' }}
+                    </span>
+                    <p class="mt-2 text-xs text-slate-600">
+                      {{ formatNutritionAmount(item.stockAvailability.totalAvailableNormalized) }} dispo /
+                      {{ formatNutritionAmount(item.stockAvailability.requestedQtyNormalized) }} demande
+                    </p>
+                  </td>
+                  <td class="px-3 py-2">
+                    <ng-container *ngIf="getSelectedInventoryTemplateStock(item) as inventoryStock; else noSelectedInventoryStock">
+                      <p class="text-sm text-slate-700">
+                        {{ formatNutritionAmount(inventoryStock.qtyAvailableNormalized) }}
+                      </p>
+                      <p
+                        class="text-xs font-medium"
+                        [class.text-emerald-700]="inventoryStock.enoughStock"
+                        [class.text-red-700]="!inventoryStock.enoughStock">
+                        {{ inventoryStock.enoughStock ? 'OK pour conversion' : 'KO pour conversion' }}
+                      </p>
+                    </ng-container>
+                    <ng-template #noSelectedInventoryStock>
+                      <p class="text-xs text-slate-500">Selectionne un inventory.</p>
+                    </ng-template>
+                  </td>
+                  <td class="px-3 py-2">
+                    <details>
+                      <summary class="cursor-pointer text-xs font-medium text-slate-700">Voir</summary>
+                      <div class="mt-2 space-y-1">
+                        <p *ngFor="let stock of item.stockByInventory" class="text-xs text-slate-600">
+                          {{ stock.inventoryName }}:
+                          {{ formatNutritionAmount(stock.qtyAvailableNormalized) }}
+                          <span
+                            class="font-medium"
+                            [class.text-emerald-700]="stock.enoughStock"
+                            [class.text-red-700]="!stock.enoughStock">
+                            ({{ stock.enoughStock ? 'OK' : 'KO' }})
+                          </span>
+                        </p>
+                      </div>
+                    </details>
+                  </td>
+                  <td class="px-3 py-2 text-right">
+                    <button
+                      mat-raised-button
+                      color="primary"
+                      type="button"
+                      (click)="convertTemplateItem(item)"
+                      [disabled]="!canConvertTemplateItem(item)">
+                      {{ item.status === 'converted' ? 'Deja converti' : 'Convertir' }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <ng-template #noTemplateItems>
+            <p class="text-sm text-slate-600">Aucune ligne template pour cette journee.</p>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-content class="space-y-3 p-4">
           <p class="text-sm font-semibold text-slate-900">Items du jour</p>
 
@@ -530,8 +677,15 @@
               <tbody>
                 <tr *ngFor="let item of response.items; trackBy: trackByInputDayItem" class="border-t border-slate-100 align-top">
                   <td class="px-3 py-2">
-                    {{ item.productName }}
-                    <span class="text-slate-500">(#{{ item.productId }})</span>
+                    <p class="font-medium text-slate-900">
+                      {{ item.productName }}
+                      <span class="text-slate-500">(#{{ item.productId }})</span>
+                    </p>
+                    <span
+                      *ngIf="item.templateItemId"
+                      class="mt-1 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                      Effective depuis template
+                    </span>
                   </td>
                   <td class="px-3 py-2">{{ item.inventoryId ?? '-' }}</td>
                   <td class="px-3 py-2">
@@ -581,100 +735,101 @@
       </mat-card>
 
       <ng-container *ngIf="isStandaloneMode">
-        <mat-card *ngIf="response.totalsMacros as totals" appearance="outlined" class="rounded-xl">
-          <mat-card-content class="space-y-3 p-4">
-            <p class="text-sm font-semibold text-slate-900">Totals Macros</p>
-            <p class="text-xs text-slate-500">
-              {{ getTargetSourceText(totals.targetSource) }}
-            </p>
+        <div class="grid gap-4 xl:grid-cols-2">
+          <mat-card *ngIf="response.totalsMacros as totals" appearance="outlined" class="rounded-xl">
+            <mat-card-content class="space-y-3 p-4">
+              <p class="text-sm font-semibold text-slate-900">Effectif / day-set</p>
+              <p class="text-xs text-slate-500">
+                {{ getTargetSourceText(totals.targetSource) }}
+              </p>
 
-            <div class="grid gap-3 md:grid-cols-3">
-              <div class="rounded-lg border border-slate-200 p-3">
-                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Day Total</p>
-                <div class="space-y-1 text-sm text-slate-700">
-                  <p *ngFor="let entry of totals.dayTotal | keyvalue">
-                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                    {{ formatMacroValue(entry.value) }}
-                  </p>
+              <div class="grid gap-3 md:grid-cols-3">
+                <div class="rounded-lg border border-slate-200 p-3">
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Day Total</p>
+                  <div class="space-y-1 text-sm text-slate-700">
+                    <p *ngFor="let entry of totals.dayTotal | keyvalue">
+                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                      {{ formatMacroValue(entry.value) }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="rounded-lg border border-slate-200 p-3">
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Targets</p>
+                  <div *ngIf="hasEntries(totals.targets); else noDayTargets" class="space-y-1 text-sm text-slate-700">
+                    <p *ngFor="let entry of totals.targets | keyvalue">
+                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                      {{ formatNutritionAmount(entry.value) }}
+                    </p>
+                  </div>
+                  <ng-template #noDayTargets>
+                    <p class="text-sm text-slate-500">Aucune cible.</p>
+                  </ng-template>
+                </div>
+
+                <div class="rounded-lg border border-slate-200 p-3">
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Delta To Targets</p>
+                  <div *ngIf="hasEntries(totals.deltaToTargets); else noDayDelta" class="space-y-1 text-sm text-slate-700">
+                    <p *ngFor="let entry of totals.deltaToTargets | keyvalue">
+                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                      {{ formatMacroValue(entry.value) }}
+                    </p>
+                  </div>
+                  <ng-template #noDayDelta>
+                    <p class="text-sm text-slate-500">Aucun delta.</p>
+                  </ng-template>
                 </div>
               </div>
+            </mat-card-content>
+          </mat-card>
 
-              <div class="rounded-lg border border-slate-200 p-3">
-                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Targets</p>
-                <div *ngIf="hasEntries(totals.targets); else noDayTargets" class="space-y-1 text-sm text-slate-700">
-                  <p *ngFor="let entry of totals.targets | keyvalue">
-                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                    {{ formatNutritionAmount(entry.value) }}
-                  </p>
+          <mat-card *ngIf="response.projectedTotalsMacros as projectedTotals" appearance="outlined" class="rounded-xl">
+            <mat-card-content class="space-y-3 p-4">
+              <p class="text-sm font-semibold text-slate-900">Effectif + template / day-set</p>
+              <p class="text-xs text-slate-500">
+                {{ getTemplateTargetSourceText(projectedTotals) }}
+              </p>
+
+              <div class="grid gap-3 md:grid-cols-3">
+                <div class="rounded-lg border border-slate-200 p-3">
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Day Total</p>
+                  <div class="space-y-1 text-sm text-slate-700">
+                    <p *ngFor="let entry of projectedTotals.dayTotal | keyvalue">
+                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                      {{ formatMacroValue(entry.value) }}
+                    </p>
+                  </div>
                 </div>
-                <ng-template #noDayTargets>
-                  <p class="text-sm text-slate-500">Aucune cible.</p>
-                </ng-template>
+
+                <div class="rounded-lg border border-slate-200 p-3">
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Targets</p>
+                  <div *ngIf="hasEntries(projectedTotals.targets); else noProjectedDayTargets" class="space-y-1 text-sm text-slate-700">
+                    <p *ngFor="let entry of projectedTotals.targets | keyvalue">
+                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                      {{ formatNutritionAmount(entry.value) }}
+                    </p>
+                  </div>
+                  <ng-template #noProjectedDayTargets>
+                    <p class="text-sm text-slate-500">Aucune cible.</p>
+                  </ng-template>
+                </div>
+
+                <div class="rounded-lg border border-slate-200 p-3">
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Delta To Targets</p>
+                  <div *ngIf="hasEntries(projectedTotals.deltaToTargets); else noProjectedDayDelta" class="space-y-1 text-sm text-slate-700">
+                    <p *ngFor="let entry of projectedTotals.deltaToTargets | keyvalue">
+                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                      {{ formatMacroValue(entry.value) }}
+                    </p>
+                  </div>
+                  <ng-template #noProjectedDayDelta>
+                    <p class="text-sm text-slate-500">Aucun delta.</p>
+                  </ng-template>
+                </div>
               </div>
-
-              <div class="rounded-lg border border-slate-200 p-3">
-                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Delta To Targets</p>
-                <div *ngIf="hasEntries(totals.deltaToTargets); else noDayDelta" class="space-y-1 text-sm text-slate-700">
-                  <p *ngFor="let entry of totals.deltaToTargets | keyvalue">
-                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                    {{ formatMacroValue(entry.value) }}
-                  </p>
-                </div>
-                <ng-template #noDayDelta>
-                  <p class="text-sm text-slate-500">Aucun delta.</p>
-                </ng-template>
-              </div>
-            </div>
-
-            <div *ngIf="totals.bySlot.length > 0" class="space-y-2">
-              <p class="text-sm font-semibold text-slate-900">Par slot</p>
-              <div
-                *ngFor="let slotTotals of totals.bySlot"
-                class="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p class="text-sm font-medium text-slate-900">
-                  {{ slotTotals.slot.title }} ({{ slotTotals.slot.slotKey }})
-                </p>
-                <p class="text-xs text-slate-600">
-                  {{ formatTime(slotTotals.slot.startTime) }} - {{ formatTime(slotTotals.slot.endTime) }}
-                </p>
-                <div *ngIf="getSlotMacroEntries(slotTotals).length > 0; else noSlotTotalsValues" class="text-sm text-slate-700">
-                  <p class="font-medium text-slate-900">Consomme</p>
-                  <p *ngFor="let entry of getSlotMacroEntries(slotTotals)">
-                    {{ entry.key }}: {{ formatMacroValue(entry.value) }}
-                  </p>
-                </div>
-                <ng-template #noSlotTotalsValues>
-                  <p class="text-sm text-slate-500">Aucun total calcule pour ce slot.</p>
-                </ng-template>
-                <div *ngIf="hasEntries(slotTotals.targets); else noSlotTargetsTotals" class="text-sm text-slate-700">
-                  <p class="font-medium text-slate-900">Cibles</p>
-                  <p *ngFor="let target of slotTotals.targets | keyvalue">
-                    {{ target.key }} {{ formatNutritionAmount(target.value) }}
-                  </p>
-                </div>
-                <ng-template #noSlotTargetsTotals>
-                  <p class="text-sm text-slate-500">Aucune cible.</p>
-                </ng-template>
-                <div *ngIf="hasEntries(slotTotals.deltaToTargets); else noSlotDeltaTotals" class="text-sm text-slate-700">
-                  <p class="font-medium text-slate-900">Delta</p>
-                  <p *ngFor="let delta of slotTotals.deltaToTargets | keyvalue">
-                    {{ delta.key }} {{ formatMacroValue(delta.value) }}
-                  </p>
-                </div>
-                <ng-template #noSlotDeltaTotals>
-                  <p class="text-sm text-slate-500">Aucun delta.</p>
-                </ng-template>
-                <p *ngIf="slotTotals.incompleteNutritionKeys.length > 0" class="text-xs text-amber-700">
-                  Incomplet: {{ slotTotals.incompleteNutritionKeys.join(', ') }}
-                </p>
-              </div>
-            </div>
-
-            <p *ngIf="totals.incompleteNutritionKeys.length > 0" class="text-xs text-amber-700">
-              Cles incompletes (jour): {{ totals.incompleteNutritionKeys.join(', ') }}
-            </p>
-          </mat-card-content>
-        </mat-card>
+            </mat-card-content>
+          </mat-card>
+        </div>
       </ng-container>
     </div>
 

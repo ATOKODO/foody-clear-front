@@ -36,8 +36,10 @@ import {
   InputDayItemSummary,
   InputDayMacroValue,
   InputDayResponse,
+  InputDayTemplateItemSummary,
   InputDayTargetSource,
   InputDayTotalsMacrosBySlotEntry,
+  InputDayTotalsMacrosSummary,
   ProductQuantityInputUnit,
   UpdateInputDayItemDto,
 } from '../../interfaces/input-day.interface';
@@ -47,6 +49,8 @@ import {
   ProductService,
 } from '../../services/product-service';
 import { InputDayService } from '../../services/input-day-service';
+import { TemplateService } from '../../services/template-service';
+import { TemplateSummary } from '../../interfaces/template.interface';
 
 type InputDayDisplayMode = 'standalone' | 'embedded';
 
@@ -136,9 +140,11 @@ export class InputDayFeature implements OnInit, OnChanges {
   loadingProducts = false;
   loadingInventories = false;
   loadingInventoryProducts = false;
+  loadingTemplates = false;
 
   products: ProductApiModel[] = [];
   inventories: Inventory[] = [];
+  templates: TemplateSummary[] = [];
   selectedInventoryProducts: InventoryProduct[] = [];
   productListItemsCache: ProductListItem[] = [];
   selectableProductListItemsCache: ProductListItem[] = [];
@@ -158,6 +164,9 @@ export class InputDayFeature implements OnInit, OnChanges {
   itemEditorError: string | null = null;
   initialDateError: string | null = null;
   editingSourceDateLocal: string | null = null;
+  templateError: string | null = null;
+  templateActionError: string | null = null;
+  manualTemplateSelectionId: number | null = null;
 
   private initialized = false;
   private _inputDayResponse: InputDayResponse | null = null;
@@ -177,6 +186,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     private readonly inputDaySrv: InputDayService,
     private readonly productSrv: ProductService,
     private readonly inventorySrv: InventoryService,
+    private readonly templateSrv: TemplateService,
   ) {
     this.form = this.fb.group({
       dateLocal: this.fb.control<Date | string | null>(null, {
@@ -207,6 +217,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       this.loadProducts();
     }
     this.loadInventories();
+    this.loadTemplates();
     this.applyInitialDateInput();
     this.syncPendingEditorContextFromInputs();
     this.prefillItemEditorForCreate(this.pendingInitialOccurredAt);
@@ -232,6 +243,7 @@ export class InputDayFeature implements OnInit, OnChanges {
         this.loadProducts();
       }
       this.loadInventories();
+      this.loadTemplates();
       if (this.hasValidSelectedDate) {
         this.loadDay();
       }
@@ -301,6 +313,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   set inputDayResponse(value: InputDayResponse | null) {
     this._inputDayResponse = value;
     this.refreshAvailableSlots();
+    this.syncManualTemplateSelectionFromResponse();
   }
 
   get selectableProductListItems(): ProductListItem[] {
@@ -328,6 +341,25 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   get availableSlots(): InputDayAvailableSlot[] {
     return this.availableSlotsCache;
+  }
+
+  get templateItems(): InputDayTemplateItemSummary[] {
+    return this.inputDayResponse?.templateItems ?? [];
+  }
+
+  get activeTemplateLabel(): string {
+    const templateAssociation = this.inputDayResponse?.templateAssociation;
+    if (!templateAssociation) {
+      return 'Aucun template actif';
+    }
+
+    const sourceLabel =
+      templateAssociation.source === 'manual' ? 'override manuel' : 'heritage day-set';
+    return `${templateAssociation.template.title} (${sourceLabel})`;
+  }
+
+  get hasManualTemplateOverride(): boolean {
+    return this.inputDayResponse?.templateAssociation?.source === 'manual';
   }
 
   get selectedInventoryLabel(): string {
@@ -456,6 +488,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.applyServicesBaseUrl();
     this.loadProducts();
     this.loadInventories();
+    this.loadTemplates();
     if (this.hasValidSelectedDate) {
       this.loadDay();
     }
@@ -697,6 +730,66 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.onProductsSelected(nextSelection);
   }
 
+  applyManualTemplateSelection(): void {
+    const dateLocal = this.requireDate();
+    if (!dateLocal) {
+      return;
+    }
+
+    this.loading = true;
+    this.templateActionError = null;
+
+    this.inputDaySrv.setTemplate(dateLocal, this.manualTemplateSelectionId).subscribe({
+      next: (response) => {
+        this.lastResponse = response;
+        this.lastError = null;
+        this.inputDayResponse = response;
+        this.loading = false;
+        this.itemsChanged.emit({ dateLocal });
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.templateActionError = 'Impossible de mettre a jour le template actif.';
+        this.loading = false;
+      },
+    });
+  }
+
+  clearManualTemplateOverride(): void {
+    this.manualTemplateSelectionId = null;
+    this.applyManualTemplateSelection();
+  }
+
+  convertTemplateItem(item: InputDayTemplateItemSummary): void {
+    const dateLocal = this.requireDate();
+    if (!dateLocal) {
+      return;
+    }
+
+    if (this.selectedInventoryId === null) {
+      this.templateActionError = 'Selectionne un inventory avant de convertir une ligne template.';
+      return;
+    }
+
+    this.loading = true;
+    this.templateActionError = null;
+
+    this.inputDaySrv.convertTemplateItem(dateLocal, item.id, this.selectedInventoryId).subscribe({
+      next: (response) => {
+        this.lastResponse = response;
+        this.lastError = null;
+        this.inputDayResponse = response;
+        this.loading = false;
+        this.itemsChanged.emit({ dateLocal });
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.templateActionError = 'Impossible de convertir cette ligne template.';
+        this.loading = false;
+      },
+    });
+  }
+
   fillDemo(): void {
     this.form.patchValue({
       dateLocal: new Date(2026, 1, 8),
@@ -743,6 +836,8 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.inputDayResponse = null;
     this.pendingInitialOccurredAt = null;
     this.pendingInitialEditingItemId = null;
+    this.manualTemplateSelectionId = null;
+    this.templateActionError = null;
     this.prefillItemEditorForCreate(null);
   }
 
@@ -797,6 +892,49 @@ export class InputDayFeature implements OnInit, OnChanges {
     return item.slotKey?.trim() || '-';
   }
 
+  resolveTemplateItemSlotTitle(item: InputDayTemplateItemSummary): string {
+    if (item.slotId !== null) {
+      const matchedSlot = this.availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
+      if (matchedSlot) {
+        return matchedSlot.title;
+      }
+    }
+
+    return item.slotKey?.trim() || 'Sans slot';
+  }
+
+  resolveTemplateItemSlotKey(item: InputDayTemplateItemSummary): string {
+    if (item.slotId !== null) {
+      const matchedSlot = this.availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
+      if (matchedSlot) {
+        return matchedSlot.slotKey;
+      }
+    }
+
+    return item.slotKey?.trim() || '-';
+  }
+
+  getSelectedInventoryTemplateStock(item: InputDayTemplateItemSummary): InputDayTemplateItemSummary['stockByInventory'][number] | null {
+    if (this.selectedInventoryId === null) {
+      return null;
+    }
+
+    return item.stockByInventory.find((entry) => entry.inventoryId === this.selectedInventoryId) ?? null;
+  }
+
+  canConvertTemplateItem(item: InputDayTemplateItemSummary): boolean {
+    if (item.status === 'converted' || this.loading || this.selectedInventoryId === null) {
+      return false;
+    }
+
+    const selectedInventoryStock = this.getSelectedInventoryTemplateStock(item);
+    return !!selectedInventoryStock?.enoughStock;
+  }
+
+  getTemplateTargetSourceText(totals: InputDayTotalsMacrosSummary | null | undefined): string {
+    return this.getTargetSourceText(totals?.targetSource ?? 'none');
+  }
+
   hasEntries(value: Record<string, unknown> | null | undefined): boolean {
     return !!value && Object.keys(value).length > 0;
   }
@@ -833,6 +971,10 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   trackByInputDayItem(_: number, item: InputDayItemSummary): number {
+    return item.id;
+  }
+
+  trackByTemplateItem(_: number, item: InputDayTemplateItemSummary): number {
     return item.id;
   }
 
@@ -880,6 +1022,29 @@ export class InputDayFeature implements OnInit, OnChanges {
     });
   }
 
+  private loadTemplates(): void {
+    this.loadingTemplates = true;
+    this.templateError = null;
+
+    this.templateSrv.findAll().subscribe({
+      next: (response) => {
+        this.templates = response
+          .map((template) => ({
+            id: template.id,
+            title: template.title,
+          }))
+          .sort((left, right) => left.title.localeCompare(right.title, 'fr'));
+        this.loadingTemplates = false;
+      },
+      error: (error) => {
+        this.templates = [];
+        this.templateError = 'Impossible de charger les templates.';
+        this.lastError = error;
+        this.loadingTemplates = false;
+      },
+    });
+  }
+
   private resolveConfiguredBaseUrl(): string {
     const inputBaseUrl = this.apiBaseUrl?.trim();
     if (inputBaseUrl) {
@@ -901,6 +1066,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.inputDaySrv.setBaseUrl(this.baseUrl);
     this.productSrv.setBaseUrl(this.baseUrl);
     this.inventorySrv.setBaseUrl(this.baseUrl);
+    this.templateSrv.setBaseUrl(this.baseUrl);
   }
 
   private syncPendingEditorContextFromInputs(): void {
@@ -1427,6 +1593,12 @@ export class InputDayFeature implements OnInit, OnChanges {
         startTime: slot.startTime ?? null,
         endTime: slot.endTime ?? null,
       }));
+  }
+
+  private syncManualTemplateSelectionFromResponse(): void {
+    const templateAssociation = this.inputDayResponse?.templateAssociation ?? null;
+    this.manualTemplateSelectionId =
+      templateAssociation?.source === 'manual' ? templateAssociation.template.id : null;
   }
 
   private extractProductsFromResponse(value: unknown): ProductApiModel[] {

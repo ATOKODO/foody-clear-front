@@ -17,6 +17,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { CycleNutritionValue, NutritionReference } from '../../../interfaces/cycle.interface';
 import { NutritionKeyMeta } from '../../../services/meta-service';
 import { SlotList, SlotListItem } from '../../slot/slot-list/slot-list';
+import { TemplateSummary } from '../../../interfaces/template.interface';
 
 export type DaySetFormMode = 'add' | 'edit';
 
@@ -24,6 +25,7 @@ export interface DaySetFormValue {
   title: string;
   nutritionValues: CycleNutritionValue[];
   slotIds: number[];
+  templateId: number | null;
 }
 
 @Component({
@@ -48,6 +50,7 @@ export class DaySetForm implements OnInit, OnChanges {
   @Input() daySet: Partial<DaySetFormValue> | null = null;
   @Input() nutritionKeys: NutritionKeyMeta[] = [];
   @Input() slots: SlotListItem[] = [];
+  @Input() templates: TemplateSummary[] = [];
 
   @Output() readonly submitted = new EventEmitter<{
     mode: DaySetFormMode;
@@ -57,6 +60,7 @@ export class DaySetForm implements OnInit, OnChanges {
 
   nutritionValues: CycleNutritionValue[] = [];
   selectedSlotIds: number[] = [];
+  selectedTemplateId: number | null = null;
   readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
     { label: 'Pour 100 g', value: 'PER_100G' },
     { label: 'Pour 100 ml', value: 'PER_100ML' },
@@ -100,6 +104,7 @@ export class DaySetForm implements OnInit, OnChanges {
         ...this.form.getRawValue(),
         nutritionValues,
         slotIds: [...this.selectedSlotIds],
+        templateId: this.selectedTemplateId,
       },
     });
   }
@@ -151,6 +156,7 @@ export class DaySetForm implements OnInit, OnChanges {
       title: '',
       nutritionValues: this.getDefaultNutritionValues(),
       slotIds: [],
+      templateId: null,
     };
 
     if (this.mode === 'edit' && this.daySet) {
@@ -158,6 +164,9 @@ export class DaySetForm implements OnInit, OnChanges {
         title: this.daySet.title ?? defaults.title,
       });
       this.selectedSlotIds = this.normalizeSlotIds(this.daySet.slotIds ?? defaults.slotIds);
+      this.selectedTemplateId = this.normalizeTemplateId(
+        this.daySet.templateId ?? defaults.templateId,
+      );
       this.nutritionValues =
         this.daySet.nutritionValues && this.daySet.nutritionValues.length > 0
           ? this.cloneNutritionValues(this.daySet.nutritionValues)
@@ -167,6 +176,7 @@ export class DaySetForm implements OnInit, OnChanges {
 
     this.form.reset({ title: defaults.title });
     this.selectedSlotIds = [...defaults.slotIds];
+    this.selectedTemplateId = defaults.templateId;
     this.nutritionValues = this.cloneNutritionValues(defaults.nutritionValues);
   }
 
@@ -239,5 +249,11 @@ export class DaySetForm implements OnInit, OnChanges {
 
   private normalizeSlotIds(slotIds: number[]): number[] {
     return Array.from(new Set(slotIds.filter((id) => Number.isInteger(id) && id > 0)));
+  }
+
+  private normalizeTemplateId(templateId: number | null | undefined): number | null {
+    return typeof templateId === 'number' && Number.isInteger(templateId) && templateId > 0
+      ? templateId
+      : null;
   }
 }
