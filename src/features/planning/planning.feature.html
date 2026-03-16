@@ -130,55 +130,90 @@
 <div class="modal-backdrop" *ngIf="activeModal" (click)="closeActiveModal()"></div>
 <div class="modal-shell" *ngIf="activeModal">
   <mat-card
-    class="modal-card"
+    class="modal-card planning-modal"
+    [class.planning-modal--actions]="activeModal === 'actions'"
+    [class.planning-modal--assignment]="activeModal === 'assignment'"
+    [class.planning-modal--items]="activeModal === 'items'"
     [class.modal-card--wide]="activeModal === 'items'"
     (click)="$event.stopPropagation()">
     <ng-container *ngIf="activeModal === 'actions'">
-      <mat-card-header>
-        <mat-card-title>Actions du jour</mat-card-title>
-        <mat-card-subtitle>
-          {{ selectedModalDateLocal }}
-          <ng-container *ngIf="selectedOccurredAt">
-            - {{ selectedOccurredAt | date: 'HH:mm' }}
-          </ng-container>
-        </mat-card-subtitle>
-      </mat-card-header>
+      <div class="planning-actions-modal">
+        <div class="planning-actions-modal__header">
+          <div class="planning-actions-modal__copy">
+            <p class="planning-actions-modal__eyebrow">Planning</p>
+            <h3 class="planning-actions-modal__title">Actions du jour</h3>
+            <p class="planning-actions-modal__description">
+              Choisis si tu veux modifier le cycle du jour ou ouvrir l'editeur d'entrees.
+            </p>
+          </div>
 
-      <mat-card-content class="space-y-4 pt-2">
-        <p class="text-sm text-slate-600">
-          Choisis si tu veux modifier le cycle du jour ou ouvrir l'editeur d'entrees.
-        </p>
+          <div class="planning-actions-modal__date-pill">
+            <span class="planning-actions-modal__date-label">Date</span>
+            <span class="planning-actions-modal__date-value">{{ selectedModalDateLocal }}</span>
+            <span *ngIf="selectedOccurredAt" class="planning-actions-modal__date-time">
+              {{ selectedOccurredAt | date: 'HH:mm' }}
+            </span>
+          </div>
+        </div>
 
-        <div class="grid gap-3 sm:grid-cols-2">
+        <div class="planning-actions-modal__grid">
           <button
-            mat-stroked-button
             type="button"
-            class="planning-action-cycle min-h-28 justify-start rounded-xl border-slate-300 p-4 text-left"
+            class="planning-action-card planning-action-card--cycle"
             (click)="openAssignmentFromActions()">
-            <span class="block text-base font-semibold text-slate-900">Cycle</span>
-            <span class="mt-1 block text-sm text-slate-600">
-              Ajouter ou modifier l'assignation du cycle pour cette date.
+            <span class="planning-action-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h10M7 12h10M7 17h6" />
+              </svg>
+            </span>
+            <span class="planning-action-card__content">
+              <span class="planning-action-card__label">Cycle</span>
+              <span class="planning-action-card__title">Affectation du cycle</span>
+              <span class="planning-action-card__text">
+                Ajouter, changer ou retirer l'assignation active pour cette date.
+              </span>
+            </span>
+            <span class="planning-action-card__arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 6l6 6-6 6" />
+              </svg>
             </span>
           </button>
 
           <button
-            mat-stroked-button
             type="button"
-            class="planning-action-item min-h-28 justify-start rounded-xl border-slate-300 p-4 text-left"
+            class="planning-action-card planning-action-card--item"
             (click)="openItemsFromActions()">
-            <span class="block text-base font-semibold text-slate-900">Entree</span>
-            <span class="mt-1 block text-sm text-slate-600">
-              Ouvrir l'editeur `input-day` sur cette date et ce contexte horaire.
+            <span class="planning-action-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 7h12M6 12h12M6 17h8" />
+              </svg>
+            </span>
+            <span class="planning-action-card__content">
+              <span class="planning-action-card__label">Entree</span>
+              <span class="planning-action-card__title">Ouvrir input-day</span>
+              <span class="planning-action-card__text">
+                Acceder directement a l'editeur des entrees pour cette date et ce contexte horaire.
+              </span>
+            </span>
+            <span class="planning-action-card__arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 6l6 6-6 6" />
+              </svg>
             </span>
           </button>
         </div>
-      </mat-card-content>
 
-      <mat-card-actions align="end" class="gap-2 px-4 pb-4">
-        <button mat-stroked-button type="button" (click)="closeActiveModal()">
-          Fermer
-        </button>
-      </mat-card-actions>
+        <div class="planning-actions-modal__footer">
+          <button
+            mat-stroked-button
+            type="button"
+            class="planning-actions-modal__close"
+            (click)="closeActiveModal()">
+            Fermer
+          </button>
+        </div>
+      </div>
     </ng-container>
 
     <ng-container *ngIf="activeModal === 'assignment'">
