@@ -217,6 +217,10 @@
   overflow: hidden;
 }
 
+.planning-modal--assignment {
+  width: min(940px, calc(100vw - 1.5rem));
+}
+
 .planning-actions-modal {
   display: grid;
 }
@@ -408,6 +412,52 @@
   border-radius: 999px;
 }
 
+.planning-assignment-modal__header {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.4rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--app-border);
+  background:
+    radial-gradient(circle at top right, rgb(59 130 246 / 0.1), transparent 42%),
+    linear-gradient(180deg, var(--app-surface-raised), var(--app-surface));
+}
+
+.planning-assignment-modal__header mat-card-title {
+  margin: 0;
+  color: var(--app-text-strong);
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.planning-assignment-modal__header mat-card-subtitle {
+  margin: 0;
+  color: var(--app-text);
+  font-size: 0.94rem;
+}
+
+.planning-assignment-modal__content {
+  padding: 1.2rem 1.5rem 0;
+  background:
+    radial-gradient(circle at top right, rgb(59 130 246 / 0.06), transparent 30%),
+    linear-gradient(180deg, var(--app-surface), var(--app-surface-soft));
+}
+
+.planning-assignment-modal__controls {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.planning-assignment-modal__date-field {
+  max-width: 20rem;
+}
+
+.planning-assignment-modal__actions {
+  padding: 1rem 1.5rem 1.4rem;
+  border-top: 1px solid var(--app-border);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0), var(--app-surface));
+}
+
 @media (min-width: 720px) {
   .planning-actions-modal__header {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -453,6 +503,10 @@
     width: min(100%, calc(100vw - 1rem));
   }
 
+  .planning-modal--assignment {
+    width: min(100%, calc(100vw - 1rem));
+  }
+
   .planning-actions-modal__header,
   .planning-actions-modal__grid {
     padding-inline: 1rem;
@@ -465,6 +519,16 @@
   .planning-actions-modal__footer {
     padding-inline: 1rem;
     padding-bottom: 1rem;
+  }
+
+  .planning-assignment-modal__header,
+  .planning-assignment-modal__content,
+  .planning-assignment-modal__actions {
+    padding-inline: 1rem;
+  }
+
+  .planning-assignment-modal__content {
+    padding-top: 1rem;
   }
 
   .planning-action-card {
