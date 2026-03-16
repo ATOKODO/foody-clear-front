@@ -28,6 +28,10 @@ class CalendarStub {
   @Input() inputDayTimezone: unknown = null;
   @Input() loadingDayItems: unknown = null;
   @Input() dayItemsError: unknown = null;
+  @Input() showHeader = true;
+
+  currentView = 'month';
+  currentViewLabel = 'mars 2026';
 
   @Output() readonly viewChanged = new EventEmitter<unknown>();
   @Output() readonly dayClick = new EventEmitter<unknown>();
@@ -35,6 +39,30 @@ class CalendarStub {
   @Output() readonly itemClick = new EventEmitter<unknown>();
   @Output() readonly manageItems = new EventEmitter<unknown>();
   @Output() readonly monthClick = new EventEmitter<unknown>();
+
+  goToToday(): void {}
+
+  navigate(_: 'prev' | 'next'): void {}
+
+  switchView(view: string): void {
+    this.currentView = view;
+  }
+
+  getViewLabel(view: string): string {
+    if (view === 'year') {
+      return 'Annee';
+    }
+
+    if (view === 'month') {
+      return 'Mois';
+    }
+
+    if (view === 'week') {
+      return 'Semaine';
+    }
+
+    return 'Jour';
+  }
 }
 
 describe('PlanningFeature', () => {

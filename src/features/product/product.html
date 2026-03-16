@@ -1,6 +1,6 @@
 <section class="app-page">
   <div class="product-hub-header rounded-3xl px-6 py-6 text-white shadow-lg">
-    <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <div class="product-hub-header__top">
       <div class="max-w-3xl">
         <p
           class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-300"
@@ -31,23 +31,18 @@
         <mat-button-toggle value="tag">Tags</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
-  </div>
 
-  <mat-card
-    *ngIf="activeView === 'product'"
-    class="mt-6 overflow-hidden rounded-2xl"
-  >
-    <div
-      class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 px-6 py-5 text-white"
-    >
+    <div *ngIf="activeView === 'product'" class="product-hub-header__active-view">
       <div>
-        <h2 class="text-xl font-semibold">Produits</h2>
-        <p class="mt-1 text-sm text-slate-300">Gestion des produits.</p>
+        <p class="product-hub-header__active-eyebrow">Vue active</p>
+        <h2 class="product-hub-header__active-title">Produits</h2>
+        <p class="product-hub-header__active-subtitle">Gestion des produits.</p>
       </div>
+
       <button
         mat-raised-button
         color="primary"
-        class="rounded-full"
+        class="product-hub-header__action rounded-full"
         type="button"
         (click)="onRefreshRequested()"
         [disabled]="loading || loadingMeta || saving"
@@ -55,7 +50,12 @@
         Rafraichir
       </button>
     </div>
+  </div>
 
+  <mat-card
+    *ngIf="activeView === 'product'"
+    class="mt-4 overflow-hidden rounded-2xl"
+  >
     <div class="space-y-4 p-4 sm:p-6">
       <div class="app-status-row">
         <span

@@ -148,6 +148,7 @@ export class Calendar implements OnInit, OnChanges {
   @Input() loadingDayItems = false;
   @Input() dayItemsError: unknown = null;
   @Input() inputDayTimezone = DateTime.local().zoneName || 'UTC';
+  @Input() showHeader = true;
 
   @Output() readonly dayClick = new EventEmitter<CalendarDayClickEvent>();
   @Output() readonly hourClick = new EventEmitter<CalendarHourClickEvent>();

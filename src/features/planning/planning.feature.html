@@ -1,14 +1,78 @@
 <section class="app-page app-page--wide">
   <mat-card class="overflow-hidden rounded-2xl">
-    <div class="bg-slate-900 px-6 py-5 text-white">
-      <h2 class="text-xl font-semibold">Planning</h2>
-      <p class="mt-1 text-sm text-slate-300">
-        Affectation des cycles par plage de dates.
-      </p>
+    <div class="planning-feature__header">
+      <div class="planning-feature__header-shell">
+        <div class="planning-feature__header-copy">
+          <h2 class="text-xl font-semibold">Planning</h2>
+          <p class="mt-1 text-sm text-slate-300">
+            Affectation des cycles par plage de dates.
+          </p>
+        </div>
+
+        <div class="planning-feature__header-tools">
+          <div class="planning-feature__header-nav">
+            <button
+              type="button"
+              class="planning-feature__today-button"
+              (click)="goToCalendarToday()">
+              Aujourd'hui
+            </button>
+
+            <div class="planning-feature__period-switcher">
+              <button
+                type="button"
+                class="planning-feature__nav-button"
+                aria-label="Periode precedente"
+                (click)="navigateCalendar('prev')">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              <h3 class="planning-feature__period-label">
+                {{ calendarHeaderLabel }}
+              </h3>
+
+              <button
+                type="button"
+                class="planning-feature__nav-button"
+                aria-label="Periode suivante"
+                (click)="navigateCalendar('next')">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="planning-feature__header-actions">
+            <mat-button-toggle-group
+              [value]="currentCalendarView"
+              (change)="switchCalendarView($event.value)"
+              aria-label="Selection de la vue calendrier"
+              class="planning-feature__view-toggle"
+              hideSingleSelectionIndicator>
+              <mat-button-toggle *ngFor="let view of calendarViews" [value]="view">
+                {{ getCalendarViewLabel(view) }}
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+
+            <button
+              mat-raised-button
+              color="primary"
+              type="button"
+              class="planning-feature__refresh rounded-full"
+              (click)="refreshPlanningData()"
+              [disabled]="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment">
+              Rafraichir
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="planning-feature__content">
-      <div class="planning-feature__toolbar">
+      <div *ngIf="showPlanningStatus" class="planning-feature__toolbar">
         <div class="planning-feature__status">
           <span *ngIf="loadingCycles" class="app-status-pill app-status-pill--neutral">
             Chargement cycles...
@@ -30,19 +94,11 @@
           </span>
         </div>
 
-        <button
-          mat-raised-button
-          color="primary"
-          type="button"
-          class="planning-feature__refresh rounded-full"
-          (click)="refreshPlanningData()"
-          [disabled]="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment">
-          Rafraichir
-        </button>
       </div>
 
       <div class="planning-feature__calendar">
         <app-calendar
+          #calendarRef
           [cycleAssignments]="cycleAssignments"
           [inputDayResponse]="inputDayResponse"
           [inputWeekResponse]="inputWeekResponse"
@@ -51,6 +107,7 @@
           [inputDayTimezone]="inputDayTimezone"
           [loadingDayItems]="loadingDayItems"
           [dayItemsError]="dayItemsError"
+          [showHeader]="false"
           (viewChanged)="onCalendarViewChanged($event)"
           (dayClick)="onCalendarDayClick($event)"
           (hourClick)="onCalendarHourClick($event)"

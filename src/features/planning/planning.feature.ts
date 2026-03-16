@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -36,6 +37,11 @@ import { InputDayService } from '../../services/input-day-service';
 import { InputDayFeature } from '../input-day/input-day.feature';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
+type PlanningCalendarController = Pick<
+  Calendar,
+  'currentView' | 'currentViewLabel' | 'goToToday' | 'navigate' | 'switchView' | 'getViewLabel'
+>;
+
 @Component({
   selector: 'app-planning',
   imports: [
@@ -45,6 +51,7 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
     InputDayFeature,
     ListCycle,
     MatButtonModule,
+    MatButtonToggleModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
@@ -54,7 +61,9 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
   templateUrl: './planning.feature.html',
   styleUrl: './planning.feature.scss',
 })
-export class PlanningFeature implements OnInit {
+export class PlanningFeature implements OnInit, AfterViewInit {
+  @ViewChild('calendarRef') private calendarRef?: PlanningCalendarController;
+
   baseUrl = '';
 
   loadingCycles = false;
@@ -69,6 +78,8 @@ export class PlanningFeature implements OnInit {
   inputMonthResponse: InputMonthResponse | null = null;
   inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
   inputDayTimezone = DateTime.local().zoneName || 'UTC';
+  readonly calendarViews: CalendarView[] = ['year', 'month', 'week', 'day'];
+  calendarHeaderLabel = 'Chargement...';
 
   currentCalendarView: CalendarView = 'month';
   currentAnchorDateLocal: string | null = null;
@@ -94,6 +105,7 @@ export class PlanningFeature implements OnInit {
   private inputDayRequestId = 0;
 
   constructor(
+    private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly cycleService: CycleService,
     private readonly cycleAssignmentService: CycleAssignementService,
     private readonly inputDayService: InputDayService,
@@ -104,6 +116,11 @@ export class PlanningFeature implements OnInit {
     this.cycleService.setBaseUrl(this.baseUrl);
     this.inputDayService.setBaseUrl(this.baseUrl);
     this.refreshPlanningData();
+  }
+
+  ngAfterViewInit(): void {
+    this.syncCalendarHeaderState();
+    this.changeDetectorRef.detectChanges();
   }
 
   onBaseUrlChange(): void {
@@ -135,8 +152,36 @@ export class PlanningFeature implements OnInit {
     this.currentAnchorDateLocal = event.anchorDateLocal;
     this.currentRangeFromLocal = event.fromDateLocal;
     this.currentRangeToLocal = event.toDateLocal;
+    this.syncCalendarHeaderState();
     this.loadAssignmentsInRange(event.fromDateLocal, event.toDateLocal);
     this.loadInputDataForView(event);
+  }
+
+  goToCalendarToday(): void {
+    this.calendarRef?.goToToday();
+    this.syncCalendarHeaderState();
+  }
+
+  navigateCalendar(direction: 'prev' | 'next'): void {
+    this.calendarRef?.navigate(direction);
+    this.syncCalendarHeaderState();
+  }
+
+  switchCalendarView(view: CalendarView | string | null): void {
+    if (!view) {
+      return;
+    }
+
+    this.calendarRef?.switchView(view as CalendarView);
+    this.syncCalendarHeaderState();
+  }
+
+  getCalendarViewLabel(view: CalendarView): string {
+    return this.calendarRef?.getViewLabel(view) ?? this.getFallbackCalendarViewLabel(view);
+  }
+
+  get showPlanningStatus(): boolean {
+    return this.loadingCycles || this.loadingAssignments || this.loadingDayItems || this.savingAssignment;
   }
 
   onCalendarDayClick(event: CalendarDayClickEvent): void {
@@ -599,5 +644,31 @@ export class PlanningFeature implements OnInit {
     } catch {
       return String(value);
     }
+  }
+
+  private syncCalendarHeaderState(): void {
+    if (this.calendarRef?.currentView) {
+      this.currentCalendarView = this.calendarRef.currentView;
+    }
+
+    if (this.calendarRef?.currentViewLabel) {
+      this.calendarHeaderLabel = this.calendarRef.currentViewLabel;
+    }
+  }
+
+  private getFallbackCalendarViewLabel(view: CalendarView): string {
+    if (view === 'year') {
+      return 'Annee';
+    }
+
+    if (view === 'month') {
+      return 'Mois';
+    }
+
+    if (view === 'week') {
+      return 'Semaine';
+    }
+
+    return 'Jour';
   }
 }
