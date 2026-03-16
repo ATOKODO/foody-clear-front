@@ -16,15 +16,19 @@
   gap: 0.5rem;
   align-self: stretch;
   justify-content: center;
+  overflow: hidden;
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: 1.5rem;
   background: rgb(15 23 42 / 0.42);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
   backdrop-filter: blur(12px);
+  isolation: isolate;
   padding: 0.35rem;
 }
 
 .product-view-toggle mat-button-toggle {
+  box-sizing: border-box;
+  margin: 0;
   min-width: 0;
   width: 100%;
   overflow: hidden;
@@ -32,6 +36,15 @@
   border: 1px solid rgb(148 163 184 / 0.35);
   background: rgb(30 41 59 / 0.76);
   color: #e2e8f0;
+}
+
+:host ::ng-deep .product-view-toggle.mat-button-toggle-group-appearance-standard {
+  border-color: rgb(255 255 255 / 0.12);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+
+:host ::ng-deep .product-view-toggle .mat-button-toggle-appearance-standard + .mat-button-toggle-appearance-standard {
+  border-left: 0;
 }
 
 :host ::ng-deep .product-view-toggle .mat-button-toggle-button {
@@ -122,8 +135,9 @@
 
 @media (min-width: 1024px) {
   .product-view-toggle {
-    align-self: flex-end;
-    margin-inline: 0;
+    align-self: auto;
+    margin-left: auto;
+    margin-right: 0;
   }
 }
 

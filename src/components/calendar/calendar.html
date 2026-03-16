@@ -236,7 +236,8 @@
               <div class="calendar-month-day__body">
                 <div
                   *ngIf="day.assignment || (day.isCurrentMonth && hasWeekDayInsights(day.date)); else monthDayEmpty"
-                  [ngClass]="day.assignment?.color ?? 'bg-slate-100'"
+                  [ngClass]="day.assignment?.color ?? null"
+                  [class.calendar-month-day__assignment--insight-only]="!day.assignment"
                   class="calendar-month-day__assignment">
                   <div class="calendar-month-day__assignment-head">
                     <div class="calendar-month-day__assignment-type">{{ getMonthDayType(day) }}</div>

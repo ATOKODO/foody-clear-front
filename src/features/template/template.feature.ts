@@ -1,58 +1,37 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
+import { DaySet } from '../../interfaces/day-set.interface';
+import { ProductQuantityInputUnit } from '../../interfaces/input-day.interface';
+import { Slot } from '../../interfaces/slot.interface';
 import {
   CreateTemplateItemDto,
   Template,
-  TemplateItem,
 } from '../../interfaces/template.interface';
-import { DaySet } from '../../interfaces/day-set.interface';
-import { Slot } from '../../interfaces/slot.interface';
+import {
+  TemplateForm,
+  TemplateFormMode,
+  TemplateFormSubmittedEvent,
+  TemplateItemDraft,
+} from '../../components/template/template-form/template-form';
+import { TemplateList } from '../../components/template/template-list/template-list';
 import {
   Product as ProductApiModel,
   ProductService,
 } from '../../services/product-service';
-import { TemplateService } from '../../services/template-service';
 import { DaySetService } from '../../services/day-set-service';
 import { SlotService } from '../../services/slot-service';
-import {
-  InputDayMacroValue,
-  InputDayTargetSource,
-  InputDayTotalsMacrosBySlotEntry,
-  InputDayTotalsMacrosSummary,
-  ProductQuantityInputUnit,
-} from '../../interfaces/input-day.interface';
-
-type TemplateItemDraft = {
-  id: number | null;
-  productId: number | null;
-  qty: number | null;
-  qtyUnit: ProductQuantityInputUnit | null;
-  slotId: number | null;
-  slotKey: string;
-};
+import { TemplateService } from '../../services/template-service';
 
 @Component({
   selector: 'app-template',
   imports: [
     CommonModule,
-    FormsModule,
     MatButtonModule,
-    MatCardModule,
     MatDialogModule,
-    MatDividerModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatProgressBarModule,
-    MatSelectModule,
+    TemplateForm,
+    TemplateList,
   ],
   templateUrl: './template.feature.html',
   styleUrl: './template.feature.scss',
@@ -87,10 +66,8 @@ export class TemplateFeature implements OnInit {
   selectedTemplateId: number | null = null;
   selectedTemplate: Template | null = null;
   compareDaySetId: number | null = null;
-  draftTitle = '';
-  formMode: 'add' | 'edit' = 'add';
+  formMode: TemplateFormMode = 'add';
   editingTemplateId: number | null = null;
-  itemDraft: TemplateItemDraft = this.buildEmptyItemDraft();
 
   loadingTemplates = false;
   loadingProducts = false;
@@ -118,20 +95,6 @@ export class TemplateFeature implements OnInit {
     this.loadDaySets();
     this.loadSlots();
     this.loadTemplates();
-  }
-
-  get canSaveTemplate(): boolean {
-    return this.draftTitle.trim() !== '' && !this.savingTemplate;
-  }
-
-  get canSaveItem(): boolean {
-    return (
-      this.editingTemplateId !== null &&
-      this.itemDraft.productId !== null &&
-      this.itemDraft.qty !== null &&
-      this.itemDraft.qty > 0 &&
-      !this.savingItem
-    );
   }
 
   get editedTemplate(): Template | null {
@@ -183,8 +146,6 @@ export class TemplateFeature implements OnInit {
   startCreateTemplate(): void {
     this.formMode = 'add';
     this.editingTemplateId = null;
-    this.draftTitle = '';
-    this.resetItemDraft();
     this.itemError = null;
     this.openEditorDialog();
   }
@@ -196,8 +157,6 @@ export class TemplateFeature implements OnInit {
 
     this.formMode = 'edit';
     this.editingTemplateId = this.selectedTemplateId;
-    this.draftTitle = this.selectedTemplate.title;
-    this.resetItemDraft();
     this.itemError = null;
     this.openEditorDialog();
   }
@@ -207,16 +166,22 @@ export class TemplateFeature implements OnInit {
     this.loadSelectedTemplate();
   }
 
-  saveTemplate(): void {
-    const title = this.draftTitle.trim();
+  onCompareDaySetChange(compareDaySetId: number | null): void {
+    this.compareDaySetId = compareDaySetId;
+    this.loadSelectedTemplate();
+  }
+
+  onTemplateSubmitted(event: TemplateFormSubmittedEvent): void {
+    const title = event.title.trim();
     if (title === '') {
       return;
     }
 
     this.savingTemplate = true;
     this.lastError = null;
+    this.itemError = null;
 
-    if (this.editingTemplateId !== null) {
+    if (event.mode === 'edit' && this.editingTemplateId !== null) {
       this.templateSrv.update(this.editingTemplateId, { title }).subscribe({
         next: (response) => {
           this.lastResponse = response;
@@ -225,7 +190,6 @@ export class TemplateFeature implements OnInit {
           this.editingTemplateId = response.id;
           this.selectedTemplateId = response.id;
           this.selectedTemplate = response;
-          this.draftTitle = response.title;
           this.loadTemplates(this.editingTemplateId);
         },
         error: (error) => {
@@ -244,7 +208,6 @@ export class TemplateFeature implements OnInit {
         this.editingTemplateId = response.id;
         this.selectedTemplateId = response.id;
         this.selectedTemplate = response;
-        this.draftTitle = response.title;
         this.loadTemplates(response.id);
       },
       error: (error) => {
@@ -254,9 +217,10 @@ export class TemplateFeature implements OnInit {
     });
   }
 
-  removeTemplate(templateId: number): void {
+  onTemplateDeleted(templateId: number): void {
     this.savingTemplate = true;
     this.lastError = null;
+    this.itemError = null;
 
     this.templateSrv.remove(templateId).subscribe({
       next: () => {
@@ -279,42 +243,26 @@ export class TemplateFeature implements OnInit {
     });
   }
 
-  onCompareDaySetChange(): void {
-    this.loadSelectedTemplate();
-  }
-
-  editItem(item: TemplateItem): void {
-    this.itemDraft = {
-      id: item.id,
-      productId: item.productId,
-      qty: item.qty,
-      qtyUnit: item.qtyUnit,
-      slotId: item.slotId,
-      slotKey: item.slotKey ?? '',
-    };
-    this.itemError = null;
-  }
-
-  saveItem(): void {
-    if (!this.canSaveItem || this.editingTemplateId === null) {
+  onItemSubmitted(itemDraft: TemplateItemDraft): void {
+    if (this.editingTemplateId === null) {
       return;
     }
 
     const payload: CreateTemplateItemDto = {
-      productId: this.itemDraft.productId as number,
-      qty: this.itemDraft.qty as number,
-      ...(this.itemDraft.qtyUnit ? { qtyUnit: this.itemDraft.qtyUnit } : {}),
-      ...(this.itemDraft.slotId ? { slotId: this.itemDraft.slotId } : {}),
-      ...(this.itemDraft.slotKey.trim() !== '' ? { slotKey: this.itemDraft.slotKey.trim() } : {}),
+      productId: itemDraft.productId as number,
+      qty: itemDraft.qty as number,
+      ...(itemDraft.qtyUnit ? { qtyUnit: itemDraft.qtyUnit } : {}),
+      ...(itemDraft.slotId ? { slotId: itemDraft.slotId } : {}),
+      ...(itemDraft.slotKey.trim() !== '' ? { slotKey: itemDraft.slotKey.trim() } : {}),
     };
 
     this.savingItem = true;
     this.itemError = null;
 
     const request =
-      this.itemDraft.id === null
+      itemDraft.id === null
         ? this.templateSrv.createItem(this.editingTemplateId, payload)
-        : this.templateSrv.updateItem(this.editingTemplateId, this.itemDraft.id, payload);
+        : this.templateSrv.updateItem(this.editingTemplateId, itemDraft.id, payload);
 
     request.subscribe({
       next: (response) => {
@@ -324,7 +272,6 @@ export class TemplateFeature implements OnInit {
         this.editingTemplateId = response.id;
         this.syncTemplateInCollection(response);
         this.savingItem = false;
-        this.resetItemDraft();
       },
       error: (error) => {
         this.lastError = error;
@@ -334,7 +281,7 @@ export class TemplateFeature implements OnInit {
     });
   }
 
-  removeItem(itemId: number): void {
+  onItemDeleted(itemId: number): void {
     if (this.editingTemplateId === null) {
       return;
     }
@@ -349,9 +296,6 @@ export class TemplateFeature implements OnInit {
         this.selectedTemplateId = response.id;
         this.syncTemplateInCollection(response);
         this.savingItem = false;
-        if (this.itemDraft.id === itemId) {
-          this.resetItemDraft();
-        }
       },
       error: (error) => {
         this.lastError = error;
@@ -361,10 +305,6 @@ export class TemplateFeature implements OnInit {
     });
   }
 
-  resetItemDraft(): void {
-    this.itemDraft = this.buildEmptyItemDraft();
-  }
-
   closeEditorDialog(): void {
     if (this.dialogRef !== null) {
       this.dialogRef.close();
@@ -372,53 +312,6 @@ export class TemplateFeature implements OnInit {
     }
 
     this.resetEditorState();
-  }
-
-  getTargetSourceText(targetSource: InputDayTargetSource): string {
-    if (targetSource === 'daySet') {
-      return 'Comparaison avec un day set';
-    }
-
-    if (targetSource === 'cycle') {
-      return 'Comparaison avec un cycle';
-    }
-
-    return 'Aucune cible';
-  }
-
-  getSlotMacroEntries(
-    value: InputDayTotalsMacrosBySlotEntry,
-  ): Array<{ key: string; value: InputDayMacroValue }> {
-    return Object.entries(value)
-      .filter(([key]) => !['slot', 'targets', 'deltaToTargets', 'incompleteNutritionKeys'].includes(key))
-      .map(([key, entry]) => ({ key, value: entry as InputDayMacroValue }));
-  }
-
-  formatMacroValue(value: InputDayMacroValue): string {
-    if (typeof value !== 'number') {
-      return value;
-    }
-
-    return this.formatNumber(value);
-  }
-
-  formatNutritionAmount(value: number): string {
-    return this.formatNumber(value);
-  }
-
-  hasEntries(value: Record<string, unknown> | null | undefined): boolean {
-    return !!value && Object.keys(value).length > 0;
-  }
-
-  resolveTemplateItemSlotLabel(item: TemplateItem): string {
-    if (item.slotId !== null) {
-      const slot = this.slotOptions.find((candidate) => candidate.id === item.slotId) ?? null;
-      if (slot) {
-        return `${slot.sortOrder}. ${slot.title}`;
-      }
-    }
-
-    return item.slotKey?.trim() || 'Sans slot';
   }
 
   private syncBaseUrls(): void {
@@ -436,7 +329,10 @@ export class TemplateFeature implements OnInit {
         this.loadingTemplates = false;
 
         const resolvedSelection = selectId ?? this.selectedTemplateId;
-        if (resolvedSelection !== null && this.templates.some((item) => item.id === resolvedSelection)) {
+        if (
+          resolvedSelection !== null &&
+          this.templates.some((item) => item.id === resolvedSelection)
+        ) {
           this.selectedTemplateId = resolvedSelection;
           this.loadSelectedTemplate();
           return;
@@ -463,9 +359,6 @@ export class TemplateFeature implements OnInit {
     this.templateSrv.findOne(this.selectedTemplateId, this.compareDaySetId).subscribe({
       next: (response) => {
         this.selectedTemplate = response;
-        if (this.editingTemplateId === response.id) {
-          this.draftTitle = response.title;
-        }
         this.syncTemplateInCollection(response);
         this.loadingTemplates = false;
       },
@@ -518,25 +411,6 @@ export class TemplateFeature implements OnInit {
     });
   }
 
-  private buildEmptyItemDraft(): TemplateItemDraft {
-    return {
-      id: null,
-      productId: null,
-      qty: null,
-      qtyUnit: null,
-      slotId: null,
-      slotKey: '',
-    };
-  }
-
-  private formatNumber(value: number): string {
-    const rounded = Math.round(value * 100) / 100;
-    return new Intl.NumberFormat('fr-FR', {
-      minimumFractionDigits: Number.isInteger(rounded) ? 0 : 1,
-      maximumFractionDigits: 2,
-    }).format(rounded);
-  }
-
   private openEditorDialog(): void {
     if (!this.templateEditorDialog || this.dialogRef !== null) {
       return;
@@ -562,8 +436,6 @@ export class TemplateFeature implements OnInit {
     this.dialogRef = null;
     this.formMode = 'add';
     this.editingTemplateId = null;
-    this.draftTitle = '';
-    this.resetItemDraft();
     this.itemError = null;
   }
 

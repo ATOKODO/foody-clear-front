@@ -1,1 +1,201 @@
-<p>template-form works!</p>
+<div class="space-y-6">
+  <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
+    <mat-form-field appearance="fill" class="w-full">
+      <mat-label>Titre du template</mat-label>
+      <input matInput [(ngModel)]="draftTitle" placeholder="Jour training" />
+    </mat-form-field>
+
+    <button
+      mat-raised-button
+      color="primary"
+      type="button"
+      (click)="onTemplateSave()"
+      [disabled]="!canSaveTemplate"
+    >
+      {{ mode === 'edit' ? 'Sauvegarder' : 'Creer' }}
+    </button>
+
+    <button
+      *ngIf="template !== null"
+      mat-stroked-button
+      color="warn"
+      type="button"
+      (click)="onTemplateDelete()"
+      [disabled]="savingTemplate || savingItem"
+    >
+      Supprimer
+    </button>
+  </div>
+
+  <p class="text-sm text-slate-600">
+    Le template reste neutre vis-a-vis du stock. Les quantites restent previsionnelles tant qu'elles
+    ne sont pas converties dans un input day.
+  </p>
+
+  <ng-container *ngIf="template !== null; else createTemplateHint">
+    <mat-card appearance="outlined" class="rounded-xl">
+      <mat-card-header>
+        <mat-card-title>
+          {{ itemDraft.id !== null ? 'Modifier une ligne' : 'Ajouter une ligne' }}
+        </mat-card-title>
+        <mat-card-subtitle>{{ template.title }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="space-y-4 pt-2">
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Produit</mat-label>
+            <mat-select [(ngModel)]="itemDraft.productId">
+              <mat-option [value]="null">Selectionner</mat-option>
+              <mat-option *ngFor="let product of sortedProducts" [value]="product.id">
+                {{ product.name }} (#{{ product.id }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Quantite</mat-label>
+            <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="itemDraft.qty" />
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Unite</mat-label>
+            <mat-select [(ngModel)]="itemDraft.qtyUnit">
+              <mat-option [value]="null">Auto</mat-option>
+              <mat-option *ngFor="let unit of qtyUnitOptions" [value]="unit">
+                {{ unit }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Slot explicite</mat-label>
+            <mat-select [(ngModel)]="itemDraft.slotId">
+              <mat-option [value]="null">Sans slot</mat-option>
+              <mat-option *ngFor="let slot of sortedSlots" [value]="slot.id">
+                {{ slot.sortOrder }}. {{ slot.title }} ({{ slot.key }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>slotKey libre</mat-label>
+            <input matInput [(ngModel)]="itemDraft.slotKey" placeholder="ex: snack" />
+          </mat-form-field>
+        </div>
+
+        <p
+          *ngIf="itemError"
+          class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
+          {{ itemError }}
+        </p>
+
+        <div class="flex flex-wrap justify-end gap-2">
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="resetItemDraft()"
+            [disabled]="savingTemplate || savingItem"
+          >
+            Reinitialiser
+          </button>
+          <button
+            mat-raised-button
+            color="primary"
+            type="button"
+            (click)="onItemSave()"
+            [disabled]="!canSaveItem"
+          >
+            {{ itemDraft.id !== null ? 'Mettre a jour' : 'Ajouter' }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card appearance="outlined" class="rounded-xl">
+      <mat-card-header>
+        <mat-card-title>Lignes du template</mat-card-title>
+        <mat-card-subtitle>Edition dans la modale</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="pt-2">
+        <div
+          *ngIf="template.items.length > 0; else noModalTemplateItems"
+          class="overflow-x-auto rounded-xl border border-slate-200"
+        >
+          <table class="min-w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-700">
+              <tr>
+                <th class="px-3 py-2">Produit</th>
+                <th class="px-3 py-2">Qty</th>
+                <th class="px-3 py-2">Slot</th>
+                <th class="px-3 py-2">Stock global</th>
+                <th class="px-3 py-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of template.items" class="border-t border-slate-100 align-top">
+                <td class="px-3 py-2">
+                  <p class="font-medium text-slate-900">{{ item.productName }}</p>
+                  <p class="text-xs text-slate-500">#{{ item.productId }}</p>
+                </td>
+                <td class="px-3 py-2">
+                  {{ formatNutritionAmount(item.qty) }}
+                  <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
+                </td>
+                <td class="px-3 py-2">{{ resolveTemplateItemSlotLabel(item) }}</td>
+                <td class="px-3 py-2">
+                  <span
+                    class="rounded-full px-2 py-1 text-xs font-medium"
+                    [class.bg-emerald-100]="item.stockAvailability.enoughStock"
+                    [class.text-emerald-700]="item.stockAvailability.enoughStock"
+                    [class.bg-red-100]="!item.stockAvailability.enoughStock"
+                    [class.text-red-700]="!item.stockAvailability.enoughStock"
+                  >
+                    {{ item.stockAvailability.enoughStock ? 'Stock OK' : 'Stock insuffisant' }}
+                  </span>
+                </td>
+                <td class="px-3 py-2">
+                  <div class="flex justify-end gap-2">
+                    <button
+                      mat-stroked-button
+                      type="button"
+                      (click)="editItem(item)"
+                      [disabled]="savingTemplate || savingItem"
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      mat-stroked-button
+                      color="warn"
+                      type="button"
+                      (click)="onItemDelete(item.id)"
+                      [disabled]="savingTemplate || savingItem"
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+</div>
+
+<ng-template #createTemplateHint>
+  <div
+    class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-600"
+  >
+    Commence par creer le template pour pouvoir ajouter ses lignes.
+  </div>
+</ng-template>
+
+<ng-template #noModalTemplateItems>
+  <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+    Aucune ligne dans ce template.
+  </p>
+</ng-template>
