@@ -1,3 +1,4 @@
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
@@ -11,6 +12,30 @@ import { InventoryService } from '../../services/inventory-service';
 import { TemplateService } from '../../services/template-service';
 import { InputDayResponse } from '../../interfaces/input-day.interface';
 import { InputDayFeature } from '../input-day/input-day.feature';
+import { Calendar } from '../../components/calendar/calendar';
+
+@Component({
+  selector: 'app-calendar',
+  standalone: true,
+  template: '',
+})
+class CalendarStub {
+  @Input() cycleAssignments: unknown = null;
+  @Input() inputDayResponse: unknown = null;
+  @Input() inputWeekResponse: unknown = null;
+  @Input() inputMonthResponse: unknown = null;
+  @Input() inputDayItemsBySlot: unknown = null;
+  @Input() inputDayTimezone: unknown = null;
+  @Input() loadingDayItems: unknown = null;
+  @Input() dayItemsError: unknown = null;
+
+  @Output() readonly viewChanged = new EventEmitter<unknown>();
+  @Output() readonly dayClick = new EventEmitter<unknown>();
+  @Output() readonly hourClick = new EventEmitter<unknown>();
+  @Output() readonly itemClick = new EventEmitter<unknown>();
+  @Output() readonly manageItems = new EventEmitter<unknown>();
+  @Output() readonly monthClick = new EventEmitter<unknown>();
+}
 
 describe('PlanningFeature', () => {
   let component: PlanningFeature;
@@ -115,7 +140,12 @@ describe('PlanningFeature', () => {
         { provide: InventoryService, useValue: inventoryServiceMock },
         { provide: TemplateService, useValue: templateServiceMock },
       ],
-    }).compileComponents();
+    })
+      .overrideComponent(PlanningFeature, {
+        remove: { imports: [Calendar] },
+        add: { imports: [CalendarStub] },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(PlanningFeature);
     component = fixture.componentInstance;

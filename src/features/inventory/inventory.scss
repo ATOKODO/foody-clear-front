@@ -6,8 +6,8 @@
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.55), rgba(2, 6, 23, 0.7));
-  backdrop-filter: blur(2px);
+  background: var(--app-overlay);
+  backdrop-filter: blur(6px);
 }
 
 .modal-shell {
@@ -43,6 +43,9 @@
   max-height: calc(100vh - 2rem);
   overflow: auto;
   border-radius: 1rem;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-lg);
 }
 
 .modal-card--wide {

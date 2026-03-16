@@ -40,6 +40,7 @@ export class CategoryForm implements OnInit, OnChanges {
 
   @Input() mode: CategoryFormMode = 'add';
   @Input() category: Partial<CategoryFormValue> | null = null;
+  @Input() showHeading = true;
 
   @Output() readonly submitted = new EventEmitter<{
     mode: CategoryFormMode;

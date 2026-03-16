@@ -51,6 +51,7 @@ import {
 import { InputDayService } from '../../services/input-day-service';
 import { TemplateService } from '../../services/template-service';
 import { TemplateSummary } from '../../interfaces/template.interface';
+import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 type InputDayDisplayMode = 'standalone' | 'embedded';
 
@@ -103,6 +104,7 @@ type ProductListSource = {
     MatNativeDateModule,
     MatProgressBarModule,
     MatSelectModule,
+    UiErrorPanel,
     ProductList,
   ],
   templateUrl: './input-day.feature.html',

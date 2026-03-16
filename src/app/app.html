@@ -1,69 +1,111 @@
-<mat-toolbar class="app-toolbar mat-elevation-z2">
-    <div class="app-toolbar__brand">
-        <span class="app-toolbar__title">Foody Clear</span>
-        <span class="app-toolbar__subtitle">Administration</span>
-    </div>
+<div class="app-shell">
+    <div
+        *ngIf="mobileNavigationOpen"
+        class="app-shell__backdrop"
+        (click)="closeMobileNavigation()"
+        aria-hidden="true"
+    ></div>
 
-    <div class="app-toolbar__actions app-toolbar__actions--desktop">
-        <button mat-button type="button" (click)="goToProduct()">Product</button>
-        <button mat-button type="button" (click)="goToInventory()">Inventory</button>
-        <button mat-button type="button" (click)="goToCycle()">Cycle</button>
-        <button mat-button type="button" (click)="goToPlanning()">Planning</button>
-        <button mat-button type="button" (click)="goToStatistic()">Statistics</button>
-        <button mat-stroked-button type="button" [matMenuTriggerFor]="moreMenu">More</button>
-    </div>
-
-    <button
-        class="app-toolbar__menu-trigger"
-        mat-icon-button
-        type="button"
-        aria-label="Open navigation menu"
-        [matMenuTriggerFor]="mobileMenu"
+    <aside
+        id="app-navigation"
+        class="app-shell__sidebar"
+        [class.app-shell__sidebar--open]="mobileNavigationOpen"
     >
-        <svg
-            class="app-toolbar__menu-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            aria-hidden="true"
-        >
-            <path d="M4 7h16"></path>
-            <path d="M4 12h16"></path>
-            <path d="M4 17h16"></path>
-        </svg>
-    </button>
-</mat-toolbar>
+        <a class="app-shell__brand" routerLink="/home" (click)="closeMobileNavigation()">
+            <span class="app-shell__brand-mark">FC</span>
+            <span class="app-shell__brand-copy">
+                <span class="app-shell__brand-title">Foody Clear</span>
+                <span class="app-shell__brand-subtitle">Pilotage nutrition & operations</span>
+            </span>
+        </a>
 
-<mat-menu #moreMenu="matMenu">
-    <button mat-menu-item type="button" (click)="goToCategory()">Category</button>
-    <button mat-menu-item type="button" (click)="goToGenericProduct()">Generic Product</button>
-    <button mat-menu-item type="button" (click)="goToTag()">Tag</button>
-    <button mat-menu-item type="button" (click)="goToDaySet()">Day Set</button>
-    <button mat-menu-item type="button" (click)="goToTemplate()">Template</button>
-    <button mat-menu-item type="button" (click)="goToSlot()">Slot</button>
-    <button mat-menu-item type="button" (click)="goToInputDay()">Input Day</button>
-    <button mat-menu-item type="button" (click)="goToCalendar()">Calendar</button>
-    <button mat-menu-item type="button" (click)="goToNutritionValue()">Nutrition Value</button>
-</mat-menu>
+        <nav class="app-shell__navigation" aria-label="Navigation principale">
+            <section class="app-shell__group" *ngFor="let group of navigationGroups">
+                <p class="app-shell__group-label">{{ group.label }}</p>
 
-<mat-menu #mobileMenu="matMenu">
-    <button mat-menu-item type="button" (click)="goToProduct()">Product</button>
-    <button mat-menu-item type="button" (click)="goToInventory()">Inventory</button>
-    <button mat-menu-item type="button" (click)="goToCycle()">Cycle</button>
-    <button mat-menu-item type="button" (click)="goToPlanning()">Planning</button>
-    <button mat-menu-item type="button" (click)="goToStatistic()">Statistics</button>
-    <button mat-menu-item type="button" (click)="goToCategory()">Category</button>
-    <button mat-menu-item type="button" (click)="goToGenericProduct()">Generic Product</button>
-    <button mat-menu-item type="button" (click)="goToTag()">Tag</button>
-    <button mat-menu-item type="button" (click)="goToDaySet()">Day Set</button>
-    <button mat-menu-item type="button" (click)="goToTemplate()">Template</button>
-    <button mat-menu-item type="button" (click)="goToSlot()">Slot</button>
-    <button mat-menu-item type="button" (click)="goToInputDay()">Input Day</button>
-    <button mat-menu-item type="button" (click)="goToCalendar()">Calendar</button>
-    <button mat-menu-item type="button" (click)="goToNutritionValue()">Nutrition Value</button>
-</mat-menu>
+                <a
+                    *ngFor="let entry of group.entries"
+                    class="app-shell__nav-link"
+                    [routerLink]="entry.path"
+                    routerLinkActive="is-active"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    (click)="closeMobileNavigation()"
+                >
+                    <span class="app-shell__nav-icon">{{ entry.shortLabel }}</span>
 
-<router-outlet />
+                    <span class="app-shell__nav-copy">
+                        <span class="app-shell__nav-title">{{ entry.label }}</span>
+                        <span class="app-shell__nav-description">{{ entry.description }}</span>
+                    </span>
+                </a>
+            </section>
+        </nav>
+
+        <div class="app-shell__sidebar-footer">
+            <p class="app-shell__sidebar-footer-title">Theme actif</p>
+            <p class="app-shell__sidebar-footer-copy">
+                {{ isDarkMode ? 'Sombre' : 'Clair' }}
+            </p>
+        </div>
+    </aside>
+
+    <div class="app-shell__main">
+        <header class="app-shell__header">
+            <div class="app-shell__header-primary">
+                <button
+                    type="button"
+                    class="app-shell__menu-button"
+                    (click)="openMobileNavigation()"
+                    aria-label="Ouvrir la navigation"
+                    aria-controls="app-navigation"
+                >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">
+                        <path d="M4 7h16"></path>
+                        <path d="M4 12h16"></path>
+                        <path d="M4 17h16"></path>
+                    </svg>
+                </button>
+
+                <div class="app-shell__header-copy">
+                    <p class="app-shell__header-eyebrow">{{ currentGroupLabel }}</p>
+                    <h1 class="app-shell__header-title">{{ currentEntry.label }}</h1>
+                    <p class="app-shell__header-description">{{ currentEntry.description }}</p>
+                </div>
+            </div>
+
+            <button
+                type="button"
+                class="app-theme-toggle"
+                [attr.aria-label]="themeToggleLabel"
+                [attr.aria-pressed]="isDarkMode"
+                (click)="toggleTheme()"
+            >
+                <span class="app-theme-toggle__icon" aria-hidden="true">
+                    <svg *ngIf="!isDarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+                        <circle cx="12" cy="12" r="4"></circle>
+                        <path d="M12 2v2.5"></path>
+                        <path d="M12 19.5V22"></path>
+                        <path d="M4.93 4.93l1.77 1.77"></path>
+                        <path d="M17.3 17.3l1.77 1.77"></path>
+                        <path d="M2 12h2.5"></path>
+                        <path d="M19.5 12H22"></path>
+                        <path d="M4.93 19.07l1.77-1.77"></path>
+                        <path d="M17.3 6.7l1.77-1.77"></path>
+                    </svg>
+                    <svg *ngIf="isDarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3c0.2 0 0.4 0.01 0.59 0.03A7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </span>
+
+                <span class="app-theme-toggle__copy">
+                    <span class="app-theme-toggle__title">{{ isDarkMode ? 'Theme sombre' : 'Theme clair' }}</span>
+                    <span class="app-theme-toggle__subtitle">{{ themeToggleLabel }}</span>
+                </span>
+            </button>
+        </header>
+
+        <main class="app-shell__content">
+            <router-outlet />
+        </main>
+    </div>
+</div>

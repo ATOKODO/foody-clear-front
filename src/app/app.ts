@@ -1,73 +1,88 @@
-import { Component, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { Router, RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, HostListener, inject } from '@angular/core';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs';
+import {
+  APP_NAVIGATION,
+  AppNavigationEntry,
+  findNavigationContextByUrl,
+} from './app.navigation';
+import { ThemeMode, ThemeService } from '../services/theme-service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, MatButtonModule, MatMenuModule, MatToolbarModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
-  protected title = 'foody-clear-front';
+  readonly navigationGroups = APP_NAVIGATION;
 
-  private router = inject(Router);
+  currentEntry: AppNavigationEntry = APP_NAVIGATION[0].entries[0];
+  currentGroupLabel = APP_NAVIGATION[0].label;
+  mobileNavigationOpen = false;
+  themeMode: ThemeMode = 'light';
 
-  goToProduct() {
-    this.router.navigate(['/product']);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly themeService = inject(ThemeService);
+
+  constructor() {
+    this.themeMode = this.themeService.mode;
+    this.syncNavigationContext(this.router.url);
+
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((event) => {
+        this.syncNavigationContext(event.urlAfterRedirects);
+        this.closeMobileNavigation();
+      });
+
+    this.themeService.mode$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((mode) => {
+        this.themeMode = mode;
+      });
   }
 
-  goToCategory() {
-    this.router.navigate(['/category']);
+  get isDarkMode(): boolean {
+    return this.themeMode === 'dark';
   }
 
-  goToTag() {
-    this.router.navigate(['/tag']);
+  get themeToggleLabel(): string {
+    return this.isDarkMode ? 'Passer en clair' : 'Passer en sombre';
   }
 
-  goToGenericProduct() {
-    this.router.navigate(['/generic-product']);
+  toggleTheme(): void {
+    this.themeService.toggle();
   }
 
-  goToNutritionValue() {
-    this.router.navigate(['/nutrition-value']);
+  openMobileNavigation(): void {
+    this.mobileNavigationOpen = true;
   }
 
-  goToInventory() {
-    this.router.navigate(['/inventory']);
+  closeMobileNavigation(): void {
+    this.mobileNavigationOpen = false;
   }
 
-  goToInputDay() {
-    this.router.navigate(['/input-day']);
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.closeMobileNavigation();
   }
 
-  goToCycle() {
-    this.router.navigate(['/cycle']);
-  }
+  private syncNavigationContext(url: string): void {
+    const context = findNavigationContextByUrl(url);
+    if (!context) {
+      this.currentEntry = APP_NAVIGATION[0].entries[0];
+      this.currentGroupLabel = APP_NAVIGATION[0].label;
+      return;
+    }
 
-  goToDaySet() {
-    this.router.navigate(['/day-set']);
-  }
-
-  goToSlot() {
-    this.router.navigate(['/slot']);
-  }
-
-  goToTemplate() {
-    this.router.navigate(['/template']);
-  }
-
-  goToCalendar() {
-    this.router.navigate(['/calendar']);
-  }
-
-  goToPlanning() {
-    this.router.navigate(['/planning']);
-  }
-
-  goToStatistic() {
-    this.router.navigate(['/statistic']);
+    this.currentEntry = context.entry;
+    this.currentGroupLabel = context.group.label;
   }
 }

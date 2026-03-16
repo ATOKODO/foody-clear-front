@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -32,6 +32,7 @@ import {
   Product as ProductApiModel,
   ProductService,
 } from '../../services/product-service';
+import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 const INVENTORY_QTY_UNITS: ProductQuantityInputUnit[] = [
   'mg',
@@ -97,6 +98,7 @@ type InventoryQtyUnitOption = {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    UiErrorPanel,
     InventoryList,
     InventoryForm,
     ProductList,
@@ -343,6 +345,18 @@ export class Inventory implements OnInit {
     this.activeModal = null;
     this.addSelectedProductRows = [];
     this.addProductsFormError = null;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.formVisible) {
+      this.closeFormModal();
+      return;
+    }
+
+    if (this.activeModal) {
+      this.closeActiveModal();
+    }
   }
 
   onAddSelectedProducts(): void {

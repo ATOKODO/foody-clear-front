@@ -48,6 +48,7 @@ import {
 } from '../../services/meta-service';
 import { NutritionReference } from '../../interfaces/cycle.interface';
 import { Tag as TagApiModel, TagService } from '../../services/tag-service';
+import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 type ProductHubView = 'product' | 'category' | 'genericProduct' | 'tag';
 
@@ -63,6 +64,7 @@ type ProductHubView = 'product' | 'category' | 'genericProduct' | 'tag';
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    UiErrorPanel,
     CategoryFeature,
     GenericProductFeature,
     ProductList,

@@ -48,6 +48,7 @@ export class DaySetForm implements OnInit, OnChanges {
 
   @Input() mode: DaySetFormMode = 'add';
   @Input() daySet: Partial<DaySetFormValue> | null = null;
+  @Input() showHeading = true;
   @Input() nutritionKeys: NutritionKeyMeta[] = [];
   @Input() slots: SlotListItem[] = [];
   @Input() templates: TemplateSummary[] = [];

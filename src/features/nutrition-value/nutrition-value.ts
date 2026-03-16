@@ -1,3 +1,4 @@
+import { CommonModule, JsonPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
@@ -6,18 +7,18 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {
-  NutritionValueService,
-  CreateNutritionValueDto,
-  UpdateNutritionValueDto,
-} from '../../services/nutrition-value-service';
-import { JsonPipe, CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import {
+  CreateNutritionValueDto,
+  NutritionValueService,
+  UpdateNutritionValueDto,
+} from '../../services/nutrition-value-service';
 
 @Component({
   selector: 'app-nutrition-value',
@@ -32,27 +33,31 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    UiErrorPanel,
   ],
   templateUrl: './nutrition-value.html',
   styleUrl: './nutrition-value.scss',
 })
 export class NutritionValues implements OnInit {
-  // Lie la baseUrl au service via getter/setter (évite "used before initialization")
+  // Lie la baseUrl au service via getter/setter pour eviter "used before initialization".
   get baseUrl(): string {
     return this.nvSrv.baseUrl;
   }
-  set baseUrl(v: string) {
-    this.nvSrv.setBaseUrl(v);
+
+  set baseUrl(value: string) {
+    this.nvSrv.setBaseUrl(value);
   }
+
   form: FormGroup = new FormGroup({});
   lastResponse: unknown = null;
   lastError: unknown = null;
   loading = false;
 
   constructor(
-    private fb: FormBuilder,
-    private nvSrv: NutritionValueService,
+    private readonly fb: FormBuilder,
+    private readonly nvSrv: NutritionValueService,
   ) {}
+
   ngOnInit(): void {
     this.form = this.fb.group({
       id: this.fb.control<number | null>(null),
@@ -70,130 +75,137 @@ export class NutritionValues implements OnInit {
       per: this.fb.control<number | null>(null, {
         validators: [Validators.required],
       }),
-      productId: this.fb.control<number | null>(null), // requis pour CREATE
+      productId: this.fb.control<number | null>(null),
     });
   }
 
-  // ---- helpers ----
   private pickCreatePayload(): CreateNutritionValueDto {
-    const v = this.form.getRawValue();
+    const value = this.form.getRawValue();
     if (
-      !v.label ||
-      v.amount == null ||
-      !v.unit ||
-      v.per == null ||
-      v.productId == null
+      !value.label ||
+      value.amount == null ||
+      !value.unit ||
+      value.per == null ||
+      value.productId == null
     ) {
-      throw new Error(
-        'Pour CREATE : label, amount, unit, per, productId sont requis.',
-      );
+      throw new Error('Pour CREATE : label, amount, unit, per, productId sont requis.');
     }
+
     return {
-      label: v.label.trim(),
-      amount: v.amount,
-      unit: v.unit.trim(),
-      per: v.per,
-      productId: v.productId,
+      label: value.label.trim(),
+      amount: value.amount,
+      unit: value.unit.trim(),
+      per: value.per,
+      productId: value.productId,
     };
   }
 
   private pickUpdatePayload(): UpdateNutritionValueDto {
-    const v = this.form.getRawValue();
+    const value = this.form.getRawValue();
     const dto: UpdateNutritionValueDto = {};
-    if (v.label && v.label.trim() !== '') dto.label = v.label.trim();
-    if (v.amount != null) dto.amount = v.amount;
-    if (v.unit && v.unit.trim() !== '') dto.unit = v.unit.trim();
-    if (v.per != null) dto.per = v.per;
-    if (v.productId != null) dto.productId = v.productId; // si tu autorises le changement de produit
+
+    if (value.label && value.label.trim() !== '') dto.label = value.label.trim();
+    if (value.amount != null) dto.amount = value.amount;
+    if (value.unit && value.unit.trim() !== '') dto.unit = value.unit.trim();
+    if (value.per != null) dto.per = value.per;
+    if (value.productId != null) dto.productId = value.productId;
+
     return dto;
   }
 
-  private setResult(resp: unknown) {
-    this.lastResponse = resp;
+  private setResult(response: unknown): void {
+    this.lastResponse = response;
     this.lastError = null;
     this.loading = false;
   }
-  private setError(err: unknown) {
-    this.lastError = err;
+
+  private setError(error: unknown): void {
+    this.lastError = error;
     this.loading = false;
   }
 
-  // ---- actions API ----
-  create() {
+  create(): void {
     this.loading = true;
+
     try {
       const dto = this.pickCreatePayload();
       this.nvSrv.create(dto).subscribe({
-        next: (r) => this.setResult(r),
-        error: (e) => this.setError(e),
+        next: (response) => this.setResult(response),
+        error: (error) => this.setError(error),
       });
-    } catch (e) {
-      this.setError(e);
+    } catch (error) {
+      this.setError(error);
     }
   }
 
-  getAll() {
+  getAll(): void {
     this.loading = true;
     this.nvSrv.findAll().subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
+      next: (response) => this.setResult(response),
+      error: (error) => this.setError(error),
     });
   }
 
-  getOne() {
+  getOne(): void {
     const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError(
-        'Veuillez renseigner un id pour GET /nutrition-values/:id',
-      );
+    if (id == null) {
+      this.setError('Veuillez renseigner un id pour GET /nutrition-values/:id');
+      return;
+    }
+
     this.loading = true;
     this.nvSrv.findOne(id).subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
+      next: (response) => this.setResult(response),
+      error: (error) => this.setError(error),
     });
   }
 
-  update() {
+  update(): void {
     const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError(
-        'Veuillez renseigner un id pour PATCH /nutrition-values/:id',
-      );
+    if (id == null) {
+      this.setError('Veuillez renseigner un id pour PATCH /nutrition-values/:id');
+      return;
+    }
+
     const dto = this.pickUpdatePayload();
-    if (Object.keys(dto).length === 0)
-      return this.setError('Aucun champ à mettre à jour.');
+    if (Object.keys(dto).length === 0) {
+      this.setError('Aucun champ a mettre a jour.');
+      return;
+    }
+
     this.loading = true;
     this.nvSrv.update(id, dto).subscribe({
-      next: (r) => this.setResult(r),
-      error: (e) => this.setError(e),
+      next: (response) => this.setResult(response),
+      error: (error) => this.setError(error),
     });
   }
 
-  delete() {
+  delete(): void {
     const id = this.form.value.id ?? null;
-    if (id == null)
-      return this.setError(
-        'Veuillez renseigner un id pour DELETE /nutrition-values/:id',
-      );
+    if (id == null) {
+      this.setError('Veuillez renseigner un id pour DELETE /nutrition-values/:id');
+      return;
+    }
+
     this.loading = true;
     this.nvSrv.remove(id).subscribe({
       next: () => this.setResult({ deleted: true, id }),
-      error: (e) => this.setError(e),
+      error: (error) => this.setError(error),
     });
   }
 
-  fillDemoCreate() {
+  fillDemoCreate(): void {
     this.form.patchValue({
       id: null,
-      label: 'Protéines',
+      label: 'Proteines',
       amount: 12.5,
       unit: 'g',
       per: 100,
-      productId: 1, // adapte à ton produit
+      productId: 1,
     });
   }
 
-  clear() {
+  clear(): void {
     this.form.reset({
       id: null,
       label: '',

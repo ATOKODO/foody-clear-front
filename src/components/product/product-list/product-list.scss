@@ -3,12 +3,12 @@
 }
 
 .product-table .mat-mdc-header-row {
-  background: rgb(248 250 252);
+  background: var(--app-surface-soft);
 }
 
 .product-table .mat-mdc-header-cell {
   font-weight: 600;
-  color: rgb(15 23 42);
+  color: var(--app-text-strong);
 }
 
 .product-table .mat-mdc-row.pl-selectable {
@@ -16,5 +16,5 @@
 }
 
 .product-table .mat-mdc-row.pl-active {
-  background: rgb(239 246 255);
+  background: var(--app-info-bg);
 }

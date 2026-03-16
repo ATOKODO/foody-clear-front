@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 import {
   CategoryForm,
   CategoryFormMode,
@@ -30,6 +31,7 @@ import {
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
+    UiErrorPanel,
     CategoryList,
     CategoryForm,
   ],

@@ -1,17 +1,17 @@
-<section class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+<section class="app-page">
   <div class="product-hub-header rounded-3xl px-6 py-6 text-white shadow-lg">
     <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
       <div class="max-w-3xl">
         <p
           class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-300"
         >
-          Catalog hub
+          Catalogue central
         </p>
         <h1 class="mt-2 text-2xl font-semibold sm:text-3xl">
-          Products, categories et tags
+          Produits, categories et tags
         </h1>
         <p class="mt-2 text-sm text-slate-300 sm:text-base">
-          Pilotez les ecrans produits relies depuis une vue unique.
+          Pilote le catalogue et ses ecrans relies depuis une vue unique.
         </p>
       </div>
 
@@ -23,12 +23,12 @@
         class="product-view-toggle"
         name="product-view"
       >
-        <mat-button-toggle value="product">Product</mat-button-toggle>
-        <mat-button-toggle value="category">Category</mat-button-toggle>
+        <mat-button-toggle value="product">Produits</mat-button-toggle>
+        <mat-button-toggle value="category">Categories</mat-button-toggle>
         <mat-button-toggle value="genericProduct">
-          Generic product
+          Produits generiques
         </mat-button-toggle>
-        <mat-button-toggle value="tag">Tag</mat-button-toggle>
+        <mat-button-toggle value="tag">Tags</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
   </div>
@@ -41,7 +41,7 @@
       class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 px-6 py-5 text-white"
     >
       <div>
-        <h2 class="text-xl font-semibold">Products</h2>
+        <h2 class="text-xl font-semibold">Produits</h2>
         <p class="mt-1 text-sm text-slate-300">Gestion des produits.</p>
       </div>
       <button
@@ -56,38 +56,33 @@
       </button>
     </div>
 
-    <div>
-      <div class="flex flex-wrap items-center gap-2">
+    <div class="space-y-4 p-4 sm:p-6">
+      <div class="app-status-row">
         <span
           *ngIf="loading"
-          class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
+          class="app-status-pill app-status-pill--neutral"
         >
           Chargement...
         </span>
         <span
           *ngIf="saving"
-          class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700"
+          class="app-status-pill app-status-pill--saving"
         >
           Sauvegarde...
         </span>
         <span
           *ngIf="loadingMeta"
-          class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700"
+          class="app-status-pill app-status-pill--info"
         >
           Meta...
         </span>
       </div>
 
-      <p
-        *ngIf="lastError"
-        class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-      >
-        {{ lastError | json }}
-      </p>
+      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
 
       <p
         *ngIf="lastMetaError"
-        class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700"
+        class="app-alert"
       >
         Impossible de charger les metas (units / nutrition keys), fallback
         actif.

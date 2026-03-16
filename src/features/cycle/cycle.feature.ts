@@ -41,6 +41,7 @@ import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
 import { SlotService } from '../../services/slot-service';
 import { DaySetFeature } from '../day-set/day-set.feature';
 import { SlotFeature } from '../slot/slot.feature';
+import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 type CycleHubView = 'cycle' | 'daySet' | 'slot';
 type CycleImpactDialogResult = 'submitted' | 'cancelled';
@@ -66,6 +67,7 @@ type CycleUpdateImpactOptions = {
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    UiErrorPanel,
     DaySetFeature,
     SlotFeature,
   ],

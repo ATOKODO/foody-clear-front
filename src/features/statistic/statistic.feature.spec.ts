@@ -10,8 +10,8 @@ describe('StatisticFeature', () => {
   let fixture: ComponentFixture<StatisticFeature>;
   const statisticService = {
     baseUrl: 'http://localhost:3000',
-    setBaseUrl: jest.fn(),
-    getTimeline: jest.fn(() =>
+    setBaseUrl: jasmine.createSpy('setBaseUrl'),
+    getTimeline: jasmine.createSpy('getTimeline').and.returnValue(
       of({
         fromDateLocal: '2026-03-01',
         toDateLocal: '2026-03-03',
@@ -25,7 +25,7 @@ describe('StatisticFeature', () => {
         days: [],
       }),
     ),
-    getProductPriceHistory: jest.fn(() =>
+    getProductPriceHistory: jasmine.createSpy('getProductPriceHistory').and.returnValue(
       of({
         fromDateLocal: '2026-03-01',
         toDateLocal: '2026-03-03',
@@ -49,8 +49,8 @@ describe('StatisticFeature', () => {
     ),
   };
   const productService = {
-    setBaseUrl: jest.fn(),
-    findAll: jest.fn(() => of([{ id: 1, name: 'Produit' }])),
+    setBaseUrl: jasmine.createSpy('setBaseUrl'),
+    findAll: jasmine.createSpy('findAll').and.returnValue(of([{ id: 1, name: 'Produit' }])),
   };
 
   beforeEach(async () => {

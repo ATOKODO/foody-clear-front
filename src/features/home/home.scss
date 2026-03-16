@@ -1,0 +1,212 @@
+:host {
+  display: block;
+}
+
+.home-dashboard {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.home-dashboard__hero {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid var(--app-border);
+  border-radius: 1.75rem;
+  background:
+    radial-gradient(circle at top right, rgb(16 185 129 / 0.18), transparent 28%),
+    radial-gradient(circle at bottom left, rgb(59 130 246 / 0.16), transparent 30%),
+    linear-gradient(135deg, #07111f 0%, #0f172a 56%, #1e293b 100%);
+  box-shadow: var(--app-shadow-lg);
+  color: white;
+}
+
+.home-dashboard__hero-copy {
+  max-width: 48rem;
+}
+
+.home-dashboard__eyebrow {
+  color: rgb(191 219 254 / 0.85);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.home-dashboard__title {
+  margin-top: 0.45rem;
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.home-dashboard__description {
+  margin-top: 0.85rem;
+  max-width: 42rem;
+  color: rgb(226 232 240 / 0.88);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.home-dashboard__hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.home-dashboard__hero-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.85rem 1.15rem;
+  border-radius: 999px;
+  background: white;
+  color: #0f172a;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 18px 40px -28px rgb(2 6 23 / 0.82);
+}
+
+.home-dashboard__hero-link--secondary {
+  background: rgb(15 23 42 / 0.36);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  color: white;
+}
+
+.home-dashboard__spotlight {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.home-dashboard__spotlight-card,
+.home-dashboard__group {
+  padding: 1.15rem;
+  border: 1px solid var(--app-border);
+  border-radius: 1.35rem;
+  background: var(--app-surface-raised);
+  box-shadow: var(--app-shadow-sm);
+}
+
+.home-dashboard__spotlight-group,
+.home-dashboard__group-label {
+  color: var(--app-text-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.home-dashboard__spotlight-title,
+.home-dashboard__group-title {
+  margin-top: 0.45rem;
+  color: var(--app-text-strong);
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.home-dashboard__spotlight-description {
+  margin-top: 0.45rem;
+  color: var(--app-text);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.home-dashboard__spotlight-link {
+  display: inline-flex;
+  margin-top: 1rem;
+  color: var(--app-accent-strong);
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.home-dashboard__groups {
+  display: grid;
+  gap: 1rem;
+}
+
+.home-dashboard__group-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.home-dashboard__entry {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  border: 1px solid var(--app-border);
+  border-radius: 1rem;
+  background: var(--app-surface);
+  text-decoration: none;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.home-dashboard__entry:hover,
+.home-dashboard__entry:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--app-border-strong);
+  box-shadow: var(--app-shadow-sm);
+  outline: none;
+}
+
+.home-dashboard__entry-badge {
+  display: inline-flex;
+  width: 2.55rem;
+  height: 2.55rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.9rem;
+  background: linear-gradient(135deg, rgb(16 185 129 / 0.18), rgb(14 165 233 / 0.12));
+  color: var(--app-text-strong);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.home-dashboard__entry-copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.home-dashboard__entry-title {
+  color: var(--app-text-strong);
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.home-dashboard__entry-description {
+  color: var(--app-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .home-dashboard__hero {
+    align-items: start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-dashboard__hero {
+    padding: 1.15rem;
+  }
+
+  .home-dashboard__hero-actions,
+  .home-dashboard__hero-link {
+    width: 100%;
+  }
+}

@@ -1,10 +1,10 @@
 <ng-container *ngIf="isStandaloneMode; else embeddedLayout">
-  <section class="mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
+  <section class="app-page app-page--wide">
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="bg-slate-900 px-4 py-4 text-white sm:px-6 sm:py-5">
-        <h2 class="text-xl font-semibold">InputDay</h2>
+        <h2 class="text-xl font-semibold">Saisie du jour</h2>
         <p class="mt-1 text-sm text-slate-300">
-          Gestion des items du jour.
+          Gestion des items, du template actif et des totaux quotidiens.
         </p>
       </div>
 
@@ -21,7 +21,7 @@
   <div class="space-y-5">
     <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3">
       <div>
-        <h2 class="text-lg font-semibold text-slate-900">Items du jour</h2>
+        <h2 class="text-lg font-semibold text-slate-900">Elements du jour</h2>
         <p class="text-sm text-slate-500">
           {{ selectedDateLabel }}
         </p>
@@ -93,7 +93,7 @@
           </mat-form-field>
 
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Inventory</mat-label>
+              <mat-label>Inventaire</mat-label>
             <mat-select
               [ngModel]="selectedInventoryId"
               [ngModelOptions]="{ standalone: true }"
@@ -134,7 +134,7 @@
             Exemple
           </button>
           <button *ngIf="isStandaloneMode" mat-button type="button" (click)="clear()">
-            Clear
+            Effacer
           </button>
         </div>
       </mat-card-content>
@@ -409,12 +409,10 @@
       </mat-card-content>
     </mat-card>
 
-    <p *ngIf="lastError" class="break-words rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-      {{ lastError | json }}
-    </p>
+    <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
 
     <div *ngIf="inputDayResponse as response" class="space-y-3">
-      <h3 *ngIf="isStandaloneMode" class="text-base font-semibold text-slate-900">Resume InputDay</h3>
+      <h3 *ngIf="isStandaloneMode" class="text-base font-semibold text-slate-900">Resume de la journee</h3>
 
       <mat-card *ngIf="isStandaloneMode" appearance="outlined" class="rounded-xl">
         <mat-card-content class="space-y-3 p-4">
@@ -428,7 +426,7 @@
           </div>
 
           <div *ngIf="response.assignment as assignment; else noAssignment" class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <p class="text-sm font-semibold text-slate-900">Assignation active</p>
+            <p class="text-sm font-semibold text-slate-900">Cycle actif</p>
             <p class="text-sm text-slate-700">
               Cycle #{{ assignment.cycleId }} - {{ assignment.cycleTitle }}
             </p>
@@ -518,7 +516,7 @@
 
             <div class="flex flex-wrap items-center gap-2">
               <mat-form-field appearance="fill" class="w-full min-w-[16rem] sm:w-72">
-                <mat-label>Override template</mat-label>
+              <mat-label>Remplacement template</mat-label>
                 <mat-select [(ngModel)]="manualTemplateSelectionId" [ngModelOptions]="{ standalone: true }">
                   <mat-option [value]="null">Aucun override</mat-option>
                   <mat-option *ngFor="let template of templates" [value]="template.id">
@@ -536,7 +534,7 @@
                 mat-stroked-button
                 type="button"
                 (click)="clearManualTemplateOverride()">
-                Retirer l override
+                Retirer le remplacement
               </button>
             </div>
           </div>
@@ -657,7 +655,7 @@
 
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-content class="space-y-3 p-4">
-          <p class="text-sm font-semibold text-slate-900">Items du jour</p>
+          <p class="text-sm font-semibold text-slate-900">Elements saisis</p>
 
           <div *ngIf="response.items.length > 0; else noItems" class="overflow-x-auto rounded-lg border border-slate-200">
             <table class="min-w-full text-sm">
@@ -745,7 +743,7 @@
 
               <div class="grid gap-3 md:grid-cols-3">
                 <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Day Total</p>
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Total jour</p>
                   <div class="space-y-1 text-sm text-slate-700">
                     <p *ngFor="let entry of totals.dayTotal | keyvalue">
                       <span class="font-medium text-slate-900">{{ entry.key }}:</span>
@@ -755,7 +753,7 @@
                 </div>
 
                 <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Targets</p>
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Cibles</p>
                   <div *ngIf="hasEntries(totals.targets); else noDayTargets" class="space-y-1 text-sm text-slate-700">
                     <p *ngFor="let entry of totals.targets | keyvalue">
                       <span class="font-medium text-slate-900">{{ entry.key }}:</span>
@@ -768,7 +766,7 @@
                 </div>
 
                 <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Delta To Targets</p>
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ecart aux cibles</p>
                   <div *ngIf="hasEntries(totals.deltaToTargets); else noDayDelta" class="space-y-1 text-sm text-slate-700">
                     <p *ngFor="let entry of totals.deltaToTargets | keyvalue">
                       <span class="font-medium text-slate-900">{{ entry.key }}:</span>
@@ -792,7 +790,7 @@
 
               <div class="grid gap-3 md:grid-cols-3">
                 <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Day Total</p>
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Total jour</p>
                   <div class="space-y-1 text-sm text-slate-700">
                     <p *ngFor="let entry of projectedTotals.dayTotal | keyvalue">
                       <span class="font-medium text-slate-900">{{ entry.key }}:</span>
@@ -802,7 +800,7 @@
                 </div>
 
                 <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Targets</p>
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Cibles</p>
                   <div *ngIf="hasEntries(projectedTotals.targets); else noProjectedDayTargets" class="space-y-1 text-sm text-slate-700">
                     <p *ngFor="let entry of projectedTotals.targets | keyvalue">
                       <span class="font-medium text-slate-900">{{ entry.key }}:</span>
@@ -815,7 +813,7 @@
                 </div>
 
                 <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Delta To Targets</p>
+                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ecart aux cibles</p>
                   <div *ngIf="hasEntries(projectedTotals.deltaToTargets); else noProjectedDayDelta" class="space-y-1 text-sm text-slate-700">
                     <p *ngFor="let entry of projectedTotals.deltaToTargets | keyvalue">
                       <span class="font-medium text-slate-900">{{ entry.key }}:</span>
@@ -837,7 +835,7 @@
       <mat-divider></mat-divider>
 
       <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
-      <pre class="input-day-response max-h-[65vh] overflow-auto rounded-lg bg-slate-100 p-3 text-[11px] text-slate-800 sm:p-4 sm:text-xs">
+      <pre class="app-code-panel input-day-response max-h-[65vh] p-3 text-[11px] sm:p-4 sm:text-xs">
 {{ lastResponse | json }}
       </pre>
     </div>

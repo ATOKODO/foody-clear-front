@@ -3,10 +3,10 @@
 }
 
 .dsf-field {
-  --mat-form-field-filled-container-color: rgb(220 220 220);
-  --mat-form-field-filled-label-text-color: rgb(60 60 60);
-  --mat-form-field-filled-input-text-color: rgb(30 30 30);
-  --mat-form-field-filled-active-indicator-color: rgb(85 85 85);
-  --mat-form-field-filled-focus-active-indicator-color: rgb(40 40 40);
+  --mat-form-field-filled-container-color: var(--app-form-field-bg);
+  --mat-form-field-filled-label-text-color: var(--app-form-field-label);
+  --mat-form-field-filled-input-text-color: var(--app-form-field-input);
+  --mat-form-field-filled-active-indicator-color: var(--app-form-field-indicator);
+  --mat-form-field-filled-focus-active-indicator-color: var(--app-form-field-focus);
   --mat-form-field-filled-container-shape: 4px;
 }

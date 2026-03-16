@@ -1,32 +1,21 @@
-import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { APP_NAVIGATION, APP_NAVIGATION_ENTRIES } from '../../app/app.navigation';
 
 @Component({
   selector: 'app-home',
-  imports: [],
+  imports: [CommonModule, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home {
-  private router = inject(Router);
+  readonly featuredEntries = APP_NAVIGATION_ENTRIES
+    .filter(({ entry }) => entry.featured && entry.id !== 'home')
+    .map(({ group, entry }) => ({
+      ...entry,
+      groupLabel: group.label,
+    }));
 
-  goToProduct() {
-    this.router.navigate(['/product']);
-  }
-
-  goToCategory() {
-    this.router.navigate(['/category']);
-  }
-
-  goToTag() {
-    this.router.navigate(['/tag']);
-  }
-
-  goToGenericProduct() {
-    this.router.navigate(['/generic-product']);
-  }
-
-  goToNutritionValue() {
-    this.router.navigate(['/nutrition-value']);
-  }
+  readonly dashboardGroups = APP_NAVIGATION.filter((group) => group.id !== 'home');
 }

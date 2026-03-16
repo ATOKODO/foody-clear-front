@@ -37,6 +37,7 @@ export class TagForm implements OnInit, OnChanges {
 
   @Input() mode: TagFormMode = 'add';
   @Input() tag: Partial<TagFormValue> | null = null;
+  @Input() showHeading = true;
 
   @Output() readonly submitted = new EventEmitter<{
     mode: TagFormMode;

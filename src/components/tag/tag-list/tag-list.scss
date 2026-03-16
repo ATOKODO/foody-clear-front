@@ -3,12 +3,12 @@
 }
 
 .tag-table .mat-mdc-header-row {
-  background: rgb(248 250 252);
+  background: var(--app-surface-soft);
 }
 
 .tag-table .mat-mdc-header-cell {
   font-weight: 600;
-  color: rgb(15 23 42);
+  color: var(--app-text-strong);
 }
 
 .tag-table .mat-mdc-row.tl-selectable {
@@ -16,5 +16,5 @@
 }
 
 .tag-table .mat-mdc-row.tl-active {
-  background: rgb(239 246 255);
+  background: var(--app-info-bg);
 }

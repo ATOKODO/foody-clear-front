@@ -1,11 +1,11 @@
 .template-feature__template-button {
   width: 100%;
   justify-content: flex-start;
-  border-color: #cbd5e1;
+  border-color: var(--app-border-strong);
   padding: 0.9rem 1rem;
 }
 
 .template-feature__template-button--active {
-  border-color: #0f172a;
-  background: #f8fafc;
+  border-color: var(--app-text-strong);
+  background: var(--app-surface-soft);
 }

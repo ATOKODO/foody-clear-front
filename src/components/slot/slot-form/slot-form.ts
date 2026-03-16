@@ -47,6 +47,7 @@ export class SlotForm implements OnInit, OnChanges {
 
   @Input() mode: SlotFormMode = 'add';
   @Input() slot: Partial<SlotFormValue> | null = null;
+  @Input() showHeading = true;
   @Input() nutritionKeys: NutritionKeyMeta[] = [];
 
   @Output() readonly submitted = new EventEmitter<{

@@ -69,6 +69,7 @@ describe('DaySetForm', () => {
         mode: 'add',
         value: {
           title: 'Mardi',
+          templateId: null,
           nutritionValues: [
             { nutritionKey: 'PROTEIN', amount: 30, unit: 'G', reference: 'PER_100G' },
             { nutritionKey: 'CARBOHYDRATE', amount: 40, unit: 'G', reference: 'PER_100G' },

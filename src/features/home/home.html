@@ -1,8 +1,60 @@
-<p class="mt-4">home works!</p>
-<div class="flex gap-2">
-    <button class="mt-4" (click)="goToProduct()">Product</button>
-    <button class="mt-4" (click)="goToCategory()">Category</button>
-    <button class="mt-4" (click)="goToTag()">Tag</button>
-    <button class="mt-4" (click)="goToGenericProduct()">Generic Product</button>
-    <button class="mt-4" (click)="goToNutritionValue()">Nutrition Value</button>
-</div>
+<section class="app-page app-page--wide home-dashboard">
+  <header class="home-dashboard__hero">
+    <div class="home-dashboard__hero-copy">
+      <p class="home-dashboard__eyebrow">Foody Clear</p>
+      <h1 class="home-dashboard__title">Tableau de bord</h1>
+      <p class="home-dashboard__description">
+        Retrouve les parcours les plus utiles pour piloter le catalogue,
+        l'execution quotidienne, le planning et le suivi.
+      </p>
+    </div>
+
+    <div class="home-dashboard__hero-actions">
+      <a routerLink="/product" class="home-dashboard__hero-link">
+        Ouvrir le catalogue
+      </a>
+      <a
+        routerLink="/planning"
+        class="home-dashboard__hero-link home-dashboard__hero-link--secondary"
+      >
+        Voir le planning
+      </a>
+    </div>
+  </header>
+
+  <section class="home-dashboard__spotlight">
+    <article *ngFor="let entry of featuredEntries" class="home-dashboard__spotlight-card">
+      <p class="home-dashboard__spotlight-group">{{ entry.groupLabel }}</p>
+      <h2 class="home-dashboard__spotlight-title">{{ entry.label }}</h2>
+      <p class="home-dashboard__spotlight-description">{{ entry.description }}</p>
+      <a [routerLink]="entry.path" class="home-dashboard__spotlight-link">
+        Ouvrir le module
+      </a>
+    </article>
+  </section>
+
+  <section class="home-dashboard__groups">
+    <article *ngFor="let group of dashboardGroups" class="home-dashboard__group">
+      <div class="home-dashboard__group-header">
+        <div>
+          <p class="home-dashboard__group-label">{{ group.label }}</p>
+          <h2 class="home-dashboard__group-title">{{ group.description }}</h2>
+        </div>
+      </div>
+
+      <div class="home-dashboard__group-grid">
+        <a
+          *ngFor="let entry of group.entries"
+          [routerLink]="entry.path"
+          class="home-dashboard__entry"
+        >
+          <span class="home-dashboard__entry-badge">{{ entry.shortLabel }}</span>
+          <span class="home-dashboard__entry-copy">
+            <span class="home-dashboard__entry-title">{{ entry.label }}</span>
+            <span class="home-dashboard__entry-description">{{ entry.description }}</span>
+          </span>
+        </a>
+      </div>
+    </article>
+  </section>
+</section>

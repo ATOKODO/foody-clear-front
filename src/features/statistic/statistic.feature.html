@@ -1,8 +1,8 @@
-<section class="stat-page">
+<section class="app-page app-page--wide stat-page">
   <header class="stat-hero">
     <div>
       <p class="stat-eyebrow">Foody Clear</p>
-      <h1>Statistics</h1>
+      <h1>Statistiques</h1>
       <p class="stat-subtitle">
         Timeline des achats, progression sur les objectifs et evolution du prix des produits.
       </p>
@@ -19,7 +19,7 @@
   <mat-card appearance="outlined" class="stat-card">
     <div class="stat-filters">
       <mat-form-field appearance="fill">
-        <mat-label>API base URL</mat-label>
+        <mat-label>Base URL API</mat-label>
         <input matInput [(ngModel)]="baseUrl" (blur)="onBaseUrlChange()" />
       </mat-form-field>
 
@@ -44,7 +44,7 @@
     </div>
   </mat-card>
 
-  <div class="stat-banner">
+  <div class="stat-banner app-alert">
     L'historique des achats commence a l'activation de la feature. Le stock deja present n'est pas retro-injecte.
   </div>
 
@@ -132,7 +132,7 @@
     <mat-card appearance="outlined" class="stat-card">
       <div class="stat-card__head">
         <div>
-          <h2>Objectifs / input-day</h2>
+          <h2>Objectifs / saisie du jour</h2>
           <p>Comparaison journaliere entre reel et cible.</p>
         </div>
         <mat-button-toggle-group [(ngModel)]="activeMetric" aria-label="Choisir la metrique">
@@ -189,7 +189,7 @@
         <p *ngIf="day.inputs.daySet">Day set: {{ day.inputs.daySet.title }}</p>
         <p>Items saisis: {{ day.inputs.itemCount }}</p>
         <p *ngIf="day.inputs.incompleteNutritionKeys.length > 0">
-          Incomplet: {{ day.inputs.incompleteNutritionKeys.join(', ') }}
+          Nutrition incomplete: {{ day.inputs.incompleteNutritionKeys.join(', ') }}
         </p>
       </div>
     </mat-card>
@@ -281,10 +281,10 @@
     </mat-card>
   </ng-container>
 
-  <mat-card appearance="outlined" class="stat-card stat-card--error" *ngIf="timelineError || priceHistoryError || productError">
-    <h2>Erreur</h2>
-    <p>{{ timelineError || priceHistoryError || productError | json }}</p>
-  </mat-card>
+  <app-ui-error-panel
+    *ngIf="timelineError || priceHistoryError || productError"
+    [error]="timelineError || priceHistoryError || productError">
+  </app-ui-error-panel>
 
   <ng-template #noExpenseEvents>
     <p class="empty-copy">Aucun achat sur cette journee.</p>

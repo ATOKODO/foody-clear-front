@@ -1,30 +1,28 @@
-<section class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+<section class="app-page">
   <mat-card class="overflow-hidden rounded-2xl">
     <div class="bg-slate-900 px-6 py-5 text-white">
-      <h2 class="text-xl font-semibold">Day Sets</h2>
+      <h2 class="text-xl font-semibold">Day sets</h2>
       <p class="mt-1 text-sm text-slate-300">
-        Ajout et visualisation des day sets.
+        Journees type, cibles nutritionnelles et templates associes.
       </p>
     </div>
 
-    <div>
-      <div class="flex flex-wrap items-center gap-2">
-        <span *ngIf="loading" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+    <div class="space-y-4 p-4 sm:p-6">
+      <div class="app-status-row">
+        <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
           Chargement...
         </span>
-        <span *ngIf="saving" class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+        <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
           Sauvegarde...
         </span>
-        <span *ngIf="loadingMeta" class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700">
+        <span *ngIf="loadingMeta" class="app-status-pill app-status-pill--info">
           Meta nutrition...
         </span>
       </div>
 
-      <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-        {{ lastError | json }}
-      </p>
+      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
 
-      <p *ngIf="lastMetaError" class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+      <p *ngIf="lastMetaError" class="app-alert">
         Impossible de charger les cles nutritionnelles meta, fallback actif.
       </p>
 
@@ -35,27 +33,46 @@
         (editRequested)="onEditRequested($event)"
         (deleteRequested)="onDeleteRequested($event)">
       </app-day-set-list>
-
-      <mat-card *ngIf="formVisible" appearance="outlined" class="rounded-xl">
-        <mat-card-content class="p-0">
-          <app-day-set-form
-            [mode]="formMode"
-            [daySet]="formInitialValue"
-            [nutritionKeys]="nutritionKeys"
-            [slots]="slotListItems"
-            [templates]="templates"
-            (submitted)="onFormSubmitted($event)"
-            (menuClicked)="onMenuClicked()">
-          </app-day-set-form>
-        </mat-card-content>
-
-        <mat-card-actions class="flex justify-center pb-6">
-          <button mat-stroked-button type="button" (click)="onCancelForm()">
-            Annuler
-          </button>
-        </mat-card-actions>
-      </mat-card>
-
     </div>
   </mat-card>
 </section>
+
+<div class="app-modal-backdrop" *ngIf="formVisible" (click)="onCancelForm()"></div>
+<div class="app-modal-shell" *ngIf="formVisible">
+  <mat-card
+    appearance="outlined"
+    class="app-modal-card"
+    role="dialog"
+    aria-modal="true"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="app-dialog-header">
+      <div>
+        <p class="app-dialog-eyebrow">Planning</p>
+        <h3 class="app-dialog-title">
+          {{ formMode === 'edit' ? 'Modifier un day set' : 'Ajouter un day set' }}
+        </h3>
+        <p class="app-dialog-subtitle">
+          Compose une journee type, ses slots et ses cibles nutritionnelles.
+        </p>
+      </div>
+
+      <button mat-stroked-button type="button" (click)="onCancelForm()">
+        Fermer
+      </button>
+    </div>
+
+    <div class="app-dialog-content">
+      <app-day-set-form
+        [mode]="formMode"
+        [daySet]="formInitialValue"
+        [showHeading]="false"
+        [nutritionKeys]="nutritionKeys"
+        [slots]="slotListItems"
+        [templates]="templates"
+        (submitted)="onFormSubmitted($event)"
+        (menuClicked)="onMenuClicked()">
+      </app-day-set-form>
+    </div>
+  </mat-card>
+</div>

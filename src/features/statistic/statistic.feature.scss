@@ -1,14 +1,19 @@
 .stat-page {
-  --stat-bg: linear-gradient(135deg, #fef3c7 0%, #fffbeb 38%, #ecfccb 100%);
-  --stat-ink: #172554;
-  --stat-muted: #475569;
-  --stat-border: rgba(15, 23, 42, 0.12);
-  --stat-accent: #0f766e;
-  --stat-accent-soft: #99f6e4;
-  --stat-warn: #f59e0b;
+  --stat-bg: linear-gradient(
+    135deg,
+    rgb(16 185 129 / 0.08) 0%,
+    rgb(59 130 246 / 0.08) 42%,
+    transparent 100%
+  );
+  --stat-ink: var(--app-text-strong);
+  --stat-muted: var(--app-text);
+  --stat-border: var(--app-border);
+  --stat-accent: var(--app-accent-strong);
+  --stat-accent-soft: var(--app-accent-soft);
+  --stat-warn: var(--app-warning-text);
   display: grid;
   gap: 1.25rem;
-  padding: 1.5rem;
+  padding: 0;
   color: var(--stat-ink);
   background: var(--stat-bg);
 }
@@ -54,9 +59,10 @@
 .stat-card {
   border-radius: 1.25rem;
   border: 1px solid var(--stat-border);
-  background: rgba(255, 255, 255, 0.84);
+  background: var(--app-surface-raised);
   backdrop-filter: blur(14px);
   padding: 1rem;
+  box-shadow: var(--app-shadow-sm);
 }
 
 .stat-card__head {
@@ -89,9 +95,9 @@
 .stat-banner {
   padding: 0.8rem 1rem;
   border-radius: 0.9rem;
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  background: rgba(255, 255, 255, 0.7);
-  color: #92400e;
+  border: 1px solid var(--app-warning-border);
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
 }
 
 .stat-view-switch {
@@ -109,7 +115,7 @@
 .expense-bar,
 .target-bar {
   border: 1px solid var(--stat-border);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--app-surface);
   border-radius: 1rem;
   padding: 0.75rem 0.5rem;
   display: grid;
@@ -120,8 +126,8 @@
 
 .expense-bar.is-active,
 .target-bar.is-active {
-  border-color: rgba(15, 118, 110, 0.55);
-  box-shadow: 0 0 0 2px rgba(153, 246, 228, 0.6);
+  border-color: var(--app-accent-strong);
+  box-shadow: 0 0 0 2px var(--stat-accent-soft);
 }
 
 .expense-bar__rail,
@@ -149,15 +155,15 @@
 }
 
 .expense-bar__fill {
-  background: linear-gradient(180deg, #0f766e 0%, #14b8a6 100%);
+  background: linear-gradient(180deg, var(--app-accent-strong) 0%, #14b8a6 100%);
 }
 
 .target-bar__goal {
-  background: rgba(15, 118, 110, 0.25);
+  background: var(--app-info-bg);
 }
 
 .target-bar__actual {
-  background: linear-gradient(180deg, #1d4ed8 0%, #60a5fa 100%);
+  background: linear-gradient(180deg, var(--app-info-text) 0%, #60a5fa 100%);
 }
 
 .expense-bar__amount,
@@ -184,7 +190,7 @@
   padding: 0.85rem 1rem;
   border-radius: 0.95rem;
   border: 1px solid var(--stat-border);
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--app-surface);
 }
 
 .detail-item__aside {
@@ -200,14 +206,14 @@
 }
 
 .status-chip--warn {
-  background: rgba(245, 158, 11, 0.15);
-  color: #92400e;
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
 }
 
 .target-detail-box {
   padding: 0.9rem 1rem;
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--app-surface);
   border: 1px solid var(--stat-border);
 }
 
@@ -243,12 +249,12 @@
 }
 
 .stat-card--error {
-  border-color: rgba(239, 68, 68, 0.25);
+  border-color: var(--app-danger-border);
 }
 
 @media (max-width: 760px) {
   .stat-page {
-    padding: 1rem;
+    padding: 0;
   }
 
   .stat-hero {

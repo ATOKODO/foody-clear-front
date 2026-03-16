@@ -3,10 +3,10 @@
 }
 
 .inventory-products-table .mat-mdc-header-row {
-  background: rgb(248 250 252);
+  background: var(--app-surface-soft);
 }
 
 .inventory-products-table .mat-mdc-header-cell {
   font-weight: 600;
-  color: rgb(15 23 42);
+  color: var(--app-text-strong);
 }

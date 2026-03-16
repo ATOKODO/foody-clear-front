@@ -17,6 +17,7 @@ import {
 } from '../../interfaces/statistics.interface';
 import { Product, ProductService } from '../../services/product-service';
 import { StatisticService } from '../../services/statistic-service';
+import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 type StatisticView = 'expenses' | 'targets' | 'prices';
 type StatisticMetricKey = 'energyKcal' | 'proteins' | 'carbs' | 'lipids';
@@ -33,6 +34,7 @@ type StatisticMetricKey = 'energyKcal' | 'proteins' | 'carbs' | 'lipids';
     MatInputModule,
     MatProgressBarModule,
     MatSelectModule,
+    UiErrorPanel,
   ],
   templateUrl: './statistic.feature.html',
   styleUrl: './statistic.feature.scss',

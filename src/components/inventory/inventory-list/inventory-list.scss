@@ -3,12 +3,12 @@
 }
 
 .inventory-table .mat-mdc-header-row {
-  background: rgb(248 250 252);
+  background: var(--app-surface-soft);
 }
 
 .inventory-table .mat-mdc-header-cell {
   font-weight: 600;
-  color: rgb(15 23 42);
+  color: var(--app-text-strong);
 }
 
 .inventory-table .mat-mdc-row.il-selectable {
@@ -16,5 +16,5 @@
 }
 
 .inventory-table .mat-mdc-row.il-active {
-  background: rgb(239 246 255);
+  background: var(--app-info-bg);
 }

@@ -20,10 +20,11 @@ import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
 import { SlotService } from '../../services/slot-service';
 import { TemplateSummary } from '../../interfaces/template.interface';
 import { TemplateService } from '../../services/template-service';
+import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 @Component({
   selector: 'app-day-set-feature',
-  imports: [CommonModule, MatButtonModule, MatCardModule, DaySetList, DaySetForm],
+  imports: [CommonModule, MatButtonModule, MatCardModule, UiErrorPanel, DaySetList, DaySetForm],
   templateUrl: './day-set.feature.html',
   styleUrl: './day-set.feature.scss',
 })

@@ -3,11 +3,11 @@
 }
 
 .slot-table {
-  background: #ffffff;
+  background: var(--app-surface);
 }
 
 .slot-table .mat-mdc-header-row {
-  background: #f8fafc;
+  background: var(--app-surface-soft);
 }
 
 .slot-table .mat-mdc-header-cell {
@@ -15,7 +15,7 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--app-text);
 }
 
 .slot-table .mat-mdc-cell,
@@ -29,5 +29,5 @@
 }
 
 .slot-table .mat-mdc-row.sl-active {
-  background: #e2e8f0;
+  background: var(--app-surface-strong);
 }

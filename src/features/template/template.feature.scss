@@ -2,8 +2,7 @@
   display: flex;
   max-height: min(90vh, 980px);
   flex-direction: column;
-  background:
-    linear-gradient(180deg, rgb(248 250 252 / 1) 0%, rgb(255 255 255 / 1) 18%);
+  background: linear-gradient(180deg, var(--app-surface-soft) 0%, var(--app-surface) 18%);
 }
 
 .template-form-dialog__header {
@@ -11,7 +10,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--app-border);
   padding: 1.25rem 1.25rem 1rem;
 }
 
@@ -20,20 +19,20 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--app-text-muted);
 }
 
 .template-form-dialog__title {
   margin-top: 0.35rem;
   font-size: 1.35rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--app-text-strong);
 }
 
 .template-form-dialog__subtitle {
   margin-top: 0.35rem;
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--app-text);
 }
 
 .template-form-dialog__content {

@@ -16,9 +16,9 @@
   align-self: stretch;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 0.12);
+  border: 1px solid rgb(255 255 255 / 0.14);
   border-radius: 1.5rem;
-  background: rgb(15 23 42 / 0.42);
+  background: rgb(15 23 42 / 0.46);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
   backdrop-filter: blur(12px);
   isolation: isolate;
@@ -32,9 +32,9 @@
   width: 100%;
   overflow: hidden;
   border-radius: 9999px;
-  border: 1px solid rgb(148 163 184 / 0.35);
-  background: rgb(30 41 59 / 0.76);
-  color: #e2e8f0;
+  border: 1px solid var(--app-border-strong);
+  background: rgb(15 23 42 / 0.66);
+  color: var(--app-text-inverse);
 }
 
 :host ::ng-deep .cycle-view-toggle.mat-button-toggle-group-appearance-standard {
@@ -77,8 +77,7 @@
   display: flex;
   max-height: min(90vh, 980px);
   flex-direction: column;
-  background:
-    linear-gradient(180deg, rgb(248 250 252 / 1) 0%, rgb(255 255 255 / 1) 18%);
+  background: linear-gradient(180deg, var(--app-surface-soft) 0%, var(--app-surface) 18%);
 }
 
 .cycle-form-dialog__header {
@@ -86,7 +85,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--app-border);
   padding: 1.25rem 1.25rem 1rem;
 }
 
@@ -95,20 +94,20 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--app-text-muted);
 }
 
 .cycle-form-dialog__title {
   margin-top: 0.35rem;
   font-size: 1.35rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--app-text-strong);
 }
 
 .cycle-form-dialog__subtitle {
   margin-top: 0.35rem;
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--app-text);
 }
 
 .cycle-form-dialog__content {

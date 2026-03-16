@@ -7,8 +7,8 @@
   gap: 1.25rem;
   padding: 1rem;
   background:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 30%),
-    linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.98));
+    radial-gradient(circle at top right, rgb(59 130 246 / 0.12), transparent 30%),
+    linear-gradient(180deg, var(--app-surface-soft), var(--app-surface));
 }
 
 .planning-feature__toolbar {
@@ -17,11 +17,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.85rem;
-  border: 1px solid rgba(226, 232, 240, 0.9);
+  border: 1px solid var(--app-border);
   border-radius: 1rem;
   padding: 0.9rem 1rem;
-  background: rgba(255, 255, 255, 0.84);
-  box-shadow: 0 18px 40px -36px rgba(15, 23, 42, 0.3);
+  background: var(--app-surface-raised);
+  box-shadow: var(--app-shadow-sm);
 }
 
 .planning-feature__status {
@@ -40,28 +40,14 @@
   min-width: 0;
 }
 
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 900;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.55), rgba(2, 6, 23, 0.7));
-  backdrop-filter: blur(2px);
-}
-
-.modal-shell {
-  position: fixed;
-  inset: 0;
-  z-index: 901;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-}
-
 .modal-card {
   width: min(960px, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
   overflow: auto;
   border-radius: 1rem;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-lg);
 }
 
 .modal-card--wide {

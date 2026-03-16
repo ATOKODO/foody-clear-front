@@ -14,6 +14,7 @@ import {
 } from '../../../interfaces/input-day.interface';
 import { Slot } from '../../../interfaces/slot.interface';
 import { Template, TemplateItem } from '../../../interfaces/template.interface';
+import { UiErrorPanel } from '../../../app/ui/error-panel/error-panel';
 
 @Component({
   selector: 'app-template-list',
@@ -25,6 +26,7 @@ import { Template, TemplateItem } from '../../../interfaces/template.interface';
     MatFormFieldModule,
     MatProgressBarModule,
     MatSelectModule,
+    UiErrorPanel,
   ],
   templateUrl: './template-list.html',
   styleUrl: './template-list.scss',

@@ -8,6 +8,7 @@ import { GenericProductService } from '../../services/generic-product-service';
 import { ProductService } from '../../services/product-service';
 import { MetaService } from '../../services/meta-service';
 import { TagService } from '../../services/tag-service';
+import type { Product as ProductModel } from '../../services/product-service';
 
 describe('Product', () => {
   let component: Product;
@@ -88,10 +89,10 @@ describe('Product', () => {
     );
 
     expect(toggleLabels).toEqual([
-      'Product',
-      'Category',
-      'Generic product',
-      'Tag',
+      'Produits',
+      'Categories',
+      'Produits generiques',
+      'Tags',
     ]);
     expect(component.activeView).toBe('product');
     expect(fixture.nativeElement.querySelector('app-product-list')).not.toBeNull();
@@ -170,8 +171,8 @@ describe('Product', () => {
     expect(component.formInitialValue?.categoryId).toBe(7);
   });
 
-  function buildProduct(overrides: Partial<Record<string, unknown>> = {}) {
-    return {
+  function buildProduct(overrides: Partial<ProductModel> = {}): ProductModel {
+    const baseProduct: ProductModel = {
       id: 1,
       name: 'Produit',
       barcode: null,
@@ -188,8 +189,9 @@ describe('Product', () => {
       url: null,
       memo: null,
       nutritionValues: [],
-      ...overrides,
     };
+
+    return { ...baseProduct, ...overrides };
   }
 
   function resetSpyCalls(): void {

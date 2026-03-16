@@ -15,10 +15,11 @@ import { CycleNutritionValue } from '../../interfaces/cycle.interface';
 import { CreateSlotDto, Slot } from '../../interfaces/slot.interface';
 import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
 import { SlotService } from '../../services/slot-service';
+import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 @Component({
   selector: 'app-slot-feature',
-  imports: [CommonModule, MatButtonModule, MatCardModule, SlotList, SlotForm],
+  imports: [CommonModule, MatButtonModule, MatCardModule, UiErrorPanel, SlotList, SlotForm],
   templateUrl: './slot.feature.html',
   styleUrl: './slot.feature.scss',
 })

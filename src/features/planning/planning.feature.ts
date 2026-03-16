@@ -34,6 +34,7 @@ import { CycleAssignementService } from '../../services/cycle-assignement-servic
 import { CycleService } from '../../services/cycle-service';
 import { InputDayService } from '../../services/input-day-service';
 import { InputDayFeature } from '../input-day/input-day.feature';
+import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 @Component({
   selector: 'app-planning',
@@ -48,6 +49,7 @@ import { InputDayFeature } from '../input-day/input-day.feature';
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    UiErrorPanel,
   ],
   templateUrl: './planning.feature.html',
   styleUrl: './planning.feature.scss',
@@ -121,6 +123,11 @@ export class PlanningFeature implements OnInit {
     if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
       this.refreshPlanningData();
     }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    this.closeActiveModal();
   }
 
   onCalendarViewChanged(event: CalendarViewChangeEvent): void {

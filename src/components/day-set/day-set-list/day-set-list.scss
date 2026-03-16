@@ -3,11 +3,11 @@
 }
 
 .day-set-table {
-  background: #ffffff;
+  background: var(--app-surface);
 }
 
 .day-set-table .mat-mdc-header-row {
-  background: #f8fafc;
+  background: var(--app-surface-soft);
 }
 
 .day-set-table .mat-mdc-header-cell {
@@ -15,7 +15,7 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--app-text);
 }
 
 .day-set-table .mat-mdc-cell,
@@ -29,7 +29,7 @@
 }
 
 .day-set-table .mat-mdc-row.dsl-active {
-  background: #e2e8f0;
+  background: var(--app-surface-strong);
 }
 
 .day-set-table .mat-mdc-row.dsl-disabled {

@@ -1,6 +1,6 @@
 <mat-card class="overflow-hidden rounded-2xl">
   <div class="bg-slate-900 px-6 py-5 text-white">
-    <h2 class="text-xl font-semibold">Templates</h2>
+    <h2 class="text-xl font-semibold">Modeles</h2>
     <p class="mt-1 text-sm text-slate-300">
       Journees previsionnelles, comparaison day-set et verification stock multi-inventaires.
     </p>
@@ -13,7 +13,7 @@
       >
         <div class="space-y-3">
           <div class="flex items-center justify-between gap-2">
-            <p class="text-sm font-semibold text-slate-900">Templates existants</p>
+            <p class="text-sm font-semibold text-slate-900">Modeles existants</p>
             <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
               {{ sortedTemplates.length }}
             </span>
@@ -39,7 +39,7 @@
         <div class="space-y-4">
           <div class="flex flex-wrap items-center gap-2">
             <button mat-raised-button color="primary" type="button" (click)="onAddClick()">
-              Nouveau template
+              Nouveau modele
             </button>
 
             <button
@@ -48,7 +48,7 @@
               type="button"
               (click)="onEditClick()"
             >
-              Modifier le template
+              Modifier le modele
             </button>
           </div>
 
@@ -70,7 +70,7 @@
           </mat-form-field>
 
           <p *ngIf="selectedTemplate as template" class="text-sm text-slate-600">
-            Template selectionne:
+            Modele selectionne:
             <span class="font-medium text-slate-900">{{ template.title }}</span>
           </p>
 
@@ -78,7 +78,7 @@
             *ngIf="selectedTemplate === null"
             class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-600"
           >
-            Cree un template ou selectionne-en un pour voir ses lignes et ses comparaisons.
+            Cree un modele ou selectionne-en un pour voir ses lignes et ses comparaisons.
           </div>
         </div>
       </mat-card-content>
@@ -90,7 +90,7 @@
     >
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-header>
-          <mat-card-title>Lignes du template</mat-card-title>
+          <mat-card-title>Lignes du modele</mat-card-title>
           <mat-card-subtitle>{{ template.title }}</mat-card-subtitle>
         </mat-card-header>
 
@@ -200,7 +200,7 @@
             >
               <div class="rounded-lg border border-slate-200 p-3">
                 <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Template total
+                  Total modele
                 </p>
                 <p *ngFor="let entry of totals.dayTotal | keyvalue" class="text-sm text-slate-700">
                   <span class="font-medium text-slate-900">{{ entry.key }}:</span>
@@ -271,12 +271,7 @@
       </div>
     </div>
 
-    <p
-      *ngIf="lastError"
-      class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-    >
-      {{ lastError | json }}
-    </p>
+    <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
   </div>
 
   <mat-progress-bar *ngIf="busy" mode="indeterminate"></mat-progress-bar>
@@ -286,12 +281,12 @@
   <div
     class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-600"
   >
-    Aucun template disponible.
+    Aucun modele disponible.
   </div>
 </ng-template>
 
 <ng-template #noTemplateItems>
   <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-    Aucune ligne dans ce template.
+    Aucune ligne dans ce modele.
   </p>
 </ng-template>

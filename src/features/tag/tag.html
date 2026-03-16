@@ -1,32 +1,28 @@
-<section class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+<section class="app-page">
   <mat-card class="overflow-hidden rounded-2xl">
     <div class="flex items-center justify-between bg-slate-900 px-6 py-5 text-white">
       <div>
         <h2 class="text-xl font-semibold">Tags</h2>
         <p class="mt-1 text-sm text-slate-300">
-          Gestion des tags.
+          Taxonomie et etiquetage transverse du catalogue.
         </p>
       </div>
-            <button mat-raised-button color="primary" type="button" (click)="onRefreshRequested()">
-              Rafraichir
-            </button>
+      <button mat-raised-button color="primary" type="button" (click)="onRefreshRequested()">
+        Rafraichir
+      </button>
     </div>
 
-    <div>
-
-
-      <div class="flex flex-wrap items-center gap-2">
-        <span *ngIf="loading" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+    <div class="space-y-4 p-4 sm:p-6">
+      <div class="app-status-row">
+        <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
           Chargement...
         </span>
-        <span *ngIf="saving" class="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+        <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
           Sauvegarde...
         </span>
       </div>
 
-      <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-        {{ lastError | json }}
-      </p>
+      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
 
       <app-tag-list
         mode="manage"
@@ -35,24 +31,43 @@
         (editRequested)="onEditRequested($event)"
         (deleteRequested)="onDeleteRequested($event)">
       </app-tag-list>
-
-      <mat-card *ngIf="formVisible" appearance="outlined" class="rounded-xl">
-        <mat-card-content class="p-0">
-          <app-tag-form
-            [mode]="formMode"
-            [tag]="formInitialValue"
-            (submitted)="onFormSubmitted($event)"
-            (menuClicked)="onMenuClicked()">
-          </app-tag-form>
-        </mat-card-content>
-
-        <mat-card-actions class="flex justify-center pb-6">
-          <button mat-stroked-button type="button" (click)="onCancelForm()">
-            Annuler
-          </button>
-        </mat-card-actions>
-      </mat-card>
-
     </div>
   </mat-card>
 </section>
+
+<div class="app-modal-backdrop" *ngIf="formVisible" (click)="onCancelForm()"></div>
+<div class="app-modal-shell" *ngIf="formVisible">
+  <mat-card
+    appearance="outlined"
+    class="app-modal-card"
+    role="dialog"
+    aria-modal="true"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="app-dialog-header">
+      <div>
+        <p class="app-dialog-eyebrow">Catalogue</p>
+        <h3 class="app-dialog-title">
+          {{ formMode === 'edit' ? 'Modifier un tag' : 'Ajouter un tag' }}
+        </h3>
+        <p class="app-dialog-subtitle">
+          Utilise des tags pour filtrer rapidement les produits et regrouper les usages.
+        </p>
+      </div>
+
+      <button mat-stroked-button type="button" (click)="onCancelForm()">
+        Fermer
+      </button>
+    </div>
+
+    <div class="app-dialog-content">
+      <app-tag-form
+        [mode]="formMode"
+        [tag]="formInitialValue"
+        [showHeading]="false"
+        (submitted)="onFormSubmitted($event)"
+        (menuClicked)="onMenuClicked()">
+      </app-tag-form>
+    </div>
+  </mat-card>
+</div>

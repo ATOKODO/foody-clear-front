@@ -44,6 +44,7 @@ export class GenericProductForm implements OnInit, OnChanges {
 
   @Input() mode: GenericProductFormMode = 'add';
   @Input() genericProduct: Partial<GenericProductFormValue> | null = null;
+  @Input() showHeading = true;
 
   @Output() readonly submitted = new EventEmitter<{
     mode: GenericProductFormMode;

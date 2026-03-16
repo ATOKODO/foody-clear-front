@@ -3,7 +3,7 @@
 }
 
 .lc-card {
-  border-color: #e2e8f0;
+  border-color: var(--app-border);
   transition:
     border-color 150ms ease,
     box-shadow 150ms ease,
@@ -11,25 +11,24 @@
 }
 
 .lc-card:hover {
-  border-color: #cbd5e1;
+  border-color: var(--app-border-strong);
 }
 
 .lc-card-active {
-  border-color: #94a3b8;
+  border-color: var(--app-border-strong);
   box-shadow: 0 0 0 1px rgb(15 23 42 / 0.08);
 }
 
 .lc-summary-panel {
   align-self: start;
-  border: 1px solid #e2e8f0;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.95) 0%, rgb(248 250 252 / 1) 100%);
+  border: 1px solid var(--app-border);
+  background: linear-gradient(180deg, var(--app-surface) 0%, var(--app-surface-soft) 100%);
 }
 
 .lc-subsection {
   align-self: start;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface-soft);
 }
 
 .lc-color-dot {
@@ -39,19 +38,19 @@
   flex: 0 0 auto;
   border-radius: 9999px;
   border: 2px solid rgb(255 255 255 / 0.8);
-  box-shadow: 0 0 0 1px rgb(148 163 184 / 0.65);
+  box-shadow: 0 0 0 1px var(--app-border-strong);
 }
 
 .lc-meta-chip {
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
+  border: 1px solid var(--app-border-strong);
+  background: var(--app-surface-soft);
   padding: 0.2rem 0.6rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--app-text);
 }
 
 .lc-section-label {
@@ -59,13 +58,12 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #334155;
+  color: var(--app-text);
 }
 
 .lc-macro-card {
-  border: 1px solid #e2e8f0;
-  background:
-    linear-gradient(180deg, rgb(248 250 252 / 1) 0%, rgb(241 245 249 / 1) 100%);
+  border: 1px solid var(--app-border);
+  background: linear-gradient(180deg, var(--app-surface-soft) 0%, var(--app-surface-muted) 100%);
 }
 
 .lc-stat-card {
@@ -73,8 +71,8 @@
 }
 
 .lc-breakdown-card {
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
 }
 
 .lc-breakdown-card-compact {
@@ -89,22 +87,22 @@
 }
 
 .lc-breakdown-card.lc-status-under {
-  background: #f8fafc;
+  background: var(--app-surface-soft);
 }
 
 .lc-breakdown-card.lc-status-exact {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  background: var(--app-success-bg);
+  border-color: var(--app-success-border);
 }
 
 .lc-breakdown-card.lc-status-over {
-  background: #fff7ed;
-  border-color: #fdba74;
+  background: var(--app-danger-bg);
+  border-color: var(--app-danger-border);
 }
 
 .lc-breakdown-card.lc-status-missing {
-  background: #fffbeb;
-  border-color: #fde68a;
+  background: var(--app-warning-bg);
+  border-color: var(--app-warning-border);
 }
 
 .lc-status-badge {
@@ -122,43 +120,43 @@
 }
 
 .lc-status-badge.lc-status-under {
-  background: #bfdbfe;
-  border-color: #60a5fa;
-  color: #0f172a;
+  background: var(--app-info-bg);
+  border-color: var(--app-info-border);
+  color: var(--app-info-text);
 }
 
 .lc-status-badge.lc-status-exact {
-  background: #bbf7d0;
-  border-color: #4ade80;
-  color: #14532d;
+  background: var(--app-success-bg);
+  border-color: var(--app-success-border);
+  color: var(--app-success-text);
 }
 
 .lc-status-badge.lc-status-over {
-  background: #fdba74;
-  border-color: #fb923c;
-  color: #7c2d12;
+  background: var(--app-danger-bg);
+  border-color: var(--app-danger-border);
+  color: var(--app-danger-text);
 }
 
 .lc-status-badge.lc-status-missing {
-  background: #fde68a;
-  border-color: #f59e0b;
-  color: #78350f;
+  background: var(--app-warning-bg);
+  border-color: var(--app-warning-border);
+  color: var(--app-warning-text);
 }
 
 .lc-status-text.lc-status-under {
-  color: #475569;
+  color: var(--app-text);
 }
 
 .lc-status-text.lc-status-exact {
-  color: #166534;
+  color: var(--app-success-text);
 }
 
 .lc-status-text.lc-status-over {
-  color: #c2410c;
+  color: var(--app-danger-text);
 }
 
 .lc-status-text.lc-status-missing {
-  color: #92400e;
+  color: var(--app-warning-text);
 }
 
 .lc-overview-badge {
@@ -171,13 +169,13 @@
 }
 
 .lc-overview-badge-over {
-  background: #ffedd5;
-  color: #9a3412;
+  background: var(--app-danger-bg);
+  color: var(--app-danger-text);
 }
 
 .lc-overview-badge-missing {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
 }
 
 .lc-detail-panel {
@@ -188,13 +186,13 @@
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
-  background: #e2e8f0;
+  background: var(--app-surface-strong);
   padding: 0.15rem 0.5rem;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #475569;
+  color: var(--app-text);
 }
 
 .lc-toggle-btn {

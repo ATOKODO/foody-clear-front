@@ -1,9 +1,9 @@
-<section class="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+<section class="app-page app-page--compact">
   <mat-card class="overflow-hidden rounded-2xl">
     <div class="bg-slate-900 px-6 py-5 text-white">
-      <h2 class="text-xl font-semibold">Nutrition Values API Tester</h2>
+      <h2 class="text-xl font-semibold">Testeur valeurs nutritionnelles</h2>
       <p class="mt-1 text-sm text-slate-300">
-        Interface Material + Tailwind pour tester les endpoints nutrition-values.
+        Interface unifiee pour verifier rapidement les endpoints `nutrition-values`.
       </p>
     </div>
 
@@ -24,7 +24,7 @@
 
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-header>
-          <mat-card-title>Nutrition Value</mat-card-title>
+          <mat-card-title>Valeur nutritionnelle</mat-card-title>
           <mat-card-subtitle>Champs principaux</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content class="pt-2">
@@ -65,25 +65,23 @@
       <mat-divider />
 
       <div class="flex flex-wrap gap-2">
-        <button mat-stroked-button type="button" (click)="fillDemoCreate()">Exemple (remplir)</button>
-        <button mat-raised-button color="primary" type="button" (click)="create()">Create (POST)</button>
-        <button mat-raised-button color="primary" type="button" (click)="getOne()">Get (GET /:id)</button>
-        <button mat-raised-button color="primary" type="button" (click)="getAll()">GetAll (GET)</button>
-        <button mat-raised-button color="accent" type="button" (click)="update()">Update (PATCH)</button>
-        <button mat-raised-button color="warn" type="button" (click)="delete()">Delete (DELETE)</button>
-        <button mat-button type="button" (click)="clear()">Clear</button>
+        <button mat-stroked-button type="button" (click)="fillDemoCreate()">Exemple</button>
+        <button mat-raised-button color="primary" type="button" (click)="create()">Creer</button>
+        <button mat-raised-button color="primary" type="button" (click)="getOne()">Recuperer</button>
+        <button mat-raised-button color="primary" type="button" (click)="getAll()">Lister</button>
+        <button mat-raised-button color="accent" type="button" (click)="update()">Mettre a jour</button>
+        <button mat-raised-button color="warn" type="button" (click)="delete()">Supprimer</button>
+        <button mat-button type="button" (click)="clear()">Effacer</button>
       </div>
     </form>
 
     <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
     <div class="space-y-3 p-4 sm:p-6">
-      <p *ngIf="lastError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-        {{ lastError | json }}
-      </p>
+      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
 
       <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
-      <pre class="max-h-96 overflow-auto rounded-lg bg-slate-100 p-4 text-xs text-slate-800">
+      <pre class="app-code-panel max-h-96">
 {{ lastResponse | json }}
       </pre>
     </div>
