@@ -404,26 +404,45 @@ function resolveDaySetSlots(daySet: DaySetRecord, fallbackSlots: Slot[]): SlotRe
       return { slots: [], hasMissingSlotBreakdown: true };
     }
 
-    if (daySet.slots.length === 0) {
-      return { slots: [], hasMissingSlotBreakdown: false };
+    if (daySet.slots.length > 0) {
+      const slots: SlotRecord[] = [];
+      let hasMissing = false;
+
+      daySet.slots.forEach((slot) => {
+        const resolvedSlot = resolveSlotReference(slot, fallbackSlots);
+        if (resolvedSlot) {
+          slots.push(resolvedSlot);
+        } else {
+          hasMissing = true;
+        }
+      });
+
+      return {
+        slots,
+        hasMissingSlotBreakdown: hasMissing,
+      };
     }
 
-    const slots: SlotRecord[] = [];
-    let hasMissing = false;
+    if (daySet.hasSlotIdsProperty && daySet.slotIds !== null && daySet.slotIds.length > 0) {
+      const slots: SlotRecord[] = [];
+      let hasMissing = false;
 
-    daySet.slots.forEach((slot) => {
-      const resolvedSlot = resolveSlotReference(slot, fallbackSlots);
-      if (resolvedSlot) {
-        slots.push(resolvedSlot);
-      } else {
-        hasMissing = true;
-      }
-    });
+      daySet.slotIds.forEach((id) => {
+        const slot = getSlotRecordById(fallbackSlots, id);
+        if (slot) {
+          slots.push(slot);
+        } else {
+          hasMissing = true;
+        }
+      });
 
-    return {
-      slots,
-      hasMissingSlotBreakdown: hasMissing,
-    };
+      return {
+        slots,
+        hasMissingSlotBreakdown: hasMissing,
+      };
+    }
+
+    return { slots: [], hasMissingSlotBreakdown: false };
   }
 
   if (daySet.hasSlotIdsProperty) {

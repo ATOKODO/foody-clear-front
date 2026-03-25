@@ -52,7 +52,7 @@ describe('CycleFeature', () => {
       toggle.textContent?.trim(),
     );
 
-    expect(toggleLabels).toEqual(['Cycle', 'Day Set', 'Slots']);
+    expect(toggleLabels).toEqual(['Cycles', 'Day sets', 'Slots']);
     expect(component.activeView).toBe('cycle');
     expect(fixture.nativeElement.querySelector('app-list-cycle')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('app-day-set-feature')).toBeNull();
@@ -601,6 +601,7 @@ describe('CycleFeature', () => {
   function flushDaySetRequests(): void {
     httpController.expectOne('http://localhost:3000/meta/nutrition-keys').flush([]);
     httpController.expectOne('http://localhost:3000/slot').flush([]);
+    httpController.expectOne('http://localhost:3000/template').flush([]);
     httpController.expectOne('http://localhost:3000/day-set').flush([]);
   }
 

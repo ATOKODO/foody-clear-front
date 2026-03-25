@@ -45,6 +45,7 @@ describe('Inventory', () => {
     update: jasmine.createSpy('update').and.returnValue(of({ id: 4, name: 'Stock principal' })),
     addProducts: jasmine.createSpy('addProducts').and.returnValue(of({ ok: true })),
     removeProducts: jasmine.createSpy('removeProducts').and.returnValue(of({ ok: true })),
+    reconcileProducts: jasmine.createSpy('reconcileProducts').and.returnValue(of({ ok: true })),
     remove: jasmine.createSpy('remove').and.returnValue(of(void 0)),
   };
 
@@ -105,6 +106,8 @@ describe('Inventory', () => {
     inventoryServiceMock.addProducts.and.returnValue(of({ ok: true }));
     inventoryServiceMock.removeProducts.calls.reset();
     inventoryServiceMock.removeProducts.and.returnValue(of({ ok: true }));
+    inventoryServiceMock.reconcileProducts.calls.reset();
+    inventoryServiceMock.reconcileProducts.and.returnValue(of({ ok: true }));
     inventoryServiceMock.remove.calls.reset();
     inventoryServiceMock.remove.and.returnValue(of(void 0));
 
@@ -334,10 +337,7 @@ describe('Inventory', () => {
 
     component.saveManagedProducts();
 
-    expect(inventoryServiceMock.removeProducts).toHaveBeenCalledWith(4, {
-      productIds: [1],
-    });
-    expect(inventoryServiceMock.addProducts).toHaveBeenCalledWith(4, {
+    expect(inventoryServiceMock.reconcileProducts).toHaveBeenCalledWith(4, {
       products: [{ productId: 1, qty: 5 }],
     });
     expect(component.formVisible).toBeTrue();
@@ -369,10 +369,7 @@ describe('Inventory', () => {
 
     component.saveManagedProducts();
 
-    expect(inventoryServiceMock.removeProducts).toHaveBeenCalledWith(4, {
-      productIds: [1],
-    });
-    expect(inventoryServiceMock.addProducts).toHaveBeenCalledWith(4, {
+    expect(inventoryServiceMock.reconcileProducts).toHaveBeenCalledWith(4, {
       products: [{ productId: 1, qty: 4, qtyUnit: 'portion' }],
     });
   });
@@ -386,8 +383,8 @@ describe('Inventory', () => {
 
     component.emptyInventory();
 
-    expect(inventoryServiceMock.removeProducts).toHaveBeenCalledWith(4, {
-      productIds: [1],
+    expect(inventoryServiceMock.reconcileProducts).toHaveBeenCalledWith(4, {
+      products: [],
     });
     expect(component.formVisible).toBeTrue();
     expect(component.activeModal).toBeNull();

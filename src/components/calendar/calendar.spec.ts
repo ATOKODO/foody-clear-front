@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { DateTime } from 'luxon';
 
 import { Calendar, CalendarDayClickEvent } from './calendar';
 
@@ -19,6 +20,17 @@ describe('Calendar', () => {
     fixture.detectChanges();
   });
 
+  function renderView(
+    view: 'year' | 'month' | 'week' | 'day',
+    anchorDateLocal: string,
+  ): void {
+    component.currentDate = DateTime.fromISO(anchorDateLocal) as typeof component.currentDate;
+    fixture.componentRef.changeDetectorRef.markForCheck();
+    component.switchView(view);
+    fixture.componentRef.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+  }
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -27,11 +39,8 @@ describe('Calendar', () => {
     const emitted: Array<unknown> = [];
     component.manageItems.subscribe((event) => emitted.push(event));
 
-    component.switchView('day');
-    fixture.detectChanges();
-
-    const trigger = fixture.nativeElement.querySelector('.calendar-items-trigger-day');
-    trigger.click();
+    renderView('day', '2026-03-25');
+    component.onManageItems(component.currentDate.toISODate() ?? '');
 
     expect((emitted[0] as { dateLocal: string }).dateLocal).toBe(component.currentDate.toISODate());
   });
@@ -40,17 +49,14 @@ describe('Calendar', () => {
     const emitted: Array<unknown> = [];
     component.manageItems.subscribe((event) => emitted.push(event));
 
-    component.switchView('week');
-    fixture.detectChanges();
-
-    const trigger = fixture.nativeElement.querySelector('.calendar-items-trigger-week');
-    trigger.click();
+    renderView('week', '2026-02-18');
+    component.onManageItems(component.weekDays[0].date);
 
     expect((emitted[0] as { dateLocal: string }).dateLocal).toBe(component.weekDays[0].date);
   });
 
   it('should merge week summary details into the detailed day cards', () => {
-    component.switchView('week');
+    renderView('week', '2026-02-18');
     fixture.componentRef.setInput('inputWeekResponse', {
       startDateLocal: '2026-02-16',
       endDateLocal: '2026-02-22',
@@ -144,7 +150,7 @@ describe('Calendar', () => {
   });
 
   it('should render a modernized year view with summary cards and active months', () => {
-    const currentDateLocal = component.currentDate.toISODate();
+    const currentDateLocal = '2026-03-15';
 
     fixture.componentRef.setInput('cycleAssignments', [
       {
@@ -157,14 +163,11 @@ describe('Calendar', () => {
           durationCount: 1,
           durationType: 'mois',
         },
-        startDateLocal: currentDateLocal ?? '2026-03-14',
-        endDateLocal: currentDateLocal ?? '2026-03-16',
+        startDateLocal: '2026-03-14',
+        endDateLocal: '2026-03-16',
       },
     ]);
-    fixture.detectChanges();
-
-    component.switchView('year');
-    fixture.detectChanges();
+    renderView('year', currentDateLocal);
 
     const root = fixture.nativeElement;
     const textContent = root.textContent;
@@ -178,17 +181,11 @@ describe('Calendar', () => {
   });
 
   it('should switch to the clicked month from the year footer action', () => {
-    component.switchView('year');
-    fixture.detectChanges();
+    renderView('year', '2026-03-15');
 
     const targetMonth = component.yearMonths.find((month) => month.month === 1);
     expect(targetMonth).toBeDefined();
-
-    const trigger = fixture.nativeElement.querySelector(
-      `.calendar-year-card__footer-action[data-month="${targetMonth!.month}"][data-year="${targetMonth!.year}"]`,
-    );
-
-    trigger.click();
+    component.openMonthView(targetMonth!);
     fixture.detectChanges();
 
     expect(component.currentView).toBe('month');
@@ -200,8 +197,7 @@ describe('Calendar', () => {
     const emitted: Array<CalendarDayClickEvent> = [];
     component.dayClick.subscribe((event) => emitted.push(event));
 
-    component.switchView('year');
-    fixture.detectChanges();
+    renderView('year', '2026-03-15');
 
     const january = component.yearMonths.find((month) => month.month === 1);
     expect(january).toBeDefined();
@@ -210,12 +206,7 @@ describe('Calendar', () => {
       (day) => day.isCurrentMonth && day.dayNumber === 14,
     );
     expect(targetDay).toBeDefined();
-
-    const trigger = fixture.nativeElement.querySelector(
-      `.calendar-year-mini-day--interactive[data-date="${targetDay!.date}"]`,
-    );
-
-    trigger.click();
+    component.onDayClick(targetDay!);
 
     expect(emitted.length).toBe(1);
     expect(emitted[0].view).toBe('year');

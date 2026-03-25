@@ -217,7 +217,7 @@ describe('PlanningFeature', () => {
     });
     fixture.detectChanges();
 
-    const trigger = fixture.nativeElement.querySelector('.planning-action-item');
+    const trigger = fixture.nativeElement.querySelector('.planning-action-card--item');
     trigger.click();
     fixture.detectChanges();
 
