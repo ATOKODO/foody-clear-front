@@ -1,9 +1,10 @@
-<div class="calendar-shell flex flex-col">
+<div class="calendar-shell flex flex-col" data-testid="calendar-root">
   <header *ngIf="showHeader" class="border-b border-gray-200 px-4 py-3 shadow-sm">
     <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
       <div class="flex items-center gap-3">
         <button
           (click)="goToToday()"
+          data-testid="calendar-today"
           class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-50">
           Aujourd'hui
         </button>
@@ -11,6 +12,7 @@
         <div class="flex items-center gap-2">
           <button
             (click)="navigate('prev')"
+            data-testid="calendar-prev"
             class="rounded-lg p-2 transition-colors hover:bg-gray-100">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -23,6 +25,7 @@
 
           <button
             (click)="navigate('next')"
+            data-testid="calendar-next"
             class="rounded-lg p-2 transition-colors hover:bg-gray-100">
             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -35,9 +38,13 @@
         [value]="currentView"
         (change)="switchView($event.value)"
         aria-label="Selection de la vue calendrier"
+        data-testid="calendar-view-toggle"
         class="calendar-view-toggle"
         hideSingleSelectionIndicator>
-        <mat-button-toggle *ngFor="let view of VIEWS" [value]="view">
+        <mat-button-toggle
+          *ngFor="let view of VIEWS"
+          [value]="view"
+          [attr.data-testid]="'calendar-view-' + view">
           {{ getViewLabel(view) }}
         </mat-button-toggle>
       </mat-button-toggle-group>
@@ -124,6 +131,7 @@
                 *ngFor="let day of month.days; trackBy: trackByDate"
                 type="button"
                 class="calendar-year-mini-day"
+                [attr.data-testid]="'calendar-year-day-' + day.date"
                 [class.calendar-year-mini-day--interactive]="day.isCurrentMonth"
                 [class.calendar-year-mini-day--outside]="!day.isCurrentMonth"
                 [class.calendar-year-mini-day--today]="day.isToday"
@@ -147,6 +155,7 @@
               <button
                 type="button"
                 class="calendar-year-card__footer-action"
+                [attr.data-testid]="'calendar-open-month-' + month.year + '-' + month.month"
                 [attr.data-month]="month.month"
                 [attr.data-year]="month.year"
                 (click)="openMonthView(month)">
@@ -204,6 +213,7 @@
             <article
               *ngFor="let day of monthDays; trackBy: trackByDate"
               (click)="onDayClick(day)"
+              [attr.data-testid]="'calendar-month-day-' + day.date"
               class="calendar-month-day"
               [class.calendar-month-day--current]="day.isCurrentMonth"
               [class.calendar-month-day--outside]="!day.isCurrentMonth"
@@ -226,6 +236,7 @@
                     mat-mini-fab
                     color="primary"
                     type="button"
+                    [attr.data-testid]="'calendar-month-add-' + day.date"
                     class="calendar-add-trigger-month h-8 w-8 !shadow-sm"
                     (click)="$event.stopPropagation(); onDayClick(day)">
                     +
@@ -233,7 +244,7 @@
                 </div>
               </div>
 
-              <div class="calendar-month-day__body">
+              <div class="calendar-month-day__body" [attr.data-testid]="'calendar-month-body-' + day.date">
                 <div
                   *ngIf="day.assignment || (day.isCurrentMonth && hasWeekDayInsights(day.date)); else monthDayEmpty"
                   [ngClass]="day.assignment?.color ?? null"
@@ -406,6 +417,7 @@
       <div class="calendar-week-mobile">
         <article
           *ngFor="let day of weekDays; trackBy: trackByDate"
+          [attr.data-testid]="'calendar-week-mobile-day-' + day.date"
           class="calendar-week-mobile__day"
           [class.calendar-week-mobile__day--today]="day.isToday">
           <div class="calendar-week-mobile__header">
@@ -422,6 +434,7 @@
             <div class="calendar-week-mobile__actions">
               <button
                 type="button"
+                [attr.data-testid]="'calendar-week-mobile-items-' + day.date"
                 class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-slate-300 px-2.5 py-1 text-[10px] font-medium text-slate-600 hover:bg-slate-100"
                 (click)="$event.stopPropagation(); onManageItems(day.date)">
                 Items
@@ -430,6 +443,7 @@
                 mat-mini-fab
                 color="primary"
                 type="button"
+                [attr.data-testid]="'calendar-week-mobile-add-' + day.date"
                 class="calendar-add-trigger-week h-8 w-8 !shadow-sm"
                 (click)="$event.stopPropagation(); onDayClick(day)">
                 +
@@ -549,6 +563,7 @@
           <div *ngIf="getWeekTimelineBlocks(day.date).length > 0; else emptyMobileDay" class="calendar-week-mobile__blocks">
             <div
               *ngFor="let block of getWeekTimelineBlocks(day.date); trackBy: trackByWeekTimelineBlock"
+              [attr.data-testid]="'calendar-week-mobile-block-' + day.date + '-' + block.title"
               class="calendar-week-block calendar-week-block--mobile"
               [class.calendar-week-block--orphan]="block.kind === 'orphan'"
               [attr.data-tone]="block.tone"
@@ -567,6 +582,7 @@
                 <div
                   *ngFor="let product of block.items; trackBy: trackByInsertedProduct"
                   (click)="onItemClick(product, day.date, $event)"
+                  [attr.data-testid]="'calendar-week-mobile-item-' + day.date + '-' + product.id"
                   class="calendar-week-block__item">
                   <div class="calendar-week-block__item-top">
                     <span class="calendar-week-block__item-name">{{ product.productName }}</span>
@@ -605,6 +621,7 @@
 
           <div
             *ngFor="let day of weekDays; let dayIndex = index; trackBy: trackByDate"
+            [attr.data-testid]="'calendar-week-day-' + day.date"
             class="calendar-week-grid__day-header"
             [class.calendar-week-grid__day-header--today]="day.isToday"
             [style.grid-column-start]="dayIndex + 2"
@@ -733,6 +750,7 @@
             <div class="calendar-week-grid__day-actions">
               <button
                 type="button"
+                [attr.data-testid]="'calendar-week-items-' + day.date"
                 class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-slate-300 px-2.5 py-1 text-[10px] font-medium text-slate-600 hover:bg-slate-100"
                 (click)="$event.stopPropagation(); onManageItems(day.date)">
                 Items
@@ -741,6 +759,7 @@
                 mat-mini-fab
                 color="primary"
                 type="button"
+                [attr.data-testid]="'calendar-week-add-' + day.date"
                 class="calendar-add-trigger-week h-8 w-8 !shadow-sm"
                 (click)="$event.stopPropagation(); onDayClick(day)">
                 +
@@ -761,6 +780,7 @@
               *ngFor="let hour of HOURS; trackBy: trackByHour"
               type="button"
               class="calendar-week-grid__hour-cell"
+              [attr.data-testid]="'calendar-week-hour-' + day.date + '-' + hour.toString().padStart(2, '0')"
               [style.grid-column-start]="dayIndex + 2"
               [style.grid-column-end]="dayIndex + 3"
               [style.grid-row-start]="getWeekHourGridRowStart(hour)"
@@ -771,6 +791,7 @@
 
             <div
               *ngFor="let block of getWeekTimelineBlocks(day.date); trackBy: trackByWeekTimelineBlock"
+              [attr.data-testid]="'calendar-week-block-' + day.date + '-' + block.title"
               class="calendar-week-block"
               [class.calendar-week-block--orphan]="block.kind === 'orphan'"
               [attr.data-tone]="block.tone"
@@ -793,6 +814,7 @@
                 <div
                   *ngFor="let product of block.items; trackBy: trackByInsertedProduct"
                   (click)="onItemClick(product, day.date, $event)"
+                  [attr.data-testid]="'calendar-week-item-' + day.date + '-' + product.id"
                   class="calendar-week-block__item">
                   <div class="calendar-week-block__item-top">
                     <span class="calendar-week-block__item-name">{{ product.productName }}</span>
@@ -833,6 +855,7 @@
           <div class="calendar-day-summary__actions">
             <button
               type="button"
+              data-testid="calendar-day-items"
               class="calendar-items-trigger-day calendar-week-grid__ghost-button rounded-full border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
               (click)="onManageItems(currentDate.toISODate())">
               Items
@@ -841,6 +864,7 @@
               mat-mini-fab
               color="primary"
               type="button"
+              data-testid="calendar-day-add"
               class="calendar-add-trigger-day h-10 w-10 !shadow-sm"
               (click)="onCurrentDayClick()">
               +
@@ -1085,6 +1109,7 @@
             <div *ngIf="dayBlocks.length > 0; else emptyDayTimeline" class="calendar-day-blocks">
               <article
                 *ngFor="let block of dayBlocks; trackBy: trackByWeekTimelineBlock"
+                [attr.data-testid]="'calendar-day-block-' + block.title"
                 class="calendar-week-block calendar-day-block"
                 [class.calendar-week-block--orphan]="block.kind === 'orphan'"
                 [attr.data-tone]="block.tone"
@@ -1103,6 +1128,7 @@
                   <div
                     *ngFor="let product of block.items; trackBy: trackByInsertedProduct"
                     (click)="onItemClick(product, product.dateLocal, $event)"
+                    [attr.data-testid]="'calendar-day-item-' + product.id"
                     class="calendar-week-block__item calendar-inserted-item-day">
                     <div class="calendar-week-block__item-top">
                       <span class="calendar-week-block__item-name">{{ product.productName }}</span>
@@ -1150,6 +1176,7 @@
             <button
               *ngFor="let hour of dayHours; trackBy: trackByHour"
               type="button"
+              [attr.data-testid]="'calendar-day-hour-' + hour.label"
               class="calendar-day-hour-chip"
               [class.calendar-day-hour-chip--active]="hour.activeSlots && hour.activeSlots.length > 0"
               [class.calendar-day-hour-chip--filled]="hour.insertedProducts && hour.insertedProducts.length > 0"

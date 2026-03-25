@@ -1,0 +1,38 @@
+import type { Page } from '@playwright/test';
+import { expect, test } from '../../fixtures/test';
+import { selectMatOption } from '../../helpers/material';
+import { loadStandaloneInputDay } from './utils';
+
+async function loadInputDay(page: Page): Promise<void> {
+  await loadStandaloneInputDay(page);
+  await expect(page.getByTestId('input-day-item-1')).toBeVisible();
+}
+
+test.describe('Input day - template', () => {
+  test('applies a manual template override and converts a template item', async ({ page, mockApi }) => {
+    mockApi.state.templates.push({
+      id: 2,
+      title: 'Template E2E',
+      items: [
+        { id: 4, productId: 1, qty: 1, qtyUnit: 'piece', slotId: 1, slotKey: null },
+      ],
+    });
+    mockApi.state.nextIds.template = 3;
+    mockApi.state.nextIds.templateItem = 5;
+
+    await loadInputDay(page);
+
+    await selectMatOption(page, page.getByTestId('input-day-inventory-select'), 'Frigo maison (#1)');
+
+    await selectMatOption(page, page.getByTestId('input-day-template-select'), 'Template E2E');
+    await page.getByTestId('input-day-template-apply').click();
+
+    await expect(page.getByText('Template E2E (override manuel)')).toBeVisible();
+    const templateRow = page.getByTestId('input-day-template-item-4');
+    await expect(templateRow).toBeVisible();
+    await templateRow.getByTestId('input-day-convert-template-4').click();
+
+    await expect(page.getByTestId('input-day-item-3')).toContainText('Banane');
+    await expect(page.getByTestId('input-day-template-item-4')).toContainText('Converti');
+  });
+});

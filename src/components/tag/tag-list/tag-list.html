@@ -1,5 +1,6 @@
 <section
   aria-label="Liste des tags"
+  data-testid="tag-list"
   class="w-full"
   [ngClass]="compact ? '' : 'mx-auto max-w-6xl px-4 py-6'">
   <mat-card class="overflow-hidden rounded-2xl" [class.shadow-none]="compact">
@@ -11,6 +12,7 @@
         mat-raised-button
         color="primary"
         type="button"
+        data-testid="tag-add"
         class="add-btn"
         (click)="onAddClick()">
         Ajouter
@@ -40,10 +42,10 @@
             <th mat-header-cell *matHeaderCellDef>Actions</th>
             <td mat-cell *matCellDef="let item" (click)="$event.stopPropagation()">
               <div class="flex flex-wrap gap-2">
-                <button mat-stroked-button type="button" (click)="onEditClick(item)">
+                <button mat-stroked-button type="button" [attr.data-testid]="'tag-edit-' + item.id" (click)="onEditClick(item)">
                   Modifier
                 </button>
-                <button mat-stroked-button color="warn" type="button" (click)="onDeleteClick(item)">
+                <button mat-stroked-button color="warn" type="button" [attr.data-testid]="'tag-delete-' + item.id" (click)="onDeleteClick(item)">
                   Retirer
                 </button>
               </div>
@@ -54,6 +56,7 @@
           <tr
             mat-row
             *matRowDef="let item; let i = index; columns: displayedColumns"
+            [attr.data-testid]="'tag-row-' + item.id"
             [class.tl-active]="isRowActive(item, i)"
             [class.tl-selectable]="isSingleSelectMode || isMultiSelectMode"
             [attr.tabindex]="isSingleSelectMode ? 0 : null"

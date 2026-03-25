@@ -1,6 +1,7 @@
 <section
   class="lc-shell mx-auto w-full max-w-6xl"
   [class.lc-shell--select-single]="isSingleSelectMode"
+  data-testid="cycle-list"
   aria-label="Liste des cycles">
   <div
     class="lc-shell__header mb-4 flex items-center justify-between gap-3"
@@ -10,6 +11,7 @@
       *ngIf="isManageMode && showAddButton"
       mat-raised-button
       color="primary"
+      data-testid="cycle-add"
       class="add-btn"
       type="button"
       (click)="onAddCycle()">
@@ -21,6 +23,7 @@
     <mat-card
       *ngFor="let cycle of resolvedCycles; let i = index; trackBy: trackById"
       appearance="outlined"
+      [attr.data-testid]="'cycle-card-' + cycle.id"
       class="lc-card rounded-2xl"
       [class.lc-card--select-single]="isSingleSelectMode"
       [class.lc-card-active]="isRowActive(cycle, i)">
@@ -186,13 +189,14 @@
 
               <div class="flex flex-wrap items-center gap-2 xl:max-w-xs xl:justify-end">
                 <ng-container *ngIf="isManageMode">
-                  <button mat-stroked-button type="button" (click)="stopPropagation($event); onEdit(cycle)">
+                  <button mat-stroked-button type="button" [attr.data-testid]="'cycle-edit-' + cycle.id" (click)="stopPropagation($event); onEdit(cycle)">
                     Modifier
                   </button>
                   <button
                     mat-stroked-button
                     color="warn"
                     type="button"
+                    [attr.data-testid]="'cycle-delete-' + cycle.id"
                     (click)="stopPropagation($event); onDelete(cycle)">
                     Supprimer
                   </button>

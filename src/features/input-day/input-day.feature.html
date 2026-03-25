@@ -30,6 +30,7 @@
       <button
         mat-stroked-button
         type="button"
+        data-testid="input-day-refresh"
         (click)="loadDay()"
         [disabled]="loading || !hasValidSelectedDate || initialDateError !== null">
         Rafraichir
@@ -43,12 +44,13 @@
 </ng-template>
 
 <ng-template #inputDayContent>
-  <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" class="space-y-5">
+  <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" class="space-y-5" data-testid="input-day-form">
     <mat-card *ngIf="isStandaloneMode" appearance="outlined" class="rounded-xl">
       <mat-card-content class="pt-4">
         <mat-form-field appearance="fill" class="w-full">
           <mat-label>Base URL</mat-label>
           <input
+            data-testid="input-day-base-url"
             matInput
             type="text"
             [(ngModel)]="baseUrl"
@@ -92,9 +94,10 @@
             <input matInput type="text" formControlName="timezone" placeholder="UTC" />
           </mat-form-field>
 
-          <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Inventaire</mat-label>
+            <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Inventaire</mat-label>
             <mat-select
+              data-testid="input-day-inventory-select"
               [ngModel]="selectedInventoryId"
               [ngModelOptions]="{ standalone: true }"
               (ngModelChange)="onSelectedInventoryChange($event)">
@@ -108,6 +111,7 @@
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Slot batch</mat-label>
             <mat-select
+              data-testid="input-day-slot-select"
               [(ngModel)]="selectedSlotId"
               [ngModelOptions]="{ standalone: true }">
               <mat-option [value]="null">Sans slot</mat-option>
@@ -126,6 +130,7 @@
           <button
             mat-stroked-button
             type="button"
+            data-testid="input-day-load"
             (click)="loadDay()"
             [disabled]="loading || !hasValidSelectedDate || initialDateError !== null">
             Rafraichir
@@ -246,6 +251,7 @@
               mat-stroked-button
               color="warn"
               type="button"
+              data-testid="input-day-delete-item"
               (click)="removeItem()"
               [disabled]="loading">
               Supprimer
@@ -254,7 +260,7 @@
               mat-raised-button
               color="primary"
               type="button"
-              class="input-day-submit-item"
+              data-testid="input-day-submit-item"
               (click)="submitItemEditor()"
               [disabled]="!canSubmitItemEditor">
               Enregistrer l entree
@@ -331,9 +337,10 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      *ngFor="let row of selectedProductRows; trackBy: trackBySelectedProductRow"
-                      class="border-t border-slate-100 align-top">
+                <tr
+                  *ngFor="let row of selectedProductRows; trackBy: trackBySelectedProductRow"
+                  [attr.data-testid]="'input-day-selected-product-' + row.productId"
+                  class="border-t border-slate-100 align-top">
                       <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
                       <td class="px-3 py-2">
                         <mat-form-field appearance="fill" class="w-full">
@@ -379,13 +386,18 @@
               </p>
 
               <div class="flex flex-wrap justify-end gap-2">
-                <button mat-stroked-button type="button" (click)="resetCreateComposer()">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  data-testid="input-day-reset-create"
+                  (click)="resetCreateComposer()">
                   Reinitialiser
                 </button>
                 <button
                   mat-raised-button
                   color="primary"
                   type="button"
+                  data-testid="input-day-create-items"
                   (click)="createSelectedItems()"
                   [disabled]="!canCreateSelectedItems">
                   {{ createSelectedItemsLabel }}
@@ -517,7 +529,10 @@
             <div class="flex flex-wrap items-center gap-2">
               <mat-form-field appearance="fill" class="w-full min-w-[16rem] sm:w-72">
               <mat-label>Remplacement template</mat-label>
-                <mat-select [(ngModel)]="manualTemplateSelectionId" [ngModelOptions]="{ standalone: true }">
+                <mat-select
+                  data-testid="input-day-template-select"
+                  [(ngModel)]="manualTemplateSelectionId"
+                  [ngModelOptions]="{ standalone: true }">
                   <mat-option [value]="null">Aucun override</mat-option>
                   <mat-option *ngFor="let template of templates" [value]="template.id">
                     {{ template.title }}
@@ -525,7 +540,12 @@
                 </mat-select>
               </mat-form-field>
 
-              <button mat-raised-button color="primary" type="button" (click)="applyManualTemplateSelection()">
+              <button
+                mat-raised-button
+                color="primary"
+                type="button"
+                data-testid="input-day-template-apply"
+                (click)="applyManualTemplateSelection()">
                 Appliquer
               </button>
 
@@ -533,6 +553,7 @@
                 *ngIf="hasManualTemplateOverride"
                 mat-stroked-button
                 type="button"
+                data-testid="input-day-template-clear"
                 (click)="clearManualTemplateOverride()">
                 Retirer le remplacement
               </button>
@@ -562,7 +583,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of templateItems; trackBy: trackByTemplateItem" class="border-t border-slate-100 align-top">
+                <tr *ngFor="let item of templateItems; trackBy: trackByTemplateItem" [attr.data-testid]="'input-day-template-item-' + item.id" class="border-t border-slate-100 align-top">
                   <td class="px-3 py-2">
                     <p class="font-medium text-slate-900">{{ item.productName }}</p>
                     <p class="text-xs text-slate-500">#{{ item.productId }}</p>
@@ -637,6 +658,7 @@
                       mat-raised-button
                       color="primary"
                       type="button"
+                      [attr.data-testid]="'input-day-convert-template-' + item.id"
                       (click)="convertTemplateItem(item)"
                       [disabled]="!canConvertTemplateItem(item)">
                       {{ item.status === 'converted' ? 'Deja converti' : 'Convertir' }}
@@ -673,7 +695,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let item of response.items; trackBy: trackByInputDayItem" class="border-t border-slate-100 align-top">
+                <tr *ngFor="let item of response.items; trackBy: trackByInputDayItem" [attr.data-testid]="'input-day-item-' + item.id" class="border-t border-slate-100 align-top">
                   <td class="px-3 py-2">
                     <p class="font-medium text-slate-900">
                       {{ item.productName }}

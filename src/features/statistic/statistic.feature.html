@@ -1,5 +1,5 @@
-<section class="app-page app-page--wide stat-page">
-  <header class="stat-hero">
+<section class="app-page app-page--wide stat-page" data-testid="statistic-page">
+  <header class="stat-hero" data-testid="statistic-page">
     <div>
       <p class="stat-eyebrow">Foody Clear</p>
       <h1>Statistiques</h1>
@@ -9,10 +9,10 @@
     </div>
 
     <div class="stat-hero__actions">
-      <button mat-stroked-button type="button" (click)="applyQuickRange(7)">7 jours</button>
-      <button mat-stroked-button type="button" (click)="applyQuickRange(30)">30 jours</button>
-      <button mat-stroked-button type="button" (click)="applyQuickRange(90)">90 jours</button>
-      <button mat-raised-button color="primary" type="button" (click)="refresh()">Actualiser</button>
+      <button mat-stroked-button type="button" data-testid="stat-quick-7" (click)="applyQuickRange(7)">7 jours</button>
+      <button mat-stroked-button type="button" data-testid="stat-quick-30" (click)="applyQuickRange(30)">30 jours</button>
+      <button mat-stroked-button type="button" data-testid="stat-quick-90" (click)="applyQuickRange(90)">90 jours</button>
+      <button mat-raised-button color="primary" type="button" data-testid="stat-refresh" (click)="refresh()">Actualiser</button>
     </div>
   </header>
 
@@ -38,7 +38,7 @@
         <input matInput [(ngModel)]="timezone" />
       </mat-form-field>
 
-      <button mat-flat-button color="primary" type="button" (click)="refresh()">
+      <button mat-flat-button color="primary" type="button" data-testid="stat-load" (click)="refresh()">
         Charger
       </button>
     </div>
@@ -51,8 +51,9 @@
   <mat-button-toggle-group
     [(ngModel)]="activeView"
     class="stat-view-switch"
+    data-testid="stat-view-switch"
     aria-label="Changer de vue statistiques">
-    <mat-button-toggle *ngFor="let view of views" [value]="view.value">
+    <mat-button-toggle *ngFor="let view of views" [value]="view.value" [attr.data-testid]="'stat-view-' + view.value">
       {{ view.label }}
     </mat-button-toggle>
   </mat-button-toggle-group>
@@ -83,11 +84,12 @@
         </div>
       </div>
 
-      <div class="expense-timeline">
+      <div class="expense-timeline" data-testid="stat-expense-timeline">
         <button
           *ngFor="let day of timeline.days"
           type="button"
           class="expense-bar"
+          [attr.data-testid]="'stat-expense-day-' + day.dateLocal"
           [class.is-active]="selectedTimelineDay?.dateLocal === day.dateLocal"
           (click)="selectTimelineDay(day.dateLocal)">
           <span class="expense-bar__amount">{{ formatCurrency(day.expenses.totalAmount) }}</span>
@@ -109,7 +111,10 @@
       </div>
 
       <div class="detail-list" *ngIf="day.expenses.events.length > 0; else noExpenseEvents">
-        <article class="detail-item" *ngFor="let event of day.expenses.events">
+        <article
+          class="detail-item"
+          *ngFor="let event of day.expenses.events"
+          [attr.data-testid]="'stat-expense-event-' + event.id">
           <div>
             <strong>{{ event.productName }}</strong>
             <p>{{ event.inventoryName || 'Inventaire inconnu' }}</p>
@@ -142,11 +147,12 @@
         </mat-button-toggle-group>
       </div>
 
-      <div class="target-timeline" *ngIf="timelineResponse as timeline">
+      <div class="target-timeline" *ngIf="timelineResponse as timeline" data-testid="stat-target-timeline">
         <button
           *ngFor="let day of timeline.days"
           type="button"
           class="target-bar"
+          [attr.data-testid]="'stat-target-day-' + day.dateLocal"
           [class.is-active]="selectedTimelineDay?.dateLocal === day.dateLocal"
           (click)="selectTimelineDay(day.dateLocal)">
           <span class="target-bar__date">{{ formatDate(day.dateLocal) }}</span>
@@ -207,7 +213,7 @@
       <div class="stat-filters">
         <mat-form-field appearance="fill">
           <mat-label>Produit</mat-label>
-          <mat-select [(ngModel)]="selectedPriceProductId" (selectionChange)="onPriceProductChange()">
+          <mat-select data-testid="stat-price-product-select" [(ngModel)]="selectedPriceProductId" (selectionChange)="onPriceProductChange()">
             <mat-option *ngFor="let product of products" [value]="product.id">
               {{ product.name }} (#{{ product.id }})
             </mat-option>
@@ -247,8 +253,11 @@
       </div>
 
       <ng-container *ngIf="priceHistoryResponse as history; else noPriceHistory">
-        <div class="price-timeline" *ngIf="history.changes.length > 0; else noPriceChanges">
-          <article class="price-timeline__item" *ngFor="let change of history.changes">
+        <div class="price-timeline" *ngIf="history.changes.length > 0; else noPriceChanges" data-testid="stat-price-timeline">
+          <article
+            class="price-timeline__item"
+            *ngFor="let change of history.changes"
+            [attr.data-testid]="'stat-price-change-' + change.id">
             <div class="price-timeline__dot"></div>
             <div class="price-timeline__content">
               <div class="price-timeline__top">
@@ -287,17 +296,17 @@
   </app-ui-error-panel>
 
   <ng-template #noExpenseEvents>
-    <p class="empty-copy">Aucun achat sur cette journee.</p>
+    <p class="empty-copy" data-testid="stat-empty-expenses">Aucun achat sur cette journee.</p>
   </ng-template>
 
   <ng-template #noPriceHistory>
-    <p class="empty-copy">
+    <p class="empty-copy" data-testid="stat-empty-price-history">
       Aucun historique de prix disponible pour {{ selectedProductName }} sur cette periode.
     </p>
   </ng-template>
 
   <ng-template #noPriceChanges>
-    <p class="empty-copy">
+    <p class="empty-copy" data-testid="stat-empty-price-changes">
       Aucun changement de prix pour {{ selectedProductName }} sur cette periode.
     </p>
   </ng-template>

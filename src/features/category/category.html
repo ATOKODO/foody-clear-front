@@ -1,4 +1,4 @@
-<section class="app-page">
+<section class="app-page" data-testid="category-page">
   <mat-card class="overflow-hidden rounded-2xl">
     <div class="flex items-center justify-between bg-slate-900 px-6 py-5 text-white">
       <div>
@@ -46,7 +46,7 @@
 </section>
 
 <div class="app-modal-backdrop" *ngIf="formVisible" (click)="onCancelForm()"></div>
-<div class="app-modal-shell" *ngIf="formVisible">
+<div class="app-modal-shell" *ngIf="formVisible" data-testid="category-dialog">
   <mat-card
     appearance="outlined"
     class="app-modal-card"

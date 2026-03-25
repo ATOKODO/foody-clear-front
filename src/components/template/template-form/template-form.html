@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-6" data-testid="template-form">
   <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
     <mat-form-field appearance="fill" class="w-full">
       <mat-label>Titre du template</mat-label>
@@ -9,6 +9,7 @@
       mat-raised-button
       color="primary"
       type="button"
+      data-testid="template-save"
       (click)="onTemplateSave()"
       [disabled]="!canSaveTemplate"
     >
@@ -20,6 +21,7 @@
       mat-stroked-button
       color="warn"
       type="button"
+      data-testid="template-delete"
       (click)="onTemplateDelete()"
       [disabled]="savingTemplate || savingItem"
     >
@@ -104,6 +106,7 @@
             mat-raised-button
             color="primary"
             type="button"
+            data-testid="template-item-save"
             (click)="onItemSave()"
             [disabled]="!canSaveItem"
           >
@@ -135,7 +138,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of template.items" class="border-t border-slate-100 align-top">
+              <tr *ngFor="let item of template.items" [attr.data-testid]="'template-item-edit-row-' + item.id" class="border-t border-slate-100 align-top">
                 <td class="px-3 py-2">
                   <p class="font-medium text-slate-900">{{ item.productName }}</p>
                   <p class="text-xs text-slate-500">#{{ item.productId }}</p>
@@ -161,6 +164,7 @@
                     <button
                       mat-stroked-button
                       type="button"
+                      [attr.data-testid]="'template-item-edit-' + item.id"
                       (click)="editItem(item)"
                       [disabled]="savingTemplate || savingItem"
                     >
@@ -170,6 +174,7 @@
                       mat-stroked-button
                       color="warn"
                       type="button"
+                      [attr.data-testid]="'template-item-delete-' + item.id"
                       (click)="onItemDelete(item.id)"
                       [disabled]="savingTemplate || savingItem"
                     >

@@ -1,4 +1,4 @@
-<mat-card class="overflow-hidden rounded-2xl">
+<mat-card class="overflow-hidden rounded-2xl" data-testid="template-list">
   <div class="bg-slate-900 px-6 py-5 text-white">
     <h2 class="text-xl font-semibold">Modeles</h2>
     <p class="mt-1 text-sm text-slate-300">
@@ -24,6 +24,7 @@
               *ngFor="let template of sortedTemplates"
               mat-stroked-button
               type="button"
+              [attr.data-testid]="'template-select-' + template.id"
               class="template-feature__template-button"
               [class.template-feature__template-button--active]="template.id === selectedTemplateId"
               (click)="onTemplateClick(template.id)"
@@ -38,7 +39,7 @@
 
         <div class="space-y-4">
           <div class="flex flex-wrap items-center gap-2">
-            <button mat-raised-button color="primary" type="button" (click)="onAddClick()">
+            <button mat-raised-button color="primary" type="button" data-testid="template-add" (click)="onAddClick()">
               Nouveau modele
             </button>
 
@@ -46,6 +47,7 @@
               *ngIf="selectedTemplateId !== null"
               mat-stroked-button
               type="button"
+              data-testid="template-edit"
               (click)="onEditClick()"
             >
               Modifier le modele
@@ -112,6 +114,7 @@
               <tbody>
                 <tr
                   *ngFor="let item of template.items"
+                  [attr.data-testid]="'template-item-row-' + item.id"
                   class="border-t border-slate-100 align-top"
                 >
                   <td class="px-3 py-2">
@@ -147,7 +150,7 @@
                     </p>
                   </td>
                   <td class="px-3 py-2">
-                    <details>
+                    <details [attr.data-testid]="'template-stock-detail-' + item.id">
                       <summary class="cursor-pointer text-xs font-medium text-slate-700">
                         Voir le detail
                       </summary>

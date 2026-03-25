@@ -1,4 +1,4 @@
-<section class="app-page">
+<section class="app-page" data-testid="generic-product-page">
   <mat-card class="overflow-hidden rounded-2xl">
     <div class="flex items-center justify-between bg-slate-900 px-6 py-5 text-white">
       <div>
@@ -40,6 +40,7 @@
   <mat-card
     appearance="outlined"
     class="app-modal-card"
+    data-testid="generic-product-dialog"
     role="dialog"
     aria-modal="true"
     (click)="$event.stopPropagation()"

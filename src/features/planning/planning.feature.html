@@ -1,4 +1,4 @@
-<section class="app-page app-page--wide">
+<section class="app-page app-page--wide" data-testid="planning-page">
   <mat-card class="overflow-hidden rounded-2xl">
     <div class="planning-feature__header">
       <div class="planning-feature__header-shell">
@@ -13,6 +13,7 @@
           <div class="planning-feature__header-nav">
             <button
               type="button"
+              data-testid="planning-today"
               class="planning-feature__today-button"
               (click)="goToCalendarToday()">
               Aujourd'hui
@@ -21,6 +22,7 @@
             <div class="planning-feature__period-switcher">
               <button
                 type="button"
+                data-testid="planning-prev"
                 class="planning-feature__nav-button"
                 aria-label="Periode precedente"
                 (click)="navigateCalendar('prev')">
@@ -35,6 +37,7 @@
 
               <button
                 type="button"
+                data-testid="planning-next"
                 class="planning-feature__nav-button"
                 aria-label="Periode suivante"
                 (click)="navigateCalendar('next')">
@@ -50,9 +53,13 @@
               [value]="currentCalendarView"
               (change)="switchCalendarView($event.value)"
               aria-label="Selection de la vue calendrier"
+              data-testid="planning-view-toggle"
               class="planning-feature__view-toggle"
               hideSingleSelectionIndicator>
-              <mat-button-toggle *ngFor="let view of calendarViews" [value]="view">
+              <mat-button-toggle
+                *ngFor="let view of calendarViews"
+                [value]="view"
+                [attr.data-testid]="'planning-view-' + view">
                 {{ getCalendarViewLabel(view) }}
               </mat-button-toggle>
             </mat-button-toggle-group>
@@ -61,6 +68,7 @@
               mat-raised-button
               color="primary"
               type="button"
+              data-testid="planning-refresh"
               class="planning-feature__refresh rounded-full"
               (click)="refreshPlanningData()"
               [disabled]="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment">
@@ -96,7 +104,7 @@
 
       </div>
 
-      <div class="planning-feature__calendar">
+        <div class="planning-feature__calendar" data-testid="planning-calendar">
         <app-calendar
           #calendarRef
           [cycleAssignments]="cycleAssignments"
@@ -128,7 +136,7 @@
 </section>
 
 <div class="modal-backdrop" *ngIf="activeModal" (click)="closeActiveModal()"></div>
-<div class="modal-shell" *ngIf="activeModal">
+<div class="modal-shell" *ngIf="activeModal" [attr.data-testid]="'planning-modal-' + activeModal">
   <mat-card
     class="modal-card planning-modal"
     [class.planning-modal--actions]="activeModal === 'actions'"
@@ -160,6 +168,7 @@
           <button
             type="button"
             class="planning-action-card planning-action-card--cycle"
+            data-testid="planning-action-cycle"
             (click)="openAssignmentFromActions()">
             <span class="planning-action-card__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -183,6 +192,7 @@
           <button
             type="button"
             class="planning-action-card planning-action-card--item"
+            data-testid="planning-action-items"
             (click)="openItemsFromActions()">
             <span class="planning-action-card__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">

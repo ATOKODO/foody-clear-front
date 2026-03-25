@@ -1,4 +1,4 @@
-<section class="app-page">
+<section class="app-page" data-testid="cycle-page">
   <div class="cycle-hub-header rounded-3xl px-6 py-6 text-white shadow-lg">
     <div class="cycle-hub-header__top">
       <div class="max-w-3xl">
@@ -18,11 +18,12 @@
         [hideSingleSelectionIndicator]="true"
         (ngModelChange)="activeView = $event"
         aria-label="Selection de la vue active"
+        data-testid="cycle-view-toggle"
         class="cycle-view-toggle"
         name="cycle-view">
-        <mat-button-toggle value="cycle">Cycles</mat-button-toggle>
-        <mat-button-toggle value="daySet">Day sets</mat-button-toggle>
-        <mat-button-toggle value="slot">Slots</mat-button-toggle>
+        <mat-button-toggle value="cycle" data-testid="cycle-view-cycle">Cycles</mat-button-toggle>
+        <mat-button-toggle value="daySet" data-testid="cycle-view-daySet">Day sets</mat-button-toggle>
+        <mat-button-toggle value="slot" data-testid="cycle-view-slot">Slots</mat-button-toggle>
       </mat-button-toggle-group>
     </div>
 
@@ -94,7 +95,7 @@
 </section>
 
 <ng-template #cycleFormDialog>
-  <div class="cycle-form-dialog">
+  <div class="cycle-form-dialog" data-testid="cycle-dialog">
     <div class="cycle-form-dialog__header">
       <div>
         <p class="cycle-form-dialog__eyebrow">Cycle</p>
@@ -122,7 +123,7 @@
 </ng-template>
 
 <ng-template #cycleImpactDialog>
-  <div class="cycle-form-dialog">
+  <div class="cycle-form-dialog" data-testid="cycle-impact-dialog">
     <div class="cycle-form-dialog__header">
       <div>
         <p class="cycle-form-dialog__eyebrow">Planning</p>

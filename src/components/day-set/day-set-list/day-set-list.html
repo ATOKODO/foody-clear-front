@@ -1,4 +1,4 @@
-<section class="mx-auto w-full max-w-6xl px-4 py-6" aria-label="Liste des day sets">
+<section class="mx-auto w-full max-w-6xl px-4 py-6" aria-label="Liste des day sets" data-testid="day-set-list">
   <mat-card class="overflow-hidden rounded-2xl">
     <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-6">
       <h2 class="text-base font-semibold text-slate-900">Day Sets</h2>
@@ -8,6 +8,7 @@
         mat-raised-button
         color="primary"
         type="button"
+        data-testid="day-set-add"
         class="add-btn"
         (click)="onAddClick()">
         Ajouter
@@ -60,10 +61,10 @@
             <th mat-header-cell *matHeaderCellDef>Actions</th>
             <td mat-cell *matCellDef="let item" (click)="$event.stopPropagation()">
               <div class="flex flex-wrap gap-2">
-                <button mat-stroked-button type="button" (click)="onEditClick(item)">
+                <button mat-stroked-button type="button" [attr.data-testid]="'day-set-edit-' + item.id" (click)="onEditClick(item)">
                   Modifier
                 </button>
-                <button mat-stroked-button color="warn" type="button" (click)="onDeleteClick(item)">
+                <button mat-stroked-button color="warn" type="button" [attr.data-testid]="'day-set-delete-' + item.id" (click)="onDeleteClick(item)">
                   Retirer
                 </button>
               </div>
@@ -74,6 +75,7 @@
           <tr
             mat-row
             *matRowDef="let item; let i = index; columns: displayedColumns"
+            [attr.data-testid]="'day-set-row-' + item.id"
             [class.dsl-active]="isRowActive(item, i)"
             [class.dsl-disabled]="isSelectionDisabled(item)"
             [class.dsl-selectable]="isSingleSelectMode || isMultiSelectMode"

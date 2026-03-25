@@ -1,4 +1,4 @@
-<section class="app-page">
+<section class="app-page" data-testid="inventory-page">
   <mat-card class="overflow-hidden rounded-2xl">
     <div
       class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 px-6 py-5 text-white"
@@ -53,7 +53,7 @@
 </section>
 
 <div class="modal-backdrop modal-backdrop--inventory" *ngIf="formVisible" (click)="closeFormModal()"></div>
-<div class="modal-shell modal-shell--inventory" *ngIf="formVisible">
+<div class="modal-shell modal-shell--inventory" *ngIf="formVisible" data-testid="inventory-dialog">
   <mat-card appearance="outlined" class="modal-card modal-card--inventory rounded-xl" (click)="$event.stopPropagation()">
     <mat-card-content class="space-y-6 p-0">
       <app-inventory-form
@@ -283,7 +283,7 @@
 </div>
 
 <div class="modal-backdrop modal-backdrop--nested" *ngIf="isAddProductsModalOpen" (click)="closeActiveModal()"></div>
-<div class="modal-shell modal-shell--nested" *ngIf="isAddProductsModalOpen">
+<div class="modal-shell modal-shell--nested" *ngIf="isAddProductsModalOpen" data-testid="inventory-add-products-dialog">
   <mat-card class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
     <mat-card-header>
       <mat-card-title>Ajouter des produits</mat-card-title>

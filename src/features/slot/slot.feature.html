@@ -1,4 +1,4 @@
-<section class="app-page">
+<section class="app-page" data-testid="slot-page">
   <mat-card class="overflow-hidden rounded-2xl">
     <div class="bg-slate-900 px-6 py-5 text-white">
       <h2 class="text-xl font-semibold">Slots</h2>
@@ -38,7 +38,7 @@
 </section>
 
 <div class="app-modal-backdrop" *ngIf="formVisible" (click)="onCancelForm()"></div>
-<div class="app-modal-shell" *ngIf="formVisible">
+<div class="app-modal-shell" *ngIf="formVisible" data-testid="slot-dialog">
   <mat-card
     appearance="outlined"
     class="app-modal-card"
