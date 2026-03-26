@@ -1,62 +1,103 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { By } from '@angular/platform-browser';
+import { of, throwError } from 'rxjs';
 
 import { Category } from './category';
 import { CategoryService } from '../../services/category-service';
 
+@Component({
+  standalone: true,
+  imports: [Category],
+  template: `
+    <app-category></app-category>
+    <app-category></app-category>
+  `,
+})
+class HostCategoryTestComponent {}
+
 describe('Category', () => {
   let component: Category;
   let fixture: ComponentFixture<Category>;
-  const categoryServiceMock = {
-    baseUrl: 'http://localhost:3000',
-    setBaseUrl: jasmine.createSpy('setBaseUrl'),
-    findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
-    create: jasmine.createSpy('create').and.returnValue(
-      of({
-        id: 1,
-        name: 'Fruits',
-        warnBeforeDays: 3,
-        recentlyExpiredDays: 1,
-        minQuantity: 1,
-      }),
-    ),
-    update: jasmine.createSpy('update').and.returnValue(
-      of({
-        id: 1,
-        name: 'Fruits',
-        warnBeforeDays: 3,
-        recentlyExpiredDays: 1,
-        minQuantity: 1,
-      }),
-    ),
-    remove: jasmine.createSpy('remove').and.returnValue(of(void 0)),
+  let categoryServiceMock: jasmine.SpyObj<CategoryService>;
+
+  const createdCategory = {
+    id: 1,
+    name: 'Fruits',
+    warnBeforeDays: 3,
+    recentlyExpiredDays: 1,
+    minQuantity: 1,
   };
 
   beforeEach(async () => {
-    categoryServiceMock.setBaseUrl.calls.reset();
-    categoryServiceMock.findAll.calls.reset();
-    categoryServiceMock.create.calls.reset();
-    categoryServiceMock.update.calls.reset();
-    categoryServiceMock.remove.calls.reset();
+    categoryServiceMock = jasmine.createSpyObj<CategoryService>(
+      'CategoryService',
+      ['setBaseUrl', 'findAll', 'create', 'update', 'remove'],
+      { baseUrl: 'http://localhost:3000' },
+    );
+
+    categoryServiceMock.findAll.and.returnValue(of([]));
+    categoryServiceMock.create.and.returnValue(of(createdCategory));
+    categoryServiceMock.update.and.returnValue(of(createdCategory));
+    categoryServiceMock.remove.and.returnValue(of(void 0));
 
     await TestBed.configureTestingModule({
-      imports: [Category],
+      imports: [Category, HostCategoryTestComponent],
       providers: [{ provide: CategoryService, useValue: categoryServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Category);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.detectChanges();
+
     expect(component).toBeTruthy();
   });
 
-  it('should emit dataChanged after creating a category', () => {
+  it('should not emit dataChanged during the initial load', () => {
     const emitSpy = spyOn(component.dataChanged, 'emit');
 
-    component.onFormSubmitted({
+    fixture.detectChanges();
+
+    expect(emitSpy).not.toHaveBeenCalled();
+  });
+
+  it('should emit dataChanged after creating a category', () => {
+    categoryServiceMock.findAll.and.returnValues(of([]), of([createdCategory]));
+    const emitSpy = spyOn(component.dataChanged, 'emit');
+
+    fixture.detectChanges();
+    component.store.openCreateForm();
+    component.store.submitForm({
+      mode: 'add',
+      value: {
+        name: 'Fruits',
+        warnBeforeDays: 3,
+        recentlyExpiredDays: 1,
+        minQuantity: 1,
+      },
+    });
+    fixture.detectChanges();
+
+    expect(categoryServiceMock.create).toHaveBeenCalledWith({
+      name: 'Fruits',
+      warnBeforeDays: 3,
+      recentlyExpiredDays: 1,
+      minQuantity: 1,
+    });
+    expect(emitSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not emit dataChanged when a mutation fails', () => {
+    const error = new Error('create failed');
+    categoryServiceMock.create.and.returnValue(throwError(() => error));
+    const emitSpy = spyOn(component.dataChanged, 'emit');
+
+    fixture.detectChanges();
+    component.store.openCreateForm();
+    component.store.submitForm({
       mode: 'add',
       value: {
         name: 'Fruits',
@@ -66,6 +107,25 @@ describe('Category', () => {
       },
     });
 
-    expect(emitSpy).toHaveBeenCalled();
+    expect(component.store.lastError()).toBe(error);
+    expect(component.store.mutationVersion()).toBe(0);
+    expect(emitSpy).not.toHaveBeenCalled();
+  });
+
+  it('should scope one store instance per component instance', () => {
+    const hostFixture = TestBed.createComponent(HostCategoryTestComponent);
+    hostFixture.detectChanges();
+
+    const categoryComponents = hostFixture.debugElement
+      .queryAll(By.directive(Category))
+      .map((debugElement) => debugElement.componentInstance as Category);
+
+    expect(categoryComponents.length).toBe(2);
+    expect(categoryComponents[0].store).not.toBe(categoryComponents[1].store);
+
+    categoryComponents[0].store.openCreateForm();
+
+    expect(categoryComponents[0].store.formVisible()).toBeTrue();
+    expect(categoryComponents[1].store.formVisible()).toBeFalse();
   });
 });

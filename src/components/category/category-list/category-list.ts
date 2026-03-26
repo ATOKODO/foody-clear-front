@@ -47,23 +47,6 @@ export class CategoryList implements OnInit, OnChanges {
   @Output() readonly selected = new EventEmitter<CategoryListItem>();
   @Output() readonly selectedMany = new EventEmitter<CategoryListItem[]>();
 
-  readonly defaultCategories: CategoryListItem[] = [
-    {
-      id: '1',
-      name: 'Fruits',
-      warnBeforeDays: 4,
-      recentlyExpiredDays: 2,
-      minQuantity: 1,
-    },
-    {
-      id: '2',
-      name: 'Epicerie',
-      warnBeforeDays: 10,
-      recentlyExpiredDays: 3,
-      minQuantity: 2,
-    },
-  ];
-
   resolvedCategories: CategoryListItem[] = [];
 
   private selectedIdSet = new Set<string>();
@@ -196,8 +179,7 @@ export class CategoryList implements OnInit, OnChanges {
   }
 
   private applyInputState(): void {
-    this.resolvedCategories =
-      this.categories === null ? [...this.defaultCategories] : [...this.categories];
+    this.resolvedCategories = this.categories === null ? [] : [...this.categories];
 
     const initialIds = this.selectedIds ?? [];
     const availableIds = new Set(this.resolvedCategories.map((item) => item.id));

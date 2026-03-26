@@ -9,7 +9,7 @@
         mat-raised-button
         color="primary"
         type="button"
-        (click)="onRefreshRequested()"
+        (click)="store.refresh()"
       >
         Rafraichir
       </button>
@@ -18,35 +18,42 @@
     <div class="space-y-4 p-4 sm:p-6">
       <div class="app-status-row">
         <span
-          *ngIf="loading"
+          *ngIf="store.loading()"
           class="app-status-pill app-status-pill--neutral"
         >
           Chargement...
         </span>
         <span
-          *ngIf="saving"
+          *ngIf="store.saving()"
           class="app-status-pill app-status-pill--saving"
         >
           Sauvegarde...
         </span>
       </div>
 
-      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
+      <app-ui-error-panel
+        *ngIf="store.hasError()"
+        [error]="store.lastError()"
+      ></app-ui-error-panel>
 
       <app-category-list
         mode="manage"
-        [categories]="categoryListItems"
-        (addRequested)="onAddRequested()"
-        (editRequested)="onEditRequested($event)"
-        (deleteRequested)="onDeleteRequested($event)"
+        [categories]="store.categoryListItems()"
+        (addRequested)="store.openCreateForm()"
+        (editRequested)="store.openEditForm($event)"
+        (deleteRequested)="store.deleteCategory($event)"
       >
       </app-category-list>
     </div>
   </mat-card>
 </section>
 
-<div class="app-modal-backdrop" *ngIf="formVisible" (click)="onCancelForm()"></div>
-<div class="app-modal-shell" *ngIf="formVisible" data-testid="category-dialog">
+<div
+  class="app-modal-backdrop"
+  *ngIf="store.formVisible()"
+  (click)="store.cancelForm()"
+></div>
+<div class="app-modal-shell" *ngIf="store.formVisible()" data-testid="category-dialog">
   <mat-card
     appearance="outlined"
     class="app-modal-card"
@@ -57,26 +64,21 @@
     <div class="app-dialog-header">
       <div>
         <p class="app-dialog-eyebrow">Catalogue</p>
-        <h3 class="app-dialog-title">
-          {{ formMode === 'edit' ? 'Modifier une categorie' : 'Ajouter une categorie' }}
-        </h3>
-        <p class="app-dialog-subtitle">
-          Regle les alertes, la fraicheur recente et le seuil minimum pour cette categorie.
-        </p>
+        <h3 class="app-dialog-title">{{ store.dialogTitle() }}</h3>
+        <p class="app-dialog-subtitle">{{ store.dialogSubtitle() }}</p>
       </div>
 
-      <button mat-stroked-button type="button" (click)="onCancelForm()">
+      <button mat-stroked-button type="button" (click)="store.cancelForm()">
         Fermer
       </button>
     </div>
 
     <div class="app-dialog-content">
       <app-category-form
-        [mode]="formMode"
-        [category]="formInitialValue"
+        [mode]="store.formMode()"
+        [category]="store.formInitialValue()"
         [showHeading]="false"
-        (submitted)="onFormSubmitted($event)"
-        (menuClicked)="onMenuClicked()"
+        (submitted)="store.submitForm($event)"
       >
       </app-category-form>
     </div>
