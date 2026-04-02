@@ -23,7 +23,29 @@ describe('ProductForm', () => {
 
   it('should initialize add mode with default values', () => {
     expect(component.form.getRawValue().name).toBe('');
-    expect(component.nutritionValues.length).toBe(3);
+    expect(component.nutritionValues).toEqual([
+      { nutritionKey: 'ENERGY', amount: 0, unit: 'KCAL', reference: 'PER_100G' },
+      { nutritionKey: 'PROTEIN', amount: 0, unit: 'G', reference: 'PER_100G' },
+      { nutritionKey: 'CARBOHYDRATE', amount: 0, unit: 'G', reference: 'PER_100G' },
+      { nutritionKey: 'FAT', amount: 0, unit: 'G', reference: 'PER_100G' },
+    ]);
+  });
+
+  it('should resolve energy default from nutrition key metadata', () => {
+    fixture.componentRef.setInput('nutritionKeys', [
+      { key: 'ENERGY_KCAL', value: 'ENERGY_KCAL', label: 'Energie (Kcal)', allowedUnits: ['KCAL'] },
+      { key: 'PROTEIN', value: 'PROTEIN', label: 'Proteine', allowedUnits: ['G'] },
+      { key: 'CARBOHYDRATE', value: 'CARBOHYDRATE', label: 'Glucide', allowedUnits: ['G'] },
+      { key: 'FAT', value: 'FAT', label: 'Lipide', allowedUnits: ['G'] },
+    ]);
+    fixture.detectChanges();
+
+    expect(component.nutritionValues).toEqual([
+      { nutritionKey: 'ENERGY_KCAL', amount: 0, unit: 'KCAL', reference: 'PER_100G' },
+      { nutritionKey: 'PROTEIN', amount: 0, unit: 'G', reference: 'PER_100G' },
+      { nutritionKey: 'CARBOHYDRATE', amount: 0, unit: 'G', reference: 'PER_100G' },
+      { nutritionKey: 'FAT', amount: 0, unit: 'G', reference: 'PER_100G' },
+    ]);
   });
 
   it('should patch values in edit mode when product is provided', () => {

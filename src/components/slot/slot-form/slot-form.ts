@@ -16,6 +16,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CycleNutritionValue, NutritionReference } from '../../../interfaces/cycle.interface';
 import { NutritionKeyMeta } from '../../../services/meta-service';
+import {
+  getFallbackUnitsForNutritionKey,
+  resolveDefaultNutritionKeys,
+} from '../../shared/default-nutrition-values';
 
 export type SlotFormMode = 'add' | 'edit';
 
@@ -128,7 +132,7 @@ export class SlotForm implements OnInit, OnChanges {
 
     const allowedUnits = this.getAllowedUnits(row.nutritionKey);
     if (allowedUnits.length === 0) {
-      row.unit = 'G';
+      row.unit = this.getFallbackUnits(row.nutritionKey)[0];
       return;
     }
 
@@ -139,7 +143,7 @@ export class SlotForm implements OnInit, OnChanges {
 
   getUnitsForKey(nutritionKey: string): string[] {
     const allowedUnits = this.getAllowedUnits(nutritionKey);
-    return allowedUnits.length > 0 ? allowedUnits : ['G', 'MG'];
+    return allowedUnits.length > 0 ? allowedUnits : this.getFallbackUnits(nutritionKey);
   }
 
   private applyInputState(): void {
@@ -178,7 +182,7 @@ export class SlotForm implements OnInit, OnChanges {
   }
 
   private getDefaultNutritionValues(): CycleNutritionValue[] {
-    const defaults = ['PROTEIN', 'CARBOHYDRATE', 'FAT'].map((key) =>
+    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys).map((key) =>
       this.buildDefaultNutritionValue(key),
     );
     return this.cloneNutritionValues(defaults);
@@ -215,7 +219,9 @@ export class SlotForm implements OnInit, OnChanges {
   private pickDefaultUnit(nutritionKey: string, preferred?: string): string {
     const allowedUnits = this.getAllowedUnits(nutritionKey);
     if (allowedUnits.length === 0) {
-      return preferred && preferred.trim() !== '' ? preferred : 'G';
+      return preferred && preferred.trim() !== ''
+        ? preferred
+        : this.getFallbackUnits(nutritionKey)[0];
     }
 
     if (preferred && allowedUnits.includes(preferred)) {
@@ -255,5 +261,9 @@ export class SlotForm implements OnInit, OnChanges {
     }
 
     return key.allowedUnits.filter((unit) => unit.trim() !== '');
+  }
+
+  private getFallbackUnits(nutritionKey: string): string[] {
+    return getFallbackUnitsForNutritionKey(nutritionKey);
   }
 }

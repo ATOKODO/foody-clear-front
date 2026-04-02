@@ -28,7 +28,12 @@ describe('FormCycle', () => {
       typeDuree: 'jour',
       durationDays: 1,
     });
-    expect(component.nutritionValues.length).toBe(3);
+    expect(component.nutritionValues).toEqual([
+      { nutritionKey: 'ENERGY', amount: 0, unit: 'KCAL', reference: 'PER_100G' },
+      { nutritionKey: 'PROTEIN', amount: 0, unit: 'G', reference: 'PER_100G' },
+      { nutritionKey: 'CARBOHYDRATE', amount: 0, unit: 'G', reference: 'PER_100G' },
+      { nutritionKey: 'FAT', amount: 0, unit: 'G', reference: 'PER_100G' },
+    ]);
     expect(component.daySetTimeline).toEqual([0]);
   });
 
