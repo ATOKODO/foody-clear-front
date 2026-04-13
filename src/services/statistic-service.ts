@@ -5,15 +5,16 @@ import {
   ProductPriceHistoryStatsResponse,
   StatisticsTimelineResponse,
 } from '../interfaces/statistics.interface';
+import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 @Injectable({ providedIn: 'root' })
 export class StatisticService {
-  baseUrl = 'http://localhost:3000';
+  baseUrl = defaultApiBaseUrl;
 
   constructor(private readonly http: HttpClient) {}
 
   setBaseUrl(url: string): void {
-    this.baseUrl = url.replace(/\/$/, '');
+    this.baseUrl = normalizeApiBaseUrl(url);
   }
 
   getTimeline(

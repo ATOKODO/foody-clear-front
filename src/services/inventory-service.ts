@@ -9,15 +9,16 @@ import {
   UpdateInventoryDto,
   UpdateInventoryProductsDto,
 } from '../interfaces/inventory.interface';
+import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 @Injectable({ providedIn: 'root' })
 export class InventoryService {
-  baseUrl = 'http://localhost:3000';
+  baseUrl = defaultApiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
   setBaseUrl(url: string) {
-    this.baseUrl = url.replace(/\/$/, '');
+    this.baseUrl = normalizeApiBaseUrl(url);
   }
 
   create(dto: CreateInventoryDto): Observable<Inventory> {

@@ -2,15 +2,16 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CreateCycleDto, Cycle, UpdateCycleDto } from '../interfaces/cycle.interface';
+import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 @Injectable({ providedIn: 'root' })
 export class CycleService {
-  baseUrl = 'http://localhost:3000';
+  baseUrl = defaultApiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
   setBaseUrl(url: string) {
-    this.baseUrl = url.replace(/\/$/, '');
+    this.baseUrl = normalizeApiBaseUrl(url);
   }
 
   create(dto: CreateCycleDto): Observable<Cycle> {

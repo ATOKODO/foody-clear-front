@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 export interface Category {
   id: number;
@@ -22,12 +23,12 @@ export type UpdateCategoryDto = Partial<CreateCategoryDto>;
 @Injectable({ providedIn: 'root' })
 export class CategoryService {
   /** Modifie-la dans le composant si besoin */
-  baseUrl = 'http://localhost:3000';
+  baseUrl = defaultApiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
   setBaseUrl(url: string) {
-    this.baseUrl = url.replace(/\/$/, '');
+    this.baseUrl = normalizeApiBaseUrl(url);
   }
 
   create(dto: CreateCategoryDto): Observable<Category> {

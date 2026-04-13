@@ -8,15 +8,16 @@ import {
   UpdateTemplateDto,
   UpdateTemplateItemDto,
 } from '../interfaces/template.interface';
+import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 @Injectable({ providedIn: 'root' })
 export class TemplateService {
-  baseUrl = 'http://localhost:3000';
+  baseUrl = defaultApiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
   setBaseUrl(url: string): void {
-    this.baseUrl = url.replace(/\/$/, '');
+    this.baseUrl = normalizeApiBaseUrl(url);
   }
 
   findAll(): Observable<Template[]> {

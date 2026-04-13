@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 export interface Tag {
   id: number;
@@ -15,12 +16,12 @@ export type UpdateTagDto = Partial<CreateTagDto>;
 
 @Injectable({ providedIn: 'root' })
 export class TagService {
-  baseUrl = 'http://localhost:3000';
+  baseUrl = defaultApiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
   setBaseUrl(url: string) {
-    this.baseUrl = url.replace(/\/$/, '');
+    this.baseUrl = normalizeApiBaseUrl(url);
   }
 
   create(dto: CreateTagDto): Observable<Tag> {

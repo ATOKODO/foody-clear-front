@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import type { PortionUnit, QuantityUnit } from './product-service';
+import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 export interface GenericProduct {
   id: number;
@@ -24,12 +25,12 @@ export type UpdateGenericProductDto = Partial<CreateGenericProductDto>;
 
 @Injectable({ providedIn: 'root' })
 export class GenericProductService {
-  baseUrl = 'http://localhost:3000';
+  baseUrl = defaultApiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
   setBaseUrl(url: string) {
-    this.baseUrl = url.replace(/\/$/, '');
+    this.baseUrl = normalizeApiBaseUrl(url);
   }
 
   create(dto: CreateGenericProductDto): Observable<GenericProduct> {

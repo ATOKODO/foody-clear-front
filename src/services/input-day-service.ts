@@ -9,15 +9,16 @@ import {
   InputWeekResponse,
   UpdateInputDayItemDto,
 } from '../interfaces/input-day.interface';
+import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 @Injectable({ providedIn: 'root' })
 export class InputDayService {
-  baseUrl = 'http://localhost:3000';
+  baseUrl = defaultApiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
   setBaseUrl(url: string) {
-    this.baseUrl = url.replace(/\/$/, '');
+    this.baseUrl = normalizeApiBaseUrl(url);
   }
 
   getInputDay(dateLocal: string, timezone?: string): Observable<InputDayResponse> {

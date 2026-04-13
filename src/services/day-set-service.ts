@@ -6,17 +6,18 @@ import {
   DaySet,
   UpdateDaySetDto,
 } from '../interfaces/day-set.interface';
+import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DaySetService {
-  baseUrl = 'http://localhost:3000';
+  baseUrl = defaultApiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
   setBaseUrl(url: string): void {
-    this.baseUrl = url.replace(/\/$/, '');
+    this.baseUrl = normalizeApiBaseUrl(url);
   }
 
   create(dto: CreateDaySetDto): Observable<DaySet> {

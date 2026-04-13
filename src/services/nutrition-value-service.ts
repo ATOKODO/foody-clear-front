@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 export interface NutritionValue {
   id: number;
@@ -24,12 +25,12 @@ export type UpdateNutritionValueDto = Partial<CreateNutritionValueDto>;
 
 @Injectable({ providedIn: 'root' })
 export class NutritionValueService {
-  baseUrl = 'http://localhost:3000';
+  baseUrl = defaultApiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
   setBaseUrl(url: string) {
-    this.baseUrl = url.replace(/\/$/, '');
+    this.baseUrl = normalizeApiBaseUrl(url);
   }
 
   create(dto: CreateNutritionValueDto): Observable<NutritionValue> {
