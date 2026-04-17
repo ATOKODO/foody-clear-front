@@ -2,6 +2,26 @@
   display: block;
 }
 
+.sl-shell {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: 1.5rem 1rem;
+}
+
+.sl-shell--embedded {
+  max-width: none;
+  padding: 0;
+}
+
+.sl-table-shell {
+  background: var(--app-surface);
+}
+
+.sl-empty {
+  margin: 0;
+}
+
 .slot-table {
   background: var(--app-surface);
 }

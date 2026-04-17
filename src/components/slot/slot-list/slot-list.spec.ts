@@ -35,6 +35,24 @@ describe('SlotList', () => {
     expect(addButton).toBeNull();
   });
 
+  it('should hide the standalone card chrome in embedded mode', () => {
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('mat-card')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.add-btn')).toBeNull();
+    expect(fixture.nativeElement.querySelector('table')).not.toBeNull();
+  });
+
+  it('should render a plain empty state in embedded mode', () => {
+    fixture.componentRef.setInput('slots', []);
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('mat-card')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Aucun slot disponible.');
+  });
+
   it('should emit selected in single select mode', () => {
     const emitted: Array<unknown> = [];
     component.selected.subscribe((item) => emitted.push(item));

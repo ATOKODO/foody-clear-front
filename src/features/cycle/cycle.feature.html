@@ -1,97 +1,93 @@
-<section class="app-page" data-testid="cycle-page">
-  <div class="cycle-hub-header rounded-3xl px-6 py-6 text-white shadow-lg">
-    <div class="cycle-hub-header__top">
-      <div class="max-w-3xl">
-        <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-300">
-          Planning nutrition
-        </p>
-        <h1 class="mt-2 text-2xl font-semibold sm:text-3xl">
-          Cycles, day sets et slots
-        </h1>
-        <p class="mt-2 text-sm text-slate-300 sm:text-base">
-          Pilotez les trois ecrans depuis un hub unique, avec une vue active a la fois.
-        </p>
-      </div>
-
-      <mat-button-toggle-group
-        [ngModel]="activeView"
-        [hideSingleSelectionIndicator]="true"
-        (ngModelChange)="activeView = $event"
-        aria-label="Selection de la vue active"
-        data-testid="cycle-view-toggle"
-        class="cycle-view-toggle"
-        name="cycle-view">
-        <mat-button-toggle value="cycle" data-testid="cycle-view-cycle">Cycles</mat-button-toggle>
-        <mat-button-toggle value="daySet" data-testid="cycle-view-daySet">Day sets</mat-button-toggle>
-        <mat-button-toggle value="slot" data-testid="cycle-view-slot">Slots</mat-button-toggle>
-      </mat-button-toggle-group>
-    </div>
-
-    <div *ngIf="activeView === 'cycle'" class="cycle-hub-header__active-view">
-      <div>
-        <p class="cycle-hub-header__active-eyebrow">Vue active</p>
-        <h2 class="cycle-hub-header__active-title">Cycle</h2>
-        <p class="cycle-hub-header__active-subtitle">Gestion des cycles.</p>
-      </div>
-
-      <button
-        mat-raised-button
-        color="primary"
-        class="cycle-hub-header__action rounded-full"
-        type="button"
-        (click)="onRefreshRequested()"
-        [disabled]="loading || loadingMeta || saving"
-      >
-        Rafraichir
-      </button>
-    </div>
+<section class="app-page cycle-page" data-testid="cycle-page">
+  <div class="cycle-page__toggle-wrap">
+    <app-segmented-toggle
+      [value]="activeView"
+      [options]="viewOptions"
+      (valueChange)="onActiveViewChange($event)"
+      ariaLabel="Selection de la vue cycle active"
+      data-testid="cycle-view-toggle"
+      name="cycle-view"
+      maxWidth="41rem"
+    ></app-segmented-toggle>
   </div>
 
-  <mat-card *ngIf="activeView === 'cycle'" class="mt-4 overflow-hidden rounded-2xl">
-    <div class="space-y-4 p-4 sm:p-6">
-      <div class="app-status-row">
-        <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
-          Chargement...
-        </span>
-        <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
-          Sauvegarde...
-        </span>
-        <span *ngIf="loadingMeta" class="app-status-pill app-status-pill--info">
-          Meta nutrition...
-        </span>
+  <mat-card class="cycle-panel" data-testid="cycle-panel">
+    <div class="cycle-panel__header">
+      <h2 class="cycle-panel__title" data-testid="cycle-panel-title">
+        {{ activeViewConfig.title }}
+      </h2>
+
+      <div class="cycle-panel__actions">
+        <button
+          mat-stroked-button
+          type="button"
+          class="cycle-action cycle-action--secondary"
+          (click)="onRefreshActiveView()"
+          [disabled]="activeViewBusy"
+        >
+          Rafraichir
+        </button>
+
+        <button
+          mat-stroked-button
+          type="button"
+          class="cycle-action cycle-action--primary"
+          (click)="onAddActiveView()"
+          [disabled]="activeViewBusy"
+          data-testid="cycle-add-action"
+        >
+          {{ activeViewConfig.addLabel }}
+        </button>
       </div>
-
-      <p *ngIf="lastMetaError" class="app-alert">
-        Impossible de charger les cles nutritionnelles meta, fallback actif.
-      </p>
-
-      <app-list-cycle
-        class="mt-4"
-        [cycles]="cycleListItems"
-        [activeCycleId]="selectedCycleId"
-        [showAddButton]="true"
-        (addRequested)="onAddRequested()"
-        (editRequested)="onEditRequested($event)"
-        (deleteRequested)="onDeleteRequested($event)">
-      </app-list-cycle>
     </div>
 
-    <mat-progress-bar *ngIf="loading || saving" mode="indeterminate"></mat-progress-bar>
+    <div class="cycle-panel__content">
+      <ng-container [ngSwitch]="activeView">
+        <div *ngSwitchCase="'cycle'" class="cycle-panel__section" data-testid="cycle-list-view">
+          <div class="app-status-row">
+            <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
+              Chargement...
+            </span>
+            <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
+              Sauvegarde...
+            </span>
+            <span *ngIf="loadingMeta" class="app-status-pill app-status-pill--info">
+              Meta nutrition...
+            </span>
+          </div>
 
-    <div class="space-y-3 p-4 sm:p-6">
-      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
+          <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
+
+          <p *ngIf="lastMetaError" class="app-alert">
+            Impossible de charger les cles nutritionnelles meta, fallback actif.
+          </p>
+
+          <app-list-cycle
+            [cycles]="cycleListItems"
+            [activeCycleId]="selectedCycleId"
+            [showAddButton]="false"
+            [embedded]="true"
+            (addRequested)="onAddRequested()"
+            (editRequested)="onEditRequested($event)"
+            (deleteRequested)="onDeleteRequested($event)"
+          >
+          </app-list-cycle>
+        </div>
+
+        <app-day-set-feature
+          *ngSwitchCase="'daySet'"
+          [embedded]="true"
+          (dataChanged)="onLinkedDataChanged()"
+        ></app-day-set-feature>
+
+        <app-slot-feature
+          *ngSwitchCase="'slot'"
+          [embedded]="true"
+          (dataChanged)="onLinkedDataChanged()"
+        ></app-slot-feature>
+      </ng-container>
     </div>
   </mat-card>
-
-  <app-day-set-feature
-    *ngIf="activeView === 'daySet'"
-    class="mt-6"
-    (dataChanged)="onLinkedDataChanged()"></app-day-set-feature>
-
-  <app-slot-feature
-    *ngIf="activeView === 'slot'"
-    class="mt-6"
-    (dataChanged)="onLinkedDataChanged()"></app-slot-feature>
 </section>
 
 <ng-template #cycleFormDialog>

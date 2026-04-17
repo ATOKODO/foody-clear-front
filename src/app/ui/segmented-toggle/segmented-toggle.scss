@@ -1,0 +1,115 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.segmented-toggle__shell {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.segmented-toggle {
+  --segmented-toggle-height: 3.35rem;
+  display: flex;
+  width: 100%;
+  gap: 0.65rem;
+  padding: 0.5rem;
+  border: 1px solid rgb(193 201 190 / 0.95);
+  border-radius: 1.8rem;
+  background: linear-gradient(180deg, #c6fbf2 0%, #b8ede3 100%);
+  box-shadow: 0 10px 24px -20px rgb(15 23 42 / 0.18);
+}
+
+.segmented-toggle mat-button-toggle {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: var(--segmented-toggle-height);
+  overflow: hidden;
+  border: 1px solid rgb(148 163 184 / 0.34);
+  border-radius: 9999px;
+  background: #81b5ac;
+  color: #08433d;
+}
+
+:host ::ng-deep .segmented-toggle.mat-button-toggle-group-appearance-standard {
+  border: 0;
+}
+
+:host ::ng-deep .segmented-toggle .mat-button-toggle {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+:host ::ng-deep .segmented-toggle .mat-button-toggle-appearance-standard + .mat-button-toggle-appearance-standard {
+  border-left: 1px solid rgb(148 163 184 / 0.34);
+}
+
+:host ::ng-deep .segmented-toggle .mat-button-toggle-button {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: stretch;
+  color: inherit;
+}
+
+:host ::ng-deep .segmented-toggle .mat-button-toggle-label-content {
+  display: flex;
+  min-height: calc(var(--segmented-toggle-height) - 2px);
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  white-space: normal;
+}
+
+:host ::ng-deep .segmented-toggle .mat-button-toggle-checked {
+  border-color: rgb(148 163 184 / 0.34);
+  background: #255952;
+  color: #f8fafc;
+  box-shadow: 0 10px 24px rgb(15 23 42 / 0.18);
+}
+
+:host ::ng-deep .segmented-toggle .mat-button-toggle-checked .mat-button-toggle-button {
+  color: inherit;
+}
+
+:host ::ng-deep .segmented-toggle .mat-button-toggle-focus-overlay {
+  border-radius: inherit;
+}
+
+:host-context(.dark) .segmented-toggle {
+  border-color: var(--app-border-strong);
+  background: linear-gradient(180deg, rgb(18 67 61 / 0.98) 0%, rgb(28 78 71 / 0.95) 100%);
+}
+
+:host-context(.dark) .segmented-toggle mat-button-toggle {
+  border-color: var(--app-border-strong);
+  background: rgb(77 128 120 / 0.78);
+  color: #d1fae5;
+}
+
+@media (max-width: 900px) {
+  .segmented-toggle {
+    flex-wrap: wrap;
+  }
+
+  .segmented-toggle mat-button-toggle {
+    flex-basis: calc(50% - 0.325rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .segmented-toggle {
+    flex-direction: column;
+  }
+
+  .segmented-toggle mat-button-toggle {
+    width: 100%;
+    flex-basis: auto;
+  }
+}

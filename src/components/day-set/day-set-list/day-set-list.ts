@@ -43,6 +43,7 @@ export class DaySetList implements OnInit, OnChanges {
   @Input() daySets: DaySetListItem[] | null = null;
   @Input() selectedIds: string[] | null = null;
   @Input() maxSelections: number | null = null;
+  @Input() embedded = false;
 
   @Output() readonly addRequested = new EventEmitter<void>();
   @Output() readonly editRequested = new EventEmitter<DaySetListItem>();

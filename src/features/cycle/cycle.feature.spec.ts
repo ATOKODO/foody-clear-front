@@ -52,11 +52,15 @@ describe('CycleFeature', () => {
       toggle.textContent?.trim(),
     );
 
-    expect(toggleLabels).toEqual(['Cycles', 'Day sets', 'Slots']);
+    expect(toggleLabels).toEqual(['Cycles', 'Targets', 'Slots']);
     expect(component.activeView).toBe('cycle');
     expect(fixture.nativeElement.querySelector('app-list-cycle')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('app-day-set-feature')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-slot-feature')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="cycle-panel-title"]')?.textContent)
+      .toContain('Cycles');
+    expect(fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')?.textContent)
+      .toContain('Ajouter un cycle');
   });
 
   it('should show the day set feature when selecting its toggle', () => {
@@ -68,6 +72,11 @@ describe('CycleFeature', () => {
     expect(fixture.nativeElement.querySelector('app-day-set-feature')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('app-list-cycle')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-slot-feature')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="cycle-panel-title"]')?.textContent)
+      .toContain('Targets');
+    expect(fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')?.textContent)
+      .toContain('Ajouter un day set');
+    expect(fixture.nativeElement.querySelector('app-day-set-feature section.app-page')).toBeNull();
   });
 
   it('should show the slot feature when selecting its toggle', () => {
@@ -79,6 +88,11 @@ describe('CycleFeature', () => {
     expect(fixture.nativeElement.querySelector('app-slot-feature')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('app-list-cycle')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-day-set-feature')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="cycle-panel-title"]')?.textContent)
+      .toContain('Slots');
+    expect(fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')?.textContent)
+      .toContain('Ajouter un slot');
+    expect(fixture.nativeElement.querySelector('app-slot-feature section.app-page')).toBeNull();
   });
 
   it('should build breakdowns from daySetOrder and slotIds fallbacks', () => {

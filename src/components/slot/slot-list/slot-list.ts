@@ -45,6 +45,7 @@ export class SlotList implements OnInit, OnChanges {
   @Input() mode: SlotListMode = 'manage';
   @Input() slots: SlotListItem[] | null = null;
   @Input() selectedIds: string[] | null = null;
+  @Input() embedded = false;
 
   @Output() readonly addRequested = new EventEmitter<void>();
   @Output() readonly editRequested = new EventEmitter<SlotListItem>();

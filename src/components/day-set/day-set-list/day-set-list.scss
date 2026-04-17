@@ -2,6 +2,26 @@
   display: block;
 }
 
+.dsl-shell {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: 1.5rem 1rem;
+}
+
+.dsl-shell--embedded {
+  max-width: none;
+  padding: 0;
+}
+
+.dsl-table-shell {
+  background: var(--app-surface);
+}
+
+.dsl-empty {
+  margin: 0;
+}
+
 .day-set-table {
   background: var(--app-surface);
 }

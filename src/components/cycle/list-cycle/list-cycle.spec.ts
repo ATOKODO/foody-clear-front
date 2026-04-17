@@ -37,6 +37,27 @@ describe('ListCycle', () => {
     expect(fixture.nativeElement.querySelector('.add-btn')).toBeNull();
   });
 
+  it('should hide the list header chrome in embedded manage mode', () => {
+    fixture.componentRef.setInput('cycles', [createCycle()]);
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.lc-shell__header')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.lc-card__footer')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('KCAL');
+    expect(fixture.nativeElement.textContent).toContain('Modifier');
+    expect(fixture.nativeElement.textContent).toContain('Retirer');
+  });
+
+  it('should render a plain empty state in embedded manage mode', () => {
+    fixture.componentRef.setInput('cycles', []);
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('mat-card')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Aucun cycle disponible.');
+  });
+
   it('should emit addRequested when plus button is clicked', () => {
     const emitted: Array<unknown> = [];
     component.addRequested.subscribe((value) => emitted.push(value));

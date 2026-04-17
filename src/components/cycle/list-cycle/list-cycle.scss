@@ -17,6 +17,10 @@
   letter-spacing: -0.02em;
 }
 
+.lc-shell--embedded {
+  max-width: none;
+}
+
 .lc-card {
   border-color: var(--app-border);
   transition:
@@ -32,6 +36,19 @@
 .lc-card-active {
   border-color: var(--app-border-strong);
   box-shadow: 0 0 0 1px rgb(15 23 42 / 0.08);
+}
+
+.lc-card--embedded {
+  border-color: rgb(202 209 197 / 0.96);
+  background: linear-gradient(180deg, #fffef9 0%, #f6f8f1 100%);
+  box-shadow: 0 14px 32px -28px rgb(15 23 42 / 0.28);
+}
+
+.lc-card--embedded.lc-card-active {
+  border-color: rgb(161 177 150 / 0.92);
+  box-shadow:
+    0 16px 34px -26px rgb(15 23 42 / 0.34),
+    0 0 0 1px rgb(134 157 118 / 0.16);
 }
 
 .lc-card--select-single {
@@ -109,6 +126,64 @@
 
 .lc-stat-card {
   min-height: 4.4rem;
+}
+
+.lc-card__body--embedded {
+  display: grid;
+  gap: 1rem;
+}
+
+.lc-embedded-summary {
+  border: 1px solid rgb(220 226 212 / 0.96);
+  background: linear-gradient(180deg, #fbfcf7 0%, #f5f8ef 100%);
+}
+
+.lc-embedded-summary-card {
+  min-height: 5.8rem;
+  border: 1px solid rgb(214 221 207 / 0.96);
+  background: rgb(255 255 255 / 0.92);
+  box-shadow: 0 10px 20px -20px rgb(15 23 42 / 0.2);
+}
+
+.lc-embedded-summary-card--kcal {
+  background: linear-gradient(180deg, #eefdf5 0%, #e0f6e8 100%);
+  border-color: #b7e6c5;
+}
+
+.lc-embedded-summary-card--proteins {
+  background: linear-gradient(180deg, #f7fef0 0%, #edf9db 100%);
+  border-color: #d7ebb2;
+}
+
+.lc-embedded-summary-card--carbs {
+  background: linear-gradient(180deg, #fff9ed 0%, #ffefcf 100%);
+  border-color: #f5ddab;
+}
+
+.lc-embedded-summary-card--lipids {
+  background: linear-gradient(180deg, #fff3ef 0%, #ffe2d9 100%);
+  border-color: #efc4b4;
+}
+
+.lc-embedded-summary-card__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #58706a;
+}
+
+.lc-embedded-summary-card__value {
+  margin-top: 0.4rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #21302d;
+}
+
+.lc-embedded-summary-card__caption {
+  margin-top: 0.45rem;
+  font-size: 0.78rem;
+  color: #58706a;
 }
 
 .lc-breakdown-card {
@@ -238,6 +313,17 @@
 
 .lc-toggle-btn {
   white-space: nowrap;
+}
+
+.lc-card__footer {
+  align-items: center;
+}
+
+.lc-footer-action {
+  min-width: 0;
+  border-width: 2px;
+  border-radius: 9999px;
+  font-weight: 700;
 }
 
 .lc-shell--select-single .lc-shell__header {
@@ -490,6 +576,33 @@
   letter-spacing: 0;
 }
 
+:host ::ng-deep .lc-footer-action.mat-mdc-outlined-button {
+  border-radius: 9999px;
+  box-shadow: none;
+}
+
+:host ::ng-deep .lc-footer-action .mdc-button__label {
+  font-weight: 700;
+}
+
+:host ::ng-deep .lc-footer-action--detail.mat-mdc-outlined-button {
+  border-color: #4d8078;
+  background: #c6fbf2;
+  color: #0c5249;
+}
+
+:host ::ng-deep .lc-footer-action:not(.lc-footer-action--detail):not(.lc-footer-action--danger).mat-mdc-outlined-button {
+  border-color: #cfd6bc;
+  background: #fffef8;
+  color: #315026;
+}
+
+:host ::ng-deep .lc-footer-action--danger.mat-mdc-outlined-button {
+  border-color: #efc0b4;
+  background: #fff4f1;
+  color: #b9371a;
+}
+
 @media (min-width: 520px) {
   .lc-shell--select-single .lc-macro-grid--select-single {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -506,6 +619,10 @@
   .lc-stat-card,
   .lc-breakdown-card-compact {
     min-height: 0;
+  }
+
+  .lc-card__footer > * {
+    width: 100%;
   }
 
   .lc-toggle-btn {

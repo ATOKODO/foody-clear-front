@@ -53,6 +53,13 @@ export interface CycleDaySetBreakdown {
   hasMissingSlotBreakdown: boolean;
 }
 
+export interface CycleEmbeddedSummaryCard {
+  key: 'kcal' | CycleBreakdownMetricKey;
+  label: string;
+  value: string;
+  caption: string;
+}
+
 export interface CycleListItem extends CycleMacroTotals {
   id: number;
   title: string;
@@ -81,6 +88,7 @@ export class ListCycle implements OnInit, OnChanges {
   @Input() selectedIds: number[] | null = null;
   @Input() activeCycleId: number | null = null;
   @Input() showAddButton = true;
+  @Input() embedded = false;
 
   @Output() readonly addRequested = new EventEmitter<void>();
   @Output() readonly editRequested = new EventEmitter<CycleListItem>();
@@ -112,6 +120,10 @@ export class ListCycle implements OnInit, OnChanges {
     return this.mode === 'manage';
   }
 
+  get isEmbeddedManageMode(): boolean {
+    return this.embedded && this.isManageMode;
+  }
+
   get isSingleSelectMode(): boolean {
     return this.mode === 'select-single';
   }
@@ -138,6 +150,10 @@ export class ListCycle implements OnInit, OnChanges {
 
   trackBySlotId(_: number, slot: CycleSlotBreakdown): string {
     return `${slot.id ?? 'slot'}-${slot.key}-${slot.title}-${slot.timeRange ?? 'na'}`;
+  }
+
+  trackByEmbeddedCard(_: number, card: CycleEmbeddedSummaryCard): string {
+    return card.key;
   }
 
   isSelected(id: number): boolean {
@@ -183,6 +199,42 @@ export class ListCycle implements OnInit, OnChanges {
 
     const suffix = count > 1 ? 's' : '';
     return `${count} ${type}${suffix}`;
+  }
+
+  getToggleLabel(cycleId: number): string {
+    return this.isExpanded(cycleId) ? 'Masquer le detail' : 'Voir le detail';
+  }
+
+  getEmbeddedSummaryCards(cycle: CycleListItem): CycleEmbeddedSummaryCard[] {
+    const targetCalories = this.calculateCalories(cycle);
+    const effectiveCalories = this.calculateCalories(cycle.daySetTotals);
+
+    return [
+      {
+        key: 'kcal',
+        label: 'KCAL',
+        value: `${this.formatAmount(targetCalories)} kcal`,
+        caption: `Moyenne ${this.formatAmount(effectiveCalories)} kcal`,
+      },
+      {
+        key: 'proteins',
+        label: 'PROTEINES',
+        value: `${this.formatAmount(cycle.proteins)} g`,
+        caption: `Moyenne ${this.formatAmount(cycle.daySetTotals.proteins)} g`,
+      },
+      {
+        key: 'carbs',
+        label: 'GLUCIDES',
+        value: `${this.formatAmount(cycle.carbs)} g`,
+        caption: `Moyenne ${this.formatAmount(cycle.daySetTotals.carbs)} g`,
+      },
+      {
+        key: 'lipids',
+        label: 'LIPIDES',
+        value: `${this.formatAmount(cycle.lipids)} g`,
+        caption: `Moyenne ${this.formatAmount(cycle.daySetTotals.lipids)} g`,
+      },
+    ];
   }
 
   getStatusLabel(status: CycleBreakdownStatus): string {
@@ -315,5 +367,13 @@ export class ListCycle implements OnInit, OnChanges {
 
   private getSelectedItems(): CycleListItem[] {
     return this.resolvedCycles.filter((item) => this.selectedIdSet.has(item.id));
+  }
+
+  private calculateCalories(totals: CycleMacroTotals): number {
+    return this.roundNumber((totals.proteins * 4) + (totals.carbs * 4) + (totals.lipids * 9));
+  }
+
+  private roundNumber(value: number): number {
+    return Math.round(value * 100) / 100;
   }
 }

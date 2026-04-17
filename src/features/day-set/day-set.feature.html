@@ -1,41 +1,76 @@
-<section class="app-page" data-testid="day-set-page">
-  <mat-card class="overflow-hidden rounded-2xl">
-    <div class="bg-slate-900 px-6 py-5 text-white">
-      <h2 class="text-xl font-semibold">Day sets</h2>
-      <p class="mt-1 text-sm text-slate-300">
-        Journees type, cibles nutritionnelles et templates associes.
-      </p>
+<ng-container *ngIf="embedded; else standaloneDaySetPage">
+  <div class="day-set-feature day-set-feature--embedded" data-testid="day-set-page">
+    <div class="app-status-row">
+      <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
+        Chargement...
+      </span>
+      <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
+        Sauvegarde...
+      </span>
+      <span *ngIf="loadingMeta" class="app-status-pill app-status-pill--info">
+        Meta nutrition...
+      </span>
     </div>
 
-    <div class="space-y-4 p-4 sm:p-6">
-      <div class="app-status-row">
-        <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
-          Chargement...
-        </span>
-        <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
-          Sauvegarde...
-        </span>
-        <span *ngIf="loadingMeta" class="app-status-pill app-status-pill--info">
-          Meta nutrition...
-        </span>
+    <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
+
+    <p *ngIf="lastMetaError" class="app-alert">
+      Impossible de charger les cles nutritionnelles meta, fallback actif.
+    </p>
+
+    <app-day-set-list
+      mode="manage"
+      [daySets]="daySetListItems"
+      [embedded]="true"
+      (addRequested)="onAddRequested()"
+      (editRequested)="onEditRequested($event)"
+      (deleteRequested)="onDeleteRequested($event)"
+    >
+    </app-day-set-list>
+  </div>
+</ng-container>
+
+<ng-template #standaloneDaySetPage>
+  <section class="app-page" data-testid="day-set-page">
+    <mat-card class="overflow-hidden rounded-2xl">
+      <div class="bg-slate-900 px-6 py-5 text-white">
+        <h2 class="text-xl font-semibold">Day sets</h2>
+        <p class="mt-1 text-sm text-slate-300">
+          Journees type, cibles nutritionnelles et templates associes.
+        </p>
       </div>
 
-      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
+      <div class="space-y-4 p-4 sm:p-6">
+        <div class="app-status-row">
+          <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
+            Chargement...
+          </span>
+          <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
+            Sauvegarde...
+          </span>
+          <span *ngIf="loadingMeta" class="app-status-pill app-status-pill--info">
+            Meta nutrition...
+          </span>
+        </div>
 
-      <p *ngIf="lastMetaError" class="app-alert">
-        Impossible de charger les cles nutritionnelles meta, fallback actif.
-      </p>
+        <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
 
-      <app-day-set-list
-        mode="manage"
-        [daySets]="daySetListItems"
-        (addRequested)="onAddRequested()"
-        (editRequested)="onEditRequested($event)"
-        (deleteRequested)="onDeleteRequested($event)">
-      </app-day-set-list>
-    </div>
-  </mat-card>
-</section>
+        <p *ngIf="lastMetaError" class="app-alert">
+          Impossible de charger les cles nutritionnelles meta, fallback actif.
+        </p>
+
+        <app-day-set-list
+          mode="manage"
+          [daySets]="daySetListItems"
+          (addRequested)="onAddRequested()"
+          (editRequested)="onEditRequested($event)"
+          (deleteRequested)="onDeleteRequested($event)"
+        >
+        </app-day-set-list>
+      </div>
+    </mat-card>
+  </section>
+</ng-template>
 
 <div class="app-modal-backdrop" *ngIf="formVisible" (click)="onCancelForm()"></div>
 <div class="app-modal-shell" *ngIf="formVisible" data-testid="day-set-dialog">

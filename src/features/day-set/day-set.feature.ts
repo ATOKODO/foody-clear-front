@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -29,6 +29,7 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
   styleUrl: './day-set.feature.scss',
 })
 export class DaySetFeature implements OnInit {
+  @Input() embedded = false;
   @Output() readonly dataChanged = new EventEmitter<void>();
 
   daySets: DaySet[] = [];
@@ -56,6 +57,10 @@ export class DaySetFeature implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.refresh();
+  }
+
+  refresh(): void {
     this.loadNutritionKeys();
     this.loadSlots();
     this.loadTemplates();
@@ -88,6 +93,10 @@ export class DaySetFeature implements OnInit {
     this.editingDaySetId = null;
     this.formInitialValue = null;
     this.formVisible = true;
+  }
+
+  openCreate(): void {
+    this.onAddRequested();
   }
 
   onEditRequested(item: DaySetListItem): void {

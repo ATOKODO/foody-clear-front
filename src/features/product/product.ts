@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { Category as CategoryFeature } from '../category/category';
@@ -46,6 +44,10 @@ import {
 import { NutritionReference } from '../../interfaces/cycle.interface';
 import { Tag as TagApiModel, TagService } from '../../services/tag-service';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import {
+  SegmentedToggle,
+  SegmentedToggleOption,
+} from '../../app/ui/segmented-toggle/segmented-toggle';
 
 type ProductHubView = 'product' | 'category' | 'genericProduct' | 'tag';
 
@@ -73,15 +75,21 @@ const PRODUCT_HUB_VIEW_CONFIG: Record<ProductHubView, ProductHubViewConfig> = {
   },
 };
 
+const PRODUCT_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<ProductHubView>[] = [
+  { value: 'product', label: 'Produits' },
+  { value: 'category', label: 'Categories' },
+  { value: 'genericProduct', label: 'Produits generiques' },
+  { value: 'tag', label: 'Tags' },
+];
+
 @Component({
   selector: 'app-product',
   imports: [
     CommonModule,
-    FormsModule,
     MatButtonModule,
-    MatButtonToggleModule,
     MatCardModule,
     MatDialogModule,
+    SegmentedToggle,
     UiErrorPanel,
     CategoryFeature,
     GenericProductFeature,
@@ -128,6 +136,7 @@ export class Product implements OnInit {
   lastError: unknown = null;
   lastMetaError: unknown = null;
   private dialogRef: MatDialogRef<unknown> | null = null;
+  readonly viewOptions = PRODUCT_HUB_VIEW_OPTIONS;
 
   constructor(
     private readonly categorySrv: CategoryService,

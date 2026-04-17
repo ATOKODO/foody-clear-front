@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -24,6 +24,7 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
   styleUrl: './slot.feature.scss',
 })
 export class SlotFeature implements OnInit {
+  @Input() embedded = false;
   @Output() readonly dataChanged = new EventEmitter<void>();
 
   slots: Slot[] = [];
@@ -47,6 +48,10 @@ export class SlotFeature implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.refresh();
+  }
+
+  refresh(): void {
     this.loadNutritionKeys();
     this.loadSlots();
   }
@@ -68,6 +73,10 @@ export class SlotFeature implements OnInit {
     this.editingSlotId = null;
     this.formInitialValue = null;
     this.formVisible = true;
+  }
+
+  openCreate(): void {
+    this.onAddRequested();
   }
 
   onEditRequested(item: SlotListItem): void {

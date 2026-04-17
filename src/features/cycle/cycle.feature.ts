@@ -42,15 +42,45 @@ import { SlotService } from '../../services/slot-service';
 import { DaySetFeature } from '../day-set/day-set.feature';
 import { SlotFeature } from '../slot/slot.feature';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import {
+  SegmentedToggle,
+  SegmentedToggleOption,
+} from '../../app/ui/segmented-toggle/segmented-toggle';
 
 type CycleHubView = 'cycle' | 'daySet' | 'slot';
 type CycleImpactDialogResult = 'submitted' | 'cancelled';
+
+type CycleHubViewConfig = {
+  title: string;
+  addLabel: string;
+};
 
 type CycleUpdateImpactOptions = {
   assignmentRescheduleScope: CycleAssignmentRescheduleScope;
   assignmentGapMode: CycleAssignmentGapMode;
   assignmentEffectiveDateLocal?: string;
 };
+
+const CYCLE_HUB_VIEW_CONFIG: Record<CycleHubView, CycleHubViewConfig> = {
+  cycle: {
+    title: 'Cycles',
+    addLabel: 'Ajouter un cycle',
+  },
+  daySet: {
+    title: 'Targets',
+    addLabel: 'Ajouter un day set',
+  },
+  slot: {
+    title: 'Slots',
+    addLabel: 'Ajouter un slot',
+  },
+};
+
+const CYCLE_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<CycleHubView>[] = [
+  { value: 'cycle', label: 'Cycles' },
+  { value: 'daySet', label: 'Targets' },
+  { value: 'slot', label: 'Slots' },
+];
 
 @Component({
   selector: 'app-cycle',
@@ -67,6 +97,7 @@ type CycleUpdateImpactOptions = {
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    SegmentedToggle,
     UiErrorPanel,
     DaySetFeature,
     SlotFeature,
@@ -80,6 +111,10 @@ export class CycleFeature implements OnInit {
 
   @ViewChild('cycleImpactDialog')
   private cycleImpactDialogTemplate?: TemplateRef<unknown>;
+  @ViewChild(DaySetFeature)
+  private daySetFeature?: DaySetFeature;
+  @ViewChild(SlotFeature)
+  private slotFeature?: SlotFeature;
 
   private readonly dialog = inject(MatDialog);
 
@@ -105,6 +140,7 @@ export class CycleFeature implements OnInit {
   lastMetaError: unknown = null;
 
   nutritionKeys: NutritionKeyMeta[] = [];
+  readonly viewOptions = CYCLE_HUB_VIEW_OPTIONS;
   private dialogRef: MatDialogRef<unknown> | null = null;
   private impactDialogRef: MatDialogRef<unknown> | null = null;
   private macroNutritionKeys = {
@@ -168,6 +204,14 @@ export class CycleFeature implements OnInit {
     return this.formMode === 'edit' ? 'Modifier un cycle' : 'Ajouter un cycle';
   }
 
+  get activeViewConfig(): CycleHubViewConfig {
+    return CYCLE_HUB_VIEW_CONFIG[this.activeView];
+  }
+
+  get activeViewBusy(): boolean {
+    return this.activeView === 'cycle' && (this.loading || this.loadingMeta || this.saving);
+  }
+
   get formDialogSubtitle(): string {
     return this.formMode === 'edit'
       ? 'Les changements sont appliques sans quitter la liste.'
@@ -183,6 +227,38 @@ export class CycleFeature implements OnInit {
     this.loadDaySets();
     this.loadSlots();
     this.loadCycles();
+  }
+
+  onRefreshActiveView(): void {
+    switch (this.activeView) {
+      case 'cycle':
+        this.onRefreshRequested();
+        break;
+      case 'daySet':
+        this.daySetFeature?.refresh();
+        break;
+      case 'slot':
+        this.slotFeature?.refresh();
+        break;
+    }
+  }
+
+  onAddActiveView(): void {
+    switch (this.activeView) {
+      case 'cycle':
+        this.onAddRequested();
+        break;
+      case 'daySet':
+        this.daySetFeature?.openCreate();
+        break;
+      case 'slot':
+        this.slotFeature?.openCreate();
+        break;
+    }
+  }
+
+  onActiveViewChange(nextView: CycleHubView): void {
+    this.activeView = nextView;
   }
 
   onAddRequested(): void {

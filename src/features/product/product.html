@@ -1,21 +1,13 @@
 <section class="app-page catalogue-page" data-testid="product-page">
   <div class="catalogue-page__toggle-wrap">
-    <mat-button-toggle-group
-      [ngModel]="activeView"
-      [hideSingleSelectionIndicator]="true"
-      (ngModelChange)="onActiveViewChange($event)"
-      aria-label="Selection de la vue catalogue active"
-      class="catalogue-view-toggle"
+    <app-segmented-toggle
+      [value]="activeView"
+      [options]="viewOptions"
+      (valueChange)="onActiveViewChange($event)"
+      ariaLabel="Selection de la vue catalogue active"
       data-testid="catalogue-view-toggle"
       name="catalogue-view"
-    >
-      <mat-button-toggle value="product">Produits</mat-button-toggle>
-      <mat-button-toggle value="category">Categories</mat-button-toggle>
-      <mat-button-toggle value="genericProduct">
-        Produits generiques
-      </mat-button-toggle>
-      <mat-button-toggle value="tag">Tags</mat-button-toggle>
-    </mat-button-toggle-group>
+    ></app-segmented-toggle>
   </div>
 
   <mat-card class="catalogue-panel" data-testid="catalogue-panel">
