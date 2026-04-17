@@ -14,6 +14,11 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import {
+  ProductList,
+  ProductListItem,
+} from '../../product/product-list/product-list';
+import { mapProductToProductListItem } from '../../product/product-list/product-list-item.mapper';
 import { ProductQuantityInputUnit } from '../../../interfaces/input-day.interface';
 import { Slot } from '../../../interfaces/slot.interface';
 import { Template, TemplateItem } from '../../../interfaces/template.interface';
@@ -45,6 +50,7 @@ export interface TemplateFormSubmittedEvent {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    ProductList,
   ],
   templateUrl: './template-form.html',
   styleUrl: './template-form.scss',
@@ -91,10 +97,12 @@ export class TemplateForm implements OnInit, OnChanges {
     );
   }
 
-  get sortedProducts(): ProductApiModel[] {
-    return [...this.products].sort((left, right) =>
-      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
-    );
+  get productListItems(): ProductListItem[] {
+    return this.products.map((product) => mapProductToProductListItem(product));
+  }
+
+  get selectedProductIds(): string[] {
+    return this.itemDraft.productId !== null ? [String(this.itemDraft.productId)] : [];
   }
 
   get sortedSlots(): Slot[] {
@@ -133,6 +141,18 @@ export class TemplateForm implements OnInit, OnChanges {
       qtyUnit: item.qtyUnit,
       slotId: item.slotId,
       slotKey: item.slotKey ?? '',
+    };
+  }
+
+  onProductSelected(product: ProductListItem): void {
+    const productId = Number(product.id);
+    if (!Number.isInteger(productId) || productId < 1) {
+      return;
+    }
+
+    this.itemDraft = {
+      ...this.itemDraft,
+      productId,
     };
   }
 

@@ -6,6 +6,7 @@ import { TemplateService } from '../../services/template-service';
 import { ProductService } from '../../services/product-service';
 import { DaySetService } from '../../services/day-set-service';
 import { SlotService } from '../../services/slot-service';
+import { TemplateItemDraft } from '../../components/template/template-form/template-form';
 
 describe('TemplateFeature', () => {
   let component: TemplateFeature;
@@ -100,5 +101,51 @@ describe('TemplateFeature', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should create one template item with the selected product payload', () => {
+    component.editingTemplateId = 1;
+
+    const draft: TemplateItemDraft = {
+      id: null,
+      productId: 7,
+      qty: 2,
+      qtyUnit: 'portion',
+      slotId: 5,
+      slotKey: 'snack',
+    };
+
+    component.onItemSubmitted(draft);
+
+    expect(templateServiceMock.createItem).toHaveBeenCalledTimes(1);
+    expect(templateServiceMock.createItem).toHaveBeenCalledWith(1, {
+      productId: 7,
+      qty: 2,
+      qtyUnit: 'portion',
+      slotId: 5,
+      slotKey: 'snack',
+    });
+  });
+
+  it('should update one template item with the reselected product payload', () => {
+    component.editingTemplateId = 1;
+
+    const draft: TemplateItemDraft = {
+      id: 11,
+      productId: 8,
+      qty: 3,
+      qtyUnit: 'g',
+      slotId: null,
+      slotKey: '',
+    };
+
+    component.onItemSubmitted(draft);
+
+    expect(templateServiceMock.updateItem).toHaveBeenCalledTimes(1);
+    expect(templateServiceMock.updateItem).toHaveBeenCalledWith(1, 11, {
+      productId: 8,
+      qty: 3,
+      qtyUnit: 'g',
+    });
   });
 });

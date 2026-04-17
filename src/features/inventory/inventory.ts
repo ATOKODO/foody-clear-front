@@ -19,6 +19,7 @@ import {
   ProductList,
   ProductListItem,
 } from '../../components/product/product-list/product-list';
+import { mapProductToProductListItem } from '../../components/product/product-list/product-list-item.mapper';
 import {
   CreateInventoryDto,
   Inventory as InventoryApiModel,
@@ -162,7 +163,7 @@ export class Inventory implements OnInit {
   }
 
   get productListItems(): ProductListItem[] {
-    return this.products.map((product) => this.mapProductToListItem(product));
+    return this.products.map((product) => mapProductToProductListItem(product));
   }
 
   get addableProductListItems(): ProductListItem[] {
@@ -950,28 +951,6 @@ export class Inventory implements OnInit {
     );
   }
 
-  private mapProductToListItem(product: ProductApiModel): ProductListItem {
-    return {
-      id: String(product.id),
-      name: product.name,
-      barcode: product.barcode ?? null,
-      unitType: product.unitType,
-      quantityPerUnit: product.quantityPerUnit,
-      quantityUnit: product.quantityUnit,
-      portionCount: product.portionCount ?? null,
-      portionUnit: product.portionUnit ?? null,
-      portionQuantityNormalized: product.portionQuantityNormalized ?? null,
-      price: product.price ?? null,
-      priceUnit: product.priceUnit ?? null,
-      tagNames: this.resolveTagNames(product.tags),
-      nutritionValuesCount: Array.isArray(product.nutritionValues)
-        ? product.nutritionValues.length
-        : 0,
-      category: this.resolveLinkedEntityName(product.category),
-      genericProduct: this.resolveLinkedEntityName(product.genericProduct),
-    };
-  }
-
   private toManagedProductRows(items: InventoryProduct[]): InventoryManagedProductRow[] {
     return items.map((item) => {
       const currentQty =
@@ -1076,51 +1055,4 @@ export class Inventory implements OnInit {
     return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
   }
 
-  private resolveTagNames(tags: unknown): string[] {
-    if (!Array.isArray(tags)) {
-      return [];
-    }
-
-    const names = tags
-      .map((tag) => {
-        if (typeof tag === 'string') {
-          return tag.trim();
-        }
-
-        if (!tag || typeof tag !== 'object') {
-          return '';
-        }
-
-        const raw = tag as Record<string, unknown>;
-        const fields = ['name', 'title', 'label', 'key'];
-        for (const field of fields) {
-          const value = raw[field];
-          if (typeof value === 'string' && value.trim() !== '') {
-            return value.trim();
-          }
-        }
-
-        return '';
-      })
-      .filter((name) => name !== '');
-
-    return Array.from(new Set(names));
-  }
-
-  private resolveLinkedEntityName(value: unknown): string {
-    if (!value || typeof value !== 'object') {
-      return 'Aucun';
-    }
-
-    const raw = value as Record<string, unknown>;
-    const fields = ['name', 'title', 'label'];
-    for (const field of fields) {
-      const candidate = raw[field];
-      if (typeof candidate === 'string' && candidate.trim() !== '') {
-        return candidate.trim();
-      }
-    }
-
-    return 'Aucun';
-  }
 }

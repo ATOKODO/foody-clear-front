@@ -12,6 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table';
+import { ProductListItem } from './product-list-item.model';
 
 export type ProductListMode =
   | 'manage'
@@ -19,26 +20,7 @@ export type ProductListMode =
   | 'multi-edit'
   | 'select-single'
   | 'select-multi';
-
-export interface ProductListItem {
-  id: string;
-  name: string;
-  barcode?: string | null;
-  unitType?: string;
-  quantityPerUnit?: number;
-  quantityUnit?: string | null;
-  portionCount?: number | null;
-  portionUnit?: string | null;
-  portionQuantityNormalized?: number | null;
-  price?: number | null;
-  priceUnit?: string | null;
-  tagNames?: string[];
-  nutritionValuesCount?: number;
-  category?: string | null;
-  genericProduct?: string | null;
-  availableQuantity?: number | null;
-  availableQuantityUnit?: string | null;
-}
+export type { ProductListItem } from './product-list-item.model';
 
 @Component({
   selector: 'app-product-list',
