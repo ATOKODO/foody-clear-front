@@ -81,12 +81,13 @@ export class InputDayService {
   convertTemplateItem(
     dateLocal: string,
     templateItemId: number,
-    inventoryId: number,
+    inventoryIds: number[],
   ): Observable<InputDayResponse> {
     return this.http.post<InputDayResponse>(
       `${this.baseUrl}/input-days/${dateLocal}/template-items/${templateItemId}/convert`,
       {
-        inventoryId,
+        inventoryIds,
+        inventoryId: inventoryIds[0] ?? null,
       },
     );
   }

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { DateTime } from 'luxon';
 import { of } from 'rxjs';
 
 import { InputDayFeature } from './input-day.feature';
@@ -11,6 +12,7 @@ import { TemplateService } from '../../services/template-service';
 describe('InputDayFeature', () => {
   let component: InputDayFeature;
   let fixture: ComponentFixture<InputDayFeature>;
+  const fallbackTimezone = DateTime.local().zoneName || 'UTC';
 
   const dayResponse: InputDayResponse = {
     dateLocal: '2026-02-16',
@@ -162,7 +164,7 @@ describe('InputDayFeature', () => {
     fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
     fixture.detectChanges();
 
-    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith('2026-02-16', 'UTC');
+    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith('2026-02-16', fallbackTimezone);
   });
 
   it('should defer full product loading on embedded open until an inventory is selected', () => {
@@ -177,9 +179,9 @@ describe('InputDayFeature', () => {
 
     expect(productServiceMock.findAll).not.toHaveBeenCalled();
     expect(inventoryServiceMock.findAll).toHaveBeenCalled();
-    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith('2026-02-16', 'UTC');
+    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith('2026-02-16', fallbackTimezone);
 
-    embeddedFixture.componentInstance.onSelectedInventoryChange(4);
+    embeddedFixture.componentInstance.onSelectedInventoryChange([4]);
 
     expect(productServiceMock.findAll).toHaveBeenCalledTimes(1);
   });
@@ -199,6 +201,33 @@ describe('InputDayFeature', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.input-day-response')).toBeNull();
+  });
+
+  it('should keep a single refresh button and hide timezone input in embedded mode', () => {
+    fixture.componentRef.setInput('displayMode', 'embedded');
+    fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('[data-testid="input-day-refresh"]').length).toBe(1);
+    expect(fixture.nativeElement.querySelector('[data-testid="input-day-load"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('input[formcontrolname="timezone"]')).toBeNull();
+  });
+
+  it('should show only the inventory guide in embedded mode until inventories are selected', () => {
+    fixture.componentRef.setInput('displayMode', 'embedded');
+    fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Selectionne au moins un inventory pour afficher les produits, les modeles et les elements saisis.',
+    );
+    expect(fixture.nativeElement.querySelector('[data-testid="input-day-section-toggle"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="input-day-item-31"]')).toBeNull();
+
+    component.onSelectedInventoryChange([4]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="input-day-section-toggle"]')).not.toBeNull();
   });
 
   it('should build one row per selected product and remove deselected rows', () => {
@@ -253,19 +282,28 @@ describe('InputDayFeature', () => {
   });
 
   it('should expose only products linked to the selected inventory', () => {
-    component.onSelectedInventoryChange(5);
+    component.onSelectedInventoryChange([5]);
 
     expect(inventoryServiceMock.findProducts).toHaveBeenCalledWith(5);
     expect(component.selectableProductListItems.map((item) => item.id)).toEqual(['2']);
   });
 
   it('should keep editor product options empty until an inventory is selected', () => {
-    expect(component.selectedInventoryId).toBeNull();
+    expect(component.selectedInventoryIds).toEqual([]);
     expect(component.editorProductOptions).toEqual([]);
 
-    component.onSelectedInventoryChange(4);
+    component.onSelectedInventoryChange([4]);
 
     expect(component.editorProductOptions.map((item) => item.id)).toEqual(['1', '2']);
+  });
+
+  it('should aggregate products and available quantities across selected inventories', () => {
+    component.onSelectedInventoryChange([4, 5]);
+
+    expect(inventoryServiceMock.findProducts).toHaveBeenCalledWith(4);
+    expect(inventoryServiceMock.findProducts).toHaveBeenCalledWith(5);
+    expect(component.selectableProductListItems.map((item) => item.id)).toEqual(['1', '2']);
+    expect(component.selectableProductListItems.find((item) => item.id === '2')?.availableQuantity).toBe(1000);
   });
 
   it('should create selected items with shared metadata and per-product qty', () => {
@@ -278,7 +316,7 @@ describe('InputDayFeature', () => {
       timezone: 'UTC',
     });
     component.inputDayResponse = dayResponse;
-    component.onSelectedInventoryChange(4);
+    component.onSelectedInventoryChange([4]);
     component.selectedSlotId = 11;
     component.itemEditorForm.patchValue({
       dateLocal: '2026-02-17',
@@ -297,7 +335,7 @@ describe('InputDayFeature', () => {
       items: [
         {
           productId: 1,
-          inventoryId: 4,
+          inventoryIds: [4],
           qty: 120,
           occurredAt: '2026-02-17T08:00:00Z',
           qtyUnit: 'g',
@@ -305,7 +343,7 @@ describe('InputDayFeature', () => {
         },
         {
           productId: 2,
-          inventoryId: 4,
+          inventoryIds: [4],
           qty: 80,
           occurredAt: '2026-02-17T08:00:00Z',
           slotId: 11,
@@ -323,7 +361,7 @@ describe('InputDayFeature', () => {
       timezone: 'UTC',
     });
     component.inputDayResponse = dayResponse;
-    component.onSelectedInventoryChange(4);
+    component.onSelectedInventoryChange([4]);
     component.itemEditorForm.patchValue({
       dateLocal: '2026-02-16',
       occurredAt: '',
@@ -339,7 +377,7 @@ describe('InputDayFeature', () => {
       items: [
         {
           productId: 1,
-          inventoryId: 4,
+          inventoryIds: [4],
           qty: 120,
           qtyUnit: 'g',
           slotKey: 'snack',
@@ -354,7 +392,7 @@ describe('InputDayFeature', () => {
       timezone: 'UTC',
     });
     component.inputDayResponse = dayResponse;
-    component.onSelectedInventoryChange(4);
+    component.onSelectedInventoryChange([4]);
     component.itemEditorForm.patchValue({
       dateLocal: '2026-02-16',
       occurredAt: '2026-02-16T08:00',
@@ -369,7 +407,7 @@ describe('InputDayFeature', () => {
 
     expect(inputDayServiceMock.createItem).toHaveBeenCalledWith('2026-02-16', {
       productId: 1,
-      inventoryId: 4,
+      inventoryIds: [4],
       qty: 150,
       occurredAt: '2026-02-16T08:00:00Z',
       qtyUnit: 'g',
@@ -387,11 +425,15 @@ describe('InputDayFeature', () => {
 
     expect(component.itemEditorForm.value.itemId).toBe(31);
     expect(component.itemEditorForm.value.productId).toBe(1);
-    expect(component.itemEditorForm.value.occurredAt).toBe('2026-02-16T08:15');
+    expect(component.itemEditorForm.value.occurredAt).toBe(
+      DateTime.fromISO('2026-02-16T08:15:00Z', { setZone: true })
+        .setZone(fallbackTimezone)
+        .toFormat("yyyy-LL-dd'T'HH:mm"),
+    );
   });
 
   it('should clear selected batch products when switching to edition', () => {
-    component.onSelectedInventoryChange(4);
+    component.onSelectedInventoryChange([4]);
     component.onProductsSelected(component.selectableProductListItems);
     expect(component.selectedProductRows.length).toBe(2);
 
@@ -408,7 +450,7 @@ describe('InputDayFeature', () => {
       timezone: 'UTC',
     });
     component.inputDayResponse = dayResponse;
-    component.onSelectedInventoryChange(4);
+    component.onSelectedInventoryChange([4]);
     component.startEditingItem(31);
     component.itemEditorForm.patchValue({
       dateLocal: '2026-02-17',
@@ -425,12 +467,96 @@ describe('InputDayFeature', () => {
     expect(inputDayServiceMock.updateItem).toHaveBeenCalledWith('2026-02-16', 31, {
       dateLocal: '2026-02-17',
       productId: 2,
-      inventoryId: 4,
+      inventoryIds: [4],
       qty: 200,
       occurredAt: '2026-02-17T09:30:00Z',
       qtyUnit: 'g',
       slotId: null,
       slotKey: 'snack',
     });
+  });
+
+  it('should preserve the current inventory selection when editing an item', () => {
+    component.onSelectedInventoryChange([5]);
+    component.inputDayResponse = dayResponse;
+
+    component.startEditingItem(31);
+
+    expect(component.selectedInventoryIds).toEqual([5]);
+  });
+
+  it('should preload the edited item inventory when no selection exists', () => {
+    component.inputDayResponse = dayResponse;
+
+    component.startEditingItem(31);
+
+    expect(component.selectedInventoryIds).toEqual([4]);
+  });
+
+  it('should apply the selected template immediately without an apply button', () => {
+    inputDayServiceMock.setTemplate.calls.reset();
+    component.form.patchValue({
+      dateLocal: '2026-02-16',
+      timezone: 'UTC',
+    });
+    component.inputDayResponse = dayResponse;
+    fixture.detectChanges();
+
+    component.onManualTemplateSelectionChange(9);
+    fixture.detectChanges();
+
+    expect(inputDayServiceMock.setTemplate).toHaveBeenCalledWith('2026-02-16', 9);
+    expect(fixture.nativeElement.querySelector('[data-testid="input-day-template-apply"]')).toBeNull();
+  });
+
+  it('should switch embedded sections with the segmented toggle state', () => {
+    component.inputDayResponse = {
+      ...dayResponse,
+      templateAssociation: {
+        source: 'manual',
+        template: {
+          id: 9,
+          title: 'Batch sec',
+        },
+      },
+      templateItems: [
+        {
+          id: 18,
+          productId: 2,
+          productName: 'Rice',
+          qty: 80,
+          qtyUnit: 'g',
+          qtyNormalized: 80,
+          slotId: 11,
+          slotKey: 'breakfast',
+          status: 'pending',
+          convertedItemId: null,
+          stockAvailability: {
+            enoughStock: true,
+            totalAvailableNormalized: 1000,
+            requestedQtyNormalized: 80,
+          },
+          stockByInventory: [
+            { inventoryId: 4, inventoryName: 'Stock principal', qtyAvailableNormalized: 500, enoughStock: true },
+            { inventoryId: 5, inventoryName: 'Stock secondaire', qtyAvailableNormalized: 500, enoughStock: true },
+          ],
+          nutritionValue: {},
+        },
+      ],
+    };
+    fixture.componentRef.setInput('displayMode', 'embedded');
+    fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
+    component.onSelectedInventoryChange([4, 5]);
+    fixture.detectChanges();
+
+    expect(component.activeEmbeddedSection).toBe('stock');
+    expect(fixture.nativeElement.textContent).toContain('Ajouter des entrees');
+
+    component.onActiveEmbeddedSectionChange('templates');
+    fixture.detectChanges();
+
+    expect(component.activeEmbeddedSection).toBe('templates');
+    expect(fixture.nativeElement.textContent).toContain('Template associe');
+    expect(fixture.nativeElement.querySelector('[data-testid="input-day-item-31"]')).not.toBeNull();
   });
 });

@@ -16,6 +16,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { DateTime } from 'luxon';
+import { forkJoin } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -52,8 +53,13 @@ import { InputDayService } from '../../services/input-day-service';
 import { TemplateService } from '../../services/template-service';
 import { TemplateSummary } from '../../interfaces/template.interface';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import {
+  SegmentedToggle,
+  SegmentedToggleOption,
+} from '../../app/ui/segmented-toggle/segmented-toggle';
 
 type InputDayDisplayMode = 'standalone' | 'embedded';
+type InputDayEmbeddedSection = 'stock' | 'templates';
 
 type InputDaySelectedProductRow = {
   productId: number;
@@ -88,6 +94,25 @@ type ProductListSource = {
   genericProduct?: unknown | null;
 };
 
+type InputDaySelectedInventoryTemplateStock = {
+  enoughStock: boolean;
+  qtyAvailableNormalized: number;
+};
+
+const INPUT_DAY_EMBEDDED_SECTION_OPTIONS: readonly SegmentedToggleOption<InputDayEmbeddedSection>[] =
+  [
+    {
+      value: 'stock',
+      label: 'Produits en stock',
+      testId: 'input-day-section-stock',
+    },
+    {
+      value: 'templates',
+      label: 'Modeles',
+      testId: 'input-day-section-templates',
+    },
+  ];
+
 @Component({
   selector: 'app-input-day',
   imports: [
@@ -106,6 +131,7 @@ type ProductListSource = {
     MatSelectModule,
     UiErrorPanel,
     ProductList,
+    SegmentedToggle,
   ],
   templateUrl: './input-day.feature.html',
   styleUrl: './input-day.feature.scss',
@@ -154,8 +180,10 @@ export class InputDayFeature implements OnInit, OnChanges {
   selectedProductIds: string[] = [];
   selectedProducts: ProductListItem[] = [];
   selectedProductRows: InputDaySelectedProductRow[] = [];
-  selectedInventoryId: number | null = null;
+  selectedInventoryIds: number[] = [];
   selectedSlotId: number | null = null;
+  activeEmbeddedSection: InputDayEmbeddedSection = 'stock';
+  readonly embeddedSectionOptions = INPUT_DAY_EMBEDDED_SECTION_OPTIONS;
 
   lastResponse: unknown = null;
   lastError: unknown = null;
@@ -176,6 +204,8 @@ export class InputDayFeature implements OnInit, OnChanges {
   private pendingInitialEditingItemId: number | null = null;
   private readonly emptyProductListItems: ProductListItem[] = [];
   private readonly qtyUnitSet = new Set<ProductQuantityInputUnit>(this.qtyUnitOptions);
+  private readonly fallbackTimezone = DateTime.local().zoneName || 'UTC';
+  private readonly inventoryProductsByInventoryId = new Map<number, InventoryProduct[]>();
   private readonly slotTotalsMetaKeys = new Set([
     'slot',
     'targets',
@@ -194,7 +224,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       dateLocal: this.fb.control<Date | string | null>(null, {
         validators: [Validators.required],
       }),
-      timezone: this.fb.control<string>('UTC', { nonNullable: true }),
+      timezone: this.fb.control<string>(this.fallbackTimezone, { nonNullable: true }),
     });
 
     this.itemEditorForm = this.fb.group({
@@ -290,6 +320,22 @@ export class InputDayFeature implements OnInit, OnChanges {
     return this.resolveDateLocalValue() !== null;
   }
 
+  get hasSelectedInventories(): boolean {
+    return this.selectedInventoryIds.length > 0;
+  }
+
+  get shouldShowEmbeddedInventoryGuide(): boolean {
+    return this.isEmbeddedMode && !this.hasSelectedInventories;
+  }
+
+  get isStockSectionActive(): boolean {
+    return this.activeEmbeddedSection === 'stock';
+  }
+
+  get isTemplatesSectionActive(): boolean {
+    return this.activeEmbeddedSection === 'templates';
+  }
+
   get selectedDateLabel(): string {
     const dateLocal = this.resolveDateLocalValue();
     if (!dateLocal) {
@@ -324,7 +370,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   get editorProductOptions(): ProductListItem[] {
     const baseOptions =
-      this.selectedInventoryId !== null
+      this.hasSelectedInventories
         ? this.selectableProductListItems
         : this.emptyProductListItems;
 
@@ -364,13 +410,17 @@ export class InputDayFeature implements OnInit, OnChanges {
     return this.inputDayResponse?.templateAssociation?.source === 'manual';
   }
 
-  get selectedInventoryLabel(): string {
-    if (this.selectedInventoryId === null) {
+  get selectedInventoriesLabel(): string {
+    if (!this.hasSelectedInventories) {
       return 'Aucun inventory selectionne';
     }
 
-    const inventory = this.inventories.find((item) => item.id === this.selectedInventoryId) ?? null;
-    return inventory ? `${inventory.name} (#${inventory.id})` : `Inventory #${this.selectedInventoryId}`;
+    return this.selectedInventoryIds
+      .map((inventoryId) => {
+        const inventory = this.inventories.find((item) => item.id === inventoryId) ?? null;
+        return inventory ? `${inventory.name} (#${inventory.id})` : `Inventory #${inventoryId}`;
+      })
+      .join(', ');
   }
 
   get selectedBatchSlotLabel(): string {
@@ -417,9 +467,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     if (
-      this.selectedInventoryId == null ||
-      !Number.isInteger(this.selectedInventoryId) ||
-      this.selectedInventoryId < 1
+      !this.hasSelectedInventories
     ) {
       return false;
     }
@@ -459,9 +507,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     if (
-      this.selectedInventoryId == null ||
-      !Number.isInteger(this.selectedInventoryId) ||
-      this.selectedInventoryId < 1
+      !this.hasSelectedInventories
     ) {
       return false;
     }
@@ -513,7 +559,7 @@ export class InputDayFeature implements OnInit, OnChanges {
         this.lastError = null;
         this.inputDayResponse = response;
         this.form.patchValue({
-          timezone: response.timezone?.trim() || timezone,
+          timezone: response.timezone?.trim() || this.fallbackTimezone,
         });
         this.ensureSelectedSlotStillValid();
         this.loading = false;
@@ -609,8 +655,8 @@ export class InputDayFeature implements OnInit, OnChanges {
     const sourceDateLocal = this.inputDayResponse?.dateLocal ?? this.resolveEditorDefaultDateLocal();
     this.editingSourceDateLocal = sourceDateLocal;
 
-    if (item.inventoryId !== null) {
-      this.onSelectedInventoryChange(item.inventoryId);
+    if (!this.hasSelectedInventories && item.inventoryId !== null) {
+      this.onSelectedInventoryChange([item.inventoryId]);
     }
 
     this.clearSelectedProducts();
@@ -701,16 +747,19 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.itemsFormError = null;
   }
 
-  onSelectedInventoryChange(value: number | null): void {
-    const nextInventoryId =
-      typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null;
+  onActiveEmbeddedSectionChange(value: InputDayEmbeddedSection): void {
+    this.activeEmbeddedSection = value;
+  }
 
-    if (this.selectedInventoryId === nextInventoryId) {
+  onSelectedInventoryChange(value: number | number[] | null): void {
+    const nextInventoryIds = this.normalizeInventoryIds(value);
+
+    if (this.areNumberArraysEqual(this.selectedInventoryIds, nextInventoryIds)) {
       return;
     }
 
-    this.selectedInventoryId = nextInventoryId;
-    if (nextInventoryId !== null && this.products.length === 0 && !this.loadingProducts) {
+    this.selectedInventoryIds = nextInventoryIds;
+    if (nextInventoryIds.length > 0 && this.products.length === 0 && !this.loadingProducts) {
       this.loadProducts();
     }
     this.refreshSelectedInventoryProducts();
@@ -730,6 +779,16 @@ export class InputDayFeature implements OnInit, OnChanges {
       (item) => Number(item.id) !== productId,
     );
     this.onProductsSelected(nextSelection);
+  }
+
+  onManualTemplateSelectionChange(value: number | null): void {
+    const nextTemplateId = this.normalizeNullablePositiveInteger(value);
+    if (this.manualTemplateSelectionId === nextTemplateId) {
+      return;
+    }
+
+    this.manualTemplateSelectionId = nextTemplateId;
+    this.applyManualTemplateSelection();
   }
 
   applyManualTemplateSelection(): void {
@@ -758,8 +817,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   clearManualTemplateOverride(): void {
-    this.manualTemplateSelectionId = null;
-    this.applyManualTemplateSelection();
+    this.onManualTemplateSelectionChange(null);
   }
 
   convertTemplateItem(item: InputDayTemplateItemSummary): void {
@@ -768,15 +826,15 @@ export class InputDayFeature implements OnInit, OnChanges {
       return;
     }
 
-    if (this.selectedInventoryId === null) {
-      this.templateActionError = 'Selectionne un inventory avant de convertir une ligne template.';
+    if (!this.hasSelectedInventories) {
+      this.templateActionError = 'Selectionne au moins un inventory avant de convertir une ligne template.';
       return;
     }
 
     this.loading = true;
     this.templateActionError = null;
 
-    this.inputDaySrv.convertTemplateItem(dateLocal, item.id, this.selectedInventoryId).subscribe({
+    this.inputDaySrv.convertTemplateItem(dateLocal, item.id, this.selectedInventoryIds).subscribe({
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
@@ -823,10 +881,10 @@ export class InputDayFeature implements OnInit, OnChanges {
   clear(): void {
     this.form.reset({
       dateLocal: null,
-      timezone: 'UTC',
+      timezone: this.fallbackTimezone,
     });
 
-    this.selectedInventoryId = null;
+    this.selectedInventoryIds = [];
     this.selectedSlotId = null;
     this.clearSelectedInventoryProducts();
     this.initialDateError = null;
@@ -840,6 +898,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.pendingInitialEditingItemId = null;
     this.manualTemplateSelectionId = null;
     this.templateActionError = null;
+    this.activeEmbeddedSection = 'stock';
     this.prefillItemEditorForCreate(null);
   }
 
@@ -916,21 +975,36 @@ export class InputDayFeature implements OnInit, OnChanges {
     return item.slotKey?.trim() || '-';
   }
 
-  getSelectedInventoryTemplateStock(item: InputDayTemplateItemSummary): InputDayTemplateItemSummary['stockByInventory'][number] | null {
-    if (this.selectedInventoryId === null) {
+  getSelectedInventoriesTemplateStock(
+    item: InputDayTemplateItemSummary,
+  ): InputDaySelectedInventoryTemplateStock | null {
+    if (!this.hasSelectedInventories) {
       return null;
     }
 
-    return item.stockByInventory.find((entry) => entry.inventoryId === this.selectedInventoryId) ?? null;
+    const selectedStocks = item.stockByInventory.filter((entry) =>
+      this.selectedInventoryIds.includes(entry.inventoryId),
+    );
+    if (selectedStocks.length === 0) {
+      return null;
+    }
+
+    return {
+      enoughStock: selectedStocks.some((entry) => entry.enoughStock),
+      qtyAvailableNormalized: this.roundQuantity(
+        selectedStocks.reduce((sum, entry) => sum + entry.qtyAvailableNormalized, 0),
+      ),
+    };
   }
 
   canConvertTemplateItem(item: InputDayTemplateItemSummary): boolean {
-    if (item.status === 'converted' || this.loading || this.selectedInventoryId === null) {
+    if (item.status === 'converted' || this.loading || !this.hasSelectedInventories) {
       return false;
     }
 
-    const selectedInventoryStock = this.getSelectedInventoryTemplateStock(item);
-    return !!selectedInventoryStock?.enoughStock;
+    return item.stockByInventory.some(
+      (entry) => this.selectedInventoryIds.includes(entry.inventoryId) && entry.enoughStock,
+    );
   }
 
   getTemplateTargetSourceText(totals: InputDayTotalsMacrosSummary | null | undefined): string {
@@ -1011,14 +1085,14 @@ export class InputDayFeature implements OnInit, OnChanges {
         this.inventories = this.extractInventoriesFromResponse(response);
         this.loadingInventories = false;
         this.inventoriesError = null;
-        this.ensureSelectedInventoryStillValid();
+        this.ensureSelectedInventoriesStillValid();
         this.refreshSelectedInventoryProducts();
       },
       error: (error) => {
         this.inventories = [];
         this.loadingInventories = false;
         this.inventoriesError = error;
-        this.ensureSelectedInventoryStillValid();
+        this.ensureSelectedInventoriesStillValid();
         this.refreshSelectedInventoryProducts();
       },
     });
@@ -1147,12 +1221,8 @@ export class InputDayFeature implements OnInit, OnChanges {
       return null;
     }
 
-    if (
-      this.selectedInventoryId == null ||
-      !Number.isInteger(this.selectedInventoryId) ||
-      this.selectedInventoryId < 1
-    ) {
-      this.itemEditorError = 'Selectionne un inventory avant d\'enregistrer l\'entree.';
+    if (!this.hasSelectedInventories) {
+      this.itemEditorError = 'Selectionne au moins un inventory avant d\'enregistrer l\'entree.';
       return null;
     }
 
@@ -1193,7 +1263,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     if (itemId === null) {
       const payload: InputDayItemCommand = {
         productId,
-        inventoryId: this.selectedInventoryId,
+        inventoryIds: this.selectedInventoryIds,
         qty,
         ...(occurredAt ? { occurredAt } : {}),
         ...(qtyUnit ? { qtyUnit } : {}),
@@ -1216,7 +1286,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     const payload: UpdateInputDayItemDto = {
       dateLocal,
       productId,
-      inventoryId: this.selectedInventoryId,
+      inventoryIds: this.selectedInventoryIds,
       qty,
       ...(occurredAt ? { occurredAt } : {}),
       ...(qtyUnit ? { qtyUnit } : {}),
@@ -1252,7 +1322,7 @@ export class InputDayFeature implements OnInit, OnChanges {
           const qtyUnit = this.normalizeQtyUnit(row.qtyUnit);
           return {
             productId: row.productId,
-            inventoryId: this.selectedInventoryId as number,
+            inventoryIds: this.selectedInventoryIds,
             qty: row.qty as number,
             ...(occurredAt ? { occurredAt } : {}),
             ...(qtyUnit ? { qtyUnit } : {}),
@@ -1306,12 +1376,8 @@ export class InputDayFeature implements OnInit, OnChanges {
       return 'La date selectionnee est invalide.';
     }
 
-    if (
-      this.selectedInventoryId == null ||
-      !Number.isInteger(this.selectedInventoryId) ||
-      this.selectedInventoryId < 1
-    ) {
-      return 'Selectionne un inventory avant d\'ajouter des items.';
+    if (!this.hasSelectedInventories) {
+      return 'Selectionne au moins un inventory avant d\'ajouter des items.';
     }
 
     if (this.selectedProductRows.length === 0) {
@@ -1426,8 +1492,26 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private resolveTimezone(): string {
-    const timezone = String(this.form.value.timezone ?? 'UTC').trim();
-    return timezone !== '' ? timezone : 'UTC';
+    const timezone = String(this.form.value.timezone ?? this.fallbackTimezone).trim();
+    return timezone !== '' ? timezone : this.fallbackTimezone;
+  }
+
+  private normalizeInventoryIds(value: number | number[] | null | undefined): number[] {
+    const values = Array.isArray(value) ? value : value == null ? [] : [value];
+    return Array.from(
+      new Set(
+        values.filter(
+          (inventoryId): inventoryId is number =>
+            typeof inventoryId === 'number' &&
+            Number.isInteger(inventoryId) &&
+            inventoryId > 0,
+        ),
+      ),
+    ).sort((left, right) => left - right);
+  }
+
+  private areNumberArraysEqual(left: number[], right: number[]): boolean {
+    return left.length === right.length && left.every((value, index) => value === right[index]);
   }
 
   private normalizePositiveInteger(value: unknown): number | null {
@@ -1453,6 +1537,10 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
+  }
+
+  private roundQuantity(value: number): number {
+    return Math.round(value * 100) / 100;
   }
 
   private clearSelectedProducts(): void {
@@ -1483,59 +1571,60 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private refreshSelectedInventoryProducts(): void {
-    if (
-      this.selectedInventoryId == null ||
-      !Number.isInteger(this.selectedInventoryId) ||
-      this.selectedInventoryId < 1
-    ) {
+    if (!this.hasSelectedInventories) {
       this.clearSelectedInventoryProducts();
       this.syncSelectionToAvailableProducts();
       return;
     }
 
-    const inventory = this.inventories.find((item) => item.id === this.selectedInventoryId) ?? null;
-    const embeddedProducts = this.extractInventoryProductsFromResponse(
-      inventory?.inventoryProducts ?? null,
-    );
+    const nextInventoryIds = [...this.selectedInventoryIds];
+    const missingInventoryIds: number[] = [];
 
-    if (inventory && Array.isArray(inventory.inventoryProducts)) {
-      this.selectedInventoryProducts = embeddedProducts;
-      this.refreshSelectableProductListItems();
-      this.loadingInventoryProducts = false;
-      this.inventoryProductsError = null;
-      this.syncSelectionToAvailableProducts();
+    for (const inventoryId of nextInventoryIds) {
+      const inventory = this.inventories.find((item) => item.id === inventoryId) ?? null;
+      if (inventory && Array.isArray(inventory.inventoryProducts)) {
+        this.inventoryProductsByInventoryId.set(
+          inventoryId,
+          this.extractInventoryProductsFromResponse(inventory.inventoryProducts),
+        );
+        continue;
+      }
+
+      if (!this.inventoryProductsByInventoryId.has(inventoryId)) {
+        missingInventoryIds.push(inventoryId);
+      }
+    }
+
+    if (missingInventoryIds.length === 0) {
+      this.applySelectedInventoryProductsFromCache(nextInventoryIds);
       return;
     }
 
-    this.loadSelectedInventoryProducts(this.selectedInventoryId);
-  }
-
-  private loadSelectedInventoryProducts(inventoryId: number): void {
     this.loadingInventoryProducts = true;
     this.inventoryProductsError = null;
-    this.selectedInventoryProducts = [];
-    this.refreshSelectableProductListItems();
-    this.syncSelectionToAvailableProducts();
 
-    this.inventorySrv.findProducts(inventoryId).subscribe({
-      next: (response) => {
-        if (this.selectedInventoryId !== inventoryId) {
+    forkJoin(
+      missingInventoryIds.map((inventoryId) => this.inventorySrv.findProducts(inventoryId)),
+    ).subscribe({
+      next: (responses) => {
+        if (!this.areNumberArraysEqual(this.selectedInventoryIds, nextInventoryIds)) {
           return;
         }
 
-        this.selectedInventoryProducts = this.extractInventoryProductsFromResponse(response);
-        this.refreshSelectableProductListItems();
-        this.loadingInventoryProducts = false;
-        this.inventoryProductsError = null;
-        this.syncSelectionToAvailableProducts();
+        responses.forEach((response, index) => {
+          this.inventoryProductsByInventoryId.set(
+            missingInventoryIds[index],
+            this.extractInventoryProductsFromResponse(response),
+          );
+        });
+        this.applySelectedInventoryProductsFromCache(nextInventoryIds);
       },
       error: (error) => {
-        if (this.selectedInventoryId !== inventoryId) {
+        if (!this.areNumberArraysEqual(this.selectedInventoryIds, nextInventoryIds)) {
           return;
         }
 
-        this.selectedInventoryProducts = [];
-        this.refreshSelectableProductListItems();
+        this.applySelectedInventoryProductsFromCache(nextInventoryIds, false);
         this.loadingInventoryProducts = false;
         this.inventoryProductsError = error;
         this.syncSelectionToAvailableProducts();
@@ -1543,13 +1632,50 @@ export class InputDayFeature implements OnInit, OnChanges {
     });
   }
 
-  private ensureSelectedInventoryStillValid(): void {
-    if (
-      this.selectedInventoryId !== null &&
-      !this.inventories.some((inventory) => inventory.id === this.selectedInventoryId)
-    ) {
-      this.selectedInventoryId = null;
+  private applySelectedInventoryProductsFromCache(
+    inventoryIds: number[],
+    syncSelection = true,
+  ): void {
+    const aggregatedProducts = new Map<number, InventoryProduct>();
+
+    for (const inventoryId of inventoryIds) {
+      const inventoryProducts = this.inventoryProductsByInventoryId.get(inventoryId) ?? [];
+      for (const inventoryProduct of inventoryProducts) {
+        const existing = aggregatedProducts.get(inventoryProduct.productId);
+        if (!existing) {
+          aggregatedProducts.set(inventoryProduct.productId, {
+            ...inventoryProduct,
+            qtyOnHandInUnits: inventoryProduct.qtyOnHandInUnits ?? 0,
+            qtyOnHandNormalized: inventoryProduct.qtyOnHandNormalized ?? 0,
+          });
+          continue;
+        }
+
+        existing.qtyOnHandInUnits = this.roundQuantity(
+          (existing.qtyOnHandInUnits ?? 0) + (inventoryProduct.qtyOnHandInUnits ?? 0),
+        );
+        existing.qtyOnHandNormalized = this.roundQuantity(
+          (existing.qtyOnHandNormalized ?? 0) + (inventoryProduct.qtyOnHandNormalized ?? 0),
+        );
+      }
     }
+
+    this.selectedInventoryProducts = Array.from(aggregatedProducts.values()).sort(
+      (left, right) => left.productId - right.productId,
+    );
+    this.refreshSelectableProductListItems();
+    this.loadingInventoryProducts = false;
+    this.inventoryProductsError = null;
+    if (syncSelection) {
+      this.syncSelectionToAvailableProducts();
+    }
+  }
+
+  private ensureSelectedInventoriesStillValid(): void {
+    const validInventoryIds = new Set(this.inventories.map((inventory) => inventory.id));
+    this.selectedInventoryIds = this.selectedInventoryIds.filter((inventoryId) =>
+      validInventoryIds.has(inventoryId),
+    );
   }
 
   private ensureSelectedSlotStillValid(): void {
@@ -1792,11 +1918,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private buildSelectableProductListItems(): ProductListItem[] {
-    if (
-      this.selectedInventoryId == null ||
-      !Number.isInteger(this.selectedInventoryId) ||
-      this.selectedInventoryId < 1
-    ) {
+    if (!this.hasSelectedInventories) {
       return [];
     }
 

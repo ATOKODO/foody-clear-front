@@ -231,6 +231,7 @@ describe('PlanningFeature', () => {
     expect(inputDay.initialEditingItemId).toBeNull();
     expect(inputDay.apiBaseUrl).toBe(component.baseUrl);
     expect(inputDay.lockDate).toBeTrue();
+    expect(fixture.nativeElement.textContent).not.toContain('Date selectionnee:');
   });
 
   it('should open items modal in edit mode from calendar item click', () => {
