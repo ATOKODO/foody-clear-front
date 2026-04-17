@@ -37,6 +37,7 @@ export class InventoryList implements OnInit, OnChanges {
   @Input() mode: InventoryListMode = 'manage';
   @Input() inventories: InventoryListItem[] | null = null;
   @Input() selectedIds: string[] | null = null;
+  @Input() embedded = false;
 
   @Output() readonly addRequested = new EventEmitter<void>();
   @Output() readonly editRequested = new EventEmitter<InventoryListItem>();

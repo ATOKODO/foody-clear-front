@@ -1,4 +1,72 @@
-<section class="mx-auto w-full max-w-6xl px-4 py-6" aria-label="Liste des inventories" data-testid="inventory-list">
+<ng-template #tableContent>
+  <div class="inventory-list__table-wrap overflow-x-auto rounded-xl border border-slate-200">
+    <table mat-table [dataSource]="resolvedInventories" class="inventory-table w-full">
+      <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
+        <td mat-cell *matCellDef="let item" class="w-14" (click)="$event.stopPropagation()">
+          <mat-checkbox
+            [checked]="isSelected(item.id)"
+            [attr.aria-label]="'Selectionner ' + item.name"
+            (click)="onCheckboxClick($event, item)">
+          </mat-checkbox>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Inventory</th>
+        <td mat-cell *matCellDef="let item">{{ item.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="productCount">
+        <th mat-header-cell *matHeaderCellDef>Produits</th>
+        <td mat-cell *matCellDef="let item">{{ item.productCount }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let item" (click)="$event.stopPropagation()">
+          <div class="inventory-list__actions">
+            <button
+              mat-stroked-button
+              type="button"
+              class="inventory-list__action inventory-list__action--edit"
+              [attr.data-testid]="'inventory-edit-' + item.id"
+              (click)="onEditClick(item)">
+              Modifier
+            </button>
+            <button
+              mat-stroked-button
+              type="button"
+              class="inventory-list__action inventory-list__action--delete"
+              [attr.data-testid]="'inventory-delete-' + item.id"
+              (click)="onDeleteClick(item)">
+              Retirer
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr
+        mat-row
+        *matRowDef="let item; let i = index; columns: displayedColumns"
+        [attr.data-testid]="'inventory-row-' + item.id"
+        [class.il-active]="isRowActive(item, i)"
+        [class.il-selectable]="isSingleSelectMode || isMultiSelectMode"
+        [attr.tabindex]="isSingleSelectMode ? 0 : null"
+        [attr.role]="isSingleSelectMode ? 'button' : null"
+        (click)="onRowClick(item)"
+        (keydown)="onRowKeydown($event, item)">
+      </tr>
+    </table>
+  </div>
+</ng-template>
+
+<section
+  *ngIf="!embedded; else embeddedTemplate"
+  class="mx-auto w-full max-w-6xl px-4 py-6"
+  aria-label="Liste des inventories"
+  data-testid="inventory-list">
   <mat-card class="overflow-hidden rounded-2xl">
     <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-6">
       <h2 class="text-base font-semibold text-slate-900">Inventories</h2>
@@ -15,62 +83,12 @@
       </button>
     </div>
 
-    <div class="p-3 sm:p-4" *ngIf="hasItems; else emptyState">
-      <div class="overflow-x-auto rounded-xl border border-slate-200">
-        <table mat-table [dataSource]="resolvedInventories" class="inventory-table w-full">
-          <ng-container matColumnDef="select">
-            <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
-            <td mat-cell *matCellDef="let item" class="w-14" (click)="$event.stopPropagation()">
-              <mat-checkbox
-                [checked]="isSelected(item.id)"
-                [attr.aria-label]="'Selectionner ' + item.name"
-                (click)="onCheckboxClick($event, item)">
-              </mat-checkbox>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Inventory</th>
-            <td mat-cell *matCellDef="let item">{{ item.name }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="productCount">
-            <th mat-header-cell *matHeaderCellDef>Produits</th>
-            <td mat-cell *matCellDef="let item">{{ item.productCount }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let item" (click)="$event.stopPropagation()">
-              <div class="flex flex-wrap gap-2">
-                <button mat-stroked-button type="button" [attr.data-testid]="'inventory-edit-' + item.id" (click)="onEditClick(item)">
-                  Modifier
-                </button>
-                <button mat-stroked-button color="warn" type="button" [attr.data-testid]="'inventory-delete-' + item.id" (click)="onDeleteClick(item)">
-                  Retirer
-                </button>
-              </div>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr
-            mat-row
-            *matRowDef="let item; let i = index; columns: displayedColumns"
-            [attr.data-testid]="'inventory-row-' + item.id"
-            [class.il-active]="isRowActive(item, i)"
-            [class.il-selectable]="isSingleSelectMode || isMultiSelectMode"
-            [attr.tabindex]="isSingleSelectMode ? 0 : null"
-            [attr.role]="isSingleSelectMode ? 'button' : null"
-            (click)="onRowClick(item)"
-            (keydown)="onRowKeydown($event, item)">
-          </tr>
-        </table>
-      </div>
+    <div class="p-3 sm:p-4" *ngIf="hasItems; else standaloneEmptyState">
+      <ng-container [ngTemplateOutlet]="tableContent"></ng-container>
     </div>
   </mat-card>
 
-  <ng-template #emptyState>
+  <ng-template #standaloneEmptyState>
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-content class="p-4 text-sm text-slate-600">
         Aucun inventory disponible.
@@ -78,3 +96,15 @@
     </mat-card>
   </ng-template>
 </section>
+
+<ng-template #embeddedTemplate>
+  <div class="inventory-list inventory-list--embedded" data-testid="inventory-list-embedded">
+    <ng-container *ngIf="hasItems; else embeddedEmptyState">
+      <ng-container [ngTemplateOutlet]="tableContent"></ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #embeddedEmptyState>
+  <p class="inventory-list__empty text-sm text-slate-600">Aucun inventory disponible.</p>
+</ng-template>

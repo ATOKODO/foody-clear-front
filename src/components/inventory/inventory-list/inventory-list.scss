@@ -2,13 +2,35 @@
   display: block;
 }
 
+.inventory-list--embedded {
+  width: 100%;
+}
+
+.inventory-list__empty {
+  margin: 0;
+}
+
+.inventory-list__table-wrap {
+  background: #f9faf4;
+  border-color: rgb(193 201 190 / 0.75);
+}
+
 .inventory-table .mat-mdc-header-row {
-  background: var(--app-surface-soft);
+  background: #f6f9fc;
 }
 
 .inventory-table .mat-mdc-header-cell {
+  height: 3.5rem;
   font-weight: 600;
-  color: var(--app-text-strong);
+  color: #0f172a;
+  border-bottom-color: rgb(113 121 112 / 0.55);
+}
+
+.inventory-table .mat-mdc-cell {
+  min-height: 3.25rem;
+  color: #191c19;
+  background: #f9faf4;
+  border-bottom-color: rgb(113 121 112 / 0.4);
 }
 
 .inventory-table .mat-mdc-row.il-selectable {
@@ -16,5 +38,56 @@
 }
 
 .inventory-table .mat-mdc-row.il-active {
-  background: var(--app-info-bg);
+  background: rgb(59 130 246 / 0.14);
+}
+
+.inventory-table .mat-mdc-row.il-active .mat-mdc-cell {
+  background: rgb(59 130 246 / 0.14);
+}
+
+.inventory-list__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.inventory-list__action {
+  min-width: 0;
+  border-width: 2px;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.inventory-list__action--edit {
+  border-color: #8c7600;
+  background: #ffe167;
+  color: #544600;
+}
+
+.inventory-list__action--delete {
+  border-color: #de3731;
+  background: #ff897e;
+  color: #690005;
+}
+
+:host-context(.dark) .inventory-list__table-wrap {
+  background: rgb(17 24 39 / 0.78);
+  border-color: var(--app-border);
+}
+
+:host-context(.dark) .inventory-table .mat-mdc-header-row,
+:host-context(.dark) .inventory-table .mat-mdc-header-cell {
+  background: rgb(30 41 59 / 0.92);
+  color: rgb(226 232 240);
+}
+
+:host-context(.dark) .inventory-table .mat-mdc-cell {
+  background: rgb(17 24 39 / 0.78);
+  color: rgb(226 232 240);
+  border-bottom-color: rgb(148 163 184 / 0.24);
+}
+
+:host-context(.dark) .inventory-table .mat-mdc-row.il-active,
+:host-context(.dark) .inventory-table .mat-mdc-row.il-active .mat-mdc-cell {
+  background: rgb(37 99 235 / 0.22);
 }

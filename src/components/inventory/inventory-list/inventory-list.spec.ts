@@ -33,6 +33,24 @@ describe('InventoryList', () => {
     expect(addButton).toBeNull();
   });
 
+  it('should hide local chrome in embedded mode', () => {
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="inventory-list-embedded"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('mat-card')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.add-btn')).toBeNull();
+  });
+
+  it('should render a plain embedded empty state', () => {
+    fixture.componentRef.setInput('embedded', true);
+    fixture.componentRef.setInput('inventories', []);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.inventory-list__empty')?.textContent)
+      .toContain('Aucun inventory disponible.');
+  });
+
   it('should emit selected in single select mode', () => {
     const emitted: Array<unknown> = [];
     component.selected.subscribe((item) => emitted.push(item));

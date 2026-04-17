@@ -1,28 +1,37 @@
-<section class="app-page" data-testid="inventory-page">
-  <mat-card class="overflow-hidden rounded-2xl">
-    <div
-      class="flex flex-wrap items-center justify-between gap-3 bg-slate-900 px-6 py-5 text-white"
-    >
-      <div>
-        <h2 class="text-xl font-semibold">Inventaires</h2>
-        <p class="mt-1 text-sm text-slate-300">
-          Gestion du stock, des produits lies et des quantites.
-        </p>
+<section class="app-page inventory-page" data-testid="inventory-page">
+  <mat-card class="inventory-panel" data-testid="inventory-panel">
+    <div class="inventory-panel__header">
+      <h2 class="inventory-panel__title" data-testid="inventory-panel-title">Inventories</h2>
+
+      <div class="inventory-panel__actions">
+        <button
+          mat-stroked-button
+          type="button"
+          class="inventory-action inventory-action--secondary"
+          (click)="onRefreshRequested()"
+          [disabled]="loading || loadingProducts || loadingInventoryProducts || saving"
+        >
+          Rafraichir
+        </button>
+
+        <button
+          mat-stroked-button
+          type="button"
+          class="inventory-action inventory-action--primary"
+          data-testid="inventory-add-action"
+          (click)="onAddRequested()"
+          [disabled]="loading || loadingProducts || loadingInventoryProducts || saving"
+        >
+          Ajouter un inventaire
+        </button>
       </div>
-      <button
-        mat-raised-button
-        color="primary"
-        class="rounded-full"
-        type="button"
-        (click)="onRefreshRequested()"
-        [disabled]="loading || loadingProducts || loadingInventoryProducts || saving"
-      >
-        Rafraichir
-      </button>
     </div>
 
-    <div class="space-y-4 p-4 sm:p-6">
-      <div class="app-status-row">
+    <div class="inventory-panel__content">
+      <div
+        *ngIf="loading || loadingProducts || saving || loadingInventoryProducts"
+        class="app-status-row"
+      >
         <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
           Chargement...
         </span>
@@ -44,7 +53,7 @@
       <app-inventory-list
         mode="manage"
         [inventories]="inventoryListItems"
-        (addRequested)="onAddRequested()"
+        [embedded]="true"
         (editRequested)="onEditRequested($event)"
         (deleteRequested)="onDeleteRequested($event)">
       </app-inventory-list>

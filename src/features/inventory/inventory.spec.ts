@@ -147,6 +147,17 @@ describe('Inventory', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should render the figma-aligned inventory shell', () => {
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.querySelector('[data-testid="inventory-panel-title"]')?.textContent)
+      .toContain('Inventories');
+    expect(element.querySelector('[data-testid="inventory-add-action"]')?.textContent)
+      .toContain('Ajouter un inventaire');
+    expect(element.querySelector('[data-testid="inventory-list-embedded"]')).not.toBeNull();
+    expect(element.querySelector('[data-testid="inventory-list"]')).toBeNull();
+  });
+
   it('should use backend productCount in inventory list items', () => {
     inventoryServiceMock.findAll.and.returnValue(of([
       {
