@@ -2,6 +2,14 @@
   display: block;
 }
 
+.generic-product-list--embedded {
+  width: 100%;
+}
+
+.generic-product-list__empty {
+  margin: 0;
+}
+
 .generic-product-table .mat-mdc-header-row {
   background: var(--app-surface-soft);
 }

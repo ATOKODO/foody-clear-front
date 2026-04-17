@@ -1,52 +1,88 @@
-<section class="app-page" data-testid="category-page">
-  <mat-card class="overflow-hidden rounded-2xl">
-    <div class="flex items-center justify-between bg-slate-900 px-6 py-5 text-white">
-      <div>
-        <h2 class="text-xl font-semibold">Categories</h2>
-        <p class="mt-1 text-sm text-slate-300">Structure, alertes et seuils par categorie.</p>
-      </div>
-      <button
-        mat-raised-button
-        color="primary"
-        type="button"
-        (click)="store.refresh()"
+<ng-container *ngIf="embedded; else standaloneTemplate">
+  <div class="space-y-4" data-testid="category-embedded">
+    <div class="app-status-row">
+      <span
+        *ngIf="store.loading()"
+        class="app-status-pill app-status-pill--neutral"
       >
-        Rafraichir
-      </button>
+        Chargement...
+      </span>
+      <span
+        *ngIf="store.saving()"
+        class="app-status-pill app-status-pill--saving"
+      >
+        Sauvegarde...
+      </span>
     </div>
 
-    <div class="space-y-4 p-4 sm:p-6">
-      <div class="app-status-row">
-        <span
-          *ngIf="store.loading()"
-          class="app-status-pill app-status-pill--neutral"
+    <app-ui-error-panel
+      *ngIf="store.hasError()"
+      [error]="store.lastError()"
+    ></app-ui-error-panel>
+
+    <app-category-list
+      mode="manage"
+      [categories]="store.categoryListItems()"
+      [embedded]="true"
+      (addRequested)="store.openCreateForm()"
+      (editRequested)="store.openEditForm($event)"
+      (deleteRequested)="store.deleteCategory($event)"
+    >
+    </app-category-list>
+  </div>
+</ng-container>
+
+<ng-template #standaloneTemplate>
+  <section class="app-page" data-testid="category-page">
+    <mat-card class="overflow-hidden rounded-2xl">
+      <div class="flex items-center justify-between bg-slate-900 px-6 py-5 text-white">
+        <div>
+          <h2 class="text-xl font-semibold">Categories</h2>
+          <p class="mt-1 text-sm text-slate-300">Structure, alertes et seuils par categorie.</p>
+        </div>
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          (click)="store.refresh()"
         >
-          Chargement...
-        </span>
-        <span
-          *ngIf="store.saving()"
-          class="app-status-pill app-status-pill--saving"
-        >
-          Sauvegarde...
-        </span>
+          Rafraichir
+        </button>
       </div>
 
-      <app-ui-error-panel
-        *ngIf="store.hasError()"
-        [error]="store.lastError()"
-      ></app-ui-error-panel>
+      <div class="space-y-4 p-4 sm:p-6">
+        <div class="app-status-row">
+          <span
+            *ngIf="store.loading()"
+            class="app-status-pill app-status-pill--neutral"
+          >
+            Chargement...
+          </span>
+          <span
+            *ngIf="store.saving()"
+            class="app-status-pill app-status-pill--saving"
+          >
+            Sauvegarde...
+          </span>
+        </div>
 
-      <app-category-list
-        mode="manage"
-        [categories]="store.categoryListItems()"
-        (addRequested)="store.openCreateForm()"
-        (editRequested)="store.openEditForm($event)"
-        (deleteRequested)="store.deleteCategory($event)"
-      >
-      </app-category-list>
-    </div>
-  </mat-card>
-</section>
+        <app-ui-error-panel
+          *ngIf="store.hasError()"
+          [error]="store.lastError()"
+        ></app-ui-error-panel>
+
+        <app-category-list
+          mode="manage"
+          [categories]="store.categoryListItems()"
+          (addRequested)="store.openCreateForm()"
+          (editRequested)="store.openEditForm($event)"
+          (deleteRequested)="store.deleteCategory($event)"
+        >
+        </app-category-list>
+      </div>
+    </mat-card>
+  </section>
+</ng-template>
 
 <div
   class="app-modal-backdrop"

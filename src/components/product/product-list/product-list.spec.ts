@@ -99,4 +99,27 @@ describe('ProductList', () => {
     expect(headerCells).toContain('Disponible');
     expect(nativeElement.textContent).toContain('1200 g');
   });
+
+  it('should hide the local chrome when embedded', () => {
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+
+    expect(nativeElement.querySelector('mat-card')).toBeNull();
+    expect(nativeElement.querySelector('.add-btn')).toBeNull();
+    expect(nativeElement.querySelector('[data-testid="product-list-embedded"]')).not.toBeNull();
+    expect(nativeElement.querySelector('table')).not.toBeNull();
+  });
+
+  it('should render the embedded empty state without an extra card', () => {
+    fixture.componentRef.setInput('embedded', true);
+    fixture.componentRef.setInput('products', []);
+    fixture.detectChanges();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+
+    expect(nativeElement.querySelector('mat-card')).toBeNull();
+    expect(nativeElement.textContent).toContain('Aucun produit disponible.');
+  });
 });

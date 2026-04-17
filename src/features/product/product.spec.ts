@@ -99,6 +99,10 @@ describe('Product', () => {
     expect(fixture.nativeElement.querySelector('app-category')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-generic-product')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-tag')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="catalogue-panel-title"]')?.textContent)
+      .toContain('Produits');
+    expect(fixture.nativeElement.querySelector('[data-testid="catalogue-add-action"]')?.textContent)
+      .toContain('Ajouter un produit');
   });
 
   it('should show linked features when selecting a toggle', () => {
@@ -113,6 +117,33 @@ describe('Product', () => {
     clickToggle(3);
     expect(component.activeView).toBe('tag');
     expect(fixture.nativeElement.querySelector('app-tag')).not.toBeNull();
+  });
+
+  it('should update the panel actions when switching embedded views', () => {
+    clickToggle(1);
+
+    let nativeElement = fixture.nativeElement as HTMLElement;
+    expect(nativeElement.querySelector('[data-testid="catalogue-panel-title"]')?.textContent)
+      .toContain('Categories');
+    expect(nativeElement.querySelector('[data-testid="catalogue-add-action"]')?.textContent)
+      .toContain('Ajouter une categorie');
+    expect(nativeElement.querySelector('app-category section.app-page')).toBeNull();
+
+    clickToggle(2);
+    nativeElement = fixture.nativeElement as HTMLElement;
+    expect(nativeElement.querySelector('[data-testid="catalogue-panel-title"]')?.textContent)
+      .toContain('Produits generiques');
+    expect(nativeElement.querySelector('[data-testid="catalogue-add-action"]')?.textContent)
+      .toContain('Ajouter un produit generique');
+    expect(nativeElement.querySelector('app-generic-product section.app-page')).toBeNull();
+
+    clickToggle(3);
+    nativeElement = fixture.nativeElement as HTMLElement;
+    expect(nativeElement.querySelector('[data-testid="catalogue-panel-title"]')?.textContent)
+      .toContain('Tags');
+    expect(nativeElement.querySelector('[data-testid="catalogue-add-action"]')?.textContent)
+      .toContain('Ajouter un tag');
+    expect(nativeElement.querySelector('app-tag section.app-page')).toBeNull();
   });
 
   it('should reload products when returning to product after linked data changes', () => {

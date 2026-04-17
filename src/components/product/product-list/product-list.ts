@@ -57,6 +57,7 @@ export class ProductList implements OnInit, OnChanges {
   @Input() products: ProductListItem[] | null = null;
   @Input() selectedIds: string[] | null = null;
   @Input() compact = false;
+  @Input() embedded = false;
   @Input() showAvailableQty = false;
 
   @Output() readonly addRequested = new EventEmitter<void>();

@@ -128,4 +128,15 @@ describe('Category', () => {
     expect(categoryComponents[0].store.formVisible()).toBeTrue();
     expect(categoryComponents[1].store.formVisible()).toBeFalse();
   });
+
+  it('should render without standalone chrome when embedded', () => {
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+
+    expect(nativeElement.querySelector('section.app-page')).toBeNull();
+    expect(nativeElement.querySelector('[data-testid="category-embedded"]')).not.toBeNull();
+    expect(nativeElement.querySelector('[data-testid="category-list-embedded"]')).not.toBeNull();
+  });
 });

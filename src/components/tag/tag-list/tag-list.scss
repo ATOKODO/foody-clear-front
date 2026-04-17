@@ -2,6 +2,14 @@
   display: block;
 }
 
+.tag-list--embedded {
+  width: 100%;
+}
+
+.tag-list__empty {
+  margin: 0;
+}
+
 .tag-table .mat-mdc-header-row {
   background: var(--app-surface-soft);
 }

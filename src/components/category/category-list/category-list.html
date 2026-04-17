@@ -1,4 +1,71 @@
+<ng-template #tableContent>
+  <div class="overflow-x-auto rounded-xl border border-slate-200">
+    <table mat-table [dataSource]="resolvedCategories" class="category-table w-full">
+      <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
+        <td mat-cell *matCellDef="let item" class="w-14" (click)="$event.stopPropagation()">
+          <mat-checkbox
+            [checked]="isSelected(item.id)"
+            [attr.aria-label]="'Selectionner ' + item.name"
+            (click)="onCheckboxClick($event, item)">
+          </mat-checkbox>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Categorie</th>
+        <td mat-cell *matCellDef="let item">{{ item.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="warnBeforeDays">
+        <th mat-header-cell *matHeaderCellDef>Alerte</th>
+        <td mat-cell *matCellDef="let item">{{ getNumberDisplay(item.warnBeforeDays) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="recentlyExpiredDays">
+        <th mat-header-cell *matHeaderCellDef>Recent</th>
+        <td mat-cell *matCellDef="let item">
+          {{ getNumberDisplay(item.recentlyExpiredDays) }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="minQuantity">
+        <th mat-header-cell *matHeaderCellDef>Min qty</th>
+        <td mat-cell *matCellDef="let item">{{ getNumberDisplay(item.minQuantity) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let item" (click)="$event.stopPropagation()">
+          <div class="flex flex-wrap gap-2">
+            <button mat-stroked-button type="button" [attr.data-testid]="'category-edit-' + item.id" (click)="onEditClick(item)">
+              Modifier
+            </button>
+            <button mat-stroked-button color="warn" type="button" [attr.data-testid]="'category-delete-' + item.id" (click)="onDeleteClick(item)">
+              Retirer
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr
+        mat-row
+        *matRowDef="let item; let i = index; columns: displayedColumns"
+        [attr.data-testid]="'category-row-' + item.id"
+        [class.cl-active]="isRowActive(item, i)"
+        [class.cl-selectable]="isSingleSelectMode || isMultiSelectMode"
+        [attr.tabindex]="isSingleSelectMode ? 0 : null"
+        [attr.role]="isSingleSelectMode ? 'button' : null"
+        (click)="onRowClick(item)"
+        (keydown)="onRowKeydown($event, item)">
+      </tr>
+    </table>
+  </div>
+</ng-template>
+
 <section
+  *ngIf="!embedded; else embeddedTemplate"
   aria-label="Liste des categories"
   data-testid="category-list"
   class="w-full"
@@ -19,74 +86,12 @@
       </button>
     </div>
 
-    <div class="p-3 sm:p-4" *ngIf="hasItems; else emptyState">
-      <div class="overflow-x-auto rounded-xl border border-slate-200">
-        <table mat-table [dataSource]="resolvedCategories" class="category-table w-full">
-          <ng-container matColumnDef="select">
-            <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
-            <td mat-cell *matCellDef="let item" class="w-14" (click)="$event.stopPropagation()">
-              <mat-checkbox
-                [checked]="isSelected(item.id)"
-                [attr.aria-label]="'Selectionner ' + item.name"
-                (click)="onCheckboxClick($event, item)">
-              </mat-checkbox>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Categorie</th>
-            <td mat-cell *matCellDef="let item">{{ item.name }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="warnBeforeDays">
-            <th mat-header-cell *matHeaderCellDef>Alerte</th>
-            <td mat-cell *matCellDef="let item">{{ getNumberDisplay(item.warnBeforeDays) }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="recentlyExpiredDays">
-            <th mat-header-cell *matHeaderCellDef>Recent</th>
-            <td mat-cell *matCellDef="let item">
-              {{ getNumberDisplay(item.recentlyExpiredDays) }}
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="minQuantity">
-            <th mat-header-cell *matHeaderCellDef>Min qty</th>
-            <td mat-cell *matCellDef="let item">{{ getNumberDisplay(item.minQuantity) }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let item" (click)="$event.stopPropagation()">
-              <div class="flex flex-wrap gap-2">
-                <button mat-stroked-button type="button" [attr.data-testid]="'category-edit-' + item.id" (click)="onEditClick(item)">
-                  Modifier
-                </button>
-                <button mat-stroked-button color="warn" type="button" [attr.data-testid]="'category-delete-' + item.id" (click)="onDeleteClick(item)">
-                  Retirer
-                </button>
-              </div>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr
-            mat-row
-            *matRowDef="let item; let i = index; columns: displayedColumns"
-            [attr.data-testid]="'category-row-' + item.id"
-            [class.cl-active]="isRowActive(item, i)"
-            [class.cl-selectable]="isSingleSelectMode || isMultiSelectMode"
-            [attr.tabindex]="isSingleSelectMode ? 0 : null"
-            [attr.role]="isSingleSelectMode ? 'button' : null"
-            (click)="onRowClick(item)"
-            (keydown)="onRowKeydown($event, item)">
-          </tr>
-        </table>
-      </div>
+    <div class="p-3 sm:p-4" *ngIf="hasItems; else standaloneEmptyState">
+      <ng-container [ngTemplateOutlet]="tableContent"></ng-container>
     </div>
   </mat-card>
 
-  <ng-template #emptyState>
+  <ng-template #standaloneEmptyState>
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-content class="p-4 text-sm text-slate-600">
         Aucune categorie disponible.
@@ -94,3 +99,15 @@
     </mat-card>
   </ng-template>
 </section>
+
+<ng-template #embeddedTemplate>
+  <div class="category-list category-list--embedded" data-testid="category-list-embedded">
+    <ng-container *ngIf="hasItems; else embeddedEmptyState">
+      <ng-container [ngTemplateOutlet]="tableContent"></ng-container>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #embeddedEmptyState>
+  <p class="category-list__empty text-sm text-slate-600">Aucune categorie disponible.</p>
+</ng-template>

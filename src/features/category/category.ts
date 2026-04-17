@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output, effect, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, effect, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
@@ -22,6 +22,7 @@ import { CategoryStore } from './category.store';
   styleUrl: './category.scss',
 })
 export class Category {
+  @Input() embedded = false;
   @Output() readonly dataChanged = new EventEmitter<void>();
 
   readonly store = inject(CategoryStore);
@@ -38,5 +39,13 @@ export class Category {
       this.lastEmittedMutationVersion = mutationVersion;
       this.dataChanged.emit();
     });
+  }
+
+  refresh(): void {
+    this.store.refresh();
+  }
+
+  openCreate(): void {
+    this.store.openCreateForm();
   }
 }

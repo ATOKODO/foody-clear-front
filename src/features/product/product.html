@@ -1,116 +1,118 @@
-<section class="app-page" data-testid="product-page">
-  <div class="product-hub-header rounded-3xl px-6 py-6 text-white shadow-lg">
-    <div class="product-hub-header__top">
-      <div class="max-w-3xl">
-        <p
-          class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-300"
-        >
-          Catalogue central
-        </p>
-        <h1 class="mt-2 text-2xl font-semibold sm:text-3xl">
-          Produits, categories et tags
-        </h1>
-        <p class="mt-2 text-sm text-slate-300 sm:text-base">
-          Pilote le catalogue et ses ecrans relies depuis une vue unique.
-        </p>
-      </div>
-
-      <mat-button-toggle-group
-        [ngModel]="activeView"
-        [hideSingleSelectionIndicator]="true"
-        (ngModelChange)="onActiveViewChange($event)"
-        aria-label="Selection de la vue produit active"
-        class="product-view-toggle"
-        name="product-view"
-      >
-        <mat-button-toggle value="product">Produits</mat-button-toggle>
-        <mat-button-toggle value="category">Categories</mat-button-toggle>
-        <mat-button-toggle value="genericProduct">
-          Produits generiques
-        </mat-button-toggle>
-        <mat-button-toggle value="tag">Tags</mat-button-toggle>
-      </mat-button-toggle-group>
-    </div>
-
-    <div *ngIf="activeView === 'product'" class="product-hub-header__active-view">
-      <div>
-        <p class="product-hub-header__active-eyebrow">Vue active</p>
-        <h2 class="product-hub-header__active-title">Produits</h2>
-        <p class="product-hub-header__active-subtitle">Gestion des produits.</p>
-      </div>
-
-      <button
-        mat-raised-button
-        color="primary"
-        class="product-hub-header__action rounded-full"
-        type="button"
-        (click)="onRefreshRequested()"
-        [disabled]="loading || loadingMeta || saving"
-      >
-        Rafraichir
-      </button>
-    </div>
+<section class="app-page catalogue-page" data-testid="product-page">
+  <div class="catalogue-page__toggle-wrap">
+    <mat-button-toggle-group
+      [ngModel]="activeView"
+      [hideSingleSelectionIndicator]="true"
+      (ngModelChange)="onActiveViewChange($event)"
+      aria-label="Selection de la vue catalogue active"
+      class="catalogue-view-toggle"
+      data-testid="catalogue-view-toggle"
+      name="catalogue-view"
+    >
+      <mat-button-toggle value="product">Produits</mat-button-toggle>
+      <mat-button-toggle value="category">Categories</mat-button-toggle>
+      <mat-button-toggle value="genericProduct">
+        Produits generiques
+      </mat-button-toggle>
+      <mat-button-toggle value="tag">Tags</mat-button-toggle>
+    </mat-button-toggle-group>
   </div>
 
-  <mat-card
-    *ngIf="activeView === 'product'"
-    class="mt-4 overflow-hidden rounded-2xl"
-  >
-    <div class="space-y-4 p-4 sm:p-6">
-      <div class="app-status-row">
-        <span
-          *ngIf="loading"
-          class="app-status-pill app-status-pill--neutral"
+  <mat-card class="catalogue-panel" data-testid="catalogue-panel">
+    <div class="catalogue-panel__header">
+      <h2 class="catalogue-panel__title" data-testid="catalogue-panel-title">
+        {{ activeViewConfig.title }}
+      </h2>
+
+      <div class="catalogue-panel__actions">
+        <button
+          mat-stroked-button
+          type="button"
+          class="catalogue-action catalogue-action--secondary"
+          (click)="onRefreshActiveView()"
+          [disabled]="activeViewBusy"
         >
-          Chargement...
-        </span>
-        <span
-          *ngIf="saving"
-          class="app-status-pill app-status-pill--saving"
+          Rafraichir
+        </button>
+
+        <button
+          mat-stroked-button
+          type="button"
+          class="catalogue-action catalogue-action--primary"
+          (click)="onAddActiveView()"
+          [disabled]="activeViewBusy"
+          data-testid="catalogue-add-action"
         >
-          Sauvegarde...
-        </span>
-        <span
-          *ngIf="loadingMeta"
-          class="app-status-pill app-status-pill--info"
-        >
-          Meta...
-        </span>
+          {{ activeViewConfig.addLabel }}
+        </button>
       </div>
+    </div>
 
-      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
+    <div class="catalogue-panel__content">
+      <ng-container [ngSwitch]="activeView">
+        <div *ngSwitchCase="'product'" class="catalogue-panel__section" data-testid="catalogue-product-view">
+          <div class="app-status-row">
+            <span
+              *ngIf="loading"
+              class="app-status-pill app-status-pill--neutral"
+            >
+              Chargement...
+            </span>
+            <span
+              *ngIf="saving"
+              class="app-status-pill app-status-pill--saving"
+            >
+              Sauvegarde...
+            </span>
+            <span
+              *ngIf="loadingMeta"
+              class="app-status-pill app-status-pill--info"
+            >
+              Meta...
+            </span>
+          </div>
 
-      <p
-        *ngIf="lastMetaError"
-        class="app-alert"
-      >
-        Impossible de charger les metas (units / nutrition keys), fallback
-        actif.
-      </p>
+          <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
 
-      <app-product-list
-        mode="manage"
-        [products]="productListItems"
-        (addRequested)="onAddRequested()"
-        (editRequested)="onEditRequested($event)"
-        (deleteRequested)="onDeleteRequested($event)"
-      >
-      </app-product-list>
+          <p
+            *ngIf="lastMetaError"
+            class="app-alert"
+          >
+            Impossible de charger les metas (units / nutrition keys), fallback
+            actif.
+          </p>
+
+          <app-product-list
+            mode="manage"
+            [products]="productListItems"
+            [embedded]="true"
+            (addRequested)="onAddRequested()"
+            (editRequested)="onEditRequested($event)"
+            (deleteRequested)="onDeleteRequested($event)"
+          >
+          </app-product-list>
+        </div>
+
+        <app-category
+          *ngSwitchCase="'category'"
+          [embedded]="true"
+          (dataChanged)="onLinkedDataChanged()"
+        ></app-category>
+
+        <app-generic-product
+          *ngSwitchCase="'genericProduct'"
+          [embedded]="true"
+          (dataChanged)="onLinkedDataChanged()"
+        ></app-generic-product>
+
+        <app-tag
+          *ngSwitchCase="'tag'"
+          [embedded]="true"
+          (dataChanged)="onLinkedDataChanged()"
+        ></app-tag>
+      </ng-container>
     </div>
   </mat-card>
-
-  <app-category
-    *ngIf="activeView === 'category'"
-    class="mt-6"
-    (dataChanged)="onLinkedDataChanged()"></app-category>
-
-  <app-generic-product
-    *ngIf="activeView === 'genericProduct'"
-    class="mt-6"
-    (dataChanged)="onLinkedDataChanged()"
-  ></app-generic-product>
-
-  <app-tag *ngIf="activeView === 'tag'" class="mt-6" (dataChanged)="onLinkedDataChanged()"></app-tag>
 </section>
 
 <ng-template #productFormDialog>

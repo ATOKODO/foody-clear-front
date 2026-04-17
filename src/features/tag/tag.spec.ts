@@ -49,4 +49,15 @@ describe('Tag', () => {
 
     expect(emitSpy).toHaveBeenCalled();
   });
+
+  it('should render without standalone chrome when embedded', () => {
+    fixture.componentRef.setInput('embedded', true);
+    fixture.detectChanges();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+
+    expect(nativeElement.querySelector('section.app-page')).toBeNull();
+    expect(nativeElement.querySelector('[data-testid="tag-embedded"]')).not.toBeNull();
+    expect(nativeElement.querySelector('[data-testid="tag-list-embedded"]')).not.toBeNull();
+  });
 });

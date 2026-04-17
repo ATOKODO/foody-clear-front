@@ -5,9 +5,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Category as CategoryFeature } from '../category/category';
 import { GenericProduct as GenericProductFeature } from '../generic-product/generic-product';
 import { Tag as TagFeature } from '../tag/tag';
@@ -52,6 +49,30 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 type ProductHubView = 'product' | 'category' | 'genericProduct' | 'tag';
 
+type ProductHubViewConfig = {
+  title: string;
+  addLabel: string;
+};
+
+const PRODUCT_HUB_VIEW_CONFIG: Record<ProductHubView, ProductHubViewConfig> = {
+  product: {
+    title: 'Produits',
+    addLabel: 'Ajouter un produit',
+  },
+  category: {
+    title: 'Categories',
+    addLabel: 'Ajouter une categorie',
+  },
+  genericProduct: {
+    title: 'Produits generiques',
+    addLabel: 'Ajouter un produit generique',
+  },
+  tag: {
+    title: 'Tags',
+    addLabel: 'Ajouter un tag',
+  },
+};
+
 @Component({
   selector: 'app-product',
   imports: [
@@ -61,9 +82,6 @@ type ProductHubView = 'product' | 'category' | 'genericProduct' | 'tag';
     MatButtonToggleModule,
     MatCardModule,
     MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatProgressBarModule,
     UiErrorPanel,
     CategoryFeature,
     GenericProductFeature,
@@ -77,6 +95,12 @@ type ProductHubView = 'product' | 'category' | 'genericProduct' | 'tag';
 export class Product implements OnInit {
   @ViewChild('productFormDialog')
   private productFormDialogTemplate?: TemplateRef<unknown>;
+  @ViewChild(CategoryFeature)
+  private categoryFeature?: CategoryFeature;
+  @ViewChild(GenericProductFeature)
+  private genericProductFeature?: GenericProductFeature;
+  @ViewChild(TagFeature)
+  private tagFeature?: TagFeature;
 
   private readonly dialog = inject(MatDialog);
 
@@ -148,9 +172,62 @@ export class Product implements OnInit {
     }));
   }
 
+  get activeViewConfig(): ProductHubViewConfig {
+    return PRODUCT_HUB_VIEW_CONFIG[this.activeView];
+  }
+
+  get activeViewBusy(): boolean {
+    switch (this.activeView) {
+      case 'product':
+        return this.loading || this.loadingMeta || this.saving;
+      case 'category':
+        return !!this.categoryFeature && (this.categoryFeature.store.loading() || this.categoryFeature.store.saving());
+      case 'genericProduct':
+        return !!this.genericProductFeature && (this.genericProductFeature.loading || this.genericProductFeature.saving);
+      case 'tag':
+        return !!this.tagFeature && (this.tagFeature.loading || this.tagFeature.saving);
+      default:
+        return false;
+    }
+  }
+
   onRefreshRequested(): void {
     this.loadLinkedOptions();
     this.loadProducts();
+  }
+
+  onRefreshActiveView(): void {
+    switch (this.activeView) {
+      case 'product':
+        this.onRefreshRequested();
+        break;
+      case 'category':
+        this.categoryFeature?.refresh();
+        break;
+      case 'genericProduct':
+        this.genericProductFeature?.refresh();
+        break;
+      case 'tag':
+        this.tagFeature?.refresh();
+        break;
+    }
+  }
+
+  onAddActiveView(): void {
+    switch (this.activeView) {
+      case 'product':
+        this.onAddRequested();
+        break;
+      case 'category':
+        this.categoryFeature?.openCreate();
+        break;
+      case 'genericProduct':
+        this.genericProductFeature?.openCreate();
+        break;
+      case 'tag':
+        this.tagFeature?.openCreate();
+        break;
+    }
   }
 
   onActiveViewChange(nextView: ProductHubView): void {

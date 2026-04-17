@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -40,6 +40,7 @@ import type { PortionUnit, QuantityUnit } from '../../services/product-service';
   styleUrl: './generic-product.scss',
 })
 export class GenericProduct implements OnInit {
+  @Input() embedded = false;
   @Output() readonly dataChanged = new EventEmitter<void>();
 
   baseUrl = '';
@@ -83,11 +84,19 @@ export class GenericProduct implements OnInit {
     this.loadGenericProducts();
   }
 
+  refresh(): void {
+    this.onRefreshRequested();
+  }
+
   onAddRequested(): void {
     this.formMode = 'add';
     this.editingGenericProductId = null;
     this.formInitialValue = null;
     this.formVisible = true;
+  }
+
+  openCreate(): void {
+    this.onAddRequested();
   }
 
   onEditRequested(item: GenericProductListItem): void {

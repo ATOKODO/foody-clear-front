@@ -42,6 +42,7 @@ export class GenericProductList implements OnInit, OnChanges {
   @Input() genericProducts: GenericProductListItem[] | null = null;
   @Input() selectedIds: string[] | null = null;
   @Input() compact = false;
+  @Input() embedded = false;
 
   @Output() readonly addRequested = new EventEmitter<void>();
   @Output() readonly editRequested = new EventEmitter<GenericProductListItem>();

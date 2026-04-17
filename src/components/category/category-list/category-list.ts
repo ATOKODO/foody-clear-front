@@ -40,6 +40,7 @@ export class CategoryList implements OnInit, OnChanges {
   @Input() categories: CategoryListItem[] | null = null;
   @Input() selectedIds: string[] | null = null;
   @Input() compact = false;
+  @Input() embedded = false;
 
   @Output() readonly addRequested = new EventEmitter<void>();
   @Output() readonly editRequested = new EventEmitter<CategoryListItem>();
