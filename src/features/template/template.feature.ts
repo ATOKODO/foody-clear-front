@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { DaySet } from '../../interfaces/day-set.interface';
 import { ProductQuantityInputUnit } from '../../interfaces/input-day.interface';
 import { Slot } from '../../interfaces/slot.interface';
@@ -20,6 +22,7 @@ import {
   Product as ProductApiModel,
   ProductService,
 } from '../../services/product-service';
+import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 import { DaySetService } from '../../services/day-set-service';
 import { SlotService } from '../../services/slot-service';
 import { TemplateService } from '../../services/template-service';
@@ -29,7 +32,10 @@ import { TemplateService } from '../../services/template-service';
   imports: [
     CommonModule,
     MatButtonModule,
+    MatCardModule,
     MatDialogModule,
+    MatProgressBarModule,
+    UiErrorPanel,
     TemplateForm,
     TemplateList,
   ],
@@ -94,7 +100,7 @@ export class TemplateFeature implements OnInit {
     this.loadProducts();
     this.loadDaySets();
     this.loadSlots();
-    this.loadTemplates();
+    this.loadTemplates({ autoSelectFirst: true });
   }
 
   get editedTemplate(): Template | null {
@@ -135,12 +141,36 @@ export class TemplateFeature implements OnInit {
     );
   }
 
+  get busy(): boolean {
+    return (
+      this.loadingTemplates ||
+      this.loadingProducts ||
+      this.loadingDaySets ||
+      this.loadingSlots ||
+      this.savingTemplate ||
+      this.savingItem
+    );
+  }
+
   onBaseUrlChange(): void {
     this.syncBaseUrls();
     this.loadProducts();
     this.loadDaySets();
     this.loadSlots();
-    this.loadTemplates();
+    this.loadTemplates({
+      selectId: this.selectedTemplateId,
+      autoSelectFirst: this.selectedTemplateId === null,
+    });
+  }
+
+  onRefreshRequested(): void {
+    this.loadProducts();
+    this.loadDaySets();
+    this.loadSlots();
+    this.loadTemplates({
+      selectId: this.selectedTemplateId,
+      autoSelectFirst: false,
+    });
   }
 
   startCreateTemplate(): void {
@@ -155,10 +185,41 @@ export class TemplateFeature implements OnInit {
       return;
     }
 
-    this.formMode = 'edit';
-    this.editingTemplateId = this.selectedTemplateId;
-    this.itemError = null;
-    this.openEditorDialog();
+    this.onTemplateEditRequested(this.selectedTemplateId);
+  }
+
+  onTemplateEditRequested(templateId: number): void {
+    if (!Number.isInteger(templateId) || templateId < 1) {
+      return;
+    }
+
+    if (this.selectedTemplate?.id === templateId) {
+      this.openTemplateEditor(templateId);
+      return;
+    }
+
+    this.loadingTemplates = true;
+    this.templateSrv.findOne(templateId, this.compareDaySetId).subscribe({
+      next: (response) => {
+        this.selectedTemplate = response;
+        this.selectedTemplateId = response.id;
+        this.syncTemplateInCollection(response);
+        this.loadingTemplates = false;
+        this.openTemplateEditor(response.id);
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.loadingTemplates = false;
+      },
+    });
+  }
+
+  onTemplateDeleteRequested(templateId: number): void {
+    if (!Number.isInteger(templateId) || templateId < 1) {
+      return;
+    }
+
+    this.onTemplateDeleted(templateId);
   }
 
   selectTemplate(templateId: number): void {
@@ -190,7 +251,10 @@ export class TemplateFeature implements OnInit {
           this.editingTemplateId = response.id;
           this.selectedTemplateId = response.id;
           this.selectedTemplate = response;
-          this.loadTemplates(this.editingTemplateId);
+          this.loadTemplates({
+            selectId: this.editingTemplateId,
+            autoSelectFirst: false,
+          });
         },
         error: (error) => {
           this.lastError = error;
@@ -208,7 +272,10 @@ export class TemplateFeature implements OnInit {
         this.editingTemplateId = response.id;
         this.selectedTemplateId = response.id;
         this.selectedTemplate = response;
-        this.loadTemplates(response.id);
+        this.loadTemplates({
+          selectId: response.id,
+          autoSelectFirst: false,
+        });
       },
       error: (error) => {
         this.lastError = error;
@@ -234,7 +301,10 @@ export class TemplateFeature implements OnInit {
         if (this.editingTemplateId === templateId) {
           this.closeEditorDialog();
         }
-        this.loadTemplates();
+        this.loadTemplates({
+          selectId: this.selectedTemplateId,
+          autoSelectFirst: false,
+        });
       },
       error: (error) => {
         this.lastError = error;
@@ -321,27 +391,37 @@ export class TemplateFeature implements OnInit {
     this.slotSrv.setBaseUrl(this.baseUrl);
   }
 
-  private loadTemplates(selectId?: number | null): void {
+  private loadTemplates(options?: {
+    selectId?: number | null;
+    autoSelectFirst?: boolean;
+  }): void {
+    const selectId = options?.selectId ?? this.selectedTemplateId;
+    const autoSelectFirst = options?.autoSelectFirst ?? false;
+
     this.loadingTemplates = true;
     this.templateSrv.findAll().subscribe({
       next: (response) => {
         this.templates = response;
         this.loadingTemplates = false;
 
-        const resolvedSelection = selectId ?? this.selectedTemplateId;
         if (
-          resolvedSelection !== null &&
-          this.templates.some((item) => item.id === resolvedSelection)
+          typeof selectId === 'number' &&
+          this.templates.some((item) => item.id === selectId)
         ) {
-          this.selectedTemplateId = resolvedSelection;
+          this.selectedTemplateId = selectId;
           this.loadSelectedTemplate();
           return;
         }
 
-        if (this.templates.length > 0 && this.selectedTemplateId === null && selectId !== null) {
+        if (autoSelectFirst && this.templates.length > 0) {
           this.selectedTemplateId = this.templates[0].id;
           this.loadSelectedTemplate();
+          return;
         }
+
+        this.selectedTemplateId = null;
+        this.selectedTemplate = null;
+        this.compareDaySetId = null;
       },
       error: (error) => {
         this.lastError = error;
@@ -352,6 +432,7 @@ export class TemplateFeature implements OnInit {
 
   private loadSelectedTemplate(): void {
     if (this.selectedTemplateId === null) {
+      this.selectedTemplate = null;
       return;
     }
 
@@ -437,6 +518,13 @@ export class TemplateFeature implements OnInit {
     this.formMode = 'add';
     this.editingTemplateId = null;
     this.itemError = null;
+  }
+
+  private openTemplateEditor(templateId: number): void {
+    this.formMode = 'edit';
+    this.editingTemplateId = templateId;
+    this.itemError = null;
+    this.openEditorDialog();
   }
 
   private syncTemplateInCollection(template: Template): void {

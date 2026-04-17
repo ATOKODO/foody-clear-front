@@ -1,24 +1,77 @@
-<section class="mx-auto w-full max-w-[1700px] px-3 py-6 sm:px-4 lg:px-5 xl:px-6" data-testid="template-page">
-  <app-template-list
-    [templates]="templates"
-    [selectedTemplateId]="selectedTemplateId"
-    [selectedTemplate]="selectedTemplate"
-    [compareDaySetId]="compareDaySetId"
-    [daySets]="daySetOptions"
-    [slots]="slotOptions"
-    [loadingTemplates]="loadingTemplates"
-    [loadingProducts]="loadingProducts"
-    [loadingDaySets]="loadingDaySets"
-    [loadingSlots]="loadingSlots"
-    [savingTemplate]="savingTemplate"
-    [savingItem]="savingItem"
-    [lastError]="lastError"
-    (addRequested)="startCreateTemplate()"
-    (editRequested)="openSelectedTemplateEditor()"
-    (templateSelected)="selectTemplate($event)"
-    (compareDaySetChanged)="onCompareDaySetChange($event)"
-  >
-  </app-template-list>
+<section class="app-page template-page" data-testid="template-page">
+  <mat-card class="template-panel" data-testid="template-panel">
+    <div class="template-panel__header">
+      <h2 class="template-panel__title" data-testid="template-panel-title">Modeles</h2>
+
+      <div class="template-panel__actions">
+        <button
+          mat-stroked-button
+          type="button"
+          class="template-action template-action--secondary"
+          data-testid="template-refresh-action"
+          (click)="onRefreshRequested()"
+          [disabled]="busy"
+        >
+          Rafraichir
+        </button>
+
+        <button
+          mat-stroked-button
+          type="button"
+          class="template-action template-action--primary"
+          data-testid="template-add"
+          (click)="startCreateTemplate()"
+          [disabled]="busy"
+        >
+          Nouveau modele
+        </button>
+      </div>
+    </div>
+
+    <div class="template-panel__content">
+      <div *ngIf="busy" class="app-status-row">
+        <span *ngIf="loadingTemplates" class="app-status-pill app-status-pill--neutral">
+          Chargement modeles...
+        </span>
+        <span *ngIf="loadingProducts" class="app-status-pill app-status-pill--info">
+          Produits...
+        </span>
+        <span *ngIf="loadingDaySets" class="app-status-pill app-status-pill--info">
+          Day-sets...
+        </span>
+        <span *ngIf="loadingSlots" class="app-status-pill app-status-pill--info">
+          Slots...
+        </span>
+        <span *ngIf="savingTemplate || savingItem" class="app-status-pill app-status-pill--saving">
+          Sauvegarde...
+        </span>
+      </div>
+
+      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
+
+      <app-template-list
+        [templates]="templates"
+        [selectedTemplateId]="selectedTemplateId"
+        [selectedTemplate]="selectedTemplate"
+        [compareDaySetId]="compareDaySetId"
+        [daySets]="daySetOptions"
+        [slots]="slotOptions"
+        [loadingTemplates]="loadingTemplates"
+        [loadingProducts]="loadingProducts"
+        [loadingDaySets]="loadingDaySets"
+        [loadingSlots]="loadingSlots"
+        [savingTemplate]="savingTemplate"
+        [savingItem]="savingItem"
+        (editRequested)="onTemplateEditRequested($event)"
+        (deleteRequested)="onTemplateDeleteRequested($event)"
+        (templateSelected)="selectTemplate($event)"
+        (compareDaySetChanged)="onCompareDaySetChange($event)"
+      >
+      </app-template-list>
+    </div>
+
+    <mat-progress-bar *ngIf="busy" mode="indeterminate"></mat-progress-bar>
+  </mat-card>
 </section>
 
 <ng-template #templateEditorDialog>

@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { DaySet } from '../../../interfaces/day-set.interface';
 import {
@@ -14,7 +13,6 @@ import {
 } from '../../../interfaces/input-day.interface';
 import { Slot } from '../../../interfaces/slot.interface';
 import { Template, TemplateItem } from '../../../interfaces/template.interface';
-import { UiErrorPanel } from '../../../app/ui/error-panel/error-panel';
 
 @Component({
   selector: 'app-template-list',
@@ -24,9 +22,7 @@ import { UiErrorPanel } from '../../../app/ui/error-panel/error-panel';
     MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
-    MatProgressBarModule,
     MatSelectModule,
-    UiErrorPanel,
   ],
   templateUrl: './template-list.html',
   styleUrl: './template-list.scss',
@@ -44,10 +40,9 @@ export class TemplateList {
   @Input() loadingSlots = false;
   @Input() savingTemplate = false;
   @Input() savingItem = false;
-  @Input() lastError: unknown = null;
 
-  @Output() readonly addRequested = new EventEmitter<void>();
-  @Output() readonly editRequested = new EventEmitter<void>();
+  @Output() readonly editRequested = new EventEmitter<number>();
+  @Output() readonly deleteRequested = new EventEmitter<number>();
   @Output() readonly templateSelected = new EventEmitter<number>();
   @Output() readonly compareDaySetChanged = new EventEmitter<number | null>();
 
@@ -74,16 +69,25 @@ export class TemplateList {
     );
   }
 
-  onAddClick(): void {
-    this.addRequested.emit();
+  onEditClick(templateId: number): void {
+    this.editRequested.emit(templateId);
   }
 
-  onEditClick(): void {
-    this.editRequested.emit();
+  onDeleteClick(templateId: number): void {
+    this.deleteRequested.emit(templateId);
   }
 
   onTemplateClick(templateId: number): void {
     this.templateSelected.emit(templateId);
+  }
+
+  onTemplateKeydown(event: KeyboardEvent, templateId: number): void {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+
+    event.preventDefault();
+    this.onTemplateClick(templateId);
   }
 
   onCompareDaySetChange(value: number | null): void {
@@ -121,7 +125,11 @@ export class TemplateList {
     return this.formatNumber(value);
   }
 
-  formatNutritionAmount(value: number): string {
+  formatNutritionAmount(value: number | null | undefined): string {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return '-';
+    }
+
     return this.formatNumber(value);
   }
 
@@ -130,7 +138,7 @@ export class TemplateList {
   }
 
   resolveTemplateItemSlotLabel(item: TemplateItem): string {
-    if (item.slotId !== null) {
+    if (item.slotId != null) {
       const slot = this.slots.find((candidate) => candidate.id === item.slotId) ?? null;
       if (slot) {
         return `${slot.sortOrder}. ${slot.title}`;

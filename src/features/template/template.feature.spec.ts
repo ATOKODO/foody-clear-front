@@ -12,10 +12,25 @@ describe('TemplateFeature', () => {
   let component: TemplateFeature;
   let fixture: ComponentFixture<TemplateFeature>;
 
+  const templates = [
+    {
+      id: 1,
+      title: 'Template test',
+      items: [],
+      totalsMacros: null,
+    },
+    {
+      id: 2,
+      title: 'Template repos',
+      items: [],
+      totalsMacros: null,
+    },
+  ];
+
   const templateServiceMock = {
     baseUrl: 'http://localhost:3000',
     setBaseUrl: jasmine.createSpy('setBaseUrl'),
-    findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
+    findAll: jasmine.createSpy('findAll').and.returnValue(of(templates)),
     findOne: jasmine.createSpy('findOne').and.returnValue(
       of({
         id: 1,
@@ -94,6 +109,34 @@ describe('TemplateFeature', () => {
     })
     .compileComponents();
 
+    templateServiceMock.setBaseUrl.calls.reset();
+    templateServiceMock.findAll.calls.reset();
+    templateServiceMock.findAll.and.returnValue(of(templates));
+    templateServiceMock.findOne.calls.reset();
+    templateServiceMock.findOne.and.returnValue(
+      of({
+        id: 1,
+        title: 'Template test',
+        items: [],
+        totalsMacros: null,
+      }),
+    );
+    templateServiceMock.create.calls.reset();
+    templateServiceMock.update.calls.reset();
+    templateServiceMock.remove.calls.reset();
+    templateServiceMock.createItem.calls.reset();
+    templateServiceMock.updateItem.calls.reset();
+    templateServiceMock.removeItem.calls.reset();
+
+    productServiceMock.setBaseUrl.calls.reset();
+    productServiceMock.findAll.calls.reset();
+
+    daySetServiceMock.setBaseUrl.calls.reset();
+    daySetServiceMock.findAll.calls.reset();
+
+    slotServiceMock.setBaseUrl.calls.reset();
+    slotServiceMock.findAll.calls.reset();
+
     fixture = TestBed.createComponent(TemplateFeature);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -101,6 +144,52 @@ describe('TemplateFeature', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should render the simplified template header actions', () => {
+    const nativeElement = fixture.nativeElement as HTMLElement;
+
+    expect(nativeElement.querySelector('[data-testid="template-panel-title"]')?.textContent)
+      .toContain('Modeles');
+    expect(nativeElement.querySelector('[data-testid="template-refresh-action"]')?.textContent)
+      .toContain('Rafraichir');
+    expect(nativeElement.querySelector('[data-testid="template-add"]')?.textContent)
+      .toContain('Nouveau modele');
+  });
+
+  it('should refresh all template dependencies and preserve the current selection', () => {
+    component.selectedTemplateId = 2;
+    component.selectedTemplate = templates[1] as (typeof component.selectedTemplate);
+    component.compareDaySetId = 9;
+    templateServiceMock.findOne.and.returnValue(
+      of({
+        id: 2,
+        title: 'Template repos',
+        items: [],
+        totalsMacros: null,
+      }),
+    );
+
+    component.onRefreshRequested();
+
+    expect(productServiceMock.findAll).toHaveBeenCalled();
+    expect(daySetServiceMock.findAll).toHaveBeenCalled();
+    expect(slotServiceMock.findAll).toHaveBeenCalled();
+    expect(templateServiceMock.findAll).toHaveBeenCalled();
+    expect(templateServiceMock.findOne).toHaveBeenCalledWith(2, 9);
+    expect(component.selectedTemplateId).toBe(2);
+  });
+
+  it('should remove the selected template via the list action and keep no fallback selection', () => {
+    component.selectedTemplateId = 1;
+    component.selectedTemplate = templates[0] as (typeof component.selectedTemplate);
+    templateServiceMock.findAll.and.returnValue(of([templates[1]]));
+
+    component.onTemplateDeleteRequested(1);
+
+    expect(templateServiceMock.remove).toHaveBeenCalledWith(1);
+    expect(component.selectedTemplateId).toBeNull();
+    expect(component.selectedTemplate).toBeNull();
   });
 
   it('should create one template item with the selected product payload', () => {
