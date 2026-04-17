@@ -5,6 +5,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter } from 'rxjs';
 import {
   APP_NAVIGATION,
+  APP_SIDEBAR_NAVIGATION,
   AppNavigationEntry,
   findNavigationContextByUrl,
 } from './app.navigation';
@@ -17,7 +18,7 @@ import { ThemeMode, ThemeService } from '../services/theme-service';
   styleUrl: './app.scss'
 })
 export class App {
-  readonly navigationGroups = APP_NAVIGATION;
+  readonly navigationGroups = APP_SIDEBAR_NAVIGATION;
 
   currentEntry: AppNavigationEntry = APP_NAVIGATION[0].entries[0];
   currentGroupLabel = APP_NAVIGATION[0].label;

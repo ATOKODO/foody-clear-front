@@ -92,7 +92,6 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
         label: 'Saisie du jour',
         shortLabel: 'SJ',
         description: 'Execution quotidienne, stocks et templates actifs',
-        featured: true,
       },
     ],
   },
@@ -129,6 +128,7 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
         label: 'Modeles',
         shortLabel: 'TP',
         description: 'Journees previsionnelles et verification stock',
+        featured: true,
       },
       {
         id: 'calendar',
@@ -167,6 +167,19 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
 export const APP_NAVIGATION_ENTRIES = APP_NAVIGATION.flatMap((group) =>
   group.entries.map((entry) => ({ group, entry })),
 );
+
+export const APP_SIDEBAR_NAVIGATION: AppNavigationGroup[] = [
+  {
+    id: 'featured',
+    label: 'Features',
+    description: 'Acces rapides aux modules principaux',
+    entries: APP_NAVIGATION_ENTRIES.filter(({ entry }) => entry.featured).map(({ entry }) => entry),
+  },
+  ...APP_NAVIGATION.map((group) => ({
+    ...group,
+    entries: group.entries.filter((entry) => !entry.featured),
+  })).filter((group) => group.entries.length > 0),
+];
 
 export function findNavigationContextByUrl(
   url: string,

@@ -40,9 +40,22 @@ describe('App', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
+    const navTitles = Array.from(compiled.querySelectorAll('.app-shell__nav-title')).map((element) =>
+      element.textContent?.trim(),
+    );
 
     expect(compiled.textContent).toContain('Foody Clear');
     expect(compiled.textContent).toContain('Catalogue');
+    expect(compiled.querySelector('.app-shell__group-label')?.textContent?.trim()).toBe('Features');
+    expect(navTitles.slice(0, 7)).toEqual([
+      'Accueil',
+      'Catalogue',
+      'Inventaires',
+      'Cycles',
+      'Modeles',
+      'Assignations',
+      'Statistiques',
+    ]);
     expect(compiled.querySelector('.app-theme-toggle')).not.toBeNull();
   });
 
