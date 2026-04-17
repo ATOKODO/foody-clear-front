@@ -56,7 +56,11 @@ export interface CycleDaySetBreakdown {
 export interface CycleEmbeddedSummaryCard {
   key: 'kcal' | CycleBreakdownMetricKey;
   label: string;
-  value: string;
+  unit: 'g' | 'kcal';
+  value: number;
+  target: number;
+  percentage: number | null;
+  status: CycleBreakdownStatus;
   caption: string;
 }
 
@@ -210,30 +214,34 @@ export class ListCycle implements OnInit, OnChanges {
     const effectiveCalories = this.calculateCalories(cycle.daySetTotals);
 
     return [
-      {
-        key: 'kcal',
-        label: 'KCAL',
-        value: `${this.formatAmount(targetCalories)} kcal`,
-        caption: `Moyenne ${this.formatAmount(effectiveCalories)} kcal`,
-      },
-      {
-        key: 'proteins',
-        label: 'PROTEINES',
-        value: `${this.formatAmount(cycle.proteins)} g`,
-        caption: `Moyenne ${this.formatAmount(cycle.daySetTotals.proteins)} g`,
-      },
-      {
-        key: 'carbs',
-        label: 'GLUCIDES',
-        value: `${this.formatAmount(cycle.carbs)} g`,
-        caption: `Moyenne ${this.formatAmount(cycle.daySetTotals.carbs)} g`,
-      },
-      {
-        key: 'lipids',
-        label: 'LIPIDES',
-        value: `${this.formatAmount(cycle.lipids)} g`,
-        caption: `Moyenne ${this.formatAmount(cycle.daySetTotals.lipids)} g`,
-      },
+      this.buildEmbeddedSummaryCard(
+        'kcal',
+        'KCAL',
+        effectiveCalories,
+        targetCalories,
+        'kcal',
+      ),
+      this.buildEmbeddedSummaryCard(
+        'proteins',
+        'PROTEINES',
+        cycle.daySetTotals.proteins,
+        cycle.proteins,
+        'g',
+      ),
+      this.buildEmbeddedSummaryCard(
+        'carbs',
+        'GLUCIDES',
+        cycle.daySetTotals.carbs,
+        cycle.carbs,
+        'g',
+      ),
+      this.buildEmbeddedSummaryCard(
+        'lipids',
+        'LIPIDES',
+        cycle.daySetTotals.lipids,
+        cycle.lipids,
+        'g',
+      ),
     ];
   }
 
@@ -243,7 +251,7 @@ export class ListCycle implements OnInit, OnChanges {
     }
 
     if (status === 'exact') {
-      return 'OK';
+      return 'Pile cible';
     }
 
     if (status === 'missing') {
@@ -371,6 +379,48 @@ export class ListCycle implements OnInit, OnChanges {
 
   private calculateCalories(totals: CycleMacroTotals): number {
     return this.roundNumber((totals.proteins * 4) + (totals.carbs * 4) + (totals.lipids * 9));
+  }
+
+  private buildEmbeddedSummaryCard(
+    key: CycleEmbeddedSummaryCard['key'],
+    label: string,
+    value: number,
+    target: number,
+    unit: CycleEmbeddedSummaryCard['unit'],
+  ): CycleEmbeddedSummaryCard {
+    const roundedValue = this.roundNumber(value);
+    const roundedTarget = this.roundNumber(target);
+
+    return {
+      key,
+      label,
+      unit,
+      value: roundedValue,
+      target: roundedTarget,
+      percentage:
+        roundedTarget > 0 ? this.roundNumber((roundedValue / roundedTarget) * 100) : null,
+      status: this.resolveComparisonStatus(roundedValue, roundedTarget),
+      caption: 'Moyenne journaliere effective',
+    };
+  }
+
+  private resolveComparisonStatus(
+    value: number,
+    target: number,
+  ): CycleBreakdownStatus {
+    if (target === 0) {
+      return value > 0 ? 'over' : 'exact';
+    }
+
+    if (value > target) {
+      return 'over';
+    }
+
+    if (value === target) {
+      return 'exact';
+    }
+
+    return 'under';
   }
 
   private roundNumber(value: number): number {

@@ -80,11 +80,28 @@
               <div class="lc-embedded-summary__grid mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <article
                   *ngFor="let card of getEmbeddedSummaryCards(cycle); trackBy: trackByEmbeddedCard"
-                  class="lc-embedded-summary-card rounded-2xl p-3"
-                  [ngClass]="'lc-embedded-summary-card--' + card.key">
-                  <p class="lc-embedded-summary-card__label">{{ card.label }}</p>
-                  <p class="lc-embedded-summary-card__value">{{ card.value }}</p>
-                  <p class="lc-embedded-summary-card__caption">{{ card.caption }}</p>
+                  class="lc-breakdown-card lc-breakdown-card--summary rounded-2xl p-3"
+                  [ngClass]="getStatusClass(card.status)">
+                  <div class="lc-breakdown-head">
+                    <p class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500">
+                      {{ card.label }}
+                    </p>
+                    <span class="lc-status-badge" [ngClass]="getStatusClass(card.status)">
+                      {{ getStatusLabel(card.status) }}
+                    </span>
+                  </div>
+
+                  <p class="lc-breakdown-card__value mt-3 text-sm font-semibold text-slate-900">
+                    {{ formatAmount(card.value) }} / {{ formatAmount(card.target) }} {{ card.unit }}
+                  </p>
+                  <p
+                    class="lc-breakdown-card__percentage mt-2 text-xs font-medium lc-status-text"
+                    [ngClass]="getStatusClass(card.status)">
+                    {{ formatPercent(card.percentage) }}
+                  </p>
+                  <p class="lc-breakdown-card__caption mt-2 text-xs text-slate-500">
+                    {{ card.caption }}
+                  </p>
                 </article>
               </div>
             </section>
@@ -301,17 +318,19 @@
                       class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
                       [ngClass]="getStatusClass(metric.status)">
                       <div class="lc-breakdown-head">
-                        <p class="text-xs uppercase tracking-wide text-slate-500">{{ metric.label }}</p>
+                        <p class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500">
+                          {{ metric.label }}
+                        </p>
                         <span class="lc-status-badge" [ngClass]="getStatusClass(metric.status)">
                           {{ getStatusLabel(metric.status) }}
                         </span>
                       </div>
 
-                      <div class="mt-2 flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
-                        <p class="text-sm font-semibold text-slate-900">
+                      <div class="mt-3 grid gap-2">
+                        <p class="lc-breakdown-card__value text-sm font-semibold text-slate-900">
                           {{ formatAmount(metric.value) }} / {{ formatAmount(metric.target) }} g
                         </p>
-                        <p class="text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
+                        <p class="lc-breakdown-card__percentage text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
                           {{ formatPercent(metric.percentage) }}
                         </p>
                       </div>
@@ -333,17 +352,19 @@
                       class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
                       [ngClass]="getStatusClass(metric.status)">
                       <div class="lc-breakdown-head">
-                        <p class="text-xs uppercase tracking-wide text-slate-500">{{ metric.label }}</p>
+                        <p class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500">
+                          {{ metric.label }}
+                        </p>
                         <span class="lc-status-badge" [ngClass]="getStatusClass(metric.status)">
                           {{ getStatusLabel(metric.status) }}
                         </span>
                       </div>
 
-                      <div class="mt-2 flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
-                        <p class="text-sm font-semibold text-slate-900">
+                      <div class="mt-3 grid gap-2">
+                        <p class="lc-breakdown-card__value text-sm font-semibold text-slate-900">
                           {{ formatAmount(metric.value) }} / {{ formatAmount(metric.target) }} g
                         </p>
-                        <p class="text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
+                        <p class="lc-breakdown-card__percentage text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
                           {{ formatPercent(metric.percentage) }}
                         </p>
                       </div>
@@ -380,17 +401,19 @@
                       class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
                       [ngClass]="getStatusClass(metric.status)">
                       <div class="lc-breakdown-head">
-                        <p class="text-xs uppercase tracking-wide text-slate-500">{{ metric.label }}</p>
+                        <p class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500">
+                          {{ metric.label }}
+                        </p>
                         <span class="lc-status-badge" [ngClass]="getStatusClass(metric.status)">
                           {{ getStatusLabel(metric.status) }}
                         </span>
                       </div>
 
-                      <div class="mt-2 flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
-                        <p class="text-sm font-semibold text-slate-900">
+                      <div class="mt-3 grid gap-2">
+                        <p class="lc-breakdown-card__value text-sm font-semibold text-slate-900">
                           {{ formatAmount(metric.value) }} / {{ formatAmount(metric.target) }} g
                         </p>
-                        <p class="text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
+                        <p class="lc-breakdown-card__percentage text-xs font-medium lc-status-text" [ngClass]="getStatusClass(metric.status)">
                           {{ formatPercent(metric.percentage) }}
                         </p>
                       </div>

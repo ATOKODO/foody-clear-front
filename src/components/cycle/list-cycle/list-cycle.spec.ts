@@ -45,6 +45,8 @@ describe('ListCycle', () => {
     expect(fixture.nativeElement.querySelector('.lc-shell__header')).toBeNull();
     expect(fixture.nativeElement.querySelector('.lc-card__footer')).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('KCAL');
+    expect(fixture.nativeElement.textContent).toContain('Sous cible');
+    expect(fixture.nativeElement.textContent).toContain('55.56%');
     expect(fixture.nativeElement.textContent).toContain('Modifier');
     expect(fixture.nativeElement.textContent).toContain('Retirer');
   });

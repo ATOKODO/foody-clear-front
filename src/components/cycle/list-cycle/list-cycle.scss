@@ -138,57 +138,13 @@
   background: linear-gradient(180deg, #fbfcf7 0%, #f5f8ef 100%);
 }
 
-.lc-embedded-summary-card {
-  min-height: 5.8rem;
-  border: 1px solid rgb(214 221 207 / 0.96);
-  background: rgb(255 255 255 / 0.92);
-  box-shadow: 0 10px 20px -20px rgb(15 23 42 / 0.2);
-}
-
-.lc-embedded-summary-card--kcal {
-  background: linear-gradient(180deg, #eefdf5 0%, #e0f6e8 100%);
-  border-color: #b7e6c5;
-}
-
-.lc-embedded-summary-card--proteins {
-  background: linear-gradient(180deg, #f7fef0 0%, #edf9db 100%);
-  border-color: #d7ebb2;
-}
-
-.lc-embedded-summary-card--carbs {
-  background: linear-gradient(180deg, #fff9ed 0%, #ffefcf 100%);
-  border-color: #f5ddab;
-}
-
-.lc-embedded-summary-card--lipids {
-  background: linear-gradient(180deg, #fff3ef 0%, #ffe2d9 100%);
-  border-color: #efc4b4;
-}
-
-.lc-embedded-summary-card__label {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #58706a;
-}
-
-.lc-embedded-summary-card__value {
-  margin-top: 0.4rem;
-  font-size: 1.1rem;
-  font-weight: 800;
-  line-height: 1.2;
-  color: #21302d;
-}
-
-.lc-embedded-summary-card__caption {
-  margin-top: 0.45rem;
-  font-size: 0.78rem;
-  color: #58706a;
-}
-
 .lc-breakdown-card {
   border: 1px solid var(--app-border);
   background: var(--app-surface);
+}
+
+.lc-breakdown-card--summary {
+  min-height: 7.1rem;
 }
 
 .lc-breakdown-card-compact {
@@ -197,33 +153,36 @@
 
 .lc-breakdown-head {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: flex-start;
-  gap: 0.45rem;
+  justify-content: flex-start;
+  gap: 0.75rem;
 }
 
 .lc-breakdown-card.lc-status-under {
-  background: var(--app-surface-soft);
+  background: linear-gradient(180deg, #f5f8ff 0%, #edf3ff 100%);
+  border-color: #c6d5ff;
 }
 
 .lc-breakdown-card.lc-status-exact {
-  background: var(--app-success-bg);
-  border-color: var(--app-success-border);
+  background: linear-gradient(180deg, #effcf4 0%, #e0f7e8 100%);
+  border-color: #b6e5c3;
 }
 
 .lc-breakdown-card.lc-status-over {
-  background: var(--app-danger-bg);
-  border-color: var(--app-danger-border);
+  background: linear-gradient(180deg, #fff1ef 0%, #ffe4df 100%);
+  border-color: #f1bfb8;
 }
 
 .lc-breakdown-card.lc-status-missing {
-  background: var(--app-warning-bg);
-  border-color: var(--app-warning-border);
+  background: linear-gradient(180deg, #fff8eb 0%, #ffefd1 100%);
+  border-color: #f3d8a0;
 }
 
 .lc-status-badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   border-radius: 9999px;
   border: 1px solid transparent;
   padding: 0.28rem 0.75rem;
@@ -232,47 +191,67 @@
   letter-spacing: 0.02em;
   line-height: 1.1;
   flex-shrink: 0;
+  max-width: 100%;
+  min-height: 2rem;
+  text-align: center;
   white-space: nowrap;
 }
 
 .lc-status-badge.lc-status-under {
-  background: var(--app-info-bg);
-  border-color: var(--app-info-border);
-  color: var(--app-info-text);
+  background: #dfe9ff;
+  border-color: #c5d8ff;
+  color: #3353d3;
 }
 
 .lc-status-badge.lc-status-exact {
-  background: var(--app-success-bg);
-  border-color: var(--app-success-border);
-  color: var(--app-success-text);
+  background: #daf6e3;
+  border-color: #b7e7c6;
+  color: #18724d;
 }
 
 .lc-status-badge.lc-status-over {
-  background: var(--app-danger-bg);
-  border-color: var(--app-danger-border);
-  color: var(--app-danger-text);
+  background: #ffdeda;
+  border-color: #f6c1b7;
+  color: #d0331e;
 }
 
 .lc-status-badge.lc-status-missing {
-  background: var(--app-warning-bg);
-  border-color: var(--app-warning-border);
-  color: var(--app-warning-text);
+  background: #ffedd1;
+  border-color: #f8d7a0;
+  color: #b86a00;
 }
 
 .lc-status-text.lc-status-under {
-  color: var(--app-text);
+  color: #3353d3;
 }
 
 .lc-status-text.lc-status-exact {
-  color: var(--app-success-text);
+  color: #18724d;
 }
 
 .lc-status-text.lc-status-over {
-  color: var(--app-danger-text);
+  color: #d0331e;
 }
 
 .lc-status-text.lc-status-missing {
-  color: var(--app-warning-text);
+  color: #b86a00;
+}
+
+.lc-breakdown-card__label {
+  font-weight: 700;
+}
+
+.lc-breakdown-card__value {
+  line-height: 1.35;
+}
+
+.lc-breakdown-card__percentage {
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.lc-breakdown-card__caption {
+  line-height: 1.35;
 }
 
 .lc-overview-badge {
@@ -486,9 +465,7 @@
 }
 
 .lc-shell--select-single .lc-breakdown-head {
-  flex-direction: row;
   align-items: flex-start;
-  justify-content: space-between;
   gap: 0.75rem;
 }
 
