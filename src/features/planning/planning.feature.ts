@@ -13,8 +13,10 @@ import {
   CalendarDayClickEvent,
   CalendarHourClickEvent,
   CalendarItemClickEvent,
+  CalendarManageAssignmentEvent,
   CalendarManageItemsEvent,
   CalendarMonthClickEvent,
+  CalendarOpenDayViewEvent,
   CalendarViewChangeEvent,
 } from '../../components/calendar/calendar';
 import {
@@ -39,7 +41,13 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 type PlanningCalendarController = Pick<
   Calendar,
-  'currentView' | 'currentViewLabel' | 'goToToday' | 'navigate' | 'switchView' | 'getViewLabel'
+  | 'currentView'
+  | 'currentViewLabel'
+  | 'goToToday'
+  | 'navigate'
+  | 'switchView'
+  | 'openDayView'
+  | 'getViewLabel'
 >;
 
 @Component({
@@ -211,6 +219,15 @@ export class PlanningFeature implements OnInit, AfterViewInit {
 
   onCalendarManageItems(event: CalendarManageItemsEvent): void {
     this.openItemsModal(event.dateLocal, null, null);
+  }
+
+  onCalendarManageAssignment(event: CalendarManageAssignmentEvent): void {
+    this.openAssignmentModal(event.dateLocal, event.sourceAssignment);
+  }
+
+  onCalendarOpenDayView(event: CalendarOpenDayViewEvent): void {
+    this.calendarRef?.openDayView(event.dateLocal);
+    this.syncCalendarHeaderState();
   }
 
   onCalendarItemClick(event: CalendarItemClickEvent): void {

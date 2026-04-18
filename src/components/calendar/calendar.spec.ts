@@ -215,7 +215,7 @@ describe('Calendar', () => {
   });
 
   it('should render a modernized month view with summary and assignment cards', () => {
-    const currentDateLocal = component.currentDate.toISODate();
+    const currentDateLocal = component.currentDate.toISODate() ?? '2026-03-13';
 
     fixture.componentRef.setInput('cycleAssignments', [
       {
@@ -239,12 +239,96 @@ describe('Calendar', () => {
 
     expect(root.querySelector('.calendar-month-panel')).toBeTruthy();
     expect(root.querySelector('.calendar-month-day__assignment')).toBeTruthy();
+    expect(root.querySelector(`[data-testid="calendar-month-open-day-${currentDateLocal}"]`)).toBeTruthy();
+    expect(root.querySelector(`[data-testid="calendar-month-manage-cycle-${currentDateLocal}"]`)).toBeTruthy();
+    expect(root.querySelector(`[data-testid="calendar-month-manage-items-${currentDateLocal}"]`)).toBeTruthy();
+    expect(root.querySelector(`[data-testid="calendar-month-add-${currentDateLocal}"]`)).toBeNull();
     expect(textContent).toContain('Vue mois');
     expect(textContent).toContain('Prise de Masse');
     expect(textContent).toContain('jours planifies');
   });
 
-  it('should render month macro comparisons only on current-month days', () => {
+  it('should emit openDayView requests from the month card and Jour button', () => {
+    const currentDateLocal = component.currentDate.toISODate() ?? '2026-03-13';
+    const emitted: Array<{ dateLocal: string }> = [];
+    component.openDayViewRequested.subscribe((event) => emitted.push(event));
+    fixture.detectChanges();
+
+    const root = fixture.nativeElement;
+    const monthDay = root.querySelector(`[data-testid="calendar-month-day-${currentDateLocal}"]`) as HTMLButtonElement | null;
+    const dayButton = root.querySelector(`[data-testid="calendar-month-open-day-${currentDateLocal}"]`) as HTMLButtonElement | null;
+
+    expect(monthDay).toBeTruthy();
+    expect(dayButton).toBeTruthy();
+
+    monthDay!.click();
+    dayButton!.click();
+
+    expect(emitted).toEqual([
+      { dateLocal: currentDateLocal },
+      { dateLocal: currentDateLocal },
+    ]);
+  });
+
+  it('should emit manageAssignment with the source assignment from the month cycle button', () => {
+    const currentDateLocal = component.currentDate.toISODate() ?? '2026-03-13';
+    const emitted: Array<unknown> = [];
+    component.manageAssignmentRequested.subscribe((event) => emitted.push(event));
+    fixture.componentRef.setInput('cycleAssignments', [
+      {
+        id: 11,
+        cycle: {
+          id: 3,
+          title: 'Prise de Masse',
+          color: 'blue',
+          durationDays: 30,
+          durationCount: 1,
+          durationType: 'mois',
+        },
+        startDateLocal: currentDateLocal,
+        endDateLocal: currentDateLocal,
+      },
+    ]);
+    fixture.detectChanges();
+
+    const cycleButton = fixture.nativeElement.querySelector(
+      `[data-testid="calendar-month-manage-cycle-${currentDateLocal}"]`,
+    ) as HTMLButtonElement | null;
+
+    expect(cycleButton).toBeTruthy();
+
+    cycleButton!.click();
+
+    expect(emitted).toEqual([
+      jasmine.objectContaining({
+        view: 'month',
+        dateLocal: currentDateLocal,
+        sourceAssignment: jasmine.objectContaining({
+          id: 11,
+        }),
+      }),
+    ]);
+  });
+
+  it('should switch to day view when openDayView is called directly', () => {
+    const emitted: Array<unknown> = [];
+    component.viewChanged.subscribe((event) => emitted.push(event));
+
+    component.openDayView('2026-02-14');
+
+    expect(component.currentView).toBe('day');
+    expect(component.currentDate.toISODate()).toBe('2026-02-14');
+    expect(emitted).toEqual([
+      {
+        view: 'day',
+        anchorDateLocal: '2026-02-14',
+        fromDateLocal: '2026-02-14',
+        toDateLocal: '2026-02-14',
+      },
+    ]);
+  });
+
+  it('should render compact month alert badges instead of macro cards', () => {
     component.currentDate = component.currentDate.set({ year: 2026, month: 2, day: 14 });
     component.loadView();
     fixture.componentRef.setInput('inputMonthResponse', {
@@ -274,11 +358,58 @@ describe('Calendar', () => {
             },
             slots: [],
           },
+          templateAssociation: {
+            source: 'manual',
+            template: {
+              id: 12,
+              title: 'Plan proteine',
+            },
+          },
+          templateItems: [
+            {
+              id: 91,
+              productId: 8,
+              productName: 'Skyr',
+              qty: 1,
+              qtyUnit: 'portion',
+              qtyNormalized: 150,
+              slotId: null,
+              slotKey: null,
+              status: 'pending',
+              convertedItemId: null,
+              stockAvailability: {
+                enoughStock: true,
+                totalAvailableNormalized: 300,
+                requestedQtyNormalized: 150,
+              },
+              stockByInventory: [],
+              nutritionValue: {},
+            },
+            {
+              id: 92,
+              productId: 9,
+              productName: 'Amandes',
+              qty: 1,
+              qtyUnit: 'portion',
+              qtyNormalized: 25,
+              slotId: null,
+              slotKey: null,
+              status: 'pending',
+              convertedItemId: null,
+              stockAvailability: {
+                enoughStock: true,
+                totalAvailableNormalized: 50,
+                requestedQtyNormalized: 25,
+              },
+              stockByInventory: [],
+              nutritionValue: {},
+            },
+          ],
           items: [],
           totalsMacros: {
             bySlot: [],
             dayTotal: {
-              energyKcal: 1980,
+              energyKcal: 2300,
               proteins: 162,
               carbs: 154,
               lipids: 70,
@@ -290,10 +421,33 @@ describe('Calendar', () => {
               lipids: 70,
             },
             deltaToTargets: {
-              energyKcal: -220,
+              energyKcal: 100,
               proteins: -18,
               carbs: 14,
               lipids: 0,
+            },
+            incompleteNutritionKeys: [],
+            targetSource: 'daySet',
+          },
+          projectedTotalsMacros: {
+            bySlot: [],
+            dayTotal: {
+              energyKcal: 2420,
+              proteins: 190,
+              carbs: 154,
+              lipids: 82,
+            },
+            targets: {
+              energyKcal: 2200,
+              proteins: 180,
+              carbs: 140,
+              lipids: 70,
+            },
+            deltaToTargets: {
+              energyKcal: 220,
+              proteins: 10,
+              carbs: 14,
+              lipids: 12,
             },
             incompleteNutritionKeys: [],
             targetSource: 'daySet',
@@ -308,12 +462,17 @@ describe('Calendar', () => {
     const root = fixture.nativeElement;
     const textContent = root.textContent;
 
-    expect(root.querySelectorAll('.calendar-month-day__assignment-macro-card').length).toBe(4);
-    expect(root.querySelectorAll('.calendar-month-day--outside .calendar-month-day__assignment-macro-card').length).toBe(0);
+    expect(root.querySelectorAll('.calendar-month-day__assignment-macro-card').length).toBe(0);
+    expect(root.querySelectorAll('.calendar-month-day__alert-badge').length).toBe(5);
     expect(textContent).toContain('Training');
-    expect(textContent).toMatch(/90%/);
-    expect(textContent).toMatch(/110%/);
-    expect(textContent).toMatch(/1.?980\s*\/\s*2.?200/);
+    expect(textContent).toContain('Kcal depasse');
+    expect(textContent).toContain('G depasse');
+    expect(textContent).toContain('P projete depasse');
+    expect(textContent).toContain('L projete depasse');
+    expect(textContent).toContain('2 templates en attente');
+    expect(textContent).not.toContain('Effectif');
+    expect(textContent).not.toContain('Effectif + template');
+    expect(textContent).not.toContain('Kcal projete depasse');
   });
 
   it('should render a modernized day view with merged pilot summary and compact entries', () => {

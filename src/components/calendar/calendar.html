@@ -212,7 +212,7 @@
           <div class="calendar-month-grid__body">
             <article
               *ngFor="let day of monthDays; trackBy: trackByDate"
-              (click)="onDayClick(day)"
+              (click)="onMonthDayClick(day)"
               [attr.data-testid]="'calendar-month-day-' + day.date"
               class="calendar-month-day"
               [class.calendar-month-day--current]="day.isCurrentMonth"
@@ -231,20 +231,37 @@
 
                 <div class="calendar-month-day__actions">
                   <span *ngIf="day.isToday" class="calendar-month-day__today-pill">Aujourd'hui</span>
-                  <button
-                    *ngIf="day.isCurrentMonth"
-                    mat-mini-fab
-                    color="primary"
-                    type="button"
-                    [attr.data-testid]="'calendar-month-add-' + day.date"
-                    class="calendar-add-trigger-month h-8 w-8 !shadow-sm"
-                    (click)="$event.stopPropagation(); onDayClick(day)">
-                    +
-                  </button>
                 </div>
               </div>
 
               <div class="calendar-month-day__body" [attr.data-testid]="'calendar-month-body-' + day.date">
+                <div *ngIf="day.isCurrentMonth" class="calendar-month-day__quick-actions">
+                  <button
+                    type="button"
+                    [attr.data-testid]="'calendar-month-open-day-' + day.date"
+                    class="calendar-month-day__quick-action"
+                    data-kind="day"
+                    (click)="$event.stopPropagation(); requestOpenDayView(day.date)">
+                    Jour
+                  </button>
+                  <button
+                    type="button"
+                    [attr.data-testid]="'calendar-month-manage-cycle-' + day.date"
+                    class="calendar-month-day__quick-action"
+                    data-kind="cycle"
+                    (click)="$event.stopPropagation(); onManageAssignment(day.date)">
+                    Cycle
+                  </button>
+                  <button
+                    type="button"
+                    [attr.data-testid]="'calendar-month-manage-items-' + day.date"
+                    class="calendar-month-day__quick-action"
+                    data-kind="items"
+                    (click)="$event.stopPropagation(); onManageItems(day.date)">
+                    Entree
+                  </button>
+                </div>
+
                 <div
                   *ngIf="day.assignment || (day.isCurrentMonth && hasWeekDayInsights(day.date)); else monthDayEmpty"
                   [ngClass]="day.assignment?.color ?? null"
@@ -264,9 +281,9 @@
                   </div>
 
                   <ng-container *ngIf="getWeekDayResponse(day.date) as response">
-                    <ng-container *ngIf="day.isCurrentMonth && getMonthDayMacroComparisons(day.date) as macroComparisons">
+                    <ng-container *ngIf="day.isCurrentMonth && getMonthDayAlertBadges(day.date) as alertBadges">
                       <div
-                        *ngIf="macroComparisons.length > 0 || getMonthDayProjectedMacroComparisons(day.date).length > 0 || response.templateAssociation"
+                        *ngIf="alertBadges.length > 0 || response.daySet || response.totalsMacros?.targetSource || response.templateAssociation"
                         class="calendar-month-day__assignment-insights">
                         <div
                           *ngIf="response.daySet || response.totalsMacros?.targetSource || response.templateAssociation"
@@ -294,57 +311,17 @@
                           </span>
                         </div>
 
-                        <div *ngIf="macroComparisons.length > 0" class="space-y-2">
-                          <p class="calendar-macro-section-label">
-                            Effectif
-                          </p>
-                          <div class="calendar-month-day__assignment-macro-grid">
-                            <article
-                              *ngFor="let macro of macroComparisons; trackBy: trackByWeekMacro"
-                              class="calendar-month-day__assignment-macro-card"
-                              [attr.data-tone]="macro.tone"
-                              [attr.data-status]="macro.status"
-                              [attr.title]="macro.label">
-                              <div class="calendar-month-day__assignment-macro-top">
-                                <span class="calendar-month-day__assignment-macro-abbr">{{ macro.abbr }}</span>
-                                <span class="calendar-month-day__assignment-macro-percent">{{ macro.percentage }}</span>
-                              </div>
-                              <div class="calendar-month-day__assignment-macro-values">
-                                {{ macro.value }} / {{ macro.target }} {{ macro.unit }}
-                              </div>
-                            </article>
-                          </div>
+                        <div
+                          *ngIf="alertBadges.length > 0"
+                          [attr.data-testid]="'calendar-month-alerts-' + day.date"
+                          class="calendar-month-day__alert-list">
+                          <span
+                            *ngFor="let badge of alertBadges; trackBy: trackByMonthAlertBadge"
+                            class="calendar-month-day__alert-badge"
+                            [attr.data-tone]="badge.tone">
+                            {{ badge.text }}
+                          </span>
                         </div>
-
-                        <ng-container *ngIf="getMonthDayProjectedMacroComparisons(day.date) as projectedMacroComparisons">
-                          <div *ngIf="projectedMacroComparisons.length > 0" class="space-y-2">
-                            <p class="calendar-macro-section-label">
-                              Effectif + template
-                            </p>
-                            <div class="calendar-month-day__assignment-macro-grid">
-                              <article
-                                *ngFor="let macro of projectedMacroComparisons; trackBy: trackByWeekMacro"
-                                class="calendar-month-day__assignment-macro-card"
-                                [attr.data-tone]="macro.tone"
-                                [attr.data-status]="macro.status"
-                                [attr.title]="macro.label">
-                                <div class="calendar-month-day__assignment-macro-top">
-                                  <span class="calendar-month-day__assignment-macro-abbr">{{ macro.abbr }}</span>
-                                  <span class="calendar-month-day__assignment-macro-percent">{{ macro.percentage }}</span>
-                                </div>
-                                <div class="calendar-month-day__assignment-macro-values">
-                                  {{ macro.value }} / {{ macro.target }} {{ macro.unit }}
-                                </div>
-                              </article>
-                            </div>
-                          </div>
-                        </ng-container>
-
-                        <p
-                          *ngIf="getPendingTemplateItemCount(response) > 0"
-                          class="text-[11px] font-medium text-amber-700">
-                          {{ getPendingTemplateItemCount(response) }} ligne(s) template en attente.
-                        </p>
                       </div>
                     </ng-container>
                   </ng-container>
@@ -359,7 +336,7 @@
                 <ng-template #monthDayEmpty>
                   <div *ngIf="day.isCurrentMonth; else monthOutsideHint" class="calendar-month-day__empty">
                     <span class="calendar-month-day__empty-title">Journee libre</span>
-                    <span class="calendar-month-day__empty-text">Ajout rapide disponible</span>
+                    <span class="calendar-month-day__empty-text">Jour, cycle ou entree disponibles</span>
                   </div>
                 </ng-template>
 

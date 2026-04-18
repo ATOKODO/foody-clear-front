@@ -11,6 +11,7 @@ import { ProductService } from '../../services/product-service';
 import { InventoryService } from '../../services/inventory-service';
 import { TemplateService } from '../../services/template-service';
 import { InputDayResponse } from '../../interfaces/input-day.interface';
+import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
 import { InputDayFeature } from '../input-day/input-day.feature';
 import { Calendar } from '../../components/calendar/calendar';
 
@@ -37,8 +38,10 @@ class CalendarStub {
   @Output() readonly dayClick = new EventEmitter<unknown>();
   @Output() readonly hourClick = new EventEmitter<unknown>();
   @Output() readonly itemClick = new EventEmitter<unknown>();
+  @Output('manageAssignment') readonly manageAssignmentRequested = new EventEmitter<unknown>();
   @Output() readonly manageItems = new EventEmitter<unknown>();
   @Output() readonly monthClick = new EventEmitter<unknown>();
+  @Output('openDayView') readonly openDayViewRequested = new EventEmitter<unknown>();
 
   goToToday(): void {}
 
@@ -46,6 +49,17 @@ class CalendarStub {
 
   switchView(view: string): void {
     this.currentView = view;
+  }
+
+  openDayView(dateLocal: string): void {
+    this.currentView = 'day';
+    this.currentViewLabel = dateLocal;
+    this.viewChanged.emit({
+      view: 'day',
+      anchorDateLocal: dateLocal,
+      fromDateLocal: dateLocal,
+      toDateLocal: dateLocal,
+    });
   }
 
   getViewLabel(view: string): string {
@@ -294,6 +308,57 @@ describe('PlanningFeature', () => {
     expect(component.activeModal).toBe('items');
     expect(component.selectedOccurredAt).toBeNull();
     expect(component.selectedItemId).toBeNull();
+  });
+
+  it('should open the clicked month day in day view from calendar openDayView output', () => {
+    const calendar = fixture.debugElement.query(By.directive(CalendarStub))
+      .componentInstance as CalendarStub;
+    const openDayViewSpy = spyOn(calendar, 'openDayView').and.callThrough();
+    inputDayServiceMock.getInputDay.calls.reset();
+
+    calendar.openDayViewRequested.emit({ dateLocal: '2026-02-16' });
+
+    expect(openDayViewSpy).toHaveBeenCalledWith('2026-02-16');
+    expect(calendar.currentView).toBe('day');
+    expect(component.currentCalendarView).toBe('day');
+    expect(component.currentAnchorDateLocal).toBe('2026-02-16');
+    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith(
+      '2026-02-16',
+      jasmine.any(String),
+    );
+  });
+
+  it('should open assignment modal directly from calendar manageAssignment output', () => {
+    const calendar = fixture.debugElement.query(By.directive(CalendarStub))
+      .componentInstance as CalendarStub;
+    const sourceAssignment: CycleAssignment = {
+      id: 31,
+      cycle: {
+        id: 7,
+        title: 'Prise de masse',
+        color: 'red',
+        durationDays: 14,
+        durationCount: 2,
+        durationType: 'semaine',
+        nutritionValues: [],
+      },
+      startDateLocal: '2026-02-16',
+      endDateLocal: '2026-03-01',
+    };
+
+    calendar.manageAssignmentRequested.emit({
+      view: 'month',
+      currentDateIso: '2026-02-16T00:00:00.000Z',
+      dateLocal: '2026-02-16',
+      sourceAssignment,
+    });
+    fixture.detectChanges();
+
+    expect(component.activeModal).toBe('assignment');
+    expect(component.selectedModalDateLocal).toBe('2026-02-16');
+    expect(component.editingAssignment).toEqual(sourceAssignment);
+    expect(component.modalSelectedCycleId).toBe(7);
+    expect(fixture.nativeElement.querySelector('[data-testid="planning-modal-actions"]')).toBeNull();
   });
 
   it('should reload current input data when embedded items change', () => {

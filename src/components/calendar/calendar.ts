@@ -74,6 +74,13 @@ export interface CalendarManageItemsEvent {
   sourceAssignment: CycleAssignment | null;
 }
 
+export interface CalendarManageAssignmentEvent {
+  view: CalendarView;
+  currentDateIso: string;
+  dateLocal: string;
+  sourceAssignment: CycleAssignment | null;
+}
+
 export interface CalendarViewChangeEvent {
   view: CalendarView;
   anchorDateLocal: string;
@@ -86,6 +93,10 @@ export interface CalendarItemClickEvent {
   currentDateIso: string;
   dateLocal: string;
   item: CalendarInsertedProduct;
+}
+
+export interface CalendarOpenDayViewEvent {
+  dateLocal: string;
 }
 
 interface CalendarWeekMacroHighlight {
@@ -153,6 +164,12 @@ interface CalendarWeekTimelineBlock {
   tone: number;
 }
 
+interface CalendarMonthAlertBadge {
+  key: string;
+  text: string;
+  tone: 'over' | 'projected' | 'template';
+}
+
 @Component({
   selector: 'app-calendar',
   imports: [CommonModule, MatButtonModule, MatButtonToggleModule],
@@ -175,7 +192,9 @@ export class Calendar implements OnInit, OnChanges {
   @Output() readonly hourClick = new EventEmitter<CalendarHourClickEvent>();
   @Output() readonly monthClick = new EventEmitter<CalendarMonthClickEvent>();
   @Output() readonly manageItems = new EventEmitter<CalendarManageItemsEvent>();
+  @Output('manageAssignment') readonly manageAssignmentRequested = new EventEmitter<CalendarManageAssignmentEvent>();
   @Output() readonly itemClick = new EventEmitter<CalendarItemClickEvent>();
+  @Output('openDayView') readonly openDayViewRequested = new EventEmitter<CalendarOpenDayViewEvent>();
   @Output() readonly viewChanged = new EventEmitter<CalendarViewChangeEvent>();
 
   readonly VIEWS: CalendarView[] = ['year', 'month', 'week', 'day'];
@@ -199,6 +218,12 @@ export class Calendar implements OnInit, OnChanges {
   private readonly emptySlots: CalendarDaySlot[] = [];
   private readonly emptyWeekTimelineBlocks: CalendarWeekTimelineBlock[] = [];
   private readonly weekMacroOrder = ['energyKcal', 'proteins', 'carbs', 'lipids'];
+  private readonly monthMacroAlertLabels: Record<string, string> = {
+    energyKcal: 'Kcal',
+    proteins: 'P',
+    carbs: 'G',
+    lipids: 'L',
+  };
   private readonly weekMacroDefinitions: Record<
     string,
     {
@@ -356,6 +381,18 @@ export class Calendar implements OnInit, OnChanges {
     this.viewChanged.emit(this.buildViewChangeEvent());
   }
 
+  openDayView(dateLocal: string): void {
+    const parsedDate = DateTime.fromISO(dateLocal).startOf('day');
+    if (!parsedDate.isValid) {
+      return;
+    }
+
+    this.currentDate = parsedDate;
+    this.currentView = 'day';
+    this.refreshView();
+    this.viewChanged.emit(this.buildViewChangeEvent());
+  }
+
   onDayClick(day: CalendarDay): void {
     const sourceAssignment =
       day.assignment && day.assignment.id
@@ -422,6 +459,35 @@ export class Calendar implements OnInit, OnChanges {
       dateLocal,
       sourceAssignment,
     });
+  }
+
+  onManageAssignment(dateLocal: string): void {
+    const sourceAssignment =
+      dateLocal.trim() === '' ? null : (this.findAssignmentForDate(dateLocal) ?? null);
+
+    this.manageAssignmentRequested.emit({
+      view: this.currentView,
+      currentDateIso: this.currentDate.toISO() ?? '',
+      dateLocal,
+      sourceAssignment,
+    });
+  }
+
+  onMonthDayClick(day: CalendarDay): void {
+    if (!day.isCurrentMonth) {
+      return;
+    }
+
+    this.requestOpenDayView(day.date);
+  }
+
+  requestOpenDayView(dateLocal: string): void {
+    const parsedDate = DateTime.fromISO(dateLocal);
+    if (!parsedDate.isValid) {
+      return;
+    }
+
+    this.openDayViewRequested.emit({ dateLocal });
   }
 
   onCurrentDayClick(): void {
@@ -916,6 +982,57 @@ export class Calendar implements OnInit, OnChanges {
     return this.getTemplateSourceBadgeText(this.getWeekDayResponse(day.date));
   }
 
+  getMonthDayAlertBadges(dateLocal: string): CalendarMonthAlertBadge[] {
+    const response = this.getWeekDayResponse(dateLocal);
+    if (!response) {
+      return [];
+    }
+
+    const actualComparisons = new Map(
+      this.buildMacroComparisons(response).map((comparison) => [comparison.key, comparison]),
+    );
+    const projectedComparisons = new Map(
+      this.buildProjectedMacroComparisons(response).map((comparison) => [comparison.key, comparison]),
+    );
+    const badges = this.weekMacroOrder.reduce<CalendarMonthAlertBadge[]>((accumulator, key) => {
+      const macroLabel = this.monthMacroAlertLabels[key] ?? key;
+      const actualComparison = actualComparisons.get(key);
+      if (actualComparison?.status === 'over') {
+        accumulator.push({
+          key: `${key}-actual`,
+          text: `${macroLabel} depasse`,
+          tone: 'over',
+        });
+        return accumulator;
+      }
+
+      const projectedComparison = projectedComparisons.get(key);
+      if (projectedComparison?.status === 'over') {
+        accumulator.push({
+          key: `${key}-projected`,
+          text: `${macroLabel} projete depasse`,
+          tone: 'projected',
+        });
+      }
+
+      return accumulator;
+    }, []);
+
+    const pendingTemplateItems = this.getPendingTemplateItemCount(response);
+    if (pendingTemplateItems > 0) {
+      badges.push({
+        key: 'template-pending',
+        text:
+          pendingTemplateItems === 1
+            ? 'Template en attente'
+            : `${pendingTemplateItems} templates en attente`,
+        tone: 'template',
+      });
+    }
+
+    return badges;
+  }
+
   getDayMetricEntries(
     metrics: Record<string, number | InputDayMacroValue> | null | undefined,
   ): CalendarMacroMetricEntry[] {
@@ -1080,6 +1197,10 @@ export class Calendar implements OnInit, OnChanges {
 
   trackByWeekMacro(_: number, macro: { key: string }): string {
     return macro.key;
+  }
+
+  trackByMonthAlertBadge(_: number, badge: CalendarMonthAlertBadge): string {
+    return badge.key;
   }
 
   trackByMacroMetricEntry(_: number, entry: CalendarMacroMetricEntry): string {
