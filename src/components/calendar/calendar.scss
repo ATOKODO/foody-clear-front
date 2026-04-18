@@ -1637,20 +1637,6 @@
   font-weight: 800;
 }
 
-.calendar-day-summary__notice {
-  margin: 0.8rem 0 0;
-  border-left: 3px solid rgba(245, 158, 11, 0.4);
-  padding-left: 0.75rem;
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: #9a3412;
-}
-
-.calendar-day-summary__macros,
-.calendar-day-summary__metrics {
-  margin-top: 0.85rem;
-}
-
 .calendar-day-summary__macro-grid {
   display: grid;
   gap: 0.75rem;
@@ -1680,11 +1666,6 @@
   font-size: 0.75rem;
   line-height: 1.5;
   color: #64748b;
-}
-
-.calendar-day-summary__metrics {
-  display: grid;
-  gap: 0.75rem;
 }
 
 .calendar-day-pilot-card {
@@ -1772,77 +1753,6 @@
   color: #c2410c;
 }
 
-.calendar-day-metric-card {
-  border: 1px solid rgba(226, 232, 240, 0.92);
-  border-radius: 1rem;
-  padding: 0.85rem 0.95rem;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 18px 40px -34px rgba(15, 23, 42, 0.35);
-}
-
-.calendar-day-metric-card__title {
-  margin: 0 0 0.65rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #64748b;
-}
-
-.calendar-day-metric-card__rows {
-  display: grid;
-  gap: 0.45rem;
-}
-
-.calendar-day-metric-card__row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.calendar-day-metric-card__label {
-  min-width: 0;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #334155;
-}
-
-.calendar-day-metric-card__value {
-  flex-shrink: 0;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.calendar-day-metric-card__unit {
-  margin-left: 0.22rem;
-  font-size: 0.7rem;
-  color: #64748b;
-}
-
-.calendar-day-slot-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  border: 1px solid rgba(191, 219, 254, 0.88);
-  border-radius: 999px;
-  padding: 0.42rem 0.75rem;
-  background: rgba(239, 246, 255, 0.95);
-  color: #1e3a8a;
-  font-size: 0.74rem;
-  font-weight: 600;
-}
-
-.calendar-day-slot-chip__index {
-  color: #0f172a;
-}
-
-.calendar-day-slot-chip__time {
-  color: #475569;
-  font-size: 0.68rem;
-}
-
 .calendar-day-body {
   display: grid;
   gap: 1rem;
@@ -1898,21 +1808,6 @@
 
 .calendar-day-body__section--secondary {
   min-width: 0;
-}
-
-.calendar-day-blocks {
-  display: grid;
-  gap: 0.75rem;
-  margin-top: 0.85rem;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
-  align-items: start;
-}
-
-.calendar-day-block {
-  align-self: start;
-  margin: 0;
-  cursor: pointer;
-  height: fit-content;
 }
 
 .calendar-day-empty {
@@ -2454,9 +2349,6 @@
     padding: 0.85rem;
   }
 
-.calendar-day-blocks {
-  grid-template-columns: 1fr;
-}
 }
 
 :host-context(.dark) :is(.calendar-year-panel, .calendar-month-panel, .calendar-week-panel, .calendar-day-panel) {
@@ -2490,12 +2382,9 @@
   .calendar-day-summary__panel,
   .calendar-day-pilot-card,
   .calendar-day-body__section,
-  .calendar-day-metric-card,
   .calendar-week-macro,
   .calendar-week-overview__pill,
   .calendar-week-day-details,
-  .calendar-day-block,
-  .calendar-day-summary__notice,
   .calendar-day-entry,
   .calendar-day-summary__empty-state
 ) {
@@ -2547,8 +2436,6 @@
   .calendar-day-summary__title,
   .calendar-day-summary__panel-heading,
   .calendar-day-body__title,
-  .calendar-day-metric-card__title,
-  .calendar-day-metric-card__value,
   .calendar-day-pilot-card__title,
   .calendar-day-pilot-card__metric-value,
   .calendar-week-macro__value,
@@ -2563,9 +2450,7 @@
   .calendar-day-grid__hour-label,
   .calendar-day-entry__time,
   .calendar-day-entry__product,
-  .calendar-day-entry__qty,
-  .calendar-day-slot-chip__index,
-  .calendar-day-slot-chip__time
+  .calendar-day-entry__qty
 ) {
   color: var(--app-text-strong);
 }
@@ -2579,7 +2464,6 @@
   .calendar-week-meta-pill,
   .calendar-day-summary__description,
   .calendar-day-summary__panel-description,
-  .calendar-day-summary__notice,
   .calendar-day-summary__empty-text,
   .calendar-day-summary__empty-title,
   .calendar-day-body__description,
@@ -2606,7 +2490,6 @@
   .calendar-year-chip,
   .calendar-week-chip,
   .calendar-week-meta-pill,
-  .calendar-day-slot-chip,
   .calendar-month-day__alert-badge,
   .calendar-month-day__today-pill,
   .calendar-week-grid__today-pill,

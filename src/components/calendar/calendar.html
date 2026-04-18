@@ -834,14 +834,14 @@
               type="button"
               data-testid="calendar-day-manage-cycle"
               class="calendar-day-summary__action-button calendar-day-summary__action-button--cycle"
-              (click)="onManageAssignment(currentDate.toISODate() ?? '')">
+              (click)="onManageAssignment(currentDate.toISODate())">
               Gerer Cycle
             </button>
             <button
               type="button"
               data-testid="calendar-day-manage-items"
               class="calendar-day-summary__action-button calendar-day-summary__action-button--items"
-              (click)="onManageItems(currentDate.toISODate() ?? '')">
+              (click)="onManageItems(currentDate.toISODate())">
               Modifier Journee
             </button>
           </div>
@@ -980,7 +980,7 @@
                   [attr.data-testid]="'calendar-day-half-hour-' + hour.toString().padStart(2, '0') + '-00'"
                   [style.grid-row-start]="getDayHalfHourGridRowStart(hour, 0)"
                   [style.grid-row-end]="getDayHalfHourGridRowStart(hour, 0) + 1"
-                  [attr.aria-label]="'Ouvrir ' + hour.toString().padStart(2, '0') + ':00 pour le ' + (currentDate.toISODate() ?? '')"
+                  [attr.aria-label]="'Ouvrir ' + hour.toString().padStart(2, '0') + ':00 pour le ' + currentDate.toISODate()"
                   (click)="onDayHalfHourClick(hour, 0)">
                 </button>
 
@@ -990,7 +990,7 @@
                   [attr.data-testid]="'calendar-day-half-hour-' + hour.toString().padStart(2, '0') + '-30'"
                   [style.grid-row-start]="getDayHalfHourGridRowStart(hour, 30)"
                   [style.grid-row-end]="getDayHalfHourGridRowStart(hour, 30) + 1"
-                  [attr.aria-label]="'Ouvrir ' + hour.toString().padStart(2, '0') + ':30 pour le ' + (currentDate.toISODate() ?? '')"
+                  [attr.aria-label]="'Ouvrir ' + hour.toString().padStart(2, '0') + ':30 pour le ' + currentDate.toISODate()"
                   (click)="onDayHalfHourClick(hour, 30)">
                 </button>
               </ng-container>
