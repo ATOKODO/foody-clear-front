@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -38,6 +37,10 @@ import { CycleService } from '../../services/cycle-service';
 import { InputDayService } from '../../services/input-day-service';
 import { InputDayFeature } from '../input-day/input-day.feature';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import {
+  SegmentedToggle,
+  SegmentedToggleOption,
+} from '../../app/ui/segmented-toggle/segmented-toggle';
 
 type PlanningCalendarController = Pick<
   Calendar,
@@ -50,6 +53,13 @@ type PlanningCalendarController = Pick<
   | 'getViewLabel'
 >;
 
+const PLANNING_CALENDAR_VIEW_OPTIONS: readonly SegmentedToggleOption<CalendarView>[] = [
+  { value: 'day', label: 'Jour', testId: 'planning-view-day' },
+  { value: 'week', label: 'Semaine', testId: 'planning-view-week' },
+  { value: 'month', label: 'Mois', testId: 'planning-view-month' },
+  { value: 'year', label: 'Annee', testId: 'planning-view-year' },
+];
+
 @Component({
   selector: 'app-planning',
   imports: [
@@ -59,11 +69,11 @@ type PlanningCalendarController = Pick<
     InputDayFeature,
     ListCycle,
     MatButtonModule,
-    MatButtonToggleModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    SegmentedToggle,
     UiErrorPanel,
   ],
   templateUrl: './planning.feature.html',
@@ -86,7 +96,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   inputMonthResponse: InputMonthResponse | null = null;
   inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
   inputDayTimezone = DateTime.local().zoneName || 'UTC';
-  readonly calendarViews: CalendarView[] = ['year', 'month', 'week', 'day'];
+  readonly calendarViewOptions = PLANNING_CALENDAR_VIEW_OPTIONS;
   calendarHeaderLabel = 'Chargement...';
 
   currentCalendarView: CalendarView = 'month';

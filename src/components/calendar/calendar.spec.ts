@@ -572,6 +572,8 @@ describe('Calendar', () => {
     expect(root.querySelector('.calendar-day-panel')).toBeTruthy();
     expect(root.querySelector('.calendar-day-summary__assignment')).toBeTruthy();
     expect(root.querySelector('.calendar-day-summary__panel--pilot')).toBeTruthy();
+    expect(root.querySelector('[data-testid="calendar-day-manage-cycle"]')).toBeTruthy();
+    expect(root.querySelector('[data-testid="calendar-day-manage-items"]')).toBeTruthy();
     expect(root.querySelector('.calendar-day-grid__timeline')).toBeTruthy();
     expect(root.querySelectorAll('.calendar-day-entry').length).toBe(1);
     expect(root.querySelectorAll('.calendar-day-grid__block').length).toBe(1);
@@ -579,6 +581,8 @@ describe('Calendar', () => {
     expect(textContent).toContain('Vue jour');
     expect(textContent).toContain('Pilotage du jour');
     expect(textContent).toContain('Cible du jour issue du day set');
+    expect(textContent).toContain('Gerer Cycle');
+    expect(textContent).toContain('Modifier Journee');
     expect(textContent).toContain('Heures du jour');
     expect(textContent).toContain('Entrees du jour');
     expect(textContent).toContain('Clic a la demi-heure');
@@ -589,6 +593,52 @@ describe('Calendar', () => {
     expect(textContent).not.toContain('Effectif + template / day-set');
     expect(textContent).not.toContain('Template manuel');
     expect(textContent).not.toContain('Plan proteine');
+  });
+
+  it('should emit manageAssignment and manageItems from day summary actions', () => {
+    const assignmentEvents: Array<unknown> = [];
+    const itemEvents: Array<unknown> = [];
+    component.manageAssignmentRequested.subscribe((event) => assignmentEvents.push(event));
+    component.manageItems.subscribe((event) => itemEvents.push(event));
+
+    fixture.componentRef.setInput('inputDayResponse', {
+      dateLocal: '2026-02-17',
+      timezone: 'UTC',
+      assignment: null,
+      daySet: null,
+      items: [],
+      totalsMacros: null,
+      itemsBySlot: [],
+      slots: [],
+    });
+    renderView('day', '2026-02-17');
+
+    const root = fixture.nativeElement;
+    const cycleButton = root.querySelector(
+      '[data-testid="calendar-day-manage-cycle"]',
+    ) as HTMLButtonElement | null;
+    const itemsButton = root.querySelector(
+      '[data-testid="calendar-day-manage-items"]',
+    ) as HTMLButtonElement | null;
+
+    expect(cycleButton).toBeTruthy();
+    expect(itemsButton).toBeTruthy();
+
+    cycleButton!.click();
+    itemsButton!.click();
+
+    expect(assignmentEvents).toEqual([
+      jasmine.objectContaining({
+        view: 'day',
+        dateLocal: '2026-02-17',
+      }),
+    ]);
+    expect(itemEvents).toEqual([
+      jasmine.objectContaining({
+        view: 'day',
+        dateLocal: '2026-02-17',
+      }),
+    ]);
   });
 
   it('should include occurredAt when a half-hour slot is clicked', () => {

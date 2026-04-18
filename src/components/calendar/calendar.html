@@ -832,19 +832,17 @@
           <div class="calendar-day-summary__actions">
             <button
               type="button"
-              data-testid="calendar-day-items"
-              class="calendar-items-trigger-day calendar-week-grid__ghost-button rounded-full border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100"
-              (click)="onManageItems(currentDate.toISODate())">
-              Items
+              data-testid="calendar-day-manage-cycle"
+              class="calendar-day-summary__action-button calendar-day-summary__action-button--cycle"
+              (click)="onManageAssignment(currentDate.toISODate() ?? '')">
+              Gerer Cycle
             </button>
             <button
-              mat-mini-fab
-              color="primary"
               type="button"
-              data-testid="calendar-day-add"
-              class="calendar-add-trigger-day h-10 w-10 !shadow-sm"
-              (click)="onCurrentDayClick()">
-              +
+              data-testid="calendar-day-manage-items"
+              class="calendar-day-summary__action-button calendar-day-summary__action-button--items"
+              (click)="onManageItems(currentDate.toISODate() ?? '')">
+              Modifier Journee
             </button>
           </div>
         </div>
@@ -880,43 +878,6 @@
                 *ngIf="inputDayResponse?.totalsMacros?.targetSource as targetSource"
                 class="calendar-day-summary__source-pill">
                 {{ getDayTargetSourcePillText(targetSource) }}
-              </span>
-            </div>
-
-            <div class="calendar-week-overview calendar-day-summary__overview">
-              <div class="calendar-week-overview__pill">
-                <span class="calendar-week-overview__value">{{ getDaySlotCount() }}</span>
-                <span class="calendar-week-overview__label">plages</span>
-              </div>
-              <div class="calendar-week-overview__pill">
-                <span class="calendar-week-overview__value">{{ getDayItemCount() }}</span>
-                <span class="calendar-week-overview__label">entrees saisies</span>
-              </div>
-              <div class="calendar-week-overview__pill">
-                <span class="calendar-week-overview__value">{{ getDayEnergyTotal() }}</span>
-                <span class="calendar-week-overview__label">kcal suivies</span>
-              </div>
-            </div>
-
-            <div
-              *ngIf="inputDayResponse?.daySet || inputDayResponse?.totalsMacros?.targetSource"
-              class="calendar-day-summary__chips">
-              <span *ngIf="inputDayResponse?.daySet as daySet" class="calendar-week-chip calendar-week-chip--dayset">
-                {{ daySet.title }}
-              </span>
-
-              <span
-                *ngIf="inputDayResponse?.totalsMacros?.targetSource as targetSource"
-                class="calendar-week-chip calendar-week-chip--target">
-                {{ getDayTargetSourcePillText(targetSource) }}
-              </span>
-            </div>
-
-            <div *ngIf="daySlots.length > 0" class="calendar-day-summary__slots">
-              <span *ngFor="let slot of daySlots; trackBy: trackBySlot" class="calendar-day-slot-chip">
-                <span class="calendar-day-slot-chip__index">{{ slot.sortOrder }}.</span>
-                <span>{{ slot.title }}</span>
-                <span class="calendar-day-slot-chip__time">{{ formatSlotRange(slot) }}</span>
               </span>
             </div>
 

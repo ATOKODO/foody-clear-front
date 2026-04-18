@@ -1,138 +1,126 @@
 <section class="app-page app-page--wide" data-testid="planning-page">
-  <mat-card class="overflow-hidden rounded-2xl">
-    <div class="planning-feature__header">
-      <div class="planning-feature__header-shell">
-        <div class="planning-feature__header-copy">
-          <h2 class="text-xl font-semibold">Planning</h2>
-          <p class="mt-1 text-sm text-slate-300">
-            Affectation des cycles par plage de dates.
-          </p>
-        </div>
-
-        <div class="planning-feature__header-tools">
-          <div class="planning-feature__header-nav">
-            <button
-              type="button"
-              data-testid="planning-today"
-              class="planning-feature__today-button"
-              (click)="goToCalendarToday()">
-              Aujourd'hui
-            </button>
-
-            <div class="planning-feature__period-switcher">
-              <button
-                type="button"
-                data-testid="planning-prev"
-                class="planning-feature__nav-button"
-                aria-label="Periode precedente"
-                (click)="navigateCalendar('prev')">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              <h3 class="planning-feature__period-label">
-                {{ calendarHeaderLabel }}
-              </h3>
-
-              <button
-                type="button"
-                data-testid="planning-next"
-                class="planning-feature__nav-button"
-                aria-label="Periode suivante"
-                (click)="navigateCalendar('next')">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div class="planning-feature__header-actions">
-            <mat-button-toggle-group
-              [value]="currentCalendarView"
-              (change)="switchCalendarView($event.value)"
-              aria-label="Selection de la vue calendrier"
-              data-testid="planning-view-toggle"
-              class="planning-feature__view-toggle"
-              hideSingleSelectionIndicator>
-              <mat-button-toggle
-                *ngFor="let view of calendarViews"
-                [value]="view"
-                [attr.data-testid]="'planning-view-' + view">
-                {{ getCalendarViewLabel(view) }}
-              </mat-button-toggle>
-            </mat-button-toggle-group>
-
-            <button
-              mat-raised-button
-              color="primary"
-              type="button"
-              data-testid="planning-refresh"
-              class="planning-feature__refresh rounded-full"
-              (click)="refreshPlanningData()"
-              [disabled]="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment">
-              Rafraichir
-            </button>
-          </div>
-        </div>
-      </div>
+  <div class="planning-feature__header">
+    <div class="planning-feature__header-copy">
+      <p class="planning-feature__eyebrow">Planning</p>
+      <h1 class="planning-feature__title">Assignations</h1>
+      <p class="planning-feature__subtitle">
+        Affectation des cycles et suivi des jours
+      </p>
     </div>
 
-    <div class="planning-feature__content">
-      <div *ngIf="showPlanningStatus" class="planning-feature__toolbar">
-        <div class="planning-feature__status">
-          <span *ngIf="loadingCycles" class="app-status-pill app-status-pill--neutral">
-            Chargement cycles...
-          </span>
-          <span *ngIf="loadingAssignments" class="app-status-pill app-status-pill--info">
-            Chargement planning...
-          </span>
-          <span *ngIf="loadingDayItems" class="app-status-pill app-status-pill--success">
-            {{
-              currentCalendarView === 'month'
-                ? 'Chargement input-month...'
-                : currentCalendarView === 'week'
-                  ? 'Chargement input-week...'
-                  : 'Chargement input-day...'
-            }}
-          </span>
-          <span *ngIf="savingAssignment" class="app-status-pill app-status-pill--saving">
-            Sauvegarde assignement...
-          </span>
+    <div class="planning-feature__header-tools">
+      <div class="planning-feature__header-nav">
+        <button
+          type="button"
+          data-testid="planning-today"
+          class="planning-feature__today-button"
+          (click)="goToCalendarToday()">
+          Aujourd'hui
+        </button>
+
+        <div class="planning-feature__period-switcher">
+          <button
+            type="button"
+            data-testid="planning-prev"
+            class="planning-feature__nav-button"
+            aria-label="Periode precedente"
+            (click)="navigateCalendar('prev')">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <h2 class="planning-feature__period-label">
+            {{ calendarHeaderLabel }}
+          </h2>
+
+          <button
+            type="button"
+            data-testid="planning-next"
+            class="planning-feature__nav-button"
+            aria-label="Periode suivante"
+            (click)="navigateCalendar('next')">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
 
+        <button
+          type="button"
+          data-testid="planning-refresh"
+          class="planning-feature__refresh-button"
+          (click)="refreshPlanningData()"
+          [disabled]="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment">
+          Rafraichir
+        </button>
       </div>
 
-        <div class="planning-feature__calendar" data-testid="planning-calendar">
-        <app-calendar
-          #calendarRef
-          [cycleAssignments]="cycleAssignments"
-          [inputDayResponse]="inputDayResponse"
-          [inputWeekResponse]="inputWeekResponse"
-          [inputMonthResponse]="inputMonthResponse"
-          [inputDayItemsBySlot]="inputDayItemsBySlot"
-          [inputDayTimezone]="inputDayTimezone"
-          [loadingDayItems]="loadingDayItems"
-          [dayItemsError]="dayItemsError"
-          [showHeader]="false"
-          (viewChanged)="onCalendarViewChanged($event)"
-          (dayClick)="onCalendarDayClick($event)"
-          (hourClick)="onCalendarHourClick($event)"
-          (itemClick)="onCalendarItemClick($event)"
-          (manageAssignment)="onCalendarManageAssignment($event)"
-          (manageItems)="onCalendarManageItems($event)"
-          (openDayView)="onCalendarOpenDayView($event)"
-          (monthClick)="onCalendarMonthClick($event)">
-        </app-calendar>
-      </div>
+      <app-segmented-toggle
+        [value]="currentCalendarView"
+        [options]="calendarViewOptions"
+        [ariaLabel]="'Selection de la vue calendrier'"
+        [testId]="'planning-view-toggle'"
+        [name]="'planning-view-toggle'"
+        [maxWidth]="'46rem'"
+        class="planning-feature__view-toggle"
+        (valueChange)="switchCalendarView($event)">
+      </app-segmented-toggle>
+    </div>
+  </div>
+
+  <mat-card class="planning-feature__surface">
+    <div *ngIf="showPlanningStatus" class="planning-feature__status-bar">
+      <span *ngIf="loadingCycles" class="app-status-pill app-status-pill--neutral">
+        Chargement cycles...
+      </span>
+      <span *ngIf="loadingAssignments" class="app-status-pill app-status-pill--info">
+        Chargement planning...
+      </span>
+      <span *ngIf="loadingDayItems" class="app-status-pill app-status-pill--success">
+        {{
+          currentCalendarView === 'month'
+            ? 'Chargement input-month...'
+            : currentCalendarView === 'week'
+              ? 'Chargement input-week...'
+              : 'Chargement input-day...'
+        }}
+      </span>
+      <span *ngIf="savingAssignment" class="app-status-pill app-status-pill--saving">
+        Sauvegarde assignement...
+      </span>
     </div>
 
-    <mat-progress-bar *ngIf="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment" mode="indeterminate">
+    <div class="planning-feature__content" data-testid="planning-calendar">
+      <app-calendar
+        #calendarRef
+        [cycleAssignments]="cycleAssignments"
+        [inputDayResponse]="inputDayResponse"
+        [inputWeekResponse]="inputWeekResponse"
+        [inputMonthResponse]="inputMonthResponse"
+        [inputDayItemsBySlot]="inputDayItemsBySlot"
+        [inputDayTimezone]="inputDayTimezone"
+        [loadingDayItems]="loadingDayItems"
+        [dayItemsError]="dayItemsError"
+        [showHeader]="false"
+        (viewChanged)="onCalendarViewChanged($event)"
+        (dayClick)="onCalendarDayClick($event)"
+        (hourClick)="onCalendarHourClick($event)"
+        (itemClick)="onCalendarItemClick($event)"
+        (manageAssignment)="onCalendarManageAssignment($event)"
+        (manageItems)="onCalendarManageItems($event)"
+        (openDayView)="onCalendarOpenDayView($event)"
+        (monthClick)="onCalendarMonthClick($event)">
+      </app-calendar>
+    </div>
+
+    <mat-progress-bar
+      *ngIf="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment"
+      mode="indeterminate">
     </mat-progress-bar>
 
-    <div class="space-y-3 p-4 sm:p-6">
-      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
+    <div *ngIf="lastError" class="planning-feature__error-panel">
+      <app-ui-error-panel [error]="lastError"></app-ui-error-panel>
     </div>
   </mat-card>
 </section>
@@ -179,7 +167,7 @@
             </span>
             <span class="planning-action-card__content">
               <span class="planning-action-card__label">Cycle</span>
-              <span class="planning-action-card__title">Affectation du cycle</span>
+              <span class="planning-action-card__title">Gerer le cycle</span>
               <span class="planning-action-card__text">
                 Ajouter, changer ou retirer l'assignation active pour cette date.
               </span>
@@ -202,8 +190,8 @@
               </svg>
             </span>
             <span class="planning-action-card__content">
-              <span class="planning-action-card__label">Entree</span>
-              <span class="planning-action-card__title">Ouvrir input-day</span>
+              <span class="planning-action-card__label">Journee</span>
+              <span class="planning-action-card__title">Modifier la journee</span>
               <span class="planning-action-card__text">
                 Acceder directement a l'editeur des entrees pour cette date et ce contexte horaire.
               </span>

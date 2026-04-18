@@ -1479,7 +1479,55 @@
 .calendar-day-summary__actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.65rem;
+}
+
+.calendar-day-summary__action-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.55rem 1rem;
+  border: 2px solid #4d8078;
+  border-radius: 999px;
+  background: #c6fbf2;
+  color: #08433d;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 12px 26px -24px rgba(15, 23, 42, 0.32);
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.calendar-day-summary__action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 34px -28px rgba(15, 23, 42, 0.4);
+}
+
+.calendar-day-summary__action-button--cycle {
+  border-color: #8c7600;
+  background: #ffe167;
+  color: #544600;
+}
+
+.calendar-day-summary__action-button--cycle:hover {
+  background: #ffea87;
+}
+
+.calendar-day-summary__action-button--items {
+  border-color: #003913;
+  background: #70dd82;
+  color: #003913;
+}
+
+.calendar-day-summary__action-button--items:hover {
+  background: #8ae999;
 }
 
 .calendar-day-summary__assignment {
@@ -1489,7 +1537,7 @@
   gap: 0.75rem;
   margin-top: 1rem;
   border: 1px solid var(--cybd, rgba(148, 163, 184, 0.38));
-  border-radius: 1.1rem;
+  border-radius: 1.25rem;
   padding: 0.9rem 1rem;
   background: var(--cybg, linear-gradient(135deg, #334155, #475569));
   color: #fff;
@@ -1531,7 +1579,7 @@
 .calendar-day-summary__panel {
   min-width: 0;
   border: 1px solid rgba(226, 232, 240, 0.92);
-  border-radius: 1.15rem;
+  border-radius: 1.2rem;
   padding: 0.9rem;
   background: rgba(255, 255, 255, 0.82);
   box-shadow: 0 18px 40px -34px rgba(15, 23, 42, 0.18);
@@ -1589,19 +1637,6 @@
   font-weight: 800;
 }
 
-.calendar-day-summary__overview,
-.calendar-day-summary__chips,
-.calendar-day-summary__slots {
-  margin-top: 0.85rem;
-}
-
-.calendar-day-summary__chips,
-.calendar-day-summary__slots {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
 .calendar-day-summary__notice {
   margin: 0.8rem 0 0;
   border-left: 3px solid rgba(245, 158, 11, 0.4);
@@ -1620,7 +1655,7 @@
   display: grid;
   gap: 0.75rem;
   margin-top: 0.95rem;
-  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
 }
 
 .calendar-day-summary__empty-state {
