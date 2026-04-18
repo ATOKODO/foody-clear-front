@@ -109,6 +109,27 @@ interface CalendarMacroMetricEntry {
   unit: string;
 }
 
+interface CalendarDayMacroCard {
+  key: string;
+  label: string;
+  consumed: string;
+  target: string;
+  delta: string;
+  unit: string;
+  tone: 'energy' | 'proteins' | 'carbs' | 'lipids';
+  status: 'under' | 'exact' | 'over' | 'neutral';
+}
+
+interface CalendarDayEntryRow {
+  id: number;
+  dateLocal: string;
+  timeLabel: string;
+  productName: string;
+  qtyLabel: string;
+  slotLabel: string;
+  item: CalendarInsertedProduct;
+}
+
 interface CalendarMacroComparison {
   key: string;
   label: string;
@@ -349,7 +370,7 @@ export class Calendar implements OnInit, OnChanges {
     });
   }
 
-  onHourClick(hour: HourSlot, dateLocal?: string): void {
+  onHourClick(hour: HourSlot, dateLocal?: string, minute = 0): void {
     const resolvedDateLocal = dateLocal ?? this.currentDate.toISODate() ?? '';
     const assignmentFromDate =
       resolvedDateLocal === '' ? null : (this.findAssignmentForDate(resolvedDateLocal) ?? null);
@@ -363,7 +384,7 @@ export class Calendar implements OnInit, OnChanges {
       view: this.currentView,
       currentDateIso: this.currentDate.toISO() ?? '',
       dateLocal: resolvedDateLocal,
-      occurredAt: this.buildOccurredAtForHour(resolvedDateLocal, hour.hour),
+      occurredAt: this.buildOccurredAtForTime(resolvedDateLocal, hour.hour, minute),
       hour,
       sourceAssignment,
     });
@@ -669,6 +690,125 @@ export class Calendar implements OnInit, OnChanges {
     return typeof energy === 'number' ? this.formatCompactNumber(energy, 0) : '0';
   }
 
+  getDayTargetHeadline(): string {
+    const targetSource = this.inputDayResponse?.totalsMacros?.targetSource ?? 'none';
+
+    if (targetSource === 'cycle') {
+      return 'Cible du jour issue du cycle assigne';
+    }
+
+    if (targetSource === 'daySet') {
+      return 'Cible du jour issue du day set';
+    }
+
+    return 'Aucune cible du jour resolue';
+  }
+
+  getDayTargetSupportingText(): string {
+    const targetSource = this.inputDayResponse?.totalsMacros?.targetSource ?? 'none';
+    const assignmentTitle =
+      this.getDayAssignmentHighlight()?.title ?? this.inputDayResponse?.assignment?.cycleTitle ?? null;
+    const daySetTitle = this.inputDayResponse?.daySet?.title?.trim() ?? null;
+
+    if (targetSource === 'cycle') {
+      return assignmentTitle
+        ? `Les entrees saisies sont comparees a la cible du cycle ${assignmentTitle}.`
+        : 'Les entrees saisies sont comparees a la cible du cycle assigne.';
+    }
+
+    if (targetSource === 'daySet') {
+      return daySetTitle
+        ? `Les entrees saisies sont comparees au repere du day set ${daySetTitle}.`
+        : 'Les entrees saisies sont comparees au repere nutritionnel du day set.';
+    }
+
+    return 'Le pilotage du jour affiche uniquement les entrees reellement saisies.';
+  }
+
+  getDayTargetSourcePillText(targetSource: InputDayTargetSource): string {
+    if (targetSource === 'cycle') {
+      return 'Cible cycle assigne';
+    }
+
+    if (targetSource === 'daySet') {
+      return 'Cible day set';
+    }
+
+    return 'Sans cible';
+  }
+
+  getDayMacroCards(): CalendarDayMacroCard[] {
+    const totals = this.inputDayResponse?.totalsMacros ?? null;
+    if (!totals) {
+      return [];
+    }
+
+    const keys = new Set<string>([
+      ...Object.keys(totals.dayTotal ?? {}),
+      ...Object.keys(totals.targets ?? {}),
+      ...Object.keys(totals.deltaToTargets ?? {}),
+    ]);
+
+    return Array.from(keys)
+      .sort((leftKey, rightKey) => {
+        const leftIndex = this.weekMacroOrder.indexOf(leftKey);
+        const rightIndex = this.weekMacroOrder.indexOf(rightKey);
+
+        if (leftIndex === -1 && rightIndex === -1) {
+          return leftKey.localeCompare(rightKey, 'fr');
+        }
+
+        if (leftIndex === -1) {
+          return 1;
+        }
+
+        if (rightIndex === -1) {
+          return -1;
+        }
+
+        return leftIndex - rightIndex;
+      })
+      .map((key) => {
+        const definition = this.weekMacroDefinitions[key];
+        const consumed = totals.dayTotal?.[key];
+        const target = totals.targets?.[key];
+        const delta = totals.deltaToTargets?.[key];
+
+        return {
+          key,
+          label: definition?.label ?? key,
+          consumed: this.formatMetricValue(consumed ?? null),
+          target: this.formatMetricValue(target ?? null),
+          delta: this.formatSignedMetricValue(delta ?? null),
+          unit: definition?.unit ?? '',
+          tone: definition?.tone ?? 'energy',
+          status: this.resolveDayMacroCardStatus(consumed, target, delta),
+        };
+      });
+  }
+
+  getDayEntryRows(): CalendarDayEntryRow[] {
+    const dateLocal = this.inputDayResponse?.dateLocal ?? this.currentDate.toISODate() ?? '';
+    if (dateLocal.trim() === '') {
+      return [];
+    }
+
+    const insertedProducts = this.resolveCurrentDayInsertedProducts(
+      dateLocal,
+      this.resolveDaySlots(),
+    );
+
+    return insertedProducts.map((item) => ({
+      id: item.id,
+      dateLocal: item.dateLocal,
+      timeLabel: this.formatItemTime(item.occurredAt, item.insertedAt),
+      productName: item.productName,
+      qtyLabel: this.formatQuantityLabel(item.qty),
+      slotLabel: item.slotTitle || item.slotKey || 'Sans slot',
+      item,
+    }));
+  }
+
   getProjectedDayEnergyTotal(): string {
     const energy = this.inputDayResponse?.projectedTotalsMacros?.dayTotal['energyKcal'];
     return typeof energy === 'number' ? this.formatCompactNumber(energy, 0) : '0';
@@ -821,12 +961,7 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     const slots = this.resolveDaySlots();
-    const insertedProducts = this.buildCalendarInsertedProducts(
-      this.resolveItemsBySlotEntries(),
-      this.inputDayResponse?.items ?? [],
-      dateLocal,
-      slots,
-    );
+    const insertedProducts = this.resolveCurrentDayInsertedProducts(dateLocal, slots);
 
     return this.buildWeekTimelineBlocks(dateLocal, slots, insertedProducts);
   }
@@ -923,6 +1058,10 @@ export class Calendar implements OnInit, OnChanges {
     return Math.max(start + 1, end);
   }
 
+  getDayHalfHourGridRowStart(hour: number, minute: 0 | 30): number {
+    return 2 + hour * 2 + (minute === 30 ? 1 : 0);
+  }
+
   trackByDate(_: number, day: CalendarDay): string {
     return day.date;
   }
@@ -945,6 +1084,14 @@ export class Calendar implements OnInit, OnChanges {
 
   trackByMacroMetricEntry(_: number, entry: CalendarMacroMetricEntry): string {
     return entry.key;
+  }
+
+  trackByDayMacroCard(_: number, card: CalendarDayMacroCard): string {
+    return card.key;
+  }
+
+  trackByDayEntryRow(_: number, entry: CalendarDayEntryRow): number {
+    return entry.id;
   }
 
   trackByWeekTimelineBlock(_: number, block: CalendarWeekTimelineBlock): string {
@@ -988,6 +1135,20 @@ export class Calendar implements OnInit, OnChanges {
         label: `${hour.toString().padStart(2, '0')}:00`,
       },
       dateLocal,
+    );
+  }
+
+  onDayHalfHourClick(hour: number, minute: 0 | 30): void {
+    const normalizedHour = Math.max(0, Math.min(23, hour));
+    const label = `${normalizedHour.toString().padStart(2, '0')}:${minute === 30 ? '30' : '00'}`;
+
+    this.onHourClick(
+      {
+        hour: normalizedHour,
+        label,
+      },
+      this.currentDate.toISODate() ?? '',
+      minute,
     );
   }
 
@@ -1435,7 +1596,9 @@ export class Calendar implements OnInit, OnChanges {
     return Math.round(value * 100) / 100;
   }
 
-  private formatMetricValue(value: number | InputDayMacroValue): string {
+  private formatMetricValue(
+    value: number | InputDayMacroValue | null | undefined,
+  ): string {
     if (typeof value === 'number') {
       return this.formatCompactNumber(value, Math.abs(value) >= 100 ? 0 : 1);
     }
@@ -1445,6 +1608,60 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     return '--';
+  }
+
+  private formatSignedMetricValue(
+    value: number | InputDayMacroValue | null | undefined,
+  ): string {
+    if (typeof value === 'number') {
+      const formatted = this.formatCompactNumber(
+        value,
+        Math.abs(value) >= 100 ? 0 : 1,
+      );
+      return value > 0 ? `+${formatted}` : formatted;
+    }
+
+    if (typeof value === 'string' && value.trim() !== '') {
+      return value;
+    }
+
+    return '--';
+  }
+
+  private formatQuantityLabel(value: number): string {
+    return this.formatCompactNumber(value, Math.abs(value) >= 100 ? 0 : 2);
+  }
+
+  private resolveDayMacroCardStatus(
+    consumed: InputDayMacroValue | undefined,
+    target: number | undefined,
+    delta: InputDayMacroValue | undefined,
+  ): CalendarDayMacroCard['status'] {
+    if (typeof delta === 'number') {
+      if (delta === 0) {
+        return 'exact';
+      }
+
+      return delta > 0 ? 'over' : 'under';
+    }
+
+    if (typeof consumed === 'number' && typeof target === 'number') {
+      return this.resolveMacroComparisonStatus(consumed, target);
+    }
+
+    return 'neutral';
+  }
+
+  private resolveCurrentDayInsertedProducts(
+    dateLocal: string,
+    slots: CalendarDaySlot[],
+  ): CalendarInsertedProduct[] {
+    return this.buildCalendarInsertedProducts(
+      this.resolveItemsBySlotEntries(),
+      this.inputDayResponse?.items ?? [],
+      dateLocal,
+      slots,
+    );
   }
 
   private formatCompactNumber(value: number, maximumFractionDigits: number): string {
@@ -1721,14 +1938,26 @@ export class Calendar implements OnInit, OnChanges {
     };
   }
 
-  private buildOccurredAtForHour(dateLocal: string, hour: number): string | null {
-    if (!dateLocal || !Number.isInteger(hour) || hour < 0 || hour > 23) {
+  private buildOccurredAtForTime(
+    dateLocal: string,
+    hour: number,
+    minute = 0,
+  ): string | null {
+    if (
+      !dateLocal ||
+      !Number.isInteger(hour) ||
+      hour < 0 ||
+      hour > 23 ||
+      !Number.isInteger(minute) ||
+      minute < 0 ||
+      minute > 59
+    ) {
       return null;
     }
 
     const parsed = DateTime.fromISO(dateLocal, { zone: this.normalizeTimezone() }).set({
       hour,
-      minute: 0,
+      minute,
       second: 0,
       millisecond: 0,
     });

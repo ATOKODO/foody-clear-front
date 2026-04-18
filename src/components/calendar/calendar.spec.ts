@@ -316,7 +316,7 @@ describe('Calendar', () => {
     expect(textContent).toMatch(/1.?980\s*\/\s*2.?200/);
   });
 
-  it('should render a modernized day view with summary and timeline blocks', () => {
+  it('should render a modernized day view with merged pilot summary and compact entries', () => {
     fixture.componentRef.setInput('inputDayResponse', {
       dateLocal: '2026-02-17',
       timezone: 'UTC',
@@ -343,6 +343,13 @@ describe('Calendar', () => {
             nutritionValue: null,
           },
         ],
+      },
+      templateAssociation: {
+        source: 'manual',
+        template: {
+          id: 13,
+          title: 'Plan proteine',
+        },
       },
       items: [
         {
@@ -377,6 +384,23 @@ describe('Calendar', () => {
         incompleteNutritionKeys: [],
         targetSource: 'daySet',
       },
+      projectedTotalsMacros: {
+        bySlot: [],
+        dayTotal: {
+          energyKcal: 620,
+          proteins: 42,
+          carbs: 28,
+          lipids: 16,
+        },
+        targets: {
+          proteins: 150,
+        },
+        deltaToTargets: {
+          proteins: -108,
+        },
+        incompleteNutritionKeys: [],
+        targetSource: 'daySet',
+      },
       itemsBySlot: [],
       slots: [],
     });
@@ -388,23 +412,36 @@ describe('Calendar', () => {
 
     expect(root.querySelector('.calendar-day-panel')).toBeTruthy();
     expect(root.querySelector('.calendar-day-summary__assignment')).toBeTruthy();
-    expect(root.querySelectorAll('.calendar-day-block').length).toBe(1);
-    expect(root.querySelectorAll('.calendar-day-hour-chip').length).toBe(24);
+    expect(root.querySelector('.calendar-day-summary__panel--pilot')).toBeTruthy();
+    expect(root.querySelector('.calendar-day-grid__timeline')).toBeTruthy();
+    expect(root.querySelectorAll('.calendar-day-entry').length).toBe(1);
+    expect(root.querySelectorAll('.calendar-day-grid__block').length).toBe(1);
+    expect(root.querySelectorAll('.calendar-day-grid__half-hour-cell').length).toBe(48);
     expect(textContent).toContain('Vue jour');
+    expect(textContent).toContain('Pilotage du jour');
+    expect(textContent).toContain('Cible du jour issue du day set');
+    expect(textContent).toContain('Heures du jour');
+    expect(textContent).toContain('Entrees du jour');
+    expect(textContent).toContain('Clic a la demi-heure');
     expect(textContent).toContain('Jour standard');
-    expect(textContent).toContain('Detail par plage');
+    expect(textContent).toContain('Saisi');
+    expect(textContent).toContain('Cible');
+    expect(textContent).toContain('Ecart');
+    expect(textContent).not.toContain('Effectif + template / day-set');
+    expect(textContent).not.toContain('Template manuel');
+    expect(textContent).not.toContain('Plan proteine');
   });
 
-  it('should include occurredAt when an hour is clicked', () => {
+  it('should include occurredAt when a half-hour slot is clicked', () => {
     const emitted: Array<{ occurredAt: string | null }> = [];
     component.hourClick.subscribe((event) => emitted.push(event));
 
     component.switchView('day');
     fixture.detectChanges();
 
-    component.onHourClick({ hour: 8, label: '08:00' });
+    component.onDayHalfHourClick(8, 30);
 
-    expect(emitted[0].occurredAt).toContain('T08:00:00');
+    expect(emitted[0].occurredAt).toContain('T08:30:00');
   });
 
   it('should emit itemClick without bubbling to hourClick', () => {
@@ -456,7 +493,7 @@ describe('Calendar', () => {
     component.switchView('day');
     fixture.detectChanges();
 
-    const trigger = fixture.nativeElement.querySelector('.calendar-inserted-item-day');
+    const trigger = fixture.nativeElement.querySelector('.calendar-day-entry');
     trigger.click();
 
     expect(itemEvents.length).toBe(1);
@@ -500,10 +537,9 @@ describe('Calendar', () => {
 
     const textContent = fixture.nativeElement.textContent;
 
-    expect(textContent).toContain(
-      'Aucun day set actif. Les cibles du jour proviennent du cycle.',
-    );
-    expect(textContent).toContain('Cible du cycle');
+    expect(textContent).toContain('Cible du jour issue du cycle assigne');
+    expect(textContent).toContain('Les entrees saisies sont comparees a la cible du cycle Seche.');
+    expect(textContent).toContain('Cible cycle assigne');
     expect(textContent).toContain('150');
   });
 });

@@ -203,7 +203,7 @@ describe('PlanningFeature', () => {
     expect(component.selectedModalDateLocal).toBe('2026-02-16');
   });
 
-  it('should open items modal from action chooser and pass embedded input-day inputs', () => {
+  it('should open input-day modal directly from day hour click and pass embedded inputs', () => {
     component.onCalendarHourClick({
       view: 'day',
       currentDateIso: '2026-02-16T00:00:00.000Z',
@@ -217,10 +217,6 @@ describe('PlanningFeature', () => {
     });
     fixture.detectChanges();
 
-    const trigger = fixture.nativeElement.querySelector('.planning-action-card--item');
-    trigger.click();
-    fixture.detectChanges();
-
     const inputDay = fixture.debugElement.query(By.directive(InputDayFeature))
       .componentInstance as InputDayFeature;
 
@@ -231,7 +227,31 @@ describe('PlanningFeature', () => {
     expect(inputDay.initialEditingItemId).toBeNull();
     expect(inputDay.apiBaseUrl).toBe(component.baseUrl);
     expect(inputDay.lockDate).toBeTrue();
+    expect(fixture.nativeElement.querySelector('[data-testid="planning-modal-actions"]')).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Date selectionnee:');
+  });
+
+  it('should open input-day modal directly from week hour click', () => {
+    component.onCalendarHourClick({
+      view: 'week',
+      currentDateIso: '2026-02-19T00:00:00.000Z',
+      dateLocal: '2026-02-19',
+      occurredAt: '2026-02-19T18:30:00Z',
+      hour: {
+        hour: 18,
+        label: '18:30',
+      },
+      sourceAssignment: null,
+    });
+    fixture.detectChanges();
+
+    const inputDay = fixture.debugElement.query(By.directive(InputDayFeature))
+      .componentInstance as InputDayFeature;
+
+    expect(component.activeModal).toBe('items');
+    expect(inputDay.initialDateLocal).toBe('2026-02-19');
+    expect(inputDay.initialOccurredAt).toBe('2026-02-19T18:30:00Z');
+    expect(fixture.nativeElement.querySelector('[data-testid="planning-modal-actions"]')).toBeNull();
   });
 
   it('should open items modal in edit mode from calendar item click', () => {

@@ -194,6 +194,11 @@ export class PlanningFeature implements OnInit, AfterViewInit {
         ? event.dateLocal
         : (DateTime.fromISO(event.currentDateIso).toISODate() ?? '');
 
+    if (event.view === 'day' || event.view === 'week') {
+      this.openItemsModal(dateLocal, event.occurredAt, null);
+      return;
+    }
+
     this.openActionsModal(dateLocal, event.occurredAt, event.sourceAssignment);
   }
 

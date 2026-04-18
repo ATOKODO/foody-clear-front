@@ -889,8 +889,22 @@
         </div>
 
         <div class="calendar-day-summary__dashboard">
-          <section class="calendar-day-summary__panel">
-            <p class="calendar-day-summary__panel-title">Synthese</p>
+          <section class="calendar-day-summary__panel calendar-day-summary__panel--pilot">
+            <div class="calendar-day-summary__panel-head">
+              <div class="calendar-day-summary__panel-copy">
+                <p class="calendar-day-summary__panel-title">Pilotage du jour</p>
+                <h4 class="calendar-day-summary__panel-heading">{{ getDayTargetHeadline() }}</h4>
+                <p class="calendar-day-summary__panel-description">
+                  {{ getDayTargetSupportingText() }}
+                </p>
+              </div>
+
+              <span
+                *ngIf="inputDayResponse?.totalsMacros?.targetSource as targetSource"
+                class="calendar-day-summary__source-pill">
+                {{ getDayTargetSourcePillText(targetSource) }}
+              </span>
+            </div>
 
             <div class="calendar-week-overview calendar-day-summary__overview">
               <div class="calendar-week-overview__pill">
@@ -899,24 +913,16 @@
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getDayItemCount() }}</span>
-                <span class="calendar-week-overview__label">items saisis</span>
+                <span class="calendar-week-overview__label">entrees saisies</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getDayEnergyTotal() }}</span>
                 <span class="calendar-week-overview__label">kcal suivies</span>
               </div>
-              <div *ngIf="getDayTemplateItemCount() > 0" class="calendar-week-overview__pill">
-                <span class="calendar-week-overview__value">{{ getDayPendingTemplateItemCount() }}</span>
-                <span class="calendar-week-overview__label">template pending</span>
-              </div>
-              <div *ngIf="inputDayResponse?.projectedTotalsMacros" class="calendar-week-overview__pill">
-                <span class="calendar-week-overview__value">{{ getProjectedDayEnergyTotal() }}</span>
-                <span class="calendar-week-overview__label">kcal projetees</span>
-              </div>
             </div>
 
             <div
-              *ngIf="inputDayResponse?.daySet || inputDayResponse?.totalsMacros?.targetSource || inputDayResponse?.templateAssociation"
+              *ngIf="inputDayResponse?.daySet || inputDayResponse?.totalsMacros?.targetSource"
               class="calendar-day-summary__chips">
               <span *ngIf="inputDayResponse?.daySet as daySet" class="calendar-week-chip calendar-week-chip--dayset">
                 {{ daySet.title }}
@@ -925,27 +931,9 @@
               <span
                 *ngIf="inputDayResponse?.totalsMacros?.targetSource as targetSource"
                 class="calendar-week-chip calendar-week-chip--target">
-                {{ getTargetSourceBadgeText(targetSource) }}
-              </span>
-
-              <span
-                *ngIf="getTemplateChipLabel(inputDayResponse) as templateLabel"
-                class="calendar-week-chip calendar-week-chip--template">
-                {{ templateLabel }}
-              </span>
-
-              <span
-                *ngIf="getTemplateSourceBadgeText(inputDayResponse) as templateSource"
-                class="calendar-week-chip calendar-week-chip--template-source">
-                {{ templateSource }}
+                {{ getDayTargetSourcePillText(targetSource) }}
               </span>
             </div>
-
-            <p
-              *ngIf="inputDayResponse?.totalsMacros?.targetSource === 'cycle'"
-              class="calendar-day-summary__notice">
-              Aucun day set actif. Les cibles du jour proviennent du cycle.
-            </p>
 
             <div *ngIf="daySlots.length > 0" class="calendar-day-summary__slots">
               <span *ngFor="let slot of daySlots; trackBy: trackBySlot" class="calendar-day-slot-chip">
@@ -954,132 +942,49 @@
                 <span class="calendar-day-slot-chip__time">{{ formatSlotRange(slot) }}</span>
               </span>
             </div>
-          </section>
 
-          <section class="calendar-day-summary__panel">
-            <p class="calendar-day-summary__panel-title">Repere macros</p>
-
-            <div class="space-y-4">
-              <section *ngIf="inputDayResponse?.totalsMacros as totals" class="space-y-3">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <p class="calendar-macro-section-label calendar-macro-section-label--summary">Effectif / day-set</p>
-                  <span class="text-xs text-slate-500">{{ getTargetSourceText(totals.targetSource) }}</span>
-                </div>
-
-                <ng-container *ngIf="getDayMacroHighlights() as macroHighlights">
-                  <div *ngIf="macroHighlights.length > 0" class="calendar-day-summary__macros calendar-week-macros">
-                    <div
-                      *ngFor="let macro of macroHighlights; trackBy: trackByWeekMacro"
-                      class="calendar-week-macro"
-                      [attr.data-tone]="macro.tone">
-                      <span class="calendar-week-macro__label">{{ macro.label }}</span>
-                      <div class="calendar-week-macro__value-row">
-                        <span class="calendar-week-macro__value">{{ macro.value }}</span>
-                        <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
-                      </div>
+            <ng-container *ngIf="getDayMacroCards() as macroCards">
+              <div *ngIf="macroCards.length > 0; else emptyDayMacroCards" class="calendar-day-summary__macro-grid">
+                <article
+                  *ngFor="let macro of macroCards; trackBy: trackByDayMacroCard"
+                  class="calendar-day-pilot-card"
+                  [attr.data-status]="macro.status"
+                  [attr.data-tone]="macro.tone">
+                  <div class="calendar-day-pilot-card__top">
+                    <div>
+                      <p class="calendar-day-pilot-card__title">{{ macro.label }}</p>
+                      <p class="calendar-day-pilot-card__unit" *ngIf="macro.unit">{{ macro.unit }}</p>
                     </div>
                   </div>
-                </ng-container>
 
-                <div class="calendar-day-summary__metrics">
-                  <ng-container *ngIf="getDayMetricEntries(totals.targets) as targetEntries">
-                    <article *ngIf="targetEntries.length > 0" class="calendar-day-metric-card">
-                      <p class="calendar-day-metric-card__title">Cibles</p>
-
-                      <div class="calendar-day-metric-card__rows">
-                        <div
-                          *ngFor="let entry of targetEntries; trackBy: trackByMacroMetricEntry"
-                          class="calendar-day-metric-card__row">
-                          <span class="calendar-day-metric-card__label">{{ entry.label }}</span>
-                          <span class="calendar-day-metric-card__value">
-                            {{ entry.value }}
-                            <span *ngIf="entry.unit" class="calendar-day-metric-card__unit">{{ entry.unit }}</span>
-                          </span>
-                        </div>
-                      </div>
-                    </article>
-                  </ng-container>
-
-                  <ng-container *ngIf="getDayMetricEntries(totals.deltaToTargets) as deltaEntries">
-                    <article *ngIf="deltaEntries.length > 0" class="calendar-day-metric-card">
-                      <p class="calendar-day-metric-card__title">Delta</p>
-
-                      <div class="calendar-day-metric-card__rows">
-                        <div
-                          *ngFor="let entry of deltaEntries; trackBy: trackByMacroMetricEntry"
-                          class="calendar-day-metric-card__row">
-                          <span class="calendar-day-metric-card__label">{{ entry.label }}</span>
-                          <span class="calendar-day-metric-card__value">
-                            {{ entry.value }}
-                            <span *ngIf="entry.unit" class="calendar-day-metric-card__unit">{{ entry.unit }}</span>
-                          </span>
-                        </div>
-                      </div>
-                    </article>
-                  </ng-container>
-                </div>
-              </section>
-
-              <section *ngIf="inputDayResponse?.projectedTotalsMacros as projectedTotals" class="space-y-3 border-t border-slate-200 pt-4">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <p class="calendar-macro-section-label calendar-macro-section-label--summary">Effectif + template / day-set</p>
-                  <span class="text-xs text-slate-500">{{ getTargetSourceText(projectedTotals.targetSource) }}</span>
-                </div>
-
-                <ng-container *ngIf="getDayProjectedMacroHighlights() as projectedMacroHighlights">
-                  <div *ngIf="projectedMacroHighlights.length > 0" class="calendar-day-summary__macros calendar-week-macros">
-                    <div
-                      *ngFor="let macro of projectedMacroHighlights; trackBy: trackByWeekMacro"
-                      class="calendar-week-macro"
-                      [attr.data-tone]="macro.tone">
-                      <span class="calendar-week-macro__label">{{ macro.label }}</span>
-                      <div class="calendar-week-macro__value-row">
-                        <span class="calendar-week-macro__value">{{ macro.value }}</span>
-                        <span class="calendar-week-macro__unit">{{ macro.unit }}</span>
-                      </div>
+                  <div class="calendar-day-pilot-card__metrics">
+                    <div class="calendar-day-pilot-card__metric">
+                      <span class="calendar-day-pilot-card__metric-label">Saisi</span>
+                      <span class="calendar-day-pilot-card__metric-value">{{ macro.consumed }}</span>
+                    </div>
+                    <div class="calendar-day-pilot-card__metric">
+                      <span class="calendar-day-pilot-card__metric-label">Cible</span>
+                      <span class="calendar-day-pilot-card__metric-value">{{ macro.target }}</span>
+                    </div>
+                    <div class="calendar-day-pilot-card__metric">
+                      <span class="calendar-day-pilot-card__metric-label">Ecart</span>
+                      <span class="calendar-day-pilot-card__metric-value calendar-day-pilot-card__metric-value--delta">
+                        {{ macro.delta }}
+                      </span>
                     </div>
                   </div>
-                </ng-container>
+                </article>
+              </div>
+            </ng-container>
 
-                <div class="calendar-day-summary__metrics">
-                  <ng-container *ngIf="getDayMetricEntries(projectedTotals.targets) as projectedTargetEntries">
-                    <article *ngIf="projectedTargetEntries.length > 0" class="calendar-day-metric-card">
-                      <p class="calendar-day-metric-card__title">Cibles</p>
-
-                      <div class="calendar-day-metric-card__rows">
-                        <div
-                          *ngFor="let entry of projectedTargetEntries; trackBy: trackByMacroMetricEntry"
-                          class="calendar-day-metric-card__row">
-                          <span class="calendar-day-metric-card__label">{{ entry.label }}</span>
-                          <span class="calendar-day-metric-card__value">
-                            {{ entry.value }}
-                            <span *ngIf="entry.unit" class="calendar-day-metric-card__unit">{{ entry.unit }}</span>
-                          </span>
-                        </div>
-                      </div>
-                    </article>
-                  </ng-container>
-
-                  <ng-container *ngIf="getDayMetricEntries(projectedTotals.deltaToTargets) as projectedDeltaEntries">
-                    <article *ngIf="projectedDeltaEntries.length > 0" class="calendar-day-metric-card">
-                      <p class="calendar-day-metric-card__title">Delta</p>
-
-                      <div class="calendar-day-metric-card__rows">
-                        <div
-                          *ngFor="let entry of projectedDeltaEntries; trackBy: trackByMacroMetricEntry"
-                          class="calendar-day-metric-card__row">
-                          <span class="calendar-day-metric-card__label">{{ entry.label }}</span>
-                          <span class="calendar-day-metric-card__value">
-                            {{ entry.value }}
-                            <span *ngIf="entry.unit" class="calendar-day-metric-card__unit">{{ entry.unit }}</span>
-                          </span>
-                        </div>
-                      </div>
-                    </article>
-                  </ng-container>
-                </div>
-              </section>
-            </div>
+            <ng-template #emptyDayMacroCards>
+              <div class="calendar-day-summary__empty-state">
+                <p class="calendar-day-summary__empty-title">Aucune comparaison disponible</p>
+                <p class="calendar-day-summary__empty-text">
+                  Le resume affiche les entrees du jour des qu'une cible nutritionnelle est resolue.
+                </p>
+              </div>
+            </ng-template>
           </section>
         </div>
 
@@ -1092,80 +997,13 @@
       </div>
 
       <div class="calendar-day-body">
-        <section class="calendar-day-body__section">
-          <div class="calendar-day-body__section-header">
-            <div>
-              <p class="calendar-day-body__eyebrow">Plages du jour</p>
-              <h4 class="calendar-day-body__title">Detail par plage</h4>
-              <p class="calendar-day-body__description">
-                Chaque carte rassemble la fenetre horaire et les items saisis de la plage.
-              </p>
-            </div>
-
-            <span class="calendar-week-meta-pill">{{ getDaySlotCount() }} plages</span>
-          </div>
-
-          <ng-container *ngIf="getDayTimelineBlocks() as dayBlocks">
-            <div *ngIf="dayBlocks.length > 0; else emptyDayTimeline" class="calendar-day-blocks">
-              <article
-                *ngFor="let block of dayBlocks; trackBy: trackByWeekTimelineBlock"
-                [attr.data-testid]="'calendar-day-block-' + block.title"
-                class="calendar-week-block calendar-day-block"
-                [class.calendar-week-block--orphan]="block.kind === 'orphan'"
-                [attr.data-tone]="block.tone"
-                (click)="onDayTimelineBlockClick(block, $event)">
-                <div class="calendar-week-block__header">
-                  <div class="calendar-week-block__heading">
-                    <span class="calendar-week-block__title">{{ block.title }}</span>
-                    <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
-                  </div>
-                  <span class="calendar-week-block__count">
-                    {{ block.items.length }} item{{ block.items.length > 1 ? 's' : '' }}
-                  </span>
-                </div>
-
-                <div *ngIf="block.items.length > 0; else emptyDayBlock" class="calendar-week-block__items">
-                  <div
-                    *ngFor="let product of block.items; trackBy: trackByInsertedProduct"
-                    (click)="onItemClick(product, product.dateLocal, $event)"
-                    [attr.data-testid]="'calendar-day-item-' + product.id"
-                    class="calendar-week-block__item calendar-inserted-item-day">
-                    <div class="calendar-week-block__item-top">
-                      <span class="calendar-week-block__item-name">{{ product.productName }}</span>
-                      <span class="calendar-week-block__item-time">
-                        {{ formatItemTime(product.occurredAt, product.insertedAt) }}
-                      </span>
-                    </div>
-                    <div class="calendar-week-block__item-meta">
-                      qte: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
-                    </div>
-                  </div>
-                </div>
-
-                <ng-template #emptyDayBlock>
-                  <p class="calendar-week-block__empty">Aucun item saisi sur cette plage.</p>
-                </ng-template>
-              </article>
-            </div>
-          </ng-container>
-
-          <ng-template #emptyDayTimeline>
-            <div class="calendar-day-empty">
-              <p class="calendar-day-empty__title">Journee encore vide</p>
-              <p class="calendar-day-empty__text">
-                Utilise le bouton + ou les heures rapides pour ouvrir les actions de la journee.
-              </p>
-            </div>
-          </ng-template>
-        </section>
-
-        <aside class="calendar-day-body__section calendar-day-hours">
+        <section class="calendar-day-body__section calendar-day-body__section--primary calendar-day-hours">
           <div class="calendar-day-body__section-header">
             <div>
               <p class="calendar-day-body__eyebrow">Acces rapide</p>
               <h4 class="calendar-day-body__title">Heures du jour</h4>
               <p class="calendar-day-body__description">
-                Vue compacte par heure pour ouvrir une action sans etirer la page.
+                La grille horaire prend la largeur principale pour capturer ou ouvrir une entree au bon moment.
               </p>
             </div>
 
@@ -1173,27 +1011,140 @@
           </div>
 
           <div class="calendar-day-hours__grid">
-            <button
-              *ngFor="let hour of dayHours; trackBy: trackByHour"
-              type="button"
-              [attr.data-testid]="'calendar-day-hour-' + hour.label"
-              class="calendar-day-hour-chip"
-              [class.calendar-day-hour-chip--active]="hour.activeSlots && hour.activeSlots.length > 0"
-              [class.calendar-day-hour-chip--filled]="hour.insertedProducts && hour.insertedProducts.length > 0"
-              (click)="onHourClick(hour)">
-              <span class="calendar-day-hour-chip__label">{{ hour.label }}</span>
+            <div class="calendar-day-grid__timeline">
+              <div class="calendar-day-grid__corner">
+                <span>Heures</span>
+              </div>
 
-              <span *ngIf="hour.insertedProducts && hour.insertedProducts.length > 0" class="calendar-day-hour-chip__meta">
-                {{ hour.insertedProducts.length }} item{{ hour.insertedProducts.length > 1 ? 's' : '' }}
-              </span>
+              <div class="calendar-day-grid__header">
+                <div>
+                  <p class="calendar-day-grid__eyebrow">Timeline jour</p>
+                  <p class="calendar-day-grid__title">Clic a la demi-heure</p>
+                </div>
 
-              <span
-                *ngIf="(!hour.insertedProducts || hour.insertedProducts.length === 0) && hour.activeSlots && hour.activeSlots.length > 0"
-                class="calendar-day-hour-chip__meta">
-                {{ hour.activeSlots.length }} plage{{ hour.activeSlots.length > 1 ? 's' : '' }}
-              </span>
-            </button>
+                <div class="calendar-day-grid__header-meta">
+                  <span class="calendar-week-meta-pill">{{ getDaySlotCount() }} plages</span>
+                </div>
+              </div>
+
+              <div
+                *ngFor="let hour of HOURS; trackBy: trackByHour"
+                class="calendar-day-grid__hour-label"
+                [style.grid-row-start]="getWeekHourGridRowStart(hour)"
+                [style.grid-row-end]="getWeekHourGridRowEnd(hour)">
+                {{ hour.toString().padStart(2, '0') }}:00
+              </div>
+
+              <ng-container *ngFor="let hour of HOURS; trackBy: trackByHour">
+                <button
+                  type="button"
+                  class="calendar-day-grid__half-hour-cell"
+                  [attr.data-testid]="'calendar-day-half-hour-' + hour.toString().padStart(2, '0') + '-00'"
+                  [style.grid-row-start]="getDayHalfHourGridRowStart(hour, 0)"
+                  [style.grid-row-end]="getDayHalfHourGridRowStart(hour, 0) + 1"
+                  [attr.aria-label]="'Ouvrir ' + hour.toString().padStart(2, '0') + ':00 pour le ' + (currentDate.toISODate() ?? '')"
+                  (click)="onDayHalfHourClick(hour, 0)">
+                </button>
+
+                <button
+                  type="button"
+                  class="calendar-day-grid__half-hour-cell calendar-day-grid__half-hour-cell--mid"
+                  [attr.data-testid]="'calendar-day-half-hour-' + hour.toString().padStart(2, '0') + '-30'"
+                  [style.grid-row-start]="getDayHalfHourGridRowStart(hour, 30)"
+                  [style.grid-row-end]="getDayHalfHourGridRowStart(hour, 30) + 1"
+                  [attr.aria-label]="'Ouvrir ' + hour.toString().padStart(2, '0') + ':30 pour le ' + (currentDate.toISODate() ?? '')"
+                  (click)="onDayHalfHourClick(hour, 30)">
+                </button>
+              </ng-container>
+
+              <ng-container *ngIf="getDayTimelineBlocks() as dayBlocks">
+                <div
+                  *ngFor="let block of dayBlocks; trackBy: trackByWeekTimelineBlock"
+                  [attr.data-testid]="'calendar-day-block-' + block.title"
+                  class="calendar-week-block calendar-day-grid__block"
+                  [class.calendar-week-block--orphan]="block.kind === 'orphan'"
+                  [attr.data-tone]="block.tone"
+                  [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
+                  [style.grid-row-end]="getWeekTimelineBlockGridRowEnd(block)"
+                  (click)="onDayTimelineBlockClick(block, $event)">
+                  <div class="calendar-week-block__header">
+                    <div class="calendar-week-block__heading">
+                      <span class="calendar-week-block__title">{{ block.title }}</span>
+                      <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
+                    </div>
+                    <span class="calendar-week-block__count">
+                      {{ block.items.length }} item{{ block.items.length > 1 ? 's' : '' }}
+                    </span>
+                  </div>
+
+                  <div *ngIf="block.items.length > 0; else emptyDayBlock" class="calendar-week-block__items">
+                    <div
+                      *ngFor="let product of block.items; trackBy: trackByInsertedProduct"
+                      (click)="onItemClick(product, product.dateLocal, $event)"
+                      [attr.data-testid]="'calendar-day-item-' + product.id"
+                      class="calendar-week-block__item calendar-inserted-item-day">
+                      <div class="calendar-week-block__item-top">
+                        <span class="calendar-week-block__item-name">{{ product.productName }}</span>
+                        <span class="calendar-week-block__item-time">
+                          {{ formatItemTime(product.occurredAt, product.insertedAt) }}
+                        </span>
+                      </div>
+                      <div class="calendar-week-block__item-meta">
+                        qte: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <ng-template #emptyDayBlock>
+                    <p class="calendar-week-block__empty">Aucun item saisi sur cette plage.</p>
+                  </ng-template>
+                </div>
+              </ng-container>
+            </div>
           </div>
+        </section>
+
+        <aside class="calendar-day-body__section calendar-day-body__section--secondary calendar-day-entries">
+          <div class="calendar-day-body__section-header">
+            <div>
+              <p class="calendar-day-body__eyebrow">Resume rapide</p>
+              <h4 class="calendar-day-body__title">Entrees du jour</h4>
+              <p class="calendar-day-body__description">
+                Side list compacte des entrees saisies, triees par heure et pretes a rouvrir.
+              </p>
+            </div>
+
+            <span class="calendar-week-meta-pill">{{ getDayItemCount() }} items</span>
+          </div>
+
+          <ng-container *ngIf="getDayEntryRows() as dayEntries">
+            <div *ngIf="dayEntries.length > 0; else emptyDayEntries" class="calendar-day-entries__list">
+              <button
+                *ngFor="let entry of dayEntries; trackBy: trackByDayEntryRow"
+                type="button"
+                class="calendar-day-entry"
+                [attr.data-testid]="'calendar-day-entry-' + entry.id"
+                (click)="onItemClick(entry.item, entry.dateLocal, $event)">
+                <span class="calendar-day-entry__time">{{ entry.timeLabel }}</span>
+
+                <span class="calendar-day-entry__content">
+                  <span class="calendar-day-entry__product">{{ entry.productName }}</span>
+                  <span class="calendar-day-entry__meta">{{ entry.slotLabel }}</span>
+                </span>
+
+                <span class="calendar-day-entry__qty">{{ entry.qtyLabel }}</span>
+              </button>
+            </div>
+          </ng-container>
+
+          <ng-template #emptyDayEntries>
+            <div class="calendar-day-empty">
+              <p class="calendar-day-empty__title">Aucune entree saisie</p>
+              <p class="calendar-day-empty__text">
+                Utilise la grille horaire pour ouvrir rapidement une action sur cette journee.
+              </p>
+            </div>
+          </ng-template>
         </aside>
       </div>
     </div>
