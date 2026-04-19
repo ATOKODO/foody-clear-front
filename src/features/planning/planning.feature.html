@@ -1,72 +1,62 @@
 <section class="app-page app-page--wide" data-testid="planning-page">
   <div class="planning-feature__header">
-    <div class="planning-feature__header-copy">
-      <p class="planning-feature__eyebrow">Planning</p>
-      <h1 class="planning-feature__title">Assignations</h1>
-      <p class="planning-feature__subtitle">
-        Affectation des cycles et suivi des jours
-      </p>
-    </div>
+    <div class="planning-feature__header-nav">
+      <button
+        type="button"
+        data-testid="planning-today"
+        class="planning-feature__today-button"
+        (click)="goToCalendarToday()">
+        Aujourd'hui
+      </button>
 
-    <div class="planning-feature__header-tools">
-      <div class="planning-feature__header-nav">
+      <div class="planning-feature__period-switcher">
         <button
           type="button"
-          data-testid="planning-today"
-          class="planning-feature__today-button"
-          (click)="goToCalendarToday()">
-          Aujourd'hui
+          data-testid="planning-prev"
+          class="planning-feature__nav-button"
+          aria-label="Periode precedente"
+          (click)="navigateCalendar('prev')">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
         </button>
 
-        <div class="planning-feature__period-switcher">
-          <button
-            type="button"
-            data-testid="planning-prev"
-            class="planning-feature__nav-button"
-            aria-label="Periode precedente"
-            (click)="navigateCalendar('prev')">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          <h2 class="planning-feature__period-label">
-            {{ calendarHeaderLabel }}
-          </h2>
-
-          <button
-            type="button"
-            data-testid="planning-next"
-            class="planning-feature__nav-button"
-            aria-label="Periode suivante"
-            (click)="navigateCalendar('next')">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
+        <h2 class="planning-feature__period-label">
+          {{ calendarHeaderLabel }}
+        </h2>
 
         <button
           type="button"
-          data-testid="planning-refresh"
-          class="planning-feature__refresh-button"
-          (click)="refreshPlanningData()"
-          [disabled]="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment">
-          Rafraichir
+          data-testid="planning-next"
+          class="planning-feature__nav-button"
+          aria-label="Periode suivante"
+          (click)="navigateCalendar('next')">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
         </button>
       </div>
 
-      <app-segmented-toggle
-        [value]="currentCalendarView"
-        [options]="calendarViewOptions"
-        [ariaLabel]="'Selection de la vue calendrier'"
-        [testId]="'planning-view-toggle'"
-        [name]="'planning-view-toggle'"
-        [maxWidth]="'46rem'"
-        class="planning-feature__view-toggle"
-        (valueChange)="switchCalendarView($event)">
-      </app-segmented-toggle>
+      <button
+        type="button"
+        data-testid="planning-refresh"
+        class="planning-feature__refresh-button"
+        (click)="refreshPlanningData()"
+        [disabled]="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment">
+        Rafraichir
+      </button>
     </div>
+
+    <app-segmented-toggle
+      [value]="currentCalendarView"
+      [options]="calendarViewOptions"
+      [ariaLabel]="'Selection de la vue calendrier'"
+      [testId]="'planning-view-toggle'"
+      [name]="'planning-view-toggle'"
+      [maxWidth]="'46rem'"
+      class="planning-feature__view-toggle"
+      (valueChange)="switchCalendarView($event)">
+    </app-segmented-toggle>
   </div>
 
   <mat-card class="planning-feature__surface">

@@ -198,6 +198,17 @@ describe('PlanningFeature', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should keep only planning controls in the local header', () => {
+    const textContent = fixture.nativeElement.textContent;
+
+    expect(fixture.nativeElement.querySelector('[data-testid="planning-today"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[data-testid="planning-refresh"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[data-testid="planning-view-toggle"]')).toBeTruthy();
+    expect(textContent).not.toContain('Planning');
+    expect(textContent).not.toContain('Assignations');
+    expect(textContent).not.toContain('Affectation des cycles et suivi des jours');
+  });
+
   it('should open actions modal from calendar day click', () => {
     component.onCalendarDayClick({
       view: 'day',

@@ -89,6 +89,34 @@ describe('Calendar', () => {
               },
             ],
           },
+          templateAssociation: {
+            source: 'manual',
+            template: {
+              id: 12,
+              title: 'Lean Day',
+            },
+          },
+          templateItems: [
+            {
+              id: 91,
+              productId: 8,
+              productName: 'Skyr',
+              qty: 1,
+              qtyUnit: 'portion',
+              qtyNormalized: 150,
+              slotId: null,
+              slotKey: null,
+              status: 'pending',
+              convertedItemId: null,
+              stockAvailability: {
+                enoughStock: true,
+                totalAvailableNormalized: 300,
+                requestedQtyNormalized: 150,
+              },
+              stockByInventory: [],
+              nutritionValue: {},
+            },
+          ],
           items: [
             {
               id: 44,
@@ -130,23 +158,25 @@ describe('Calendar', () => {
     fixture.detectChanges();
 
     const textContent = fixture.nativeElement.textContent;
-    const mobileMacros = fixture.nativeElement.querySelectorAll(
-      '.calendar-week-mobile .calendar-week-macro',
+    const mobileAlerts = fixture.nativeElement.querySelectorAll(
+      '.calendar-week-mobile .calendar-month-day__alert-badge',
     );
-    const desktopMacros = fixture.nativeElement.querySelectorAll(
-      '.calendar-week-grid .calendar-week-macro',
+    const desktopAlerts = fixture.nativeElement.querySelectorAll(
+      '.calendar-week-grid .calendar-month-day__alert-badge',
     );
 
     expect(fixture.nativeElement.querySelectorAll('.calendar-week-card').length).toBe(0);
-    expect(mobileMacros.length).toBe(1);
-    expect(desktopMacros.length).toBe(1);
+    expect(fixture.nativeElement.querySelectorAll('.calendar-week-macro').length).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('.calendar-week-day-details__meta').length).toBe(0);
+    expect(mobileAlerts.length).toBe(1);
+    expect(desktopAlerts.length).toBe(1);
     expect(textContent).toContain('Base');
+    expect(textContent).toContain('Lean Day');
     expect(textContent).toContain('Cibles day set');
-    expect(textContent).toMatch(/1.?047/);
-    expect(textContent).toMatch(/1.?900/);
-    expect(textContent).toMatch(/55[,.]11%/);
-    expect(textContent).toContain('1 plages');
-    expect(textContent).toContain('1 items');
+    expect(textContent).toContain('Template manuel');
+    expect(textContent).toContain('Template en attente');
+    expect(textContent).not.toContain('Effectif');
+    expect(textContent).not.toContain('Effectif + template');
   });
 
   it('should render a modernized year view with summary cards and active months', () => {

@@ -1073,10 +1073,29 @@
 }
 
 .calendar-week-day-details__chips,
+.calendar-week-day-details__alerts,
 .calendar-week-day-details__meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
+}
+
+.calendar-week-day-details .calendar-month-day__alert-badge {
+  border-color: rgba(226, 232, 240, 0.96);
+  background: rgba(248, 250, 252, 0.96);
+  color: #0f172a;
+}
+
+.calendar-week-day-details .calendar-month-day__alert-badge[data-tone='projected'] {
+  border-color: rgba(191, 219, 254, 0.86);
+  background: rgba(239, 246, 255, 0.98);
+  color: #1d4ed8;
+}
+
+.calendar-week-day-details .calendar-month-day__alert-badge[data-tone='template'] {
+  border-color: rgba(253, 230, 138, 0.9);
+  background: rgba(254, 252, 232, 0.98);
+  color: #b45309;
 }
 
 .calendar-week-day-details--mobile {
@@ -1099,38 +1118,9 @@
   font-size: 0.64rem;
 }
 
-.calendar-week-day-details--desktop .calendar-week-macros {
-  gap: 0.4rem;
-}
-
-.calendar-week-day-details--desktop .calendar-week-macro {
-  gap: 0.22rem;
-  border-radius: 0.85rem;
-  padding: 0.52rem 0.56rem;
-}
-
-.calendar-week-day-details--desktop .calendar-week-macro__label {
-  font-size: 0.58rem;
-  letter-spacing: 0.06em;
-}
-
-.calendar-week-day-details--desktop .calendar-week-macro__value {
-  font-size: 0.82rem;
-}
-
-.calendar-week-day-details--desktop .calendar-week-macro__target,
-.calendar-week-day-details--desktop .calendar-week-macro__separator,
-.calendar-week-day-details--desktop .calendar-week-macro__unit,
-.calendar-week-day-details--desktop .calendar-week-meta-pill {
-  font-size: 0.64rem;
-}
-
-.calendar-week-day-details--desktop .calendar-week-macro__percent-value {
-  font-size: 0.94rem;
-}
-
-.calendar-week-day-details--desktop .calendar-week-meta-pill {
-  padding: 0.28rem 0.52rem;
+.calendar-week-day-details--desktop .calendar-month-day__alert-badge {
+  font-size: 0.54rem;
+  padding: 0.22rem 0.44rem;
 }
 
 .calendar-week-mobile {
@@ -2375,9 +2365,12 @@
   .calendar-year-card,
   .calendar-month-day,
   .calendar-month-day__quick-action,
+  .calendar-week-mobile,
+  .calendar-week-grid,
   .calendar-week-grid__day-header,
   .calendar-week-grid__hour-cell,
   .calendar-week-mobile__day,
+  .calendar-week-mobile__empty,
   .calendar-week-block,
   .calendar-day-summary__panel,
   .calendar-day-pilot-card,
@@ -2411,6 +2404,17 @@
 
 :host-context(.dark) .calendar-day-grid__half-hour-cell--mid {
   background: var(--app-surface-muted);
+}
+
+:host-context(.dark) .calendar-week-grid__ghost-button {
+  border-color: var(--app-border);
+  background: var(--app-surface-raised);
+  color: var(--app-text);
+}
+
+:host-context(.dark) .calendar-week-grid__ghost-button:hover {
+  border-color: var(--app-border-strong);
+  color: var(--app-text-strong);
 }
 
 :host-context(.dark) .calendar-month-day__assignment--insight-only,
@@ -2526,5 +2530,9 @@
 }
 
 :host-context(.dark) .calendar-month-day__assignment--insight-only .calendar-month-day__alert-badge {
+  color: var(--app-text-strong);
+}
+
+:host-context(.dark) .calendar-week-day-details .calendar-month-day__alert-badge {
   color: var(--app-text-strong);
 }
