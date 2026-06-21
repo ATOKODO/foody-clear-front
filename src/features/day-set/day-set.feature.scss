@@ -6,3 +6,35 @@
   display: grid;
   gap: 1rem;
 }
+
+.day-set-feature__dialog-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.day-set-feature__dialog-card--embedded {
+  max-height: calc(100vh - var(--day-set-dialog-top-offset, 0px) - 2rem);
+}
+
+.day-set-feature__dialog-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--app-surface);
+}
+
+.day-set-feature__dialog-content {
+  padding: 0;
+}
+
+.app-modal-backdrop--embedded-day-set {
+  inset: var(--day-set-dialog-top-offset, 0px) 0 0 0;
+}
+
+.app-modal-shell--embedded-day-set {
+  top: var(--day-set-dialog-top-offset, 0px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  place-items: start center;
+}

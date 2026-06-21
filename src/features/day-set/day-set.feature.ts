@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -29,6 +29,8 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
   styleUrl: './day-set.feature.scss',
 })
 export class DaySetFeature implements OnInit {
+  private readonly document = inject(DOCUMENT);
+
   @Input() embedded = false;
   @Output() readonly dataChanged = new EventEmitter<void>();
 
@@ -48,6 +50,7 @@ export class DaySetFeature implements OnInit {
   lastMetaError: unknown = null;
   nutritionKeys: NutritionKeyMeta[] = [];
   templates: TemplateSummary[] = [];
+  embeddedDialogTopOffset = 0;
 
   constructor(
     private readonly daySetSrv: DaySetService,
@@ -58,6 +61,15 @@ export class DaySetFeature implements OnInit {
 
   ngOnInit(): void {
     this.refresh();
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (!this.formVisible || !this.embedded) {
+      return;
+    }
+
+    this.syncEmbeddedDialogLayout();
   }
 
   refresh(): void {
@@ -92,7 +104,7 @@ export class DaySetFeature implements OnInit {
     this.formMode = 'add';
     this.editingDaySetId = null;
     this.formInitialValue = null;
-    this.formVisible = true;
+    this.openForm();
   }
 
   openCreate(): void {
@@ -118,7 +130,7 @@ export class DaySetFeature implements OnInit {
       slotIds: this.resolveDaySetSlotIds(daySet),
       templateId: daySet.template?.id ?? daySet.templateId ?? null,
     };
-    this.formVisible = true;
+    this.openForm();
   }
 
   onDeleteRequested(item: DaySetListItem): void {
@@ -158,7 +170,7 @@ export class DaySetFeature implements OnInit {
           this.lastResponse = response;
           this.lastError = null;
           this.saving = false;
-          this.formVisible = false;
+          this.closeForm();
           this.dataChanged.emit();
           this.loadDaySets();
         },
@@ -175,7 +187,7 @@ export class DaySetFeature implements OnInit {
         this.lastResponse = response;
         this.lastError = null;
         this.saving = false;
-        this.formVisible = false;
+        this.closeForm();
         this.dataChanged.emit();
         this.loadDaySets();
       },
@@ -194,10 +206,38 @@ export class DaySetFeature implements OnInit {
   }
 
   onCancelForm(): void {
+    this.closeForm();
+  }
+
+  private openForm(): void {
+    this.formVisible = true;
+    this.syncEmbeddedDialogLayout();
+  }
+
+  private closeForm(): void {
     this.formVisible = false;
     this.formMode = 'add';
     this.formInitialValue = null;
     this.editingDaySetId = null;
+  }
+
+  private syncEmbeddedDialogLayout(): void {
+    if (!this.embedded) {
+      this.embeddedDialogTopOffset = 0;
+      return;
+    }
+
+    const view = this.document.defaultView;
+    if (!view) {
+      this.embeddedDialogTopOffset = 0;
+      return;
+    }
+
+    view.requestAnimationFrame(() => {
+      const header = this.document.querySelector('.app-shell__header');
+      this.embeddedDialogTopOffset =
+        header instanceof HTMLElement ? Math.ceil(header.getBoundingClientRect().bottom) : 0;
+    });
   }
 
   private loadNutritionKeys(): void {

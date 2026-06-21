@@ -72,16 +72,27 @@
   </section>
 </ng-template>
 
-<div class="app-modal-backdrop" *ngIf="formVisible" (click)="onCancelForm()"></div>
-<div class="app-modal-shell" *ngIf="formVisible" data-testid="day-set-dialog">
+<div
+  class="app-modal-backdrop"
+  [class.app-modal-backdrop--embedded-day-set]="embedded"
+  [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset"
+  *ngIf="formVisible"
+  (click)="onCancelForm()"></div>
+<div
+  class="app-modal-shell"
+  [class.app-modal-shell--embedded-day-set]="embedded"
+  [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset"
+  *ngIf="formVisible"
+  data-testid="day-set-dialog">
   <mat-card
     appearance="outlined"
-    class="app-modal-card"
+    class="app-modal-card day-set-feature__dialog-card"
+    [class.day-set-feature__dialog-card--embedded]="embedded"
     role="dialog"
     aria-modal="true"
     (click)="$event.stopPropagation()"
   >
-    <div class="app-dialog-header">
+    <div class="app-dialog-header day-set-feature__dialog-header">
       <div>
         <p class="app-dialog-eyebrow">Planning</p>
         <h3 class="app-dialog-title">
@@ -97,11 +108,12 @@
       </button>
     </div>
 
-    <div class="app-dialog-content">
+    <div class="app-dialog-content day-set-feature__dialog-content">
       <app-day-set-form
         [mode]="formMode"
         [daySet]="formInitialValue"
         [showHeading]="false"
+        [inDialog]="true"
         [nutritionKeys]="nutritionKeys"
         [slots]="slotListItems"
         [templates]="templates"

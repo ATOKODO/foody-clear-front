@@ -1,4 +1,10 @@
-<section class="mx-auto max-w-4xl px-4 py-8 text-gray-900" aria-label="Ajouter ou modifier un day set">
+<section
+  class="mx-auto max-w-4xl text-gray-900 sm:px-4"
+  [class.px-4]="!inDialog"
+  [class.py-8]="!inDialog"
+  [class.px-3]="inDialog"
+  [class.py-4]="inDialog"
+  aria-label="Ajouter ou modifier un day set">
   <div *ngIf="showHeading" class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
     <h2 class="text-xl font-medium">{{ heading }}</h2>
     <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
