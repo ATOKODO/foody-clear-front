@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { APP_NAVIGATION, APP_NAVIGATION_ENTRIES } from '../../app/app.navigation';
 
@@ -7,6 +7,7 @@ import { APP_NAVIGATION, APP_NAVIGATION_ENTRIES } from '../../app/app.navigation
   selector: 'app-home',
   imports: [CommonModule, RouterLink],
   templateUrl: './home.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './home.scss',
 })
 export class Home {

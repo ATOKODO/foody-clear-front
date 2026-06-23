@@ -1,5 +1,5 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output, inject, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -26,6 +26,7 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
   selector: 'app-day-set-feature',
   imports: [CommonModule, MatButtonModule, MatCardModule, UiErrorPanel, DaySetList, DaySetForm],
   templateUrl: './day-set.feature.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './day-set.feature.scss',
 })
 export class DaySetFeature implements OnInit {

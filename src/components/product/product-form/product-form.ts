@@ -8,6 +8,7 @@ import {
   Output,
   SimpleChanges,
   inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -72,6 +73,7 @@ export interface ProductFormValue {
     MatSelectModule,
   ],
   templateUrl: './product-form.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './product-form.scss',
 })
 export class ProductForm implements OnInit, OnChanges {

@@ -8,6 +8,7 @@ import {
   Output,
   SimpleChanges,
   inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -33,6 +34,7 @@ export interface CategoryFormValue {
     MatInputModule,
   ],
   templateUrl: './category-form.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './category-form.scss',
 })
 export class CategoryForm implements OnInit, OnChanges {

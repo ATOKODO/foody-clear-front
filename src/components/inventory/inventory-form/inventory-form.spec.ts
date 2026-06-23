@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InventoryForm } from './inventory-form';
@@ -6,6 +6,7 @@ import { InventoryForm } from './inventory-form';
 @Component({
   standalone: true,
   imports: [InventoryForm],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <app-inventory-form mode="edit">
       <button inventory-form-header-actions type="button">Ouvrir l'ajout</button>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -33,6 +33,7 @@ import {
     TagForm,
   ],
   templateUrl: './tag.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tag.scss',
 })
 export class Tag implements OnInit {

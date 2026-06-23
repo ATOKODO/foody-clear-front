@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DateTime } from 'luxon';
 import { MatButtonModule } from '@angular/material/button';
@@ -103,6 +103,7 @@ const CYCLE_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<CycleHubView>[] = [
     SlotFeature,
   ],
   templateUrl: './cycle.feature.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './cycle.feature.scss',
 })
 export class CycleFeature implements OnInit {

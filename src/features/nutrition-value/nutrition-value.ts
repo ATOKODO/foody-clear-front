@@ -1,5 +1,5 @@
 import { CommonModule, JsonPipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -36,6 +36,7 @@ import {
     UiErrorPanel,
   ],
   templateUrl: './nutrition-value.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './nutrition-value.scss',
 })
 export class NutritionValues implements OnInit {

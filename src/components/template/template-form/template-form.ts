@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -53,6 +54,7 @@ export interface TemplateFormSubmittedEvent {
     ProductList,
   ],
   templateUrl: './template-form.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './template-form.scss',
 })
 export class TemplateForm implements OnInit, OnChanges {

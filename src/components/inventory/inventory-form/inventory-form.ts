@@ -8,6 +8,7 @@ import {
   Output,
   SimpleChanges,
   inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -30,6 +31,7 @@ export interface InventoryFormValue {
     MatInputModule,
   ],
   templateUrl: './inventory-form.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './inventory-form.scss',
 })
 export class InventoryForm implements OnInit, OnChanges {

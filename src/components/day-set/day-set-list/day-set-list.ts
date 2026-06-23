@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -36,6 +37,7 @@ export interface DaySetListItem {
     MatTableModule,
   ],
   templateUrl: './day-set-list.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './day-set-list.scss',
 })
 export class DaySetList implements OnInit, OnChanges {

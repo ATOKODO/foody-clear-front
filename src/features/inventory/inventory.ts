@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -105,6 +105,7 @@ type InventoryQtyUnitOption = {
     ProductList,
   ],
   templateUrl: './inventory.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './inventory.scss',
 })
 export class Inventory implements OnInit {

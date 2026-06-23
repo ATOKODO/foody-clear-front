@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -21,6 +21,7 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
   selector: 'app-slot-feature',
   imports: [CommonModule, MatButtonModule, MatCardModule, UiErrorPanel, SlotList, SlotForm],
   templateUrl: './slot.feature.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './slot.feature.scss',
 })
 export class SlotFeature implements OnInit {

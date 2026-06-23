@@ -8,6 +8,7 @@ import {
   Output,
   SimpleChanges,
   inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -30,6 +31,7 @@ export interface TagFormValue {
     MatInputModule,
   ],
   templateUrl: './tag-form.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tag-form.scss',
 })
 export class TagForm implements OnInit, OnChanges {

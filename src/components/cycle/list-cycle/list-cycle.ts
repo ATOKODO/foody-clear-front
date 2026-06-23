@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -84,6 +85,7 @@ export interface CycleListItem extends CycleMacroTotals {
   selector: 'app-list-cycle',
   imports: [CommonModule, MatButtonModule, MatCardModule, MatCheckboxModule],
   templateUrl: './list-cycle.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './list-cycle.scss',
 })
 export class ListCycle implements OnInit, OnChanges {

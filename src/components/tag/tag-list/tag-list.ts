@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -30,6 +31,7 @@ export interface TagListItem {
     MatTableModule,
   ],
   templateUrl: './tag-list.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tag-list.scss',
 })
 export class TagList implements OnInit, OnChanges {

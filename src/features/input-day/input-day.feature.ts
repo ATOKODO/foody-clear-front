@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   FormBuilder,
@@ -134,6 +135,7 @@ const INPUT_DAY_EMBEDDED_SECTION_OPTIONS: readonly SegmentedToggleOption<InputDa
     SegmentedToggle,
   ],
   templateUrl: './input-day.feature.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './input-day.feature.scss',
 })
 export class InputDayFeature implements OnInit, OnChanges {

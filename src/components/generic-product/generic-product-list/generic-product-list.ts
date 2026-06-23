@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -35,6 +36,7 @@ export interface GenericProductListItem {
     MatTableModule,
   ],
   templateUrl: './generic-product-list.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './generic-product-list.scss',
 })
 export class GenericProductList implements OnInit, OnChanges {

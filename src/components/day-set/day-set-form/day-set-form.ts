@@ -8,6 +8,7 @@ import {
   Output,
   SimpleChanges,
   inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -45,6 +46,7 @@ export interface DaySetFormValue {
     SlotList,
   ],
   templateUrl: './day-set-form.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './day-set-form.scss',
 })
 export class DaySetForm implements OnInit, OnChanges {

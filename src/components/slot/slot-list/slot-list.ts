@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -39,6 +40,7 @@ export interface SlotListItem {
     MatTableModule,
   ],
   templateUrl: './slot-list.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './slot-list.scss',
 })
 export class SlotList implements OnInit, OnChanges {

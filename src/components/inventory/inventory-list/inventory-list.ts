@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -31,6 +32,7 @@ export interface InventoryListItem {
     MatTableModule,
   ],
   templateUrl: './inventory-list.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './inventory-list.scss',
 })
 export class InventoryList implements OnInit, OnChanges {

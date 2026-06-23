@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, HostListener, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -77,6 +77,7 @@ const PLANNING_CALENDAR_VIEW_OPTIONS: readonly SegmentedToggleOption<CalendarVie
     UiErrorPanel,
   ],
   templateUrl: './planning.feature.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './planning.feature.scss',
 })
 export class PlanningFeature implements OnInit, AfterViewInit {

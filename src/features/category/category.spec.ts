@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of, throwError } from 'rxjs';
@@ -9,6 +9,7 @@ import { CategoryService } from '../../services/category-service';
 @Component({
   standalone: true,
   imports: [Category],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <app-category></app-category>
     <app-category></app-category>

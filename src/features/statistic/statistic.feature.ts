@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -37,6 +37,7 @@ type StatisticMetricKey = 'energyKcal' | 'proteins' | 'carbs' | 'lipids';
     UiErrorPanel,
   ],
   templateUrl: './statistic.feature.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './statistic.feature.scss',
 })
 export class StatisticFeature implements OnInit {

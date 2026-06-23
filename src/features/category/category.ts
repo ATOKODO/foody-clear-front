@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, effect, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, effect, inject, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
@@ -19,6 +19,7 @@ import { CategoryStore } from './category.store';
   ],
   providers: [CategoryStore],
   templateUrl: './category.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './category.scss',
 })
 export class Category {

@@ -13,6 +13,7 @@ import {
   Output,
   SimpleChanges,
   inject,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -74,6 +75,7 @@ type DurationPreset = {
     DaySetList,
   ],
   templateUrl: './form-cycle.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './form-cycle.scss',
 })
 export class FormCycle implements OnInit, OnChanges {

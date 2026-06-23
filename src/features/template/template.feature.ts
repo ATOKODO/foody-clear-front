@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -40,6 +40,7 @@ import { TemplateService } from '../../services/template-service';
     TemplateList,
   ],
   templateUrl: './template.feature.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './template.feature.scss',
 })
 export class TemplateFeature implements OnInit {
