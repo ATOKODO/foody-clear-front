@@ -26,7 +26,7 @@
       </p>
     }
     <app-slot-list mode="manage"
-      [slots]="slotListItems"
+      [slots]="slotListItems()"
       [embedded]="true"
       (addRequested)="onAddRequested()"
       (editRequested)="onEditRequested($event)"
@@ -69,7 +69,7 @@
           </p>
         }
         <app-slot-list mode="manage"
-          [slots]="slotListItems"
+          [slots]="slotListItems()"
           (addRequested)="onAddRequested()"
           (editRequested)="onEditRequested($event)"
           (deleteRequested)="onDeleteRequested($event)"
@@ -80,10 +80,10 @@
 }
 
 
-@if (formVisible) {
+@if (formVisible()) {
   <div class="app-modal-backdrop" (click)="onCancelForm()"></div>
 }
-@if (formVisible) {
+@if (formVisible()) {
   <div class="app-modal-shell" data-testid="slot-dialog">
     <mat-card
       appearance="outlined"

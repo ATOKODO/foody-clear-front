@@ -26,7 +26,7 @@
       </p>
     }
     <app-day-set-list mode="manage"
-      [daySets]="daySetListItems"
+      [daySets]="daySetListItems()"
       [embedded]="true"
       (addRequested)="onAddRequested()"
       (editRequested)="onEditRequested($event)"
@@ -69,7 +69,7 @@
           </p>
         }
         <app-day-set-list mode="manage"
-          [daySets]="daySetListItems"
+          [daySets]="daySetListItems()"
           (addRequested)="onAddRequested()"
           (editRequested)="onEditRequested($event)"
           (deleteRequested)="onDeleteRequested($event)"
@@ -80,18 +80,18 @@
 }
 
 
-@if (formVisible) {
+@if (formVisible()) {
   <div
     class="app-modal-backdrop"
     [class.app-modal-backdrop--embedded-day-set]="embedded()"
-    [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset"
+    [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset()"
   (click)="onCancelForm()"></div>
 }
-@if (formVisible) {
+@if (formVisible()) {
   <div
     class="app-modal-shell"
     [class.app-modal-shell--embedded-day-set]="embedded()"
-    [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset"
+    [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset()"
     data-testid="day-set-dialog">
     <mat-card
       appearance="outlined"
@@ -121,7 +121,7 @@
           [showHeading]="false"
           [inDialog]="true"
           [nutritionKeys]="nutritionKeys"
-          [slots]="slotListItems"
+          [slots]="slotListItems()"
           [templates]="templates"
           (submitted)="onFormSubmitted($event)"
           (menuClicked)="onMenuClicked()" />

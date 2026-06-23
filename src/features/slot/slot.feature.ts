@@ -1,5 +1,5 @@
 
-import { Component, OnInit, input, output, inject } from '@angular/core';
+import { Component, OnInit, computed, input, output, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -30,11 +30,22 @@ export class SlotFeature implements OnInit {
   readonly embedded = input(false);
   readonly dataChanged = output<void>();
 
-  slots: Slot[] = [];
+  private readonly slotsState = signal<Slot[]>([]);
+  readonly slotListItems = computed<SlotListItem[]>(() =>
+    this.slotsState().map((slot) => ({
+      id: String(slot.id),
+      key: slot.key,
+      title: slot.title,
+      sortOrder: slot.sortOrder,
+      startTime: slot.startTime ?? null,
+      endTime: slot.endTime ?? null,
+      nutritionValues: slot.nutritionValues ?? [],
+    })),
+  );
   loading = false;
   saving = false;
 
-  formVisible = false;
+  readonly formVisible = signal(false);
   formMode: SlotFormMode = 'add';
   editingSlotId: number | null = null;
   formInitialValue: Partial<SlotFormValue> | null = null;
@@ -54,23 +65,19 @@ export class SlotFeature implements OnInit {
     this.loadSlots();
   }
 
-  get slotListItems(): SlotListItem[] {
-    return this.slots.map((slot) => ({
-      id: String(slot.id),
-      key: slot.key,
-      title: slot.title,
-      sortOrder: slot.sortOrder,
-      startTime: slot.startTime ?? null,
-      endTime: slot.endTime ?? null,
-      nutritionValues: slot.nutritionValues ?? [],
-    }));
+  get slots(): Slot[] {
+    return this.slotsState();
+  }
+
+  set slots(value: Slot[]) {
+    this.slotsState.set(value);
   }
 
   onAddRequested(): void {
     this.formMode = 'add';
     this.editingSlotId = null;
     this.formInitialValue = null;
-    this.formVisible = true;
+    this.formVisible.set(true);
   }
 
   openCreate(): void {
@@ -98,7 +105,7 @@ export class SlotFeature implements OnInit {
       endTime: slot.endTime ?? null,
       nutritionValues: this.getEditableNutritionValues(slot),
     };
-    this.formVisible = true;
+    this.formVisible.set(true);
   }
 
   onDeleteRequested(item: SlotListItem): void {
@@ -138,7 +145,7 @@ export class SlotFeature implements OnInit {
           this.lastResponse = response;
           this.lastError = null;
           this.saving = false;
-          this.formVisible = false;
+          this.formVisible.set(false);
           this.dataChanged.emit();
           this.loadSlots();
         },
@@ -155,7 +162,7 @@ export class SlotFeature implements OnInit {
         this.lastResponse = response;
         this.lastError = null;
         this.saving = false;
-        this.formVisible = false;
+        this.formVisible.set(false);
         this.dataChanged.emit();
         this.loadSlots();
       },
@@ -174,7 +181,7 @@ export class SlotFeature implements OnInit {
   }
 
   onCancelForm(): void {
-    this.formVisible = false;
+    this.formVisible.set(false);
     this.formMode = 'add';
     this.formInitialValue = null;
     this.editingSlotId = null;

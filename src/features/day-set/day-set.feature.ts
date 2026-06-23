@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, OnInit, inject, input, output } from '@angular/core';
+import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -42,12 +42,31 @@ export class DaySetFeature implements OnInit {
   readonly embedded = input(false);
   readonly dataChanged = output<void>();
 
-  daySets: DaySet[] = [];
-  slots: Slot[] = [];
+  private readonly daySetsState = signal<DaySet[]>([]);
+  private readonly slotsState = signal<Slot[]>([]);
+  readonly daySetListItems = computed<DaySetListItem[]>(() =>
+    this.daySetsState().map((daySet) => ({
+      id: String(daySet.id),
+      title: daySet.title,
+      nutritionValues: daySet.nutritionValues ?? [],
+      templateTitle: daySet.template?.title ?? null,
+    })),
+  );
+  readonly slotListItems = computed<SlotListItem[]>(() =>
+    this.slotsState().map((slot) => ({
+      id: String(slot.id),
+      key: slot.key,
+      title: slot.title,
+      sortOrder: slot.sortOrder,
+      startTime: slot.startTime ?? null,
+      endTime: slot.endTime ?? null,
+      nutritionValues: slot.nutritionValues ?? [],
+    })),
+  );
   loading = false;
   saving = false;
 
-  formVisible = false;
+  readonly formVisible = signal(false);
   formMode: DaySetFormMode = 'add';
   editingDaySetId: number | null = null;
   formInitialValue: Partial<DaySetFormValue> | null = null;
@@ -58,14 +77,14 @@ export class DaySetFeature implements OnInit {
   lastMetaError: unknown = null;
   nutritionKeys: NutritionKeyMeta[] = [];
   templates: TemplateSummary[] = [];
-  embeddedDialogTopOffset = 0;
+  readonly embeddedDialogTopOffset = signal(0);
 
   ngOnInit(): void {
     this.refresh();
   }
 
   onWindowResize(): void {
-    if (!this.formVisible || !this.embedded()) {
+    if (!this.formVisible() || !this.embedded()) {
       return;
     }
 
@@ -79,25 +98,20 @@ export class DaySetFeature implements OnInit {
     this.loadDaySets();
   }
 
-  get daySetListItems(): DaySetListItem[] {
-    return this.daySets.map((daySet) => ({
-      id: String(daySet.id),
-      title: daySet.title,
-      nutritionValues: daySet.nutritionValues ?? [],
-      templateTitle: daySet.template?.title ?? null,
-    }));
+  get daySets(): DaySet[] {
+    return this.daySetsState();
   }
 
-  get slotListItems(): SlotListItem[] {
-    return this.slots.map((slot) => ({
-      id: String(slot.id),
-      key: slot.key,
-      title: slot.title,
-      sortOrder: slot.sortOrder,
-      startTime: slot.startTime ?? null,
-      endTime: slot.endTime ?? null,
-      nutritionValues: slot.nutritionValues ?? [],
-    }));
+  set daySets(value: DaySet[]) {
+    this.daySetsState.set(value);
+  }
+
+  get slots(): Slot[] {
+    return this.slotsState();
+  }
+
+  set slots(value: Slot[]) {
+    this.slotsState.set(value);
   }
 
   onAddRequested(): void {
@@ -210,12 +224,12 @@ export class DaySetFeature implements OnInit {
   }
 
   private openForm(): void {
-    this.formVisible = true;
+    this.formVisible.set(true);
     this.syncEmbeddedDialogLayout();
   }
 
   private closeForm(): void {
-    this.formVisible = false;
+    this.formVisible.set(false);
     this.formMode = 'add';
     this.formInitialValue = null;
     this.editingDaySetId = null;
@@ -223,20 +237,21 @@ export class DaySetFeature implements OnInit {
 
   private syncEmbeddedDialogLayout(): void {
     if (!this.embedded()) {
-      this.embeddedDialogTopOffset = 0;
+      this.embeddedDialogTopOffset.set(0);
       return;
     }
 
     const view = this.document.defaultView;
     if (!view) {
-      this.embeddedDialogTopOffset = 0;
+      this.embeddedDialogTopOffset.set(0);
       return;
     }
 
     view.requestAnimationFrame(() => {
       const header = this.document.querySelector('.app-shell__header');
-      this.embeddedDialogTopOffset =
-        header instanceof HTMLElement ? Math.ceil(header.getBoundingClientRect().bottom) : 0;
+      this.embeddedDialogTopOffset.set(
+        header instanceof HTMLElement ? Math.ceil(header.getBoundingClientRect().bottom) : 0,
+      );
     });
   }
 

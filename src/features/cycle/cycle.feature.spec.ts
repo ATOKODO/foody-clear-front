@@ -95,6 +95,30 @@ describe('CycleFeature', () => {
     expect(fixture.nativeElement.querySelector('app-slot-feature section.app-page')).toBeNull();
   });
 
+  it('should open the target dialog from the hub add action', async () => {
+    fixture.autoDetectChanges();
+    clickToggle(1);
+    flushDaySetRequests();
+    await fixture.whenStable();
+
+    clickAddAction();
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="day-set-dialog"]')).not.toBeNull();
+  });
+
+  it('should open the slot dialog from the hub add action', async () => {
+    fixture.autoDetectChanges();
+    clickToggle(2);
+    flushSlotRequests();
+    await fixture.whenStable();
+
+    clickAddAction();
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="slot-dialog"]')).not.toBeNull();
+  });
+
   it('should build breakdowns from daySetOrder and slotIds fallbacks', () => {
     component.cycles = [
       {
@@ -619,6 +643,13 @@ describe('CycleFeature', () => {
     const toggleButtons = fixture.nativeElement.querySelectorAll('mat-button-toggle button');
     (toggleButtons[index] as HTMLButtonElement).click();
     fixture.detectChanges();
+  }
+
+  function clickAddAction(): void {
+    const addButton = fixture.nativeElement.querySelector(
+      '[data-testid="cycle-add-action"]',
+    ) as HTMLButtonElement;
+    addButton.click();
   }
 
   function nutritionValue(
