@@ -1,14 +1,13 @@
 <section class="app-page cycle-page" data-testid="cycle-page">
   <div class="cycle-page__toggle-wrap">
-    <app-segmented-toggle
-      [value]="activeView"
+    <app-segmented-toggle [value]="activeView"
       [options]="viewOptions"
       (valueChange)="onActiveViewChange($event)"
       ariaLabel="Selection de la vue cycle active"
       data-testid="cycle-view-toggle"
       name="cycle-view"
       maxWidth="41rem"
-    ></app-segmented-toggle>
+     />
   </div>
 
   <mat-card class="cycle-panel" data-testid="cycle-panel">
@@ -24,7 +23,7 @@
           class="cycle-action cycle-action--secondary"
           (click)="onRefreshActiveView()"
           [disabled]="activeViewBusy"
-        >
+          >
           Rafraichir
         </button>
 
@@ -35,57 +34,62 @@
           (click)="onAddActiveView()"
           [disabled]="activeViewBusy"
           data-testid="cycle-add-action"
-        >
+          >
           {{ activeViewConfig.addLabel }}
         </button>
       </div>
     </div>
 
     <div class="cycle-panel__content">
-      <ng-container [ngSwitch]="activeView">
-        <div *ngSwitchCase="'cycle'" class="cycle-panel__section" data-testid="cycle-list-view">
-          <div class="app-status-row">
-            <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
-              Chargement...
-            </span>
-            <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
-              Sauvegarde...
-            </span>
-            <span *ngIf="loadingMeta" class="app-status-pill app-status-pill--info">
-              Meta nutrition...
-            </span>
+      @switch (activeView) {
+        @case ('cycle') {
+          <div class="cycle-panel__section" data-testid="cycle-list-view">
+            <div class="app-status-row">
+              @if (loading) {
+                <span class="app-status-pill app-status-pill--neutral">
+                  Chargement...
+                </span>
+              }
+              @if (saving) {
+                <span class="app-status-pill app-status-pill--saving">
+                  Sauvegarde...
+                </span>
+              }
+              @if (loadingMeta) {
+                <span class="app-status-pill app-status-pill--info">
+                  Meta nutrition...
+                </span>
+              }
+            </div>
+            @if (lastError) {
+              <app-ui-error-panel [error]="lastError" />
+            }
+            @if (lastMetaError) {
+              <p class="app-alert">
+                Impossible de charger les cles nutritionnelles meta, fallback actif.
+              </p>
+            }
+            <app-list-cycle [cycles]="cycleListItems"
+              [activeCycleId]="selectedCycleId"
+              [showAddButton]="false"
+              [embedded]="true"
+              (addRequested)="onAddRequested()"
+              (editRequested)="onEditRequested($event)"
+              (deleteRequested)="onDeleteRequested($event)"
+               />
           </div>
-
-          <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
-
-          <p *ngIf="lastMetaError" class="app-alert">
-            Impossible de charger les cles nutritionnelles meta, fallback actif.
-          </p>
-
-          <app-list-cycle
-            [cycles]="cycleListItems"
-            [activeCycleId]="selectedCycleId"
-            [showAddButton]="false"
-            [embedded]="true"
-            (addRequested)="onAddRequested()"
-            (editRequested)="onEditRequested($event)"
-            (deleteRequested)="onDeleteRequested($event)"
-          >
-          </app-list-cycle>
-        </div>
-
-        <app-day-set-feature
-          *ngSwitchCase="'daySet'"
-          [embedded]="true"
-          (dataChanged)="onLinkedDataChanged()"
-        ></app-day-set-feature>
-
-        <app-slot-feature
-          *ngSwitchCase="'slot'"
-          [embedded]="true"
-          (dataChanged)="onLinkedDataChanged()"
-        ></app-slot-feature>
-      </ng-container>
+        }
+        @case ('daySet') {
+          <app-day-set-feature [embedded]="true"
+            (dataChanged)="onLinkedDataChanged()"
+           />
+        }
+        @case ('slot') {
+          <app-slot-feature [embedded]="true"
+            (dataChanged)="onLinkedDataChanged()"
+           />
+        }
+      }
     </div>
   </mat-card>
 </section>
@@ -105,15 +109,13 @@
     </div>
 
     <mat-dialog-content class="cycle-form-dialog__content">
-      <app-form-cycle
-        [mode]="formMode"
+      <app-form-cycle [mode]="formMode"
         [cycle]="formInitialValue"
         [daySets]="daySetListItems"
         [nutritionKeys]="nutritionKeys"
         [showHeading]="false"
         [inDialog]="true"
-        (submitted)="onFormSubmitted($event)">
-      </app-form-cycle>
+        (submitted)="onFormSubmitted($event)" />
     </mat-dialog-content>
   </div>
 </ng-template>

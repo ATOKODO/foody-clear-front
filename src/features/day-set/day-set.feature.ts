@@ -1,5 +1,5 @@
-import { CommonModule, DOCUMENT } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, OnInit, Output, inject, ChangeDetectionStrategy } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, OnInit, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -24,16 +24,23 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 @Component({
   selector: 'app-day-set-feature',
-  imports: [CommonModule, MatButtonModule, MatCardModule, UiErrorPanel, DaySetList, DaySetForm],
+  imports: [MatButtonModule, MatCardModule, UiErrorPanel, DaySetList, DaySetForm],
   templateUrl: './day-set.feature.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './day-set.feature.scss',
+  host: {
+    '(window:resize)': 'onWindowResize()',
+  },
 })
 export class DaySetFeature implements OnInit {
+  private readonly daySetSrv = inject(DaySetService);
+  private readonly metaSrv = inject(MetaService);
+  private readonly slotSrv = inject(SlotService);
+  private readonly templateSrv = inject(TemplateService);
+
   private readonly document = inject(DOCUMENT);
 
-  @Input() embedded = false;
-  @Output() readonly dataChanged = new EventEmitter<void>();
+  readonly embedded = input(false);
+  readonly dataChanged = output<void>();
 
   daySets: DaySet[] = [];
   slots: Slot[] = [];
@@ -53,20 +60,12 @@ export class DaySetFeature implements OnInit {
   templates: TemplateSummary[] = [];
   embeddedDialogTopOffset = 0;
 
-  constructor(
-    private readonly daySetSrv: DaySetService,
-    private readonly metaSrv: MetaService,
-    private readonly slotSrv: SlotService,
-    private readonly templateSrv: TemplateService,
-  ) {}
-
   ngOnInit(): void {
     this.refresh();
   }
 
-  @HostListener('window:resize')
   onWindowResize(): void {
-    if (!this.formVisible || !this.embedded) {
+    if (!this.formVisible || !this.embedded()) {
       return;
     }
 
@@ -223,7 +222,7 @@ export class DaySetFeature implements OnInit {
   }
 
   private syncEmbeddedDialogLayout(): void {
-    if (!this.embedded) {
+    if (!this.embedded()) {
       this.embeddedDialogTopOffset = 0;
       return;
     }

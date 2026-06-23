@@ -2,14 +2,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
+  input,
+  output
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { DateTime } from 'luxon';
@@ -172,30 +171,29 @@ interface CalendarMonthAlertBadge {
 
 @Component({
   selector: 'app-calendar',
-  imports: [CommonModule, MatButtonModule, MatButtonToggleModule],
+  imports: [MatButtonModule, MatButtonToggleModule, DecimalPipe],
   templateUrl: './calendar.html',
   styleUrl: './calendar.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Calendar implements OnInit, OnChanges {
-  @Input() cycleAssignments: CycleAssignment[] = [];
-  @Input() inputDayResponse: InputDayResponse | null = null;
-  @Input() inputWeekResponse: InputWeekResponse | null = null;
-  @Input() inputMonthResponse: InputMonthResponse | null = null;
-  @Input() inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
-  @Input() loadingDayItems = false;
-  @Input() dayItemsError: unknown = null;
-  @Input() inputDayTimezone = DateTime.local().zoneName || 'UTC';
-  @Input() showHeader = true;
+  readonly cycleAssignments = input<CycleAssignment[]>([]);
+  readonly inputDayResponse = input<InputDayResponse | null>(null);
+  readonly inputWeekResponse = input<InputWeekResponse | null>(null);
+  readonly inputMonthResponse = input<InputMonthResponse | null>(null);
+  readonly inputDayItemsBySlot = input<InputDayItemsBySlotEntry[]>([]);
+  readonly loadingDayItems = input(false);
+  readonly dayItemsError = input<unknown>(null);
+  readonly inputDayTimezone = input(DateTime.local().zoneName || 'UTC');
+  readonly showHeader = input(true);
 
-  @Output() readonly dayClick = new EventEmitter<CalendarDayClickEvent>();
-  @Output() readonly hourClick = new EventEmitter<CalendarHourClickEvent>();
-  @Output() readonly monthClick = new EventEmitter<CalendarMonthClickEvent>();
-  @Output() readonly manageItems = new EventEmitter<CalendarManageItemsEvent>();
-  @Output('manageAssignment') readonly manageAssignmentRequested = new EventEmitter<CalendarManageAssignmentEvent>();
-  @Output() readonly itemClick = new EventEmitter<CalendarItemClickEvent>();
-  @Output('openDayView') readonly openDayViewRequested = new EventEmitter<CalendarOpenDayViewEvent>();
-  @Output() readonly viewChanged = new EventEmitter<CalendarViewChangeEvent>();
+  readonly dayClick = output<CalendarDayClickEvent>();
+  readonly hourClick = output<CalendarHourClickEvent>();
+  readonly monthClick = output<CalendarMonthClickEvent>();
+  readonly manageItems = output<CalendarManageItemsEvent>();
+  readonly manageAssignmentRequested = output<CalendarManageAssignmentEvent>({ alias: 'manageAssignment' });
+  readonly itemClick = output<CalendarItemClickEvent>();
+  readonly openDayViewRequested = output<CalendarOpenDayViewEvent>({ alias: 'openDayView' });
+  readonly viewChanged = output<CalendarViewChangeEvent>();
 
   readonly VIEWS: CalendarView[] = ['year', 'month', 'week', 'day'];
   readonly WEEKDAY_NAMES = WEEKDAY_NAMES;
@@ -283,7 +281,7 @@ export class Calendar implements OnInit, OnChanges {
 
   applyAssignments(): void {
     this.assignmentById.clear();
-    this.cycleAssignments.forEach((assignment) => {
+    this.cycleAssignments().forEach((assignment) => {
       this.assignmentById.set(String(assignment.id), assignment);
     });
 
@@ -428,7 +426,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   onMonthClick(month: MonthSummary): void {
-    const sourceAssignments = this.cycleAssignments.filter((assignment) =>
+    const sourceAssignments = this.cycleAssignments().filter((assignment) =>
       this.isDateRangeOverlappingMonth(assignment, month),
     );
     const dateLocal = this.resolveMonthStartDateTime(month).toISODate() ?? '';
@@ -707,11 +705,11 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayMacroHighlights(): CalendarWeekMacroHighlight[] {
-    return this.buildMacroHighlights(this.inputDayResponse?.totalsMacros?.dayTotal ?? null);
+    return this.buildMacroHighlights(this.inputDayResponse()?.totalsMacros?.dayTotal ?? null);
   }
 
   getDayProjectedMacroHighlights(): CalendarWeekMacroHighlight[] {
-    return this.buildMacroHighlights(this.inputDayResponse?.projectedTotalsMacros?.dayTotal ?? null);
+    return this.buildMacroHighlights(this.inputDayResponse()?.projectedTotalsMacros?.dayTotal ?? null);
   }
 
   getDayAssignmentHighlight(): CalendarDayAssignmentHighlight | null {
@@ -731,7 +729,7 @@ export class Calendar implements OnInit, OnChanges {
       }
     }
 
-    const assignment = this.inputDayResponse?.assignment;
+    const assignment = this.inputDayResponse()?.assignment;
     if (!assignment) {
       return null;
     }
@@ -744,7 +742,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayItemCount(): number {
-    return this.inputDayResponse?.items.length ?? 0;
+    return this.inputDayResponse()?.items.length ?? 0;
   }
 
   getDaySlotCount(): number {
@@ -752,12 +750,12 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayEnergyTotal(): string {
-    const energy = this.inputDayResponse?.totalsMacros?.dayTotal['energyKcal'];
+    const energy = this.inputDayResponse()?.totalsMacros?.dayTotal['energyKcal'];
     return typeof energy === 'number' ? this.formatCompactNumber(energy, 0) : '0';
   }
 
   getDayTargetHeadline(): string {
-    const targetSource = this.inputDayResponse?.totalsMacros?.targetSource ?? 'none';
+    const targetSource = this.inputDayResponse()?.totalsMacros?.targetSource ?? 'none';
 
     if (targetSource === 'cycle') {
       return 'Cible du jour issue du cycle assigne';
@@ -771,10 +769,10 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayTargetSupportingText(): string {
-    const targetSource = this.inputDayResponse?.totalsMacros?.targetSource ?? 'none';
+    const targetSource = this.inputDayResponse()?.totalsMacros?.targetSource ?? 'none';
     const assignmentTitle =
-      this.getDayAssignmentHighlight()?.title ?? this.inputDayResponse?.assignment?.cycleTitle ?? null;
-    const daySetTitle = this.inputDayResponse?.daySet?.title?.trim() ?? null;
+      this.getDayAssignmentHighlight()?.title ?? this.inputDayResponse()?.assignment?.cycleTitle ?? null;
+    const daySetTitle = this.inputDayResponse()?.daySet?.title?.trim() ?? null;
 
     if (targetSource === 'cycle') {
       return assignmentTitle
@@ -804,7 +802,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayMacroCards(): CalendarDayMacroCard[] {
-    const totals = this.inputDayResponse?.totalsMacros ?? null;
+    const totals = this.inputDayResponse()?.totalsMacros ?? null;
     if (!totals) {
       return [];
     }
@@ -854,7 +852,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayEntryRows(): CalendarDayEntryRow[] {
-    const dateLocal = this.inputDayResponse?.dateLocal ?? this.currentDate.toISODate() ?? '';
+    const dateLocal = this.inputDayResponse()?.dateLocal ?? this.currentDate.toISODate() ?? '';
     if (dateLocal.trim() === '') {
       return [];
     }
@@ -876,7 +874,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getProjectedDayEnergyTotal(): string {
-    const energy = this.inputDayResponse?.projectedTotalsMacros?.dayTotal['energyKcal'];
+    const energy = this.inputDayResponse()?.projectedTotalsMacros?.dayTotal['energyKcal'];
     return typeof energy === 'number' ? this.formatCompactNumber(energy, 0) : '0';
   }
 
@@ -954,11 +952,11 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayTemplateItemCount(): number {
-    return this.inputDayResponse?.templateItems?.length ?? 0;
+    return this.inputDayResponse()?.templateItems?.length ?? 0;
   }
 
   getDayPendingTemplateItemCount(): number {
-    return this.getPendingTemplateItemCount(this.inputDayResponse);
+    return this.getPendingTemplateItemCount(this.inputDayResponse());
   }
 
   getMonthDayTitle(day: CalendarDay): string {
@@ -1072,7 +1070,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayTimelineBlocks(): CalendarWeekTimelineBlock[] {
-    const dateLocal = this.inputDayResponse?.dateLocal ?? this.currentDate.toISODate() ?? '';
+    const dateLocal = this.inputDayResponse()?.dateLocal ?? this.currentDate.toISODate() ?? '';
     if (dateLocal.trim() === '') {
       return this.emptyWeekTimelineBlocks;
     }
@@ -1142,7 +1140,7 @@ export class Calendar implements OnInit, OnChanges {
     const entries = this.resolveItemsBySlotEntries();
     const slots = this.resolveDaySlots();
     this.applyDaySlots(slots);
-    this.applyDayInsertedProducts(entries, this.inputDayResponse?.items ?? []);
+    this.applyDayInsertedProducts(entries, this.inputDayResponse()?.items ?? []);
   }
 
   getWeekDayResponse(dateLocal: string): InputDayResponse | null {
@@ -1244,7 +1242,7 @@ export class Calendar implements OnInit, OnChanges {
   onDayTimelineBlockClick(block: CalendarWeekTimelineBlock, event: Event): void {
     event.stopPropagation();
 
-    const dateLocal = this.inputDayResponse?.dateLocal ?? this.currentDate.toISODate() ?? '';
+    const dateLocal = this.inputDayResponse()?.dateLocal ?? this.currentDate.toISODate() ?? '';
     if (dateLocal.trim() === '') {
       return;
     }
@@ -1305,16 +1303,18 @@ export class Calendar implements OnInit, OnChanges {
 
   private resolveVisibleDayResponses(): InputDayResponse[] {
     if (this.currentView === 'month') {
-      return this.inputMonthResponse?.days ?? [];
+      return this.inputMonthResponse()?.days ?? [];
     }
 
     if (this.currentView === 'week') {
-      if (this.inputWeekResponse?.days && this.inputWeekResponse.days.length > 0) {
-        return this.inputWeekResponse.days;
+      const inputWeekResponse = this.inputWeekResponse();
+      if (inputWeekResponse?.days && inputWeekResponse.days.length > 0) {
+        return inputWeekResponse.days;
       }
 
-      if (this.inputDayResponse) {
-        return [this.inputDayResponse];
+      const inputDayResponse = this.inputDayResponse();
+      if (inputDayResponse) {
+        return [inputDayResponse];
       }
     }
 
@@ -1323,8 +1323,8 @@ export class Calendar implements OnInit, OnChanges {
 
   private resolveItemsBySlotEntries(): InputDayItemsBySlotEntry[] {
     return this.resolveItemsBySlotEntriesForResponse(
-      this.inputDayResponse,
-      this.inputDayItemsBySlot,
+      this.inputDayResponse(),
+      this.inputDayItemsBySlot(),
     );
   }
 
@@ -1344,7 +1344,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   private resolveDaySlots(): CalendarDaySlot[] {
-    return this.resolveDaySlotsForResponse(this.inputDayResponse);
+    return this.resolveDaySlotsForResponse(this.inputDayResponse());
   }
 
   private resolveDaySlotsForResponse(response: InputDayResponse | null): CalendarDaySlot[] {
@@ -1779,7 +1779,7 @@ export class Calendar implements OnInit, OnChanges {
   ): CalendarInsertedProduct[] {
     return this.buildCalendarInsertedProducts(
       this.resolveItemsBySlotEntries(),
-      this.inputDayResponse?.items ?? [],
+      this.inputDayResponse()?.items ?? [],
       dateLocal,
       slots,
     );
@@ -1806,7 +1806,7 @@ export class Calendar implements OnInit, OnChanges {
     const byHour = this.buildInsertedProductsByHour(
       entries,
       responseItems,
-      this.inputDayResponse?.dateLocal ?? this.currentDate.toISODate() ?? '',
+      this.inputDayResponse()?.dateLocal ?? this.currentDate.toISODate() ?? '',
       this.daySlots,
     );
     this.dayHours.forEach((hour) => {
@@ -2091,7 +2091,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   private findAssignmentForDate(dateIso: string): CycleAssignment | undefined {
-    return this.cycleAssignments.find((assignment) =>
+    return this.cycleAssignments().find((assignment) =>
       this.isDateInRange(dateIso, assignment.startDateLocal, assignment.endDateLocal),
     );
   }
@@ -2156,7 +2156,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   private normalizeTimezone(): string {
-    const candidate = this.inputDayTimezone.trim() || 'UTC';
+    const candidate = this.inputDayTimezone().trim() || 'UTC';
     return DateTime.now().setZone(candidate).isValid ? candidate : 'UTC';
   }
 }

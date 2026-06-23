@@ -1,14 +1,13 @@
-import { CommonModule } from '@angular/common';
+
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,31 +35,29 @@ export interface SlotFormValue {
 @Component({
   selector: 'app-slot-form',
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
-  ],
+    MatSelectModule
+],
   templateUrl: './slot-form.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './slot-form.scss',
 })
 export class SlotForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
-  @Input() mode: SlotFormMode = 'add';
-  @Input() slot: Partial<SlotFormValue> | null = null;
-  @Input() showHeading = true;
-  @Input() nutritionKeys: NutritionKeyMeta[] = [];
+  readonly mode = input<SlotFormMode>('add');
+  readonly slot = input<Partial<SlotFormValue> | null>(null);
+  readonly showHeading = input(true);
+  readonly nutritionKeys = input<NutritionKeyMeta[]>([]);
 
-  @Output() readonly submitted = new EventEmitter<{
+  readonly submitted = output<{
     mode: SlotFormMode;
     value: SlotFormValue;
-  }>();
-  @Output() readonly menuClicked = new EventEmitter<void>();
+}>();
+  readonly menuClicked = output<void>();
 
   nutritionValues: CycleNutritionValue[] = [];
   readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
@@ -87,7 +84,7 @@ export class SlotForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode === 'edit' ? 'Modifier Slot' : 'Ajouter Slot';
+    return this.mode() === 'edit' ? 'Modifier Slot' : 'Ajouter Slot';
   }
 
   onMenuClick(): void {
@@ -106,7 +103,7 @@ export class SlotForm implements OnInit, OnChanges {
       .filter((value) => value.nutritionKey !== '');
 
     this.submitted.emit({
-      mode: this.mode,
+      mode: this.mode(),
       value: {
         key: rawValue.key,
         title: rawValue.title,
@@ -158,17 +155,18 @@ export class SlotForm implements OnInit, OnChanges {
       nutritionValues: this.getDefaultNutritionValues(),
     };
 
-    if (this.mode === 'edit' && this.slot) {
+    const slot = this.slot();
+    if (this.mode() === 'edit' && slot) {
       this.form.reset({
-        key: this.slot.key ?? defaults.key,
-        title: this.slot.title ?? defaults.title,
-        sortOrder: this.slot.sortOrder ?? defaults.sortOrder,
-        startTime: this.toInputTime(this.slot.startTime),
-        endTime: this.toInputTime(this.slot.endTime),
+        key: slot.key ?? defaults.key,
+        title: slot.title ?? defaults.title,
+        sortOrder: slot.sortOrder ?? defaults.sortOrder,
+        startTime: this.toInputTime(slot.startTime),
+        endTime: this.toInputTime(slot.endTime),
       });
       this.nutritionValues =
-        this.slot.nutritionValues && this.slot.nutritionValues.length > 0
-          ? this.cloneNutritionValues(this.slot.nutritionValues)
+        slot.nutritionValues && slot.nutritionValues.length > 0
+          ? this.cloneNutritionValues(slot.nutritionValues)
           : this.getDefaultNutritionValues();
       return;
     }
@@ -184,7 +182,7 @@ export class SlotForm implements OnInit, OnChanges {
   }
 
   private getDefaultNutritionValues(): CycleNutritionValue[] {
-    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys).map((key) =>
+    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys()).map((key) =>
       this.buildDefaultNutritionValue(key),
     );
     return this.cloneNutritionValues(defaults);
@@ -252,7 +250,7 @@ export class SlotForm implements OnInit, OnChanges {
       return [];
     }
 
-    const key = this.nutritionKeys.find(
+    const key = this.nutritionKeys().find(
       (item) =>
         item.value.toUpperCase() === nutritionKey.toUpperCase() ||
         item.key.toUpperCase() === nutritionKey.toUpperCase(),

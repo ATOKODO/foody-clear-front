@@ -1,14 +1,13 @@
-import { CommonModule } from '@angular/common';
+
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -30,29 +29,27 @@ export interface GenericProductFormValue {
 @Component({
   selector: 'app-generic-product-form',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
-  ],
+    MatSelectModule
+],
   templateUrl: './generic-product-form.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './generic-product-form.scss',
 })
 export class GenericProductForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
-  @Input() mode: GenericProductFormMode = 'add';
-  @Input() genericProduct: Partial<GenericProductFormValue> | null = null;
-  @Input() showHeading = true;
+  readonly mode = input<GenericProductFormMode>('add');
+  readonly genericProduct = input<Partial<GenericProductFormValue> | null>(null);
+  readonly showHeading = input(true);
 
-  @Output() readonly submitted = new EventEmitter<{
+  readonly submitted = output<{
     mode: GenericProductFormMode;
     value: GenericProductFormValue;
-  }>();
-  @Output() readonly menuClicked = new EventEmitter<void>();
+}>();
+  readonly menuClicked = output<void>();
 
   readonly portionUnitOptions: PortionUnit[] = [
     'tranche',
@@ -88,7 +85,7 @@ export class GenericProductForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode === 'edit'
+    return this.mode() === 'edit'
       ? 'Modifier Generic Product'
       : 'Ajouter Generic Product';
   }
@@ -124,7 +121,7 @@ export class GenericProductForm implements OnInit, OnChanges {
     }
 
     this.submitted.emit({
-      mode: this.mode,
+      mode: this.mode(),
       value: {
         name,
         minQuantityUnit,
@@ -137,15 +134,15 @@ export class GenericProductForm implements OnInit, OnChanges {
 
   private applyInputState(): void {
     this.form.reset({
-      name: this.genericProduct?.name ?? '',
+      name: this.genericProduct()?.name ?? '',
       minQuantityUnit:
-        this.normalizeNonNegativeNumber(this.genericProduct?.minQuantityUnit) ?? null,
+        this.normalizeNonNegativeNumber(this.genericProduct()?.minQuantityUnit) ?? null,
       minQuantityUnitType:
-        this.normalizeNullablePortionUnit(this.genericProduct?.minQuantityUnitType) ?? null,
+        this.normalizeNullablePortionUnit(this.genericProduct()?.minQuantityUnitType) ?? null,
       minQuantityMetric:
-        this.normalizeNonNegativeNumber(this.genericProduct?.minQuantityMetric) ?? null,
+        this.normalizeNonNegativeNumber(this.genericProduct()?.minQuantityMetric) ?? null,
       minQuantityMetricType:
-        this.normalizeNullableQuantityUnit(this.genericProduct?.minQuantityMetricType) ?? null,
+        this.normalizeNullableQuantityUnit(this.genericProduct()?.minQuantityMetricType) ?? null,
     });
   }
 

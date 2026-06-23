@@ -75,14 +75,18 @@
       </div>
     </form>
 
-    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+    @if (loading) {
+      <mat-progress-bar mode="indeterminate" />
+    }
 
     <div class="space-y-3 p-4 sm:p-6">
-      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
+      @if (lastError) {
+        <app-ui-error-panel [error]="lastError" />
+      }
 
       <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
       <pre class="app-code-panel max-h-96">
-{{ lastResponse | json }}
+        {{ lastResponse | json }}
       </pre>
     </div>
   </mat-card>

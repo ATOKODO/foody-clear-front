@@ -16,45 +16,49 @@
       <a
         routerLink="/planning"
         class="home-dashboard__hero-link home-dashboard__hero-link--secondary"
-      >
+        >
         Voir le planning
       </a>
     </div>
   </header>
 
   <section class="home-dashboard__spotlight">
-    <article *ngFor="let entry of featuredEntries" class="home-dashboard__spotlight-card">
-      <p class="home-dashboard__spotlight-group">{{ entry.groupLabel }}</p>
-      <h2 class="home-dashboard__spotlight-title">{{ entry.label }}</h2>
-      <p class="home-dashboard__spotlight-description">{{ entry.description }}</p>
-      <a [routerLink]="entry.path" class="home-dashboard__spotlight-link">
-        Ouvrir le module
-      </a>
-    </article>
+    @for (entry of featuredEntries; track entry) {
+      <article class="home-dashboard__spotlight-card">
+        <p class="home-dashboard__spotlight-group">{{ entry.groupLabel }}</p>
+        <h2 class="home-dashboard__spotlight-title">{{ entry.label }}</h2>
+        <p class="home-dashboard__spotlight-description">{{ entry.description }}</p>
+        <a [routerLink]="entry.path" class="home-dashboard__spotlight-link">
+          Ouvrir le module
+        </a>
+      </article>
+    }
   </section>
 
   <section class="home-dashboard__groups">
-    <article *ngFor="let group of dashboardGroups" class="home-dashboard__group">
-      <div class="home-dashboard__group-header">
-        <div>
-          <p class="home-dashboard__group-label">{{ group.label }}</p>
-          <h2 class="home-dashboard__group-title">{{ group.description }}</h2>
+    @for (group of dashboardGroups; track group) {
+      <article class="home-dashboard__group">
+        <div class="home-dashboard__group-header">
+          <div>
+            <p class="home-dashboard__group-label">{{ group.label }}</p>
+            <h2 class="home-dashboard__group-title">{{ group.description }}</h2>
+          </div>
         </div>
-      </div>
-
-      <div class="home-dashboard__group-grid">
-        <a
-          *ngFor="let entry of group.entries"
-          [routerLink]="entry.path"
-          class="home-dashboard__entry"
-        >
-          <span class="home-dashboard__entry-badge">{{ entry.shortLabel }}</span>
-          <span class="home-dashboard__entry-copy">
-            <span class="home-dashboard__entry-title">{{ entry.label }}</span>
-            <span class="home-dashboard__entry-description">{{ entry.description }}</span>
-          </span>
-        </a>
-      </div>
-    </article>
+        <div class="home-dashboard__group-grid">
+          @for (entry of group.entries; track entry) {
+            <a
+              [routerLink]="entry.path"
+              class="home-dashboard__entry"
+              >
+              <span class="home-dashboard__entry-badge">{{ entry.shortLabel }}</span>
+              <span class="home-dashboard__entry-copy">
+                <span class="home-dashboard__entry-title">{{ entry.label }}</span>
+                <span class="home-dashboard__entry-description">{{ entry.description }}</span>
+              </span>
+            </a>
+          }
+        </div>
+      </article>
+    }
   </section>
 </section>

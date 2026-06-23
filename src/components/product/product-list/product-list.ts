@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -26,29 +25,28 @@ export type { ProductListItem } from './product-list-item.model';
 @Component({
   selector: 'app-product-list',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
     MatTableModule,
-  ],
+    NgTemplateOutlet
+],
   templateUrl: './product-list.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './product-list.scss',
 })
 export class ProductList implements OnInit, OnChanges {
-  @Input() mode: ProductListMode = 'manage';
-  @Input() products: ProductListItem[] | null = null;
-  @Input() selectedIds: string[] | null = null;
-  @Input() compact = false;
-  @Input() embedded = false;
-  @Input() showAvailableQty = false;
+  readonly mode = input<ProductListMode>('manage');
+  readonly products = input<ProductListItem[] | null>(null);
+  readonly selectedIds = input<string[] | null>(null);
+  readonly compact = input(false);
+  readonly embedded = input(false);
+  readonly showAvailableQty = input(false);
 
-  @Output() readonly addRequested = new EventEmitter<void>();
-  @Output() readonly editRequested = new EventEmitter<ProductListItem>();
-  @Output() readonly deleteRequested = new EventEmitter<ProductListItem>();
-  @Output() readonly selected = new EventEmitter<ProductListItem>();
-  @Output() readonly selectedMany = new EventEmitter<ProductListItem[]>();
+  readonly addRequested = output<void>();
+  readonly editRequested = output<ProductListItem>();
+  readonly deleteRequested = output<ProductListItem>();
+  readonly selected = output<ProductListItem>();
+  readonly selectedMany = output<ProductListItem[]>();
 
   readonly defaultProducts: ProductListItem[] = [
     {
@@ -101,15 +99,17 @@ export class ProductList implements OnInit, OnChanges {
   }
 
   get isManageMode(): boolean {
-    return this.mode === 'manage';
+    return this.mode() === 'manage';
   }
 
   get isSingleEditMode(): boolean {
-    return this.mode === 'single-edit' || this.mode === 'select-single';
+    const mode = this.mode();
+    return mode === 'single-edit' || mode === 'select-single';
   }
 
   get isMultiEditMode(): boolean {
-    return this.mode === 'multi-edit' || this.mode === 'select-multi';
+    const mode = this.mode();
+    return mode === 'multi-edit' || mode === 'select-multi';
   }
 
   get hasItems(): boolean {
@@ -118,7 +118,7 @@ export class ProductList implements OnInit, OnChanges {
 
   get displayedColumns(): string[] {
     const withAvailability = (columns: string[]) =>
-      this.showAvailableQty ? this.insertAvailableQtyColumn(columns) : columns;
+      this.showAvailableQty() ? this.insertAvailableQtyColumn(columns) : columns;
 
     if (this.isManageMode) {
       return withAvailability([
@@ -274,9 +274,10 @@ export class ProductList implements OnInit, OnChanges {
   }
 
   private applyInputState(): void {
-    this.resolvedProducts = this.products === null ? [...this.defaultProducts] : [...this.products];
+    const products = this.products();
+    this.resolvedProducts = products === null ? [...this.defaultProducts] : [...products];
 
-    const initialIds = this.selectedIds ?? [];
+    const initialIds = this.selectedIds() ?? [];
     const availableIds = new Set(this.resolvedProducts.map((item) => item.id));
     this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
 

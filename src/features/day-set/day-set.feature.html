@@ -1,36 +1,39 @@
-<ng-container *ngIf="embedded; else standaloneDaySetPage">
+@if (embedded()) {
   <div class="day-set-feature day-set-feature--embedded" data-testid="day-set-page">
     <div class="app-status-row">
-      <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
-        Chargement...
-      </span>
-      <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
-        Sauvegarde...
-      </span>
-      <span *ngIf="loadingMeta" class="app-status-pill app-status-pill--info">
-        Meta nutrition...
-      </span>
+      @if (loading) {
+        <span class="app-status-pill app-status-pill--neutral">
+          Chargement...
+        </span>
+      }
+      @if (saving) {
+        <span class="app-status-pill app-status-pill--saving">
+          Sauvegarde...
+        </span>
+      }
+      @if (loadingMeta) {
+        <span class="app-status-pill app-status-pill--info">
+          Meta nutrition...
+        </span>
+      }
     </div>
-
-    <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
-
-    <p *ngIf="lastMetaError" class="app-alert">
-      Impossible de charger les cles nutritionnelles meta, fallback actif.
-    </p>
-
-    <app-day-set-list
-      mode="manage"
+    @if (lastError) {
+      <app-ui-error-panel [error]="lastError" />
+    }
+    @if (lastMetaError) {
+      <p class="app-alert">
+        Impossible de charger les cles nutritionnelles meta, fallback actif.
+      </p>
+    }
+    <app-day-set-list mode="manage"
       [daySets]="daySetListItems"
       [embedded]="true"
       (addRequested)="onAddRequested()"
       (editRequested)="onEditRequested($event)"
       (deleteRequested)="onDeleteRequested($event)"
-    >
-    </app-day-set-list>
+       />
   </div>
-</ng-container>
-
-<ng-template #standaloneDaySetPage>
+} @else {
   <section class="app-page" data-testid="day-set-page">
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="bg-slate-900 px-6 py-5 text-white">
@@ -39,87 +42,90 @@
           Journees type, cibles nutritionnelles et templates associes.
         </p>
       </div>
-
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
-          <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
-            Chargement...
-          </span>
-          <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
-            Sauvegarde...
-          </span>
-          <span *ngIf="loadingMeta" class="app-status-pill app-status-pill--info">
-            Meta nutrition...
-          </span>
+          @if (loading) {
+            <span class="app-status-pill app-status-pill--neutral">
+              Chargement...
+            </span>
+          }
+          @if (saving) {
+            <span class="app-status-pill app-status-pill--saving">
+              Sauvegarde...
+            </span>
+          }
+          @if (loadingMeta) {
+            <span class="app-status-pill app-status-pill--info">
+              Meta nutrition...
+            </span>
+          }
         </div>
-
-        <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
-
-        <p *ngIf="lastMetaError" class="app-alert">
-          Impossible de charger les cles nutritionnelles meta, fallback actif.
-        </p>
-
-        <app-day-set-list
-          mode="manage"
+        @if (lastError) {
+          <app-ui-error-panel [error]="lastError" />
+        }
+        @if (lastMetaError) {
+          <p class="app-alert">
+            Impossible de charger les cles nutritionnelles meta, fallback actif.
+          </p>
+        }
+        <app-day-set-list mode="manage"
           [daySets]="daySetListItems"
           (addRequested)="onAddRequested()"
           (editRequested)="onEditRequested($event)"
           (deleteRequested)="onDeleteRequested($event)"
-        >
-        </app-day-set-list>
+           />
       </div>
     </mat-card>
   </section>
-</ng-template>
+}
 
-<div
-  class="app-modal-backdrop"
-  [class.app-modal-backdrop--embedded-day-set]="embedded"
-  [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset"
-  *ngIf="formVisible"
+
+@if (formVisible) {
+  <div
+    class="app-modal-backdrop"
+    [class.app-modal-backdrop--embedded-day-set]="embedded()"
+    [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset"
   (click)="onCancelForm()"></div>
-<div
-  class="app-modal-shell"
-  [class.app-modal-shell--embedded-day-set]="embedded"
-  [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset"
-  *ngIf="formVisible"
-  data-testid="day-set-dialog">
-  <mat-card
-    appearance="outlined"
-    class="app-modal-card day-set-feature__dialog-card"
-    [class.day-set-feature__dialog-card--embedded]="embedded"
-    role="dialog"
-    aria-modal="true"
-    (click)="$event.stopPropagation()"
-  >
-    <div class="app-dialog-header day-set-feature__dialog-header">
-      <div>
-        <p class="app-dialog-eyebrow">Planning</p>
-        <h3 class="app-dialog-title">
-          {{ formMode === 'edit' ? 'Modifier un day set' : 'Ajouter un day set' }}
-        </h3>
-        <p class="app-dialog-subtitle">
-          Compose une journee type, ses slots et ses cibles nutritionnelles.
-        </p>
+}
+@if (formVisible) {
+  <div
+    class="app-modal-shell"
+    [class.app-modal-shell--embedded-day-set]="embedded()"
+    [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset"
+    data-testid="day-set-dialog">
+    <mat-card
+      appearance="outlined"
+      class="app-modal-card day-set-feature__dialog-card"
+      [class.day-set-feature__dialog-card--embedded]="embedded()"
+      role="dialog"
+      aria-modal="true"
+      (click)="$event.stopPropagation()"
+      >
+      <div class="app-dialog-header day-set-feature__dialog-header">
+        <div>
+          <p class="app-dialog-eyebrow">Planning</p>
+          <h3 class="app-dialog-title">
+            {{ formMode === 'edit' ? 'Modifier un day set' : 'Ajouter un day set' }}
+          </h3>
+          <p class="app-dialog-subtitle">
+            Compose une journee type, ses slots et ses cibles nutritionnelles.
+          </p>
+        </div>
+        <button mat-stroked-button type="button" (click)="onCancelForm()">
+          Fermer
+        </button>
       </div>
-
-      <button mat-stroked-button type="button" (click)="onCancelForm()">
-        Fermer
-      </button>
-    </div>
-
-    <div class="app-dialog-content day-set-feature__dialog-content">
-      <app-day-set-form
-        [mode]="formMode"
-        [daySet]="formInitialValue"
-        [showHeading]="false"
-        [inDialog]="true"
-        [nutritionKeys]="nutritionKeys"
-        [slots]="slotListItems"
-        [templates]="templates"
-        (submitted)="onFormSubmitted($event)"
-        (menuClicked)="onMenuClicked()">
-      </app-day-set-form>
-    </div>
-  </mat-card>
-</div>
+      <div class="app-dialog-content day-set-feature__dialog-content">
+        <app-day-set-form [mode]="formMode"
+          [daySet]="formInitialValue"
+          [showHeading]="false"
+          [inDialog]="true"
+          [nutritionKeys]="nutritionKeys"
+          [slots]="slotListItems"
+          [templates]="templates"
+          (submitted)="onFormSubmitted($event)"
+          (menuClicked)="onMenuClicked()" />
+      </div>
+    </mat-card>
+  </div>
+}

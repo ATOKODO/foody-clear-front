@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -30,28 +29,27 @@ export interface DaySetListItem {
 @Component({
   selector: 'app-day-set-list',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
     MatTableModule,
-  ],
+    NgTemplateOutlet
+],
   templateUrl: './day-set-list.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './day-set-list.scss',
 })
 export class DaySetList implements OnInit, OnChanges {
-  @Input() mode: DaySetListMode = 'manage';
-  @Input() daySets: DaySetListItem[] | null = null;
-  @Input() selectedIds: string[] | null = null;
-  @Input() maxSelections: number | null = null;
-  @Input() embedded = false;
+  readonly mode = input<DaySetListMode>('manage');
+  readonly daySets = input<DaySetListItem[] | null>(null);
+  readonly selectedIds = input<string[] | null>(null);
+  readonly maxSelections = input<number | null>(null);
+  readonly embedded = input(false);
 
-  @Output() readonly addRequested = new EventEmitter<void>();
-  @Output() readonly editRequested = new EventEmitter<DaySetListItem>();
-  @Output() readonly deleteRequested = new EventEmitter<DaySetListItem>();
-  @Output() readonly selected = new EventEmitter<DaySetListItem>();
-  @Output() readonly selectedMany = new EventEmitter<DaySetListItem[]>();
+  readonly addRequested = output<void>();
+  readonly editRequested = output<DaySetListItem>();
+  readonly deleteRequested = output<DaySetListItem>();
+  readonly selected = output<DaySetListItem>();
+  readonly selectedMany = output<DaySetListItem[]>();
 
   readonly defaultDaySets: DaySetListItem[] = [
     {
@@ -92,15 +90,15 @@ export class DaySetList implements OnInit, OnChanges {
   }
 
   get isManageMode(): boolean {
-    return this.mode === 'manage';
+    return this.mode() === 'manage';
   }
 
   get isSingleSelectMode(): boolean {
-    return this.mode === 'select-single';
+    return this.mode() === 'select-single';
   }
 
   get isMultiSelectMode(): boolean {
-    return this.mode === 'select-multi';
+    return this.mode() === 'select-multi';
   }
 
   get hasItems(): boolean {
@@ -226,9 +224,10 @@ export class DaySetList implements OnInit, OnChanges {
   }
 
   private applyInputState(): void {
-    this.resolvedDaySets = this.daySets === null ? [...this.defaultDaySets] : [...this.daySets];
+    const daySets = this.daySets();
+    this.resolvedDaySets = daySets === null ? [...this.defaultDaySets] : [...daySets];
 
-    const initialIds = this.selectedIds ?? [];
+    const initialIds = this.selectedIds() ?? [];
     const availableIds = new Set(this.resolvedDaySets.map((item) => item.id));
     this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
 
@@ -246,11 +245,12 @@ export class DaySetList implements OnInit, OnChanges {
   }
 
   private getMaxSelections(): number | null {
-    if (this.maxSelections === null || this.maxSelections === undefined) {
+    const maxSelections = this.maxSelections();
+    if (maxSelections === null || maxSelections === undefined) {
       return null;
     }
 
-    const normalized = Math.trunc(this.maxSelections);
+    const normalized = Math.trunc(maxSelections);
     return normalized >= 0 ? normalized : null;
   }
 

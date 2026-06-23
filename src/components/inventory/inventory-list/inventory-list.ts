@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -25,27 +24,26 @@ export interface InventoryListItem {
 @Component({
   selector: 'app-inventory-list',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
     MatTableModule,
-  ],
+    NgTemplateOutlet
+],
   templateUrl: './inventory-list.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './inventory-list.scss',
 })
 export class InventoryList implements OnInit, OnChanges {
-  @Input() mode: InventoryListMode = 'manage';
-  @Input() inventories: InventoryListItem[] | null = null;
-  @Input() selectedIds: string[] | null = null;
-  @Input() embedded = false;
+  readonly mode = input<InventoryListMode>('manage');
+  readonly inventories = input<InventoryListItem[] | null>(null);
+  readonly selectedIds = input<string[] | null>(null);
+  readonly embedded = input(false);
 
-  @Output() readonly addRequested = new EventEmitter<void>();
-  @Output() readonly editRequested = new EventEmitter<InventoryListItem>();
-  @Output() readonly deleteRequested = new EventEmitter<InventoryListItem>();
-  @Output() readonly selected = new EventEmitter<InventoryListItem>();
-  @Output() readonly selectedMany = new EventEmitter<InventoryListItem[]>();
+  readonly addRequested = output<void>();
+  readonly editRequested = output<InventoryListItem>();
+  readonly deleteRequested = output<InventoryListItem>();
+  readonly selected = output<InventoryListItem>();
+  readonly selectedMany = output<InventoryListItem[]>();
 
   readonly defaultInventories: InventoryListItem[] = [
     { id: '1', name: 'Stock principal', productCount: 24 },
@@ -68,15 +66,15 @@ export class InventoryList implements OnInit, OnChanges {
   }
 
   get isManageMode(): boolean {
-    return this.mode === 'manage';
+    return this.mode() === 'manage';
   }
 
   get isSingleSelectMode(): boolean {
-    return this.mode === 'select-single';
+    return this.mode() === 'select-single';
   }
 
   get isMultiSelectMode(): boolean {
-    return this.mode === 'select-multi';
+    return this.mode() === 'select-multi';
   }
 
   get hasItems(): boolean {
@@ -176,11 +174,12 @@ export class InventoryList implements OnInit, OnChanges {
   }
 
   private applyInputState(): void {
-    this.resolvedInventories = this.inventories === null
+    const inventories = this.inventories();
+    this.resolvedInventories = inventories === null
       ? [...this.defaultInventories]
-      : [...this.inventories];
+      : [...inventories];
 
-    const initialIds = this.selectedIds ?? [];
+    const initialIds = this.selectedIds() ?? [];
     const availableIds = new Set(this.resolvedInventories.map((item) => item.id));
     this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
 

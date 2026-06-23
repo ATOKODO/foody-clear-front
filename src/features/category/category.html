@@ -1,38 +1,34 @@
-<ng-container *ngIf="embedded; else standaloneTemplate">
+@if (embedded()) {
   <div class="space-y-4" data-testid="category-embedded">
     <div class="app-status-row">
-      <span
-        *ngIf="store.loading()"
-        class="app-status-pill app-status-pill--neutral"
-      >
-        Chargement...
-      </span>
-      <span
-        *ngIf="store.saving()"
-        class="app-status-pill app-status-pill--saving"
-      >
-        Sauvegarde...
-      </span>
+      @if (store.loading()) {
+        <span
+          class="app-status-pill app-status-pill--neutral"
+          >
+          Chargement...
+        </span>
+      }
+      @if (store.saving()) {
+        <span
+          class="app-status-pill app-status-pill--saving"
+          >
+          Sauvegarde...
+        </span>
+      }
     </div>
-
-    <app-ui-error-panel
-      *ngIf="store.hasError()"
-      [error]="store.lastError()"
-    ></app-ui-error-panel>
-
-    <app-category-list
-      mode="manage"
+    @if (store.hasError()) {
+      <app-ui-error-panel [error]="store.lastError()"
+       />
+    }
+    <app-category-list mode="manage"
       [categories]="store.categoryListItems()"
       [embedded]="true"
       (addRequested)="store.openCreateForm()"
       (editRequested)="store.openEditForm($event)"
       (deleteRequested)="store.deleteCategory($event)"
-    >
-    </app-category-list>
+       />
   </div>
-</ng-container>
-
-<ng-template #standaloneTemplate>
+} @else {
   <section class="app-page" data-testid="category-page">
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="flex items-center justify-between bg-slate-900 px-6 py-5 text-white">
@@ -45,78 +41,75 @@
           color="primary"
           type="button"
           (click)="store.refresh()"
-        >
+          >
           Rafraichir
         </button>
       </div>
-
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
-          <span
-            *ngIf="store.loading()"
-            class="app-status-pill app-status-pill--neutral"
-          >
-            Chargement...
-          </span>
-          <span
-            *ngIf="store.saving()"
-            class="app-status-pill app-status-pill--saving"
-          >
-            Sauvegarde...
-          </span>
+          @if (store.loading()) {
+            <span
+              class="app-status-pill app-status-pill--neutral"
+              >
+              Chargement...
+            </span>
+          }
+          @if (store.saving()) {
+            <span
+              class="app-status-pill app-status-pill--saving"
+              >
+              Sauvegarde...
+            </span>
+          }
         </div>
-
-        <app-ui-error-panel
-          *ngIf="store.hasError()"
-          [error]="store.lastError()"
-        ></app-ui-error-panel>
-
-        <app-category-list
-          mode="manage"
+        @if (store.hasError()) {
+          <app-ui-error-panel [error]="store.lastError()"
+           />
+        }
+        <app-category-list mode="manage"
           [categories]="store.categoryListItems()"
           (addRequested)="store.openCreateForm()"
           (editRequested)="store.openEditForm($event)"
           (deleteRequested)="store.deleteCategory($event)"
-        >
-        </app-category-list>
+           />
       </div>
     </mat-card>
   </section>
-</ng-template>
+}
 
-<div
-  class="app-modal-backdrop"
-  *ngIf="store.formVisible()"
-  (click)="store.cancelForm()"
-></div>
-<div class="app-modal-shell" *ngIf="store.formVisible()" data-testid="category-dialog">
-  <mat-card
-    appearance="outlined"
-    class="app-modal-card"
-    role="dialog"
-    aria-modal="true"
-    (click)="$event.stopPropagation()"
-  >
-    <div class="app-dialog-header">
-      <div>
-        <p class="app-dialog-eyebrow">Catalogue</p>
-        <h3 class="app-dialog-title">{{ store.dialogTitle() }}</h3>
-        <p class="app-dialog-subtitle">{{ store.dialogSubtitle() }}</p>
-      </div>
 
-      <button mat-stroked-button type="button" (click)="store.cancelForm()">
-        Fermer
-      </button>
-    </div>
-
-    <div class="app-dialog-content">
-      <app-category-form
-        [mode]="store.formMode()"
-        [category]="store.formInitialValue()"
-        [showHeading]="false"
-        (submitted)="store.submitForm($event)"
+@if (store.formVisible()) {
+  <div
+    class="app-modal-backdrop"
+    (click)="store.cancelForm()"
+  ></div>
+}
+@if (store.formVisible()) {
+  <div class="app-modal-shell" data-testid="category-dialog">
+    <mat-card
+      appearance="outlined"
+      class="app-modal-card"
+      role="dialog"
+      aria-modal="true"
+      (click)="$event.stopPropagation()"
       >
-      </app-category-form>
-    </div>
-  </mat-card>
-</div>
+      <div class="app-dialog-header">
+        <div>
+          <p class="app-dialog-eyebrow">Catalogue</p>
+          <h3 class="app-dialog-title">{{ store.dialogTitle() }}</h3>
+          <p class="app-dialog-subtitle">{{ store.dialogSubtitle() }}</p>
+        </div>
+        <button mat-stroked-button type="button" (click)="store.cancelForm()">
+          Fermer
+        </button>
+      </div>
+      <div class="app-dialog-content">
+        <app-category-form [mode]="store.formMode()"
+          [category]="store.formInitialValue()"
+          [showHeading]="false"
+          (submitted)="store.submitForm($event)"
+           />
+      </div>
+    </mat-card>
+  </div>
+}

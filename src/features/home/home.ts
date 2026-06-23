@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { APP_NAVIGATION, APP_NAVIGATION_ENTRIES } from '../../app/app.navigation';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './home.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './home.scss',
 })
 export class Home {

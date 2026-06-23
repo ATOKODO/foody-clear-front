@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -24,28 +23,27 @@ export interface TagListItem {
 @Component({
   selector: 'app-tag-list',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
     MatTableModule,
-  ],
+    NgTemplateOutlet
+],
   templateUrl: './tag-list.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tag-list.scss',
 })
 export class TagList implements OnInit, OnChanges {
-  @Input() mode: TagListMode = 'manage';
-  @Input() tags: TagListItem[] | null = null;
-  @Input() selectedIds: string[] | null = null;
-  @Input() compact = false;
-  @Input() embedded = false;
+  readonly mode = input<TagListMode>('manage');
+  readonly tags = input<TagListItem[] | null>(null);
+  readonly selectedIds = input<string[] | null>(null);
+  readonly compact = input(false);
+  readonly embedded = input(false);
 
-  @Output() readonly addRequested = new EventEmitter<void>();
-  @Output() readonly editRequested = new EventEmitter<TagListItem>();
-  @Output() readonly deleteRequested = new EventEmitter<TagListItem>();
-  @Output() readonly selected = new EventEmitter<TagListItem>();
-  @Output() readonly selectedMany = new EventEmitter<TagListItem[]>();
+  readonly addRequested = output<void>();
+  readonly editRequested = output<TagListItem>();
+  readonly deleteRequested = output<TagListItem>();
+  readonly selected = output<TagListItem>();
+  readonly selectedMany = output<TagListItem[]>();
 
   readonly defaultTags: TagListItem[] = [
     { id: '1', name: 'Bio' },
@@ -68,15 +66,15 @@ export class TagList implements OnInit, OnChanges {
   }
 
   get isManageMode(): boolean {
-    return this.mode === 'manage';
+    return this.mode() === 'manage';
   }
 
   get isSingleSelectMode(): boolean {
-    return this.mode === 'select-single';
+    return this.mode() === 'select-single';
   }
 
   get isMultiSelectMode(): boolean {
-    return this.mode === 'select-multi';
+    return this.mode() === 'select-multi';
   }
 
   get hasItems(): boolean {
@@ -175,9 +173,10 @@ export class TagList implements OnInit, OnChanges {
   }
 
   private applyInputState(): void {
-    this.resolvedTags = this.tags === null ? [...this.defaultTags] : [...this.tags];
+    const tags = this.tags();
+    this.resolvedTags = tags === null ? [...this.defaultTags] : [...tags];
 
-    const initialIds = this.selectedIds ?? [];
+    const initialIds = this.selectedIds() ?? [];
     const availableIds = new Set(this.resolvedTags.map((item) => item.id));
     this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
 

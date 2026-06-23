@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -25,7 +25,6 @@ type StatisticMetricKey = 'energyKcal' | 'proteins' | 'carbs' | 'lipids';
 @Component({
   selector: 'app-statistic',
   imports: [
-    CommonModule,
     FormsModule,
     MatButtonModule,
     MatButtonToggleModule,
@@ -34,13 +33,15 @@ type StatisticMetricKey = 'energyKcal' | 'proteins' | 'carbs' | 'lipids';
     MatInputModule,
     MatProgressBarModule,
     MatSelectModule,
-    UiErrorPanel,
-  ],
+    UiErrorPanel
+],
   templateUrl: './statistic.feature.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './statistic.feature.scss',
 })
 export class StatisticFeature implements OnInit {
+  private readonly statisticService = inject(StatisticService);
+  private readonly productService = inject(ProductService);
+
   baseUrl = '';
   timezone = DateTime.local().zoneName || 'UTC';
   fromDateLocal = DateTime.local().minus({ days: 29 }).toFormat('yyyy-LL-dd');
@@ -74,11 +75,6 @@ export class StatisticFeature implements OnInit {
     { key: 'carbs', label: 'Glucides', unit: 'g' },
     { key: 'lipids', label: 'Lipides', unit: 'g' },
   ];
-
-  constructor(
-    private readonly statisticService: StatisticService,
-    private readonly productService: ProductService,
-  ) {}
 
   ngOnInit(): void {
     this.baseUrl = this.statisticService.baseUrl;

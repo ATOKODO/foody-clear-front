@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
+
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
-  ChangeDetectionStrategy
+  input,
+  output,
+  signal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -44,36 +43,43 @@ export interface TemplateFormSubmittedEvent {
 @Component({
   selector: 'app-template-form',
   imports: [
-    CommonModule,
     FormsModule,
     MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    ProductList,
-  ],
+    ProductList
+],
   templateUrl: './template-form.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './template-form.scss',
 })
 export class TemplateForm implements OnInit, OnChanges {
-  @Input() mode: TemplateFormMode = 'add';
-  @Input() template: Template | null = null;
-  @Input() products: ProductApiModel[] = [];
-  @Input() slots: Slot[] = [];
-  @Input() qtyUnitOptions: ProductQuantityInputUnit[] = [];
-  @Input() savingTemplate = false;
-  @Input() savingItem = false;
-  @Input() itemError: string | null = null;
+  readonly mode = input<TemplateFormMode>('add');
+  readonly template = input<Template | null>(null);
+  readonly products = input<ProductApiModel[]>([]);
+  readonly slots = input<Slot[]>([]);
+  readonly qtyUnitOptions = input<ProductQuantityInputUnit[]>([]);
+  readonly savingTemplate = input(false);
+  readonly savingItem = input(false);
+  readonly itemError = input<string | null>(null);
 
-  @Output() readonly templateSubmitted = new EventEmitter<TemplateFormSubmittedEvent>();
-  @Output() readonly templateDeleted = new EventEmitter<number>();
-  @Output() readonly itemSubmitted = new EventEmitter<TemplateItemDraft>();
-  @Output() readonly itemDeleted = new EventEmitter<number>();
+  readonly templateSubmitted = output<TemplateFormSubmittedEvent>();
+  readonly templateDeleted = output<number>();
+  readonly itemSubmitted = output<TemplateItemDraft>();
+  readonly itemDeleted = output<number>();
+
+  private readonly itemDraftState = signal<TemplateItemDraft>(this.buildEmptyItemDraft());
 
   draftTitle = '';
-  itemDraft: TemplateItemDraft = this.buildEmptyItemDraft();
+
+  get itemDraft(): TemplateItemDraft {
+    return this.itemDraftState();
+  }
+
+  set itemDraft(value: TemplateItemDraft) {
+    this.itemDraftState.set(value);
+  }
 
   ngOnInit(): void {
     this.applyInputState();
@@ -86,21 +92,21 @@ export class TemplateForm implements OnInit, OnChanges {
   }
 
   get canSaveTemplate(): boolean {
-    return this.draftTitle.trim() !== '' && !this.savingTemplate;
+    return this.draftTitle.trim() !== '' && !this.savingTemplate();
   }
 
   get canSaveItem(): boolean {
     return (
-      this.template !== null &&
+      this.template() !== null &&
       this.itemDraft.productId !== null &&
       this.itemDraft.qty !== null &&
       this.itemDraft.qty > 0 &&
-      !this.savingItem
+      !this.savingItem()
     );
   }
 
   get productListItems(): ProductListItem[] {
-    return this.products.map((product) => mapProductToProductListItem(product));
+    return this.products().map((product) => mapProductToProductListItem(product));
   }
 
   get selectedProductIds(): string[] {
@@ -108,7 +114,7 @@ export class TemplateForm implements OnInit, OnChanges {
   }
 
   get sortedSlots(): Slot[] {
-    return [...this.slots].sort(
+    return [...this.slots()].sort(
       (left, right) =>
         left.sortOrder - right.sortOrder ||
         left.title.localeCompare(right.title, 'fr', { sensitivity: 'base' }),
@@ -122,17 +128,18 @@ export class TemplateForm implements OnInit, OnChanges {
     }
 
     this.templateSubmitted.emit({
-      mode: this.mode,
+      mode: this.mode(),
       title,
     });
   }
 
   onTemplateDelete(): void {
-    if (!this.template) {
+    const template = this.template();
+    if (!template) {
       return;
     }
 
-    this.templateDeleted.emit(this.template.id);
+    this.templateDeleted.emit(template.id);
   }
 
   editItem(item: TemplateItem): void {
@@ -152,9 +159,13 @@ export class TemplateForm implements OnInit, OnChanges {
       return;
     }
 
+    this.updateItemDraft({ productId });
+  }
+
+  updateItemDraft(patch: Partial<TemplateItemDraft>): void {
     this.itemDraft = {
       ...this.itemDraft,
-      productId,
+      ...patch,
     };
   }
 
@@ -163,13 +174,14 @@ export class TemplateForm implements OnInit, OnChanges {
       return;
     }
 
+    const itemDraft = this.itemDraft;
     this.itemSubmitted.emit({
-      id: this.itemDraft.id,
-      productId: this.itemDraft.productId,
-      qty: this.itemDraft.qty,
-      qtyUnit: this.itemDraft.qtyUnit,
-      slotId: this.itemDraft.slotId,
-      slotKey: this.itemDraft.slotKey,
+      id: itemDraft.id,
+      productId: itemDraft.productId,
+      qty: itemDraft.qty,
+      qtyUnit: itemDraft.qtyUnit,
+      slotId: itemDraft.slotId,
+      slotKey: itemDraft.slotKey,
     });
   }
 
@@ -201,8 +213,9 @@ export class TemplateForm implements OnInit, OnChanges {
   }
 
   private applyInputState(): void {
-    if (this.mode === 'edit' && this.template) {
-      this.draftTitle = this.template.title;
+    const template = this.template();
+    if (this.mode() === 'edit' && template) {
+      this.draftTitle = template.title;
       this.resetItemDraft();
       return;
     }

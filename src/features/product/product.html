@@ -1,13 +1,12 @@
 <section class="app-page catalogue-page" data-testid="product-page">
   <div class="catalogue-page__toggle-wrap">
-    <app-segmented-toggle
-      [value]="activeView"
+    <app-segmented-toggle [value]="activeView"
       [options]="viewOptions"
       (valueChange)="onActiveViewChange($event)"
       ariaLabel="Selection de la vue catalogue active"
       data-testid="catalogue-view-toggle"
       name="catalogue-view"
-    ></app-segmented-toggle>
+     />
   </div>
 
   <mat-card class="catalogue-panel" data-testid="catalogue-panel">
@@ -23,7 +22,7 @@
           class="catalogue-action catalogue-action--secondary"
           (click)="onRefreshActiveView()"
           [disabled]="activeViewBusy"
-        >
+          >
           Rafraichir
         </button>
 
@@ -34,75 +33,75 @@
           (click)="onAddActiveView()"
           [disabled]="activeViewBusy"
           data-testid="catalogue-add-action"
-        >
+          >
           {{ activeViewConfig.addLabel }}
         </button>
       </div>
     </div>
 
     <div class="catalogue-panel__content">
-      <ng-container [ngSwitch]="activeView">
-        <div *ngSwitchCase="'product'" class="catalogue-panel__section" data-testid="catalogue-product-view">
-          <div class="app-status-row">
-            <span
-              *ngIf="loading"
-              class="app-status-pill app-status-pill--neutral"
-            >
-              Chargement...
-            </span>
-            <span
-              *ngIf="saving"
-              class="app-status-pill app-status-pill--saving"
-            >
-              Sauvegarde...
-            </span>
-            <span
-              *ngIf="loadingMeta"
-              class="app-status-pill app-status-pill--info"
-            >
-              Meta...
-            </span>
+      @switch (activeView) {
+        @case ('product') {
+          <div class="catalogue-panel__section" data-testid="catalogue-product-view">
+            <div class="app-status-row">
+              @if (loading) {
+                <span
+                  class="app-status-pill app-status-pill--neutral"
+                  >
+                  Chargement...
+                </span>
+              }
+              @if (saving) {
+                <span
+                  class="app-status-pill app-status-pill--saving"
+                  >
+                  Sauvegarde...
+                </span>
+              }
+              @if (loadingMeta) {
+                <span
+                  class="app-status-pill app-status-pill--info"
+                  >
+                  Meta...
+                </span>
+              }
+            </div>
+            @if (lastError) {
+              <app-ui-error-panel [error]="lastError" />
+            }
+            @if (lastMetaError) {
+              <p
+                class="app-alert"
+                >
+                Impossible de charger les metas (units / nutrition keys), fallback
+                actif.
+              </p>
+            }
+            <app-product-list mode="manage"
+              [products]="productListItems"
+              [embedded]="true"
+              (addRequested)="onAddRequested()"
+              (editRequested)="onEditRequested($event)"
+              (deleteRequested)="onDeleteRequested($event)"
+               />
           </div>
-
-          <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
-
-          <p
-            *ngIf="lastMetaError"
-            class="app-alert"
-          >
-            Impossible de charger les metas (units / nutrition keys), fallback
-            actif.
-          </p>
-
-          <app-product-list
-            mode="manage"
-            [products]="productListItems"
-            [embedded]="true"
-            (addRequested)="onAddRequested()"
-            (editRequested)="onEditRequested($event)"
-            (deleteRequested)="onDeleteRequested($event)"
-          >
-          </app-product-list>
-        </div>
-
-        <app-category
-          *ngSwitchCase="'category'"
-          [embedded]="true"
-          (dataChanged)="onLinkedDataChanged()"
-        ></app-category>
-
-        <app-generic-product
-          *ngSwitchCase="'genericProduct'"
-          [embedded]="true"
-          (dataChanged)="onLinkedDataChanged()"
-        ></app-generic-product>
-
-        <app-tag
-          *ngSwitchCase="'tag'"
-          [embedded]="true"
-          (dataChanged)="onLinkedDataChanged()"
-        ></app-tag>
-      </ng-container>
+        }
+        @case ('category') {
+          <app-category [embedded]="true"
+            (dataChanged)="onLinkedDataChanged()"
+           />
+        }
+        @case ('genericProduct') {
+          <app-generic-product [embedded]="true"
+            (dataChanged)="onLinkedDataChanged()"
+           />
+        }
+        @case ('tag') {
+          <app-tag [embedded]="true"
+            (dataChanged)="onLinkedDataChanged()"
+           />
+        }
+      }
     </div>
   </mat-card>
 </section>
@@ -122,8 +121,7 @@
     </div>
 
     <mat-dialog-content class="product-form-dialog__content">
-      <app-product-form
-        [mode]="formMode"
+      <app-product-form [mode]="formMode"
         [product]="formInitialValue"
         [showHeading]="false"
         [categories]="categoryOptions"
@@ -132,8 +130,7 @@
         [quantityUnits]="quantityUnitOptions"
         [nutritionKeys]="nutritionKeyOptions"
         (submitted)="onFormSubmitted($event)"
-        (menuClicked)="onMenuClicked()">
-      </app-product-form>
+        (menuClicked)="onMenuClicked()" />
     </mat-dialog-content>
   </div>
 </ng-template>

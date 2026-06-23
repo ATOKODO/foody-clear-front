@@ -1,111 +1,117 @@
 <div class="app-shell">
+  @if (mobileNavigationOpen) {
     <div
-        *ngIf="mobileNavigationOpen"
-        class="app-shell__backdrop"
-        (click)="closeMobileNavigation()"
-        aria-hidden="true"
+      class="app-shell__backdrop"
+      (click)="closeMobileNavigation()"
+      aria-hidden="true"
     ></div>
+  }
 
-    <aside
-        id="app-navigation"
-        class="app-shell__sidebar"
-        [class.app-shell__sidebar--open]="mobileNavigationOpen"
+  <aside
+    id="app-navigation"
+    class="app-shell__sidebar"
+    [class.app-shell__sidebar--open]="mobileNavigationOpen"
     >
-        <a class="app-shell__brand" routerLink="/home" (click)="closeMobileNavigation()">
-            <span class="app-shell__brand-mark">FC</span>
-            <span class="app-shell__brand-copy">
-                <span class="app-shell__brand-title">Foody Clear</span>
-                <span class="app-shell__brand-subtitle">Pilotage nutrition & operations</span>
-            </span>
-        </a>
+    <a class="app-shell__brand" routerLink="/home" (click)="closeMobileNavigation()">
+      <span class="app-shell__brand-mark">FC</span>
+      <span class="app-shell__brand-copy">
+        <span class="app-shell__brand-title">Foody Clear</span>
+        <span class="app-shell__brand-subtitle">Pilotage nutrition & operations</span>
+      </span>
+    </a>
 
-        <nav class="app-shell__navigation" aria-label="Navigation principale">
-            <section class="app-shell__group" *ngFor="let group of navigationGroups">
-                <p class="app-shell__group-label">{{ group.label }}</p>
+    <nav class="app-shell__navigation" aria-label="Navigation principale">
+      @for (group of navigationGroups; track group) {
+        <section class="app-shell__group">
+          <p class="app-shell__group-label">{{ group.label }}</p>
+          @for (entry of group.entries; track entry) {
+            <a
+              class="app-shell__nav-link"
+              [routerLink]="entry.path"
+              routerLinkActive="is-active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              (click)="closeMobileNavigation()"
+              >
+              <span class="app-shell__nav-icon">{{ entry.shortLabel }}</span>
+              <span class="app-shell__nav-copy">
+                <span class="app-shell__nav-title">{{ entry.label }}</span>
+                <span class="app-shell__nav-description">{{ entry.description }}</span>
+              </span>
+            </a>
+          }
+        </section>
+      }
+    </nav>
 
-                <a
-                    *ngFor="let entry of group.entries"
-                    class="app-shell__nav-link"
-                    [routerLink]="entry.path"
-                    routerLinkActive="is-active"
-                    [routerLinkActiveOptions]="{ exact: true }"
-                    (click)="closeMobileNavigation()"
-                >
-                    <span class="app-shell__nav-icon">{{ entry.shortLabel }}</span>
-
-                    <span class="app-shell__nav-copy">
-                        <span class="app-shell__nav-title">{{ entry.label }}</span>
-                        <span class="app-shell__nav-description">{{ entry.description }}</span>
-                    </span>
-                </a>
-            </section>
-        </nav>
-
-        <div class="app-shell__sidebar-footer">
-            <p class="app-shell__sidebar-footer-title">Theme actif</p>
-            <p class="app-shell__sidebar-footer-copy">
-                {{ isDarkMode ? 'Sombre' : 'Clair' }}
-            </p>
-        </div>
-    </aside>
-
-    <div class="app-shell__main">
-        <header class="app-shell__header">
-            <div class="app-shell__header-primary">
-                <button
-                    type="button"
-                    class="app-shell__menu-button"
-                    (click)="openMobileNavigation()"
-                    aria-label="Ouvrir la navigation"
-                    aria-controls="app-navigation"
-                >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">
-                        <path d="M4 7h16"></path>
-                        <path d="M4 12h16"></path>
-                        <path d="M4 17h16"></path>
-                    </svg>
-                </button>
-
-                <div class="app-shell__header-copy">
-                    <p class="app-shell__header-eyebrow">{{ currentGroupLabel }}</p>
-                    <h1 class="app-shell__header-title">{{ currentEntry.label }}</h1>
-                    <p class="app-shell__header-description">{{ currentEntry.description }}</p>
-                </div>
-            </div>
-
-            <button
-                type="button"
-                class="app-theme-toggle"
-                [attr.aria-label]="themeToggleLabel"
-                [attr.aria-pressed]="isDarkMode"
-                (click)="toggleTheme()"
-            >
-                <span class="app-theme-toggle__icon" aria-hidden="true">
-                    <svg *ngIf="!isDarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
-                        <circle cx="12" cy="12" r="4"></circle>
-                        <path d="M12 2v2.5"></path>
-                        <path d="M12 19.5V22"></path>
-                        <path d="M4.93 4.93l1.77 1.77"></path>
-                        <path d="M17.3 17.3l1.77 1.77"></path>
-                        <path d="M2 12h2.5"></path>
-                        <path d="M19.5 12H22"></path>
-                        <path d="M4.93 19.07l1.77-1.77"></path>
-                        <path d="M17.3 6.7l1.77-1.77"></path>
-                    </svg>
-                    <svg *ngIf="isDarkMode" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3c0.2 0 0.4 0.01 0.59 0.03A7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                </span>
-
-                <span class="app-theme-toggle__copy">
-                    <span class="app-theme-toggle__title">{{ isDarkMode ? 'Theme sombre' : 'Theme clair' }}</span>
-                    <span class="app-theme-toggle__subtitle">{{ themeToggleLabel }}</span>
-                </span>
-            </button>
-        </header>
-
-        <main class="app-shell__content">
-            <router-outlet />
-        </main>
+    <div class="app-shell__sidebar-footer">
+      <p class="app-shell__sidebar-footer-title">Theme actif</p>
+      <p class="app-shell__sidebar-footer-copy">
+        {{ isDarkMode ? 'Sombre' : 'Clair' }}
+      </p>
     </div>
+  </aside>
+
+  <div class="app-shell__main">
+    <header class="app-shell__header">
+      <div class="app-shell__header-primary">
+        <button
+          type="button"
+          class="app-shell__menu-button"
+          (click)="openMobileNavigation()"
+          aria-label="Ouvrir la navigation"
+          aria-controls="app-navigation"
+          >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">
+            <path d="M4 7h16"></path>
+            <path d="M4 12h16"></path>
+            <path d="M4 17h16"></path>
+          </svg>
+        </button>
+
+        <div class="app-shell__header-copy">
+          <p class="app-shell__header-eyebrow">{{ currentGroupLabel }}</p>
+          <h1 class="app-shell__header-title">{{ currentEntry.label }}</h1>
+          <p class="app-shell__header-description">{{ currentEntry.description }}</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="app-theme-toggle"
+        [attr.aria-label]="themeToggleLabel"
+        [attr.aria-pressed]="isDarkMode"
+        (click)="toggleTheme()"
+        >
+        <span class="app-theme-toggle__icon" aria-hidden="true">
+          @if (!isDarkMode) {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2.5"></path>
+              <path d="M12 19.5V22"></path>
+              <path d="M4.93 4.93l1.77 1.77"></path>
+              <path d="M17.3 17.3l1.77 1.77"></path>
+              <path d="M2 12h2.5"></path>
+              <path d="M19.5 12H22"></path>
+              <path d="M4.93 19.07l1.77-1.77"></path>
+              <path d="M17.3 6.7l1.77-1.77"></path>
+            </svg>
+          }
+          @if (isDarkMode) {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3c0.2 0 0.4 0.01 0.59 0.03A7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          }
+        </span>
+
+        <span class="app-theme-toggle__copy">
+          <span class="app-theme-toggle__title">{{ isDarkMode ? 'Theme sombre' : 'Theme clair' }}</span>
+          <span class="app-theme-toggle__subtitle">{{ themeToggleLabel }}</span>
+        </span>
+      </button>
+    </header>
+
+    <main class="app-shell__content">
+      <router-outlet />
+    </main>
+  </div>
 </div>

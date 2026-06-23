@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -33,27 +32,26 @@ export interface SlotListItem {
 @Component({
   selector: 'app-slot-list',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
     MatTableModule,
-  ],
+    NgTemplateOutlet
+],
   templateUrl: './slot-list.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './slot-list.scss',
 })
 export class SlotList implements OnInit, OnChanges {
-  @Input() mode: SlotListMode = 'manage';
-  @Input() slots: SlotListItem[] | null = null;
-  @Input() selectedIds: string[] | null = null;
-  @Input() embedded = false;
+  readonly mode = input<SlotListMode>('manage');
+  readonly slots = input<SlotListItem[] | null>(null);
+  readonly selectedIds = input<string[] | null>(null);
+  readonly embedded = input(false);
 
-  @Output() readonly addRequested = new EventEmitter<void>();
-  @Output() readonly editRequested = new EventEmitter<SlotListItem>();
-  @Output() readonly deleteRequested = new EventEmitter<SlotListItem>();
-  @Output() readonly selected = new EventEmitter<SlotListItem>();
-  @Output() readonly selectedMany = new EventEmitter<SlotListItem[]>();
+  readonly addRequested = output<void>();
+  readonly editRequested = output<SlotListItem>();
+  readonly deleteRequested = output<SlotListItem>();
+  readonly selected = output<SlotListItem>();
+  readonly selectedMany = output<SlotListItem[]>();
 
   readonly defaultSlots: SlotListItem[] = [
     {
@@ -94,15 +92,15 @@ export class SlotList implements OnInit, OnChanges {
   }
 
   get isManageMode(): boolean {
-    return this.mode === 'manage';
+    return this.mode() === 'manage';
   }
 
   get isSingleSelectMode(): boolean {
-    return this.mode === 'select-single';
+    return this.mode() === 'select-single';
   }
 
   get isMultiSelectMode(): boolean {
-    return this.mode === 'select-multi';
+    return this.mode() === 'select-multi';
   }
 
   get hasItems(): boolean {
@@ -226,9 +224,10 @@ export class SlotList implements OnInit, OnChanges {
   }
 
   private applyInputState(): void {
-    this.resolvedSlots = this.slots === null ? [...this.defaultSlots] : [...this.slots];
+    const slots = this.slots();
+    this.resolvedSlots = slots === null ? [...this.defaultSlots] : [...slots];
 
-    const initialIds = this.selectedIds ?? [];
+    const initialIds = this.selectedIds() ?? [];
     const availableIds = new Set(this.resolvedSlots.map((item) => item.id));
     this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
 

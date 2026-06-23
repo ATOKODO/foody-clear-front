@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
+
+import { Component, OnInit, input, output, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -22,7 +22,6 @@ import {
 @Component({
   selector: 'app-tag',
   imports: [
-    CommonModule,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -30,15 +29,16 @@ import {
     MatInputModule,
     UiErrorPanel,
     TagList,
-    TagForm,
-  ],
+    TagForm
+],
   templateUrl: './tag.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tag.scss',
 })
 export class Tag implements OnInit {
-  @Input() embedded = false;
-  @Output() readonly dataChanged = new EventEmitter<void>();
+  private readonly tagSrv = inject(TagService);
+
+  readonly embedded = input(false);
+  readonly dataChanged = output<void>();
 
   baseUrl = '';
   loading = false;
@@ -53,8 +53,6 @@ export class Tag implements OnInit {
 
   lastResponse: unknown = null;
   lastError: unknown = null;
-
-  constructor(private readonly tagSrv: TagService) {}
 
   ngOnInit(): void {
     this.baseUrl = this.tagSrv.baseUrl;

@@ -1,14 +1,13 @@
-import { CommonModule } from '@angular/common';
+
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,28 +23,26 @@ export interface TagFormValue {
 @Component({
   selector: 'app-tag-form',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
-    MatInputModule,
-  ],
+    MatInputModule
+],
   templateUrl: './tag-form.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tag-form.scss',
 })
 export class TagForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
-  @Input() mode: TagFormMode = 'add';
-  @Input() tag: Partial<TagFormValue> | null = null;
-  @Input() showHeading = true;
+  readonly mode = input<TagFormMode>('add');
+  readonly tag = input<Partial<TagFormValue> | null>(null);
+  readonly showHeading = input(true);
 
-  @Output() readonly submitted = new EventEmitter<{
+  readonly submitted = output<{
     mode: TagFormMode;
     value: TagFormValue;
-  }>();
-  @Output() readonly menuClicked = new EventEmitter<void>();
+}>();
+  readonly menuClicked = output<void>();
 
   readonly form = this.fb.group({
     name: this.fb.nonNullable.control('', [Validators.required]),
@@ -62,7 +59,7 @@ export class TagForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode === 'edit' ? 'Modifier Tag' : 'Ajouter Tag';
+    return this.mode() === 'edit' ? 'Modifier Tag' : 'Ajouter Tag';
   }
 
   onMenuClick(): void {
@@ -83,7 +80,7 @@ export class TagForm implements OnInit, OnChanges {
     }
 
     this.submitted.emit({
-      mode: this.mode,
+      mode: this.mode(),
       value: {
         name,
       },
@@ -92,7 +89,7 @@ export class TagForm implements OnInit, OnChanges {
 
   private applyInputState(): void {
     this.form.reset({
-      name: this.tag?.name ?? '',
+      name: this.tag()?.name ?? '',
     });
   }
 }

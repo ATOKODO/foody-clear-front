@@ -1,14 +1,13 @@
-import { CommonModule } from '@angular/common';
+
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,27 +23,25 @@ export interface InventoryFormValue {
 @Component({
   selector: 'app-inventory-form',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
-    MatInputModule,
-  ],
+    MatInputModule
+],
   templateUrl: './inventory-form.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './inventory-form.scss',
 })
 export class InventoryForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
-  @Input() mode: InventoryFormMode = 'add';
-  @Input() inventory: Partial<InventoryFormValue> | null = null;
+  readonly mode = input<InventoryFormMode>('add');
+  readonly inventory = input<Partial<InventoryFormValue> | null>(null);
 
-  @Output() readonly submitted = new EventEmitter<{
+  readonly submitted = output<{
     mode: InventoryFormMode;
     value: InventoryFormValue;
-  }>();
-  @Output() readonly menuClicked = new EventEmitter<void>();
+}>();
+  readonly menuClicked = output<void>();
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required]],
@@ -61,7 +58,7 @@ export class InventoryForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode === 'edit' ? 'Modifier Inventory' : 'Ajouter Inventory';
+    return this.mode() === 'edit' ? 'Modifier Inventory' : 'Ajouter Inventory';
   }
 
   onMenuClick(): void {
@@ -82,7 +79,7 @@ export class InventoryForm implements OnInit, OnChanges {
     }
 
     this.submitted.emit({
-      mode: this.mode,
+      mode: this.mode(),
       value: {
         name,
       },
@@ -90,7 +87,7 @@ export class InventoryForm implements OnInit, OnChanges {
   }
 
   private applyInputState(): void {
-    const name = this.inventory?.name ?? '';
+    const name = this.inventory()?.name ?? '';
 
     this.form.reset({
       name,

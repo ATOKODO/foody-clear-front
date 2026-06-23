@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
+
+import { Component, OnInit, TemplateRef, inject, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -85,7 +85,6 @@ const PRODUCT_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<ProductHubView>[]
 @Component({
   selector: 'app-product',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatCardModule,
     MatDialogModule,
@@ -95,21 +94,22 @@ const PRODUCT_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<ProductHubView>[]
     GenericProductFeature,
     ProductList,
     ProductForm,
-    TagFeature,
-  ],
+    TagFeature
+],
   templateUrl: './product.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './product.scss',
 })
 export class Product implements OnInit {
-  @ViewChild('productFormDialog')
-  private productFormDialogTemplate?: TemplateRef<unknown>;
-  @ViewChild(CategoryFeature)
-  private categoryFeature?: CategoryFeature;
-  @ViewChild(GenericProductFeature)
-  private genericProductFeature?: GenericProductFeature;
-  @ViewChild(TagFeature)
-  private tagFeature?: TagFeature;
+  private readonly categorySrv = inject(CategoryService);
+  private readonly genericProductSrv = inject(GenericProductService);
+  private readonly productSrv = inject(ProductService);
+  private readonly metaSrv = inject(MetaService);
+  private readonly tagSrv = inject(TagService);
+
+  private readonly productFormDialogTemplate = viewChild<TemplateRef<unknown>>('productFormDialog');
+  private readonly categoryFeature = viewChild(CategoryFeature);
+  private readonly genericProductFeature = viewChild(GenericProductFeature);
+  private readonly tagFeature = viewChild(TagFeature);
 
   private readonly dialog = inject(MatDialog);
 
@@ -138,14 +138,6 @@ export class Product implements OnInit {
   lastMetaError: unknown = null;
   private dialogRef: MatDialogRef<unknown> | null = null;
   readonly viewOptions = PRODUCT_HUB_VIEW_OPTIONS;
-
-  constructor(
-    private readonly categorySrv: CategoryService,
-    private readonly genericProductSrv: GenericProductService,
-    private readonly productSrv: ProductService,
-    private readonly metaSrv: MetaService,
-    private readonly tagSrv: TagService,
-  ) {}
 
   ngOnInit(): void {
     this.baseUrl = this.productSrv.baseUrl;
@@ -187,15 +179,18 @@ export class Product implements OnInit {
   }
 
   get activeViewBusy(): boolean {
+    const categoryFeature = this.categoryFeature();
+    const genericProductFeature = this.genericProductFeature();
+    const tagFeature = this.tagFeature();
     switch (this.activeView) {
       case 'product':
         return this.loading || this.loadingMeta || this.saving;
       case 'category':
-        return !!this.categoryFeature && (this.categoryFeature.store.loading() || this.categoryFeature.store.saving());
+        return !!categoryFeature && (categoryFeature.store.loading() || categoryFeature.store.saving());
       case 'genericProduct':
-        return !!this.genericProductFeature && (this.genericProductFeature.loading || this.genericProductFeature.saving);
+        return !!genericProductFeature && (genericProductFeature.loading || genericProductFeature.saving);
       case 'tag':
-        return !!this.tagFeature && (this.tagFeature.loading || this.tagFeature.saving);
+        return !!tagFeature && (tagFeature.loading || tagFeature.saving);
       default:
         return false;
     }
@@ -212,13 +207,13 @@ export class Product implements OnInit {
         this.onRefreshRequested();
         break;
       case 'category':
-        this.categoryFeature?.refresh();
+        this.categoryFeature()?.refresh();
         break;
       case 'genericProduct':
-        this.genericProductFeature?.refresh();
+        this.genericProductFeature()?.refresh();
         break;
       case 'tag':
-        this.tagFeature?.refresh();
+        this.tagFeature()?.refresh();
         break;
     }
   }
@@ -229,13 +224,13 @@ export class Product implements OnInit {
         this.onAddRequested();
         break;
       case 'category':
-        this.categoryFeature?.openCreate();
+        this.categoryFeature()?.openCreate();
         break;
       case 'genericProduct':
-        this.genericProductFeature?.openCreate();
+        this.genericProductFeature()?.openCreate();
         break;
       case 'tag':
-        this.tagFeature?.openCreate();
+        this.tagFeature()?.openCreate();
         break;
     }
   }
@@ -380,13 +375,14 @@ export class Product implements OnInit {
   }
 
   private openFormDialog(): void {
-    if (!this.productFormDialogTemplate) {
+    const productFormDialogTemplate = this.productFormDialogTemplate();
+    if (!productFormDialogTemplate) {
       this.formVisible = true;
       return;
     }
 
     this.formVisible = true;
-    const dialogRef = this.dialog.open(this.productFormDialogTemplate, {
+    const dialogRef = this.dialog.open(productFormDialogTemplate, {
       width: 'min(1100px, 96vw)',
       maxWidth: '96vw',
       autoFocus: false,

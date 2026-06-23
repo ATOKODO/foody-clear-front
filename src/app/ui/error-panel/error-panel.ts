@@ -1,22 +1,25 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { CommonModule, JsonPipe } from '@angular/common';
+import { Component, input } from '@angular/core';
+import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-ui-error-panel',
-  imports: [CommonModule, JsonPipe],
+  imports: [JsonPipe],
   template: `
-    <section *ngIf="error" class="app-alert app-alert--error" role="alert">
-      <div class="app-alert__copy">
-        <p class="app-alert__title">{{ title }}</p>
-        <p class="app-alert__message">{{ resolvedMessage }}</p>
-      </div>
-
-      <details class="app-alert__details" *ngIf="showDetails">
-        <summary>{{ detailsLabel }}</summary>
-        <pre>{{ error | json }}</pre>
-      </details>
-    </section>
-  `,
+    @if (error()) {
+      <section class="app-alert app-alert--error" role="alert">
+        <div class="app-alert__copy">
+          <p class="app-alert__title">{{ title() }}</p>
+          <p class="app-alert__message">{{ resolvedMessage }}</p>
+        </div>
+        @if (showDetails) {
+          <details class="app-alert__details">
+            <summary>{{ detailsLabel() }}</summary>
+            <pre>{{ error() | json }}</pre>
+          </details>
+        }
+      </section>
+    }
+    `,
   styles: [
     `
       :host {
@@ -24,25 +27,24 @@ import { CommonModule, JsonPipe } from '@angular/common';
       }
     `,
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UiErrorPanel {
-  @Input() error: unknown = null;
-  @Input() title = 'Une erreur est survenue';
-  @Input() message: string | null = null;
-  @Input() detailsLabel = 'Voir les details techniques';
+  readonly error = input<unknown>(null);
+  readonly title = input('Une erreur est survenue');
+  readonly message = input<string | null>(null);
+  readonly detailsLabel = input('Voir les details techniques');
 
   get resolvedMessage(): string {
-    const explicitMessage = this.message?.trim();
+    const explicitMessage = this.message()?.trim();
     if (explicitMessage) {
       return explicitMessage;
     }
 
-    return summarizeError(this.error);
+    return summarizeError(this.error());
   }
 
   get showDetails(): boolean {
-    return this.error !== null && this.error !== undefined;
+    return this.error() !== null && this.error() !== undefined;
   }
 }
 

@@ -1,14 +1,13 @@
-import { CommonModule } from '@angular/common';
+
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -64,35 +63,33 @@ export interface ProductFormValue {
 @Component({
   selector: 'app-product-form',
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
-  ],
+    MatSelectModule
+],
   templateUrl: './product-form.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './product-form.scss',
 })
 export class ProductForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
-  @Input() mode: ProductFormMode = 'add';
-  @Input() product: Partial<ProductFormValue> | null = null;
-  @Input() categories: ProductCategoryOption[] = [];
-  @Input() genericProducts: ProductGenericProductOption[] = [];
-  @Input() nutritionKeys: NutritionKeyMeta[] = [];
-  @Input() quantityUnits: QuantityUnitMeta[] = [];
-  @Input() showHeading = true;
-  @Input() tags: ProductTagOption[] = [];
+  readonly mode = input<ProductFormMode>('add');
+  readonly product = input<Partial<ProductFormValue> | null>(null);
+  readonly categories = input<ProductCategoryOption[]>([]);
+  readonly genericProducts = input<ProductGenericProductOption[]>([]);
+  readonly nutritionKeys = input<NutritionKeyMeta[]>([]);
+  readonly quantityUnits = input<QuantityUnitMeta[]>([]);
+  readonly showHeading = input(true);
+  readonly tags = input<ProductTagOption[]>([]);
 
-  @Output() readonly submitted = new EventEmitter<{
+  readonly submitted = output<{
     mode: ProductFormMode;
     value: ProductFormValue;
-  }>();
-  @Output() readonly menuClicked = new EventEmitter<void>();
+}>();
+  readonly menuClicked = output<void>();
 
   nutritionValues: ProductFormNutritionValue[] = [];
   readonly unitTypeOptions: ProductUnitType[] = [
@@ -166,7 +163,7 @@ export class ProductForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode === 'edit' ? 'Modifier Produit' : 'Ajouter Produit';
+    return this.mode() === 'edit' ? 'Modifier Produit' : 'Ajouter Produit';
   }
 
   onMenuClick(): void {
@@ -208,7 +205,7 @@ export class ProductForm implements OnInit, OnChanges {
       .filter((value) => value.nutritionKey !== '');
 
     this.submitted.emit({
-      mode: this.mode,
+      mode: this.mode(),
       value: {
         name: rawValue.name.trim(),
         barcode: this.normalizeNullableString(rawValue.barcode),
@@ -225,7 +222,7 @@ export class ProductForm implements OnInit, OnChanges {
         portionQuantityNormalized,
         price,
         priceUnit,
-        priceEffectiveFrom: this.mode === 'edit' ? priceEffectiveFrom : null,
+        priceEffectiveFrom: this.mode() === 'edit' ? priceEffectiveFrom : null,
         url: this.normalizeNullableString(rawValue.url),
         memo: this.normalizeNullableString(rawValue.memo),
         nutritionValues,
@@ -272,7 +269,7 @@ export class ProductForm implements OnInit, OnChanges {
       genericProductId: null,
       unitType: this.unitTypeOptions[0],
       quantityPerUnit: 0,
-      quantityUnit: this.normalizeQuantityUnit(this.quantityUnits[0]?.value) ?? 'g',
+      quantityUnit: this.normalizeQuantityUnit(this.quantityUnits()[0]?.value) ?? 'g',
       portionCount: null,
       portionUnit: null,
       portionQuantityNormalized: null,
@@ -284,32 +281,33 @@ export class ProductForm implements OnInit, OnChanges {
       nutritionValues: this.getDefaultNutritionValues(),
     };
 
-    if (this.mode === 'edit' && this.product) {
+    const product = this.product();
+    if (this.mode() === 'edit' && product) {
       this.form.reset({
-        name: this.product.name ?? defaults.name,
-        barcode: this.product.barcode ?? defaults.barcode ?? '',
-        categoryId: this.product.categoryId ?? '',
-        tagIds: this.normalizeIntegerArray(this.product.tagIds ?? defaults.tagIds),
-        genericProductId: this.product.genericProductId ?? '',
-        unitType: this.product.unitType ?? defaults.unitType,
-        quantityPerUnit: this.product.quantityPerUnit ?? defaults.quantityPerUnit,
-        quantityUnit: this.product.quantityUnit ?? defaults.quantityUnit,
+        name: product.name ?? defaults.name,
+        barcode: product.barcode ?? defaults.barcode ?? '',
+        categoryId: product.categoryId ?? '',
+        tagIds: this.normalizeIntegerArray(product.tagIds ?? defaults.tagIds),
+        genericProductId: product.genericProductId ?? '',
+        unitType: product.unitType ?? defaults.unitType,
+        quantityPerUnit: product.quantityPerUnit ?? defaults.quantityPerUnit,
+        quantityUnit: product.quantityUnit ?? defaults.quantityUnit,
         portionCount:
-          this.product.portionCount != null ? String(this.product.portionCount) : '',
-        portionUnit: this.product.portionUnit ?? '',
+          product.portionCount != null ? String(product.portionCount) : '',
+        portionUnit: product.portionUnit ?? '',
         portionQuantityNormalized:
-          this.product.portionQuantityNormalized != null
-            ? String(this.product.portionQuantityNormalized)
+          product.portionQuantityNormalized != null
+            ? String(product.portionQuantityNormalized)
             : '',
-        price: this.product.price != null ? String(this.product.price) : '',
-        priceUnit: this.product.priceUnit ?? '',
-        priceEffectiveFrom: this.product.priceEffectiveFrom ?? '',
-        url: this.product.url ?? defaults.url ?? '',
-        memo: this.product.memo ?? defaults.memo ?? '',
+        price: product.price != null ? String(product.price) : '',
+        priceUnit: product.priceUnit ?? '',
+        priceEffectiveFrom: product.priceEffectiveFrom ?? '',
+        url: product.url ?? defaults.url ?? '',
+        memo: product.memo ?? defaults.memo ?? '',
       });
       this.nutritionValues =
-        this.product.nutritionValues && this.product.nutritionValues.length > 0
-          ? this.cloneNutritionValues(this.product.nutritionValues)
+        product.nutritionValues && product.nutritionValues.length > 0
+          ? this.cloneNutritionValues(product.nutritionValues)
           : this.getDefaultNutritionValues();
       return;
     }
@@ -336,7 +334,7 @@ export class ProductForm implements OnInit, OnChanges {
   }
 
   private getDefaultNutritionValues(): ProductFormNutritionValue[] {
-    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys).map((key) =>
+    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys()).map((key) =>
       this.buildDefaultNutritionValue(key),
     );
     return this.cloneNutritionValues(defaults);
@@ -396,7 +394,7 @@ export class ProductForm implements OnInit, OnChanges {
       return [];
     }
 
-    const key = this.nutritionKeys.find(
+    const key = this.nutritionKeys().find(
       (item) =>
         item.value.toUpperCase() === nutritionKey.toUpperCase() ||
         item.key.toUpperCase() === nutritionKey.toUpperCase(),

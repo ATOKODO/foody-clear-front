@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -92,7 +92,6 @@ type InventoryQtyUnitOption = {
 @Component({
   selector: 'app-inventory',
   imports: [
-    CommonModule,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -102,13 +101,18 @@ type InventoryQtyUnitOption = {
     UiErrorPanel,
     InventoryList,
     InventoryForm,
-    ProductList,
-  ],
+    ProductList
+],
   templateUrl: './inventory.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './inventory.scss',
+  host: {
+    '(document:keydown.escape)': 'onEscapeKey()',
+  },
 })
 export class Inventory implements OnInit {
+  private readonly inventorySrv = inject(InventoryService);
+  private readonly productSrv = inject(ProductService);
+
   baseUrl = '';
   loading = false;
   saving = false;
@@ -118,15 +122,16 @@ export class Inventory implements OnInit {
   inventories: InventoryApiModel[] = [];
   products: ProductApiModel[] = [];
 
-  formVisible = false;
-  formMode: InventoryFormMode = 'add';
+  private readonly formVisibleState = signal(false);
+  private readonly formModeState = signal<InventoryFormMode>('add');
+  private readonly activeModalState = signal<'add-products' | null>(null);
+  private readonly formInitialValueState = signal<Partial<InventoryFormValue> | null>(null);
+  private readonly manageProductRowsState = signal<InventoryManagedProductRow[]>([]);
+
   editingInventoryId: number | null = null;
-  activeModal: 'add-products' | null = null;
-  formInitialValue: Partial<InventoryFormValue> | null = null;
   editingInventoryProducts: InventoryProduct[] = [];
   createSelectedProductRows: InventorySelectedProductRow[] = [];
   addSelectedProductRows: InventorySelectedProductRow[] = [];
-  manageProductRows: InventoryManagedProductRow[] = [];
 
   lastResponse: unknown = null;
   lastError: unknown = null;
@@ -135,11 +140,6 @@ export class Inventory implements OnInit {
   manageProductsFormError: string | null = null;
 
   private readonly qtyUnitSet = new Set<ProductQuantityInputUnit>(INVENTORY_QTY_UNITS);
-
-  constructor(
-    private readonly inventorySrv: InventoryService,
-    private readonly productSrv: ProductService,
-  ) {}
 
   ngOnInit(): void {
     this.baseUrl = this.inventorySrv.baseUrl;
@@ -153,6 +153,46 @@ export class Inventory implements OnInit {
     this.productSrv.setBaseUrl(this.baseUrl);
     this.loadProducts();
     this.loadInventories();
+  }
+
+  get formVisible(): boolean {
+    return this.formVisibleState();
+  }
+
+  set formVisible(value: boolean) {
+    this.formVisibleState.set(value);
+  }
+
+  get formMode(): InventoryFormMode {
+    return this.formModeState();
+  }
+
+  set formMode(value: InventoryFormMode) {
+    this.formModeState.set(value);
+  }
+
+  get activeModal(): 'add-products' | null {
+    return this.activeModalState();
+  }
+
+  set activeModal(value: 'add-products' | null) {
+    this.activeModalState.set(value);
+  }
+
+  get formInitialValue(): Partial<InventoryFormValue> | null {
+    return this.formInitialValueState();
+  }
+
+  set formInitialValue(value: Partial<InventoryFormValue> | null) {
+    this.formInitialValueState.set(value);
+  }
+
+  get manageProductRows(): InventoryManagedProductRow[] {
+    return this.manageProductRowsState();
+  }
+
+  set manageProductRows(value: InventoryManagedProductRow[]) {
+    this.manageProductRowsState.set(value);
   }
 
   get inventoryListItems(): InventoryListItem[] {
@@ -349,7 +389,6 @@ export class Inventory implements OnInit {
     this.addProductsFormError = null;
   }
 
-  @HostListener('document:keydown.escape')
   onEscapeKey(): void {
     if (this.formVisible) {
       this.closeFormModal();

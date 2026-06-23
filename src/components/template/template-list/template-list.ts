@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { KeyValuePipe } from '@angular/common';
+import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -17,56 +17,55 @@ import { Template, TemplateItem } from '../../../interfaces/template.interface';
 @Component({
   selector: 'app-template-list',
   imports: [
-    CommonModule,
     FormsModule,
     MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
     MatSelectModule,
-  ],
+    KeyValuePipe
+],
   templateUrl: './template-list.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './template-list.scss',
 })
 export class TemplateList {
-  @Input() templates: Template[] = [];
-  @Input() selectedTemplateId: number | null = null;
-  @Input() selectedTemplate: Template | null = null;
-  @Input() compareDaySetId: number | null = null;
-  @Input() daySets: DaySet[] = [];
-  @Input() slots: Slot[] = [];
-  @Input() loadingTemplates = false;
-  @Input() loadingProducts = false;
-  @Input() loadingDaySets = false;
-  @Input() loadingSlots = false;
-  @Input() savingTemplate = false;
-  @Input() savingItem = false;
+  readonly templates = input<Template[]>([]);
+  readonly selectedTemplateId = input<number | null>(null);
+  readonly selectedTemplate = input<Template | null>(null);
+  readonly compareDaySetId = input<number | null>(null);
+  readonly daySets = input<DaySet[]>([]);
+  readonly slots = input<Slot[]>([]);
+  readonly loadingTemplates = input(false);
+  readonly loadingProducts = input(false);
+  readonly loadingDaySets = input(false);
+  readonly loadingSlots = input(false);
+  readonly savingTemplate = input(false);
+  readonly savingItem = input(false);
 
-  @Output() readonly editRequested = new EventEmitter<number>();
-  @Output() readonly deleteRequested = new EventEmitter<number>();
-  @Output() readonly templateSelected = new EventEmitter<number>();
-  @Output() readonly compareDaySetChanged = new EventEmitter<number | null>();
+  readonly editRequested = output<number>();
+  readonly deleteRequested = output<number>();
+  readonly templateSelected = output<number>();
+  readonly compareDaySetChanged = output<number | null>();
 
   get sortedTemplates(): Template[] {
-    return [...this.templates].sort((left, right) =>
+    return [...this.templates()].sort((left, right) =>
       left.title.localeCompare(right.title, 'fr', { sensitivity: 'base' }),
     );
   }
 
   get sortedDaySets(): DaySet[] {
-    return [...this.daySets].sort((left, right) =>
+    return [...this.daySets()].sort((left, right) =>
       left.title.localeCompare(right.title, 'fr', { sensitivity: 'base' }),
     );
   }
 
   get busy(): boolean {
     return (
-      this.loadingTemplates ||
-      this.loadingProducts ||
-      this.loadingDaySets ||
-      this.loadingSlots ||
-      this.savingTemplate ||
-      this.savingItem
+      this.loadingTemplates() ||
+      this.loadingProducts() ||
+      this.loadingDaySets() ||
+      this.loadingSlots() ||
+      this.savingTemplate() ||
+      this.savingItem()
     );
   }
 
@@ -134,13 +133,25 @@ export class TemplateList {
     return this.formatNumber(value);
   }
 
+  getStockAvailabilityLabel(item: TemplateItem): string {
+    if (item.stockAvailability?.enoughStock === true) {
+      return 'Stock OK';
+    }
+
+    if (item.stockAvailability?.enoughStock === false) {
+      return 'Stock insuffisant';
+    }
+
+    return 'Stock inconnu';
+  }
+
   hasEntries(value: Record<string, unknown> | null | undefined): boolean {
     return !!value && Object.keys(value).length > 0;
   }
 
   resolveTemplateItemSlotLabel(item: TemplateItem): string {
     if (item.slotId != null) {
-      const slot = this.slots.find((candidate) => candidate.id === item.slotId) ?? null;
+      const slot = this.slots().find((candidate) => candidate.id === item.slotId) ?? null;
       if (slot) {
         return `${slot.sortOrder}. ${slot.title}`;
       }

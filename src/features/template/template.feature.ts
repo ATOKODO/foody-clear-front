@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
+
+import { Component, OnInit, TemplateRef, inject, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -30,22 +30,24 @@ import { TemplateService } from '../../services/template-service';
 @Component({
   selector: 'app-template',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatCardModule,
     MatDialogModule,
     MatProgressBarModule,
     UiErrorPanel,
     TemplateForm,
-    TemplateList,
-  ],
+    TemplateList
+],
   templateUrl: './template.feature.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './template.feature.scss',
 })
 export class TemplateFeature implements OnInit {
-  @ViewChild('templateEditorDialog')
-  private templateEditorDialog?: TemplateRef<unknown>;
+  private readonly templateSrv = inject(TemplateService);
+  private readonly productSrv = inject(ProductService);
+  private readonly daySetSrv = inject(DaySetService);
+  private readonly slotSrv = inject(SlotService);
+
+  private readonly templateEditorDialog = viewChild<TemplateRef<unknown>>('templateEditorDialog');
 
   private readonly dialog = inject(MatDialog);
 
@@ -87,13 +89,6 @@ export class TemplateFeature implements OnInit {
   lastError: unknown = null;
   itemError: string | null = null;
   private dialogRef: MatDialogRef<unknown> | null = null;
-
-  constructor(
-    private readonly templateSrv: TemplateService,
-    private readonly productSrv: ProductService,
-    private readonly daySetSrv: DaySetService,
-    private readonly slotSrv: SlotService,
-  ) {}
 
   ngOnInit(): void {
     this.baseUrl = this.templateSrv.baseUrl;
@@ -494,11 +489,12 @@ export class TemplateFeature implements OnInit {
   }
 
   private openEditorDialog(): void {
-    if (!this.templateEditorDialog || this.dialogRef !== null) {
+    const templateEditorDialog = this.templateEditorDialog();
+    if (!templateEditorDialog || this.dialogRef !== null) {
       return;
     }
 
-    const dialogRef = this.dialog.open(this.templateEditorDialog, {
+    const dialogRef = this.dialog.open(templateEditorDialog, {
       width: 'min(1120px, 96vw)',
       maxWidth: '96vw',
       autoFocus: false,

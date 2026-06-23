@@ -1,14 +1,5 @@
-import { CommonModule, JsonPipe } from '@angular/common';
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnInit,
-  Output,
-  SimpleChanges,
-  ChangeDetectionStrategy
-} from '@angular/core';
+import { JsonPipe, NgTemplateOutlet, KeyValuePipe } from '@angular/common';
+import { Component, OnChanges, OnInit, SimpleChanges, input, output, inject, signal } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -118,7 +109,6 @@ const INPUT_DAY_EMBEDDED_SECTION_OPTIONS: readonly SegmentedToggleOption<InputDa
   selector: 'app-input-day',
   imports: [
     JsonPipe,
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
@@ -133,20 +123,29 @@ const INPUT_DAY_EMBEDDED_SECTION_OPTIONS: readonly SegmentedToggleOption<InputDa
     UiErrorPanel,
     ProductList,
     SegmentedToggle,
-  ],
+    KeyValuePipe,
+    NgTemplateOutlet
+],
   templateUrl: './input-day.feature.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './input-day.feature.scss',
 })
 export class InputDayFeature implements OnInit, OnChanges {
-  @Input() displayMode: InputDayDisplayMode = 'standalone';
-  @Input() apiBaseUrl: string | null = null;
-  @Input() initialDateLocal: string | null = null;
-  @Input() initialOccurredAt: string | null = null;
-  @Input() initialEditingItemId: number | null = null;
-  @Input() lockDate = false;
+  private readonly fb = inject(FormBuilder);
+  private readonly inputDaySrv = inject(InputDayService);
+  private readonly productSrv = inject(ProductService);
+  private readonly inventorySrv = inject(InventoryService);
+  private readonly templateSrv = inject(TemplateService);
 
-  @Output() readonly itemsChanged = new EventEmitter<{ dateLocal: string }>();
+  readonly displayMode = input<InputDayDisplayMode>('standalone');
+  readonly apiBaseUrl = input<string | null>(null);
+  readonly initialDateLocal = input<string | null>(null);
+  readonly initialOccurredAt = input<string | null>(null);
+  readonly initialEditingItemId = input<number | null>(null);
+  readonly lockDate = input(false);
+
+  readonly itemsChanged = output<{
+    dateLocal: string;
+}>();
 
   readonly qtyUnitOptions: ProductQuantityInputUnit[] = [
     'mg',
@@ -179,12 +178,13 @@ export class InputDayFeature implements OnInit, OnChanges {
   productListItemsCache: ProductListItem[] = [];
   selectableProductListItemsCache: ProductListItem[] = [];
   availableSlotsCache: InputDayAvailableSlot[] = [];
-  selectedProductIds: string[] = [];
+  private readonly selectedProductIdsState = signal<string[]>([]);
+  private readonly selectedInventoryIdsState = signal<number[]>([]);
+  private readonly activeEmbeddedSectionState = signal<InputDayEmbeddedSection>('stock');
+
   selectedProducts: ProductListItem[] = [];
   selectedProductRows: InputDaySelectedProductRow[] = [];
-  selectedInventoryIds: number[] = [];
   selectedSlotId: number | null = null;
-  activeEmbeddedSection: InputDayEmbeddedSection = 'stock';
   readonly embeddedSectionOptions = INPUT_DAY_EMBEDDED_SECTION_OPTIONS;
 
   lastResponse: unknown = null;
@@ -215,13 +215,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     'incompleteNutritionKeys',
   ]);
 
-  constructor(
-    private readonly fb: FormBuilder,
-    private readonly inputDaySrv: InputDayService,
-    private readonly productSrv: ProductService,
-    private readonly inventorySrv: InventoryService,
-    private readonly templateSrv: TemplateService,
-  ) {
+  constructor() {
     this.form = this.fb.group({
       dateLocal: this.fb.control<Date | string | null>(null, {
         validators: [Validators.required],
@@ -310,12 +304,36 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
   }
 
+  get selectedProductIds(): string[] {
+    return this.selectedProductIdsState();
+  }
+
+  set selectedProductIds(value: string[]) {
+    this.selectedProductIdsState.set(value);
+  }
+
+  get selectedInventoryIds(): number[] {
+    return this.selectedInventoryIdsState();
+  }
+
+  set selectedInventoryIds(value: number[]) {
+    this.selectedInventoryIdsState.set(value);
+  }
+
+  get activeEmbeddedSection(): InputDayEmbeddedSection {
+    return this.activeEmbeddedSectionState();
+  }
+
+  set activeEmbeddedSection(value: InputDayEmbeddedSection) {
+    this.activeEmbeddedSectionState.set(value);
+  }
+
   get isStandaloneMode(): boolean {
-    return this.displayMode === 'standalone';
+    return this.displayMode() === 'standalone';
   }
 
   get isEmbeddedMode(): boolean {
-    return this.displayMode === 'embedded';
+    return this.displayMode() === 'embedded';
   }
 
   get hasValidSelectedDate(): boolean {
@@ -341,7 +359,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   get selectedDateLabel(): string {
     const dateLocal = this.resolveDateLocalValue();
     if (!dateLocal) {
-      return this.initialDateLocal?.trim() || '-';
+      return this.initialDateLocal()?.trim() || '-';
     }
 
     const parsed = DateTime.fromISO(dateLocal);
@@ -1124,7 +1142,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private resolveConfiguredBaseUrl(): string {
-    const inputBaseUrl = this.apiBaseUrl?.trim();
+    const inputBaseUrl = this.apiBaseUrl()?.trim();
     if (inputBaseUrl) {
       return inputBaseUrl;
     }
@@ -1137,7 +1155,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private shouldEagerLoadProducts(): boolean {
-    return this.isStandaloneMode || this.normalizePositiveInteger(this.initialEditingItemId) !== null;
+    return this.isStandaloneMode || this.normalizePositiveInteger(this.initialEditingItemId()) !== null;
   }
 
   private applyServicesBaseUrl(): void {
@@ -1148,17 +1166,18 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private syncPendingEditorContextFromInputs(): void {
-    this.pendingInitialOccurredAt = this.normalizeIsoString(this.initialOccurredAt);
-    this.pendingInitialEditingItemId = this.normalizePositiveInteger(this.initialEditingItemId);
+    this.pendingInitialOccurredAt = this.normalizeIsoString(this.initialOccurredAt());
+    this.pendingInitialEditingItemId = this.normalizePositiveInteger(this.initialEditingItemId());
   }
 
   private applyInitialDateInput(): void {
-    if (!this.initialDateLocal || this.initialDateLocal.trim() === '') {
+    const initialDateLocal = this.initialDateLocal();
+    if (!initialDateLocal || initialDateLocal.trim() === '') {
       this.initialDateError = null;
       return;
     }
 
-    const parsed = this.parseDateInput(this.initialDateLocal);
+    const parsed = this.parseDateInput(initialDateLocal);
     if (!parsed) {
       this.initialDateError = 'dateLocal doit etre au format YYYY-MM-DD.';
       this.inputDayResponse = null;
@@ -1167,7 +1186,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     this.initialDateError = null;
     this.form.patchValue({
-      dateLocal: this.lockDate ? this.formatDateLocal(parsed) : parsed,
+      dateLocal: this.lockDate() ? this.formatDateLocal(parsed) : parsed,
     });
   }
 
@@ -1368,7 +1387,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     return (
       this.inputDayResponse?.dateLocal ??
       this.resolveDateLocalValue() ??
-      this.initialDateLocal?.trim() ??
+      this.initialDateLocal()?.trim() ??
       ''
     );
   }

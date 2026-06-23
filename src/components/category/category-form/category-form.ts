@@ -1,14 +1,13 @@
-import { CommonModule } from '@angular/common';
+
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,28 +26,26 @@ export interface CategoryFormValue {
 @Component({
   selector: 'app-category-form',
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
-    MatInputModule,
-  ],
+    MatInputModule
+],
   templateUrl: './category-form.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './category-form.scss',
 })
 export class CategoryForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
-  @Input() mode: CategoryFormMode = 'add';
-  @Input() category: Partial<CategoryFormValue> | null = null;
-  @Input() showHeading = true;
+  readonly mode = input<CategoryFormMode>('add');
+  readonly category = input<Partial<CategoryFormValue> | null>(null);
+  readonly showHeading = input(true);
 
-  @Output() readonly submitted = new EventEmitter<{
+  readonly submitted = output<{
     mode: CategoryFormMode;
     value: CategoryFormValue;
-  }>();
-  @Output() readonly menuClicked = new EventEmitter<void>();
+}>();
+  readonly menuClicked = output<void>();
 
   readonly form = this.fb.group({
     name: this.fb.nonNullable.control('', [Validators.required]),
@@ -77,7 +74,7 @@ export class CategoryForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode === 'edit' ? 'Modifier Categorie' : 'Ajouter Categorie';
+    return this.mode() === 'edit' ? 'Modifier Categorie' : 'Ajouter Categorie';
   }
 
   onMenuClick(): void {
@@ -112,7 +109,7 @@ export class CategoryForm implements OnInit, OnChanges {
     }
 
     this.submitted.emit({
-      mode: this.mode,
+      mode: this.mode(),
       value: {
         name,
         warnBeforeDays,
@@ -124,12 +121,12 @@ export class CategoryForm implements OnInit, OnChanges {
 
   private applyInputState(): void {
     this.form.reset({
-      name: this.category?.name ?? '',
+      name: this.category()?.name ?? '',
       warnBeforeDays:
-        this.normalizeNonNegativeNumber(this.category?.warnBeforeDays) ?? null,
+        this.normalizeNonNegativeNumber(this.category()?.warnBeforeDays) ?? null,
       recentlyExpiredDays:
-        this.normalizeNonNegativeNumber(this.category?.recentlyExpiredDays) ?? null,
-      minQuantity: this.normalizeNonNegativeNumber(this.category?.minQuantity) ?? null,
+        this.normalizeNonNegativeNumber(this.category()?.recentlyExpiredDays) ?? null,
+      minQuantity: this.normalizeNonNegativeNumber(this.category()?.minQuantity) ?? null,
     });
   }
 

@@ -11,7 +11,7 @@
           data-testid="template-refresh-action"
           (click)="onRefreshRequested()"
           [disabled]="busy"
-        >
+          >
           Rafraichir
         </button>
 
@@ -22,35 +22,48 @@
           data-testid="template-add"
           (click)="startCreateTemplate()"
           [disabled]="busy"
-        >
+          >
           Nouveau modele
         </button>
       </div>
     </div>
 
     <div class="template-panel__content">
-      <div *ngIf="busy" class="app-status-row">
-        <span *ngIf="loadingTemplates" class="app-status-pill app-status-pill--neutral">
-          Chargement modeles...
-        </span>
-        <span *ngIf="loadingProducts" class="app-status-pill app-status-pill--info">
-          Produits...
-        </span>
-        <span *ngIf="loadingDaySets" class="app-status-pill app-status-pill--info">
-          Day-sets...
-        </span>
-        <span *ngIf="loadingSlots" class="app-status-pill app-status-pill--info">
-          Slots...
-        </span>
-        <span *ngIf="savingTemplate || savingItem" class="app-status-pill app-status-pill--saving">
-          Sauvegarde...
-        </span>
-      </div>
+      @if (busy) {
+        <div class="app-status-row">
+          @if (loadingTemplates) {
+            <span class="app-status-pill app-status-pill--neutral">
+              Chargement modeles...
+            </span>
+          }
+          @if (loadingProducts) {
+            <span class="app-status-pill app-status-pill--info">
+              Produits...
+            </span>
+          }
+          @if (loadingDaySets) {
+            <span class="app-status-pill app-status-pill--info">
+              Day-sets...
+            </span>
+          }
+          @if (loadingSlots) {
+            <span class="app-status-pill app-status-pill--info">
+              Slots...
+            </span>
+          }
+          @if (savingTemplate || savingItem) {
+            <span class="app-status-pill app-status-pill--saving">
+              Sauvegarde...
+            </span>
+          }
+        </div>
+      }
 
-      <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
+      @if (lastError) {
+        <app-ui-error-panel [error]="lastError" />
+      }
 
-      <app-template-list
-        [templates]="templates"
+      <app-template-list [templates]="templates"
         [selectedTemplateId]="selectedTemplateId"
         [selectedTemplate]="selectedTemplate"
         [compareDaySetId]="compareDaySetId"
@@ -66,11 +79,12 @@
         (deleteRequested)="onTemplateDeleteRequested($event)"
         (templateSelected)="selectTemplate($event)"
         (compareDaySetChanged)="onCompareDaySetChange($event)"
-      >
-      </app-template-list>
+         />
     </div>
 
-    <mat-progress-bar *ngIf="busy" mode="indeterminate"></mat-progress-bar>
+    @if (busy) {
+      <mat-progress-bar mode="indeterminate" />
+    }
   </mat-card>
 </section>
 
@@ -88,14 +102,13 @@
         type="button"
         (click)="closeEditorDialog()"
         [disabled]="savingTemplate || savingItem"
-      >
+        >
         Fermer
       </button>
     </div>
 
     <mat-dialog-content class="template-form-dialog__content space-y-6">
-      <app-template-form
-        [mode]="formMode"
+      <app-template-form [mode]="formMode"
         [template]="editedTemplate"
         [products]="productOptions"
         [slots]="slotOptions"
@@ -107,8 +120,7 @@
         (templateDeleted)="onTemplateDeleted($event)"
         (itemSubmitted)="onItemSubmitted($event)"
         (itemDeleted)="onItemDeleted($event)"
-      >
-      </app-template-form>
+         />
     </mat-dialog-content>
   </div>
 </ng-template>

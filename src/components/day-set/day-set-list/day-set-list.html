@@ -1,36 +1,44 @@
 <section
   class="dsl-shell"
-  [class.dsl-shell--embedded]="embedded"
+  [class.dsl-shell--embedded]="embedded()"
   aria-label="Liste des day sets"
   data-testid="day-set-list">
-  <ng-container *ngIf="embedded; else standaloneShell">
-    <ng-container *ngIf="hasItems; else embeddedEmptyState">
-      <ng-container [ngTemplateOutlet]="tableContent"></ng-container>
-    </ng-container>
-  </ng-container>
-
-  <ng-template #standaloneShell>
+  @if (embedded()) {
+    @if (hasItems) {
+      <ng-container [ngTemplateOutlet]="tableContent" />
+    } @else {
+      <p class="dsl-empty text-sm text-slate-600">Aucun day set disponible.</p>
+    }
+  } @else {
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-6">
         <h2 class="text-base font-semibold text-slate-900">Day Sets</h2>
-
-        <button
-          *ngIf="isManageMode"
-          mat-raised-button
-          color="primary"
-          type="button"
-          data-testid="day-set-add"
-          class="add-btn"
-          (click)="onAddClick()">
-          Ajouter
-        </button>
+        @if (isManageMode) {
+          <button
+            mat-raised-button
+            color="primary"
+            type="button"
+            data-testid="day-set-add"
+            class="add-btn"
+            (click)="onAddClick()">
+            Ajouter
+          </button>
+        }
       </div>
-
-      <div class="p-3 sm:p-4" *ngIf="hasItems; else emptyState">
-        <ng-container [ngTemplateOutlet]="tableContent"></ng-container>
-      </div>
+      @if (hasItems) {
+        <div class="p-3 sm:p-4">
+          <ng-container [ngTemplateOutlet]="tableContent" />
+        </div>
+      } @else {
+        <mat-card appearance="outlined" class="rounded-xl">
+          <mat-card-content class="p-4 text-sm text-slate-600">
+            Aucun day set disponible.
+          </mat-card-content>
+        </mat-card>
+      }
     </mat-card>
-  </ng-template>
+  }
+
 
   <ng-template #tableContent>
     <div class="dsl-table-shell overflow-x-auto rounded-xl border border-slate-200">
@@ -38,12 +46,10 @@
         <ng-container matColumnDef="select">
           <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
           <td mat-cell *matCellDef="let item" class="w-14" (click)="$event.stopPropagation()">
-            <mat-checkbox
-              [checked]="isSelected(item.id)"
+            <mat-checkbox [checked]="isSelected(item.id)"
               [disabled]="isSelectionDisabled(item)"
               [attr.aria-label]="'Selectionner ' + item.title"
-              (click)="onCheckboxClick($event, item)">
-            </mat-checkbox>
+              (click)="onCheckboxClick($event, item)" />
           </td>
         </ng-container>
 
@@ -52,9 +58,11 @@
           <td mat-cell *matCellDef="let item">
             <div class="leading-tight">
               <p>{{ item.title }}</p>
-              <p *ngIf="item.templateTitle" class="text-xs text-slate-500">
-                Template: {{ item.templateTitle }}
-              </p>
+              @if (item.templateTitle) {
+                <p class="text-xs text-slate-500">
+                  Template: {{ item.templateTitle }}
+                </p>
+              }
             </div>
           </td>
         </ng-container>
@@ -105,15 +113,5 @@
     </div>
   </ng-template>
 
-  <ng-template #emptyState>
-    <mat-card appearance="outlined" class="rounded-xl">
-      <mat-card-content class="p-4 text-sm text-slate-600">
-        Aucun day set disponible.
-      </mat-card-content>
-    </mat-card>
-  </ng-template>
 
-  <ng-template #embeddedEmptyState>
-    <p class="dsl-empty text-sm text-slate-600">Aucun day set disponible.</p>
-  </ng-template>
 </section>

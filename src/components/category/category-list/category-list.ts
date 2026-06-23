@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -27,28 +26,27 @@ export interface CategoryListItem {
 @Component({
   selector: 'app-category-list',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
     MatTableModule,
-  ],
+    NgTemplateOutlet
+],
   templateUrl: './category-list.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './category-list.scss',
 })
 export class CategoryList implements OnInit, OnChanges {
-  @Input() mode: CategoryListMode = 'manage';
-  @Input() categories: CategoryListItem[] | null = null;
-  @Input() selectedIds: string[] | null = null;
-  @Input() compact = false;
-  @Input() embedded = false;
+  readonly mode = input<CategoryListMode>('manage');
+  readonly categories = input<CategoryListItem[] | null>(null);
+  readonly selectedIds = input<string[] | null>(null);
+  readonly compact = input(false);
+  readonly embedded = input(false);
 
-  @Output() readonly addRequested = new EventEmitter<void>();
-  @Output() readonly editRequested = new EventEmitter<CategoryListItem>();
-  @Output() readonly deleteRequested = new EventEmitter<CategoryListItem>();
-  @Output() readonly selected = new EventEmitter<CategoryListItem>();
-  @Output() readonly selectedMany = new EventEmitter<CategoryListItem[]>();
+  readonly addRequested = output<void>();
+  readonly editRequested = output<CategoryListItem>();
+  readonly deleteRequested = output<CategoryListItem>();
+  readonly selected = output<CategoryListItem>();
+  readonly selectedMany = output<CategoryListItem[]>();
 
   resolvedCategories: CategoryListItem[] = [];
 
@@ -65,15 +63,15 @@ export class CategoryList implements OnInit, OnChanges {
   }
 
   get isManageMode(): boolean {
-    return this.mode === 'manage';
+    return this.mode() === 'manage';
   }
 
   get isSingleSelectMode(): boolean {
-    return this.mode === 'select-single';
+    return this.mode() === 'select-single';
   }
 
   get isMultiSelectMode(): boolean {
-    return this.mode === 'select-multi';
+    return this.mode() === 'select-multi';
   }
 
   get hasItems(): boolean {
@@ -182,9 +180,10 @@ export class CategoryList implements OnInit, OnChanges {
   }
 
   private applyInputState(): void {
-    this.resolvedCategories = this.categories === null ? [] : [...this.categories];
+    const categories = this.categories();
+    this.resolvedCategories = categories === null ? [] : [...categories];
 
-    const initialIds = this.selectedIds ?? [];
+    const initialIds = this.selectedIds() ?? [];
     const availableIds = new Set(this.resolvedCategories.map((item) => item.id));
     this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
 

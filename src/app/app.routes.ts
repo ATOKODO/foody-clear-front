@@ -1,35 +1,35 @@
 import { Routes } from '@angular/router';
-import { Home } from '../features/home/home';
-import { Product } from '../features/product/product';
-import { Category } from '../features/category/category';
-import { Tag } from '../features/tag/tag';
-import { GenericProduct } from '../features/generic-product/generic-product';
-import { NutritionValues } from '../features/nutrition-value/nutrition-value';
-import { Inventory } from '../features/inventory/inventory';
-import { CycleFeature } from '../features/cycle/cycle.feature';
-import { InputDayFeature } from '../features/input-day/input-day.feature';
-import { Calendar } from '../components/calendar/calendar';
-import { DaySetFeature } from '../features/day-set/day-set.feature';
-import { SlotFeature } from '../features/slot/slot.feature';
-import { PlanningFeature } from '../features/planning/planning.feature';
-import { StatisticFeature } from '../features/statistic/statistic.feature';
-import { TemplateFeature } from '../features/template/template.feature';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export const routes: Routes = [
     {path: '', pathMatch: 'full', redirectTo: 'home'},
-    {path: 'home', component: Home, title: 'Accueil'},
-    {path: 'product', component: Product, title: 'Catalogue'},
-    {path: 'category', component: Category, title: 'Categories'},
-    {path: 'generic-product', component: GenericProduct, title: 'Produits generiques'},
-    {path: 'tag', component: Tag, title: 'Tags'},
-    {path: 'nutrition-value', component: NutritionValues, title: 'Valeurs nutritionnelles'},
-    {path: 'inventory', component: Inventory, title: 'Inventaires'},
-    {path: 'cycle', component: CycleFeature, title: 'Cycles'},
-    {path: 'input-day', component: InputDayFeature, title: 'Saisie du jour'},
-    {path: 'day-set', component: DaySetFeature, title: 'Jours types'},
-    {path: 'slot', component: SlotFeature, title: 'Plages horaires'},
-    {path: 'template', component: TemplateFeature, title: 'Modeles'},
-    {path: 'calendar', component: Calendar, title: 'Calendrier'},
-    {path: 'planning', component: PlanningFeature, title: 'Assignations'},
-    {path: 'statistic', component: StatisticFeature, title: 'Statistiques'},
+    {path: 'home', loadComponent: () => import('../features/home/home').then(m => m.Home), title: 'Accueil'},
+    {path: 'product', loadComponent: () => import('../features/product/product').then(m => m.Product), title: 'Catalogue'},
+    {path: 'category', loadComponent: () => import('../features/category/category').then(m => m.Category), title: 'Categories'},
+    {path: 'generic-product', loadComponent: () => import('../features/generic-product/generic-product').then(m => m.GenericProduct), title: 'Produits generiques'},
+    {path: 'tag', loadComponent: () => import('../features/tag/tag').then(m => m.Tag), title: 'Tags'},
+    {path: 'nutrition-value', loadComponent: () => import('../features/nutrition-value/nutrition-value').then(m => m.NutritionValues), title: 'Valeurs nutritionnelles'},
+    {path: 'inventory', loadComponent: () => import('../features/inventory/inventory').then(m => m.Inventory), title: 'Inventaires'},
+    {path: 'cycle', loadComponent: () => import('../features/cycle/cycle.feature').then(m => m.CycleFeature), title: 'Cycles'},
+    {path: 'input-day', loadComponent: () => import('../features/input-day/input-day.feature').then(m => m.InputDayFeature), title: 'Saisie du jour'},
+    {path: 'day-set', loadComponent: () => import('../features/day-set/day-set.feature').then(m => m.DaySetFeature), title: 'Jours types'},
+    {path: 'slot', loadComponent: () => import('../features/slot/slot.feature').then(m => m.SlotFeature), title: 'Plages horaires'},
+    {path: 'template', loadComponent: () => import('../features/template/template.feature').then(m => m.TemplateFeature), title: 'Modeles'},
+    {path: 'calendar', loadComponent: () => import('../components/calendar/calendar').then(m => m.Calendar), title: 'Calendrier'},
+    {path: 'planning', loadComponent: () => import('../features/planning/planning.feature').then(m => m.PlanningFeature), title: 'Assignations'},
+    {path: 'statistic', loadComponent: () => import('../features/statistic/statistic.feature').then(m => m.StatisticFeature), title: 'Statistiques'},
 ];

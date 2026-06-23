@@ -213,7 +213,7 @@ describe('InputDayFeature', () => {
     expect(fixture.nativeElement.querySelector('input[formcontrolname="timezone"]')).toBeNull();
   });
 
-  it('should show only the inventory guide in embedded mode until inventories are selected', () => {
+  it('should show only the inventory guide in embedded mode until inventories are selected', async () => {
     fixture.componentRef.setInput('displayMode', 'embedded');
     fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
     fixture.detectChanges();
@@ -225,6 +225,8 @@ describe('InputDayFeature', () => {
     expect(fixture.nativeElement.querySelector('[data-testid="input-day-item-31"]')).toBeNull();
 
     component.onSelectedInventoryChange([4]);
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[data-testid="input-day-section-toggle"]')).not.toBeNull();
@@ -509,7 +511,7 @@ describe('InputDayFeature', () => {
     expect(fixture.nativeElement.querySelector('[data-testid="input-day-template-apply"]')).toBeNull();
   });
 
-  it('should switch embedded sections with the segmented toggle state', () => {
+  it('should switch embedded sections with the segmented toggle state', async () => {
     component.inputDayResponse = {
       ...dayResponse,
       templateAssociation: {
@@ -548,11 +550,15 @@ describe('InputDayFeature', () => {
     fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
     component.onSelectedInventoryChange([4, 5]);
     fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
 
     expect(component.activeEmbeddedSection).toBe('stock');
     expect(fixture.nativeElement.textContent).toContain('Ajouter des entrees');
 
     component.onActiveEmbeddedSectionChange('templates');
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.activeEmbeddedSection).toBe('templates');

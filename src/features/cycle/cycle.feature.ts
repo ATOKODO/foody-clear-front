@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, TemplateRef, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
+
+import { Component, OnInit, TemplateRef, inject, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DateTime } from 'luxon';
 import { MatButtonModule } from '@angular/material/button';
@@ -85,7 +85,6 @@ const CYCLE_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<CycleHubView>[] = [
 @Component({
   selector: 'app-cycle',
   imports: [
-    CommonModule,
     FormsModule,
     ListCycle,
     FormCycle,
@@ -100,22 +99,22 @@ const CYCLE_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<CycleHubView>[] = [
     SegmentedToggle,
     UiErrorPanel,
     DaySetFeature,
-    SlotFeature,
-  ],
+    SlotFeature
+],
   templateUrl: './cycle.feature.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './cycle.feature.scss',
 })
 export class CycleFeature implements OnInit {
-  @ViewChild('cycleFormDialog')
-  private cycleFormDialogTemplate?: TemplateRef<unknown>;
+  private readonly cycleSrv = inject(CycleService);
+  private readonly daySetSrv = inject(DaySetService);
+  private readonly metaSrv = inject(MetaService);
+  private readonly slotSrv = inject(SlotService);
 
-  @ViewChild('cycleImpactDialog')
-  private cycleImpactDialogTemplate?: TemplateRef<unknown>;
-  @ViewChild(DaySetFeature)
-  private daySetFeature?: DaySetFeature;
-  @ViewChild(SlotFeature)
-  private slotFeature?: SlotFeature;
+  private readonly cycleFormDialogTemplate = viewChild<TemplateRef<unknown>>('cycleFormDialog');
+
+  private readonly cycleImpactDialogTemplate = viewChild<TemplateRef<unknown>>('cycleImpactDialog');
+  private readonly daySetFeature = viewChild(DaySetFeature);
+  private readonly slotFeature = viewChild(SlotFeature);
 
   private readonly dialog = inject(MatDialog);
 
@@ -153,13 +152,6 @@ export class CycleFeature implements OnInit {
 
   impactScope: CycleAssignmentRescheduleScope = 'future';
   impactGapMode: CycleAssignmentGapMode = 'preserve';
-
-  constructor(
-    private readonly cycleSrv: CycleService,
-    private readonly daySetSrv: DaySetService,
-    private readonly metaSrv: MetaService,
-    private readonly slotSrv: SlotService,
-  ) {}
 
   ngOnInit(): void {
     this.baseUrl = this.cycleSrv.baseUrl;
@@ -236,10 +228,10 @@ export class CycleFeature implements OnInit {
         this.onRefreshRequested();
         break;
       case 'daySet':
-        this.daySetFeature?.refresh();
+        this.daySetFeature()?.refresh();
         break;
       case 'slot':
-        this.slotFeature?.refresh();
+        this.slotFeature()?.refresh();
         break;
     }
   }
@@ -250,10 +242,10 @@ export class CycleFeature implements OnInit {
         this.onAddRequested();
         break;
       case 'daySet':
-        this.daySetFeature?.openCreate();
+        this.daySetFeature()?.openCreate();
         break;
       case 'slot':
-        this.slotFeature?.openCreate();
+        this.slotFeature()?.openCreate();
         break;
     }
   }
@@ -371,13 +363,14 @@ export class CycleFeature implements OnInit {
   }
 
   private openFormDialog(): void {
-    if (!this.cycleFormDialogTemplate || this.dialogRef !== null) {
+    const cycleFormDialogTemplate = this.cycleFormDialogTemplate();
+    if (!cycleFormDialogTemplate || this.dialogRef !== null) {
       this.formVisible = this.dialogRef !== null;
       return;
     }
 
     this.formVisible = true;
-    this.dialogRef = this.dialog.open(this.cycleFormDialogTemplate, {
+    this.dialogRef = this.dialog.open(cycleFormDialogTemplate, {
       width: '1100px',
       maxWidth: '96vw',
       autoFocus: false,
@@ -408,11 +401,12 @@ export class CycleFeature implements OnInit {
     this.impactScope = 'future';
     this.impactGapMode = 'preserve';
 
-    if (!this.cycleImpactDialogTemplate || this.impactDialogRef !== null) {
+    const cycleImpactDialogTemplate = this.cycleImpactDialogTemplate();
+    if (!cycleImpactDialogTemplate || this.impactDialogRef !== null) {
       return;
     }
 
-    this.impactDialogRef = this.dialog.open(this.cycleImpactDialogTemplate, {
+    this.impactDialogRef = this.dialog.open(cycleImpactDialogTemplate, {
       width: '560px',
       maxWidth: '96vw',
       autoFocus: false,

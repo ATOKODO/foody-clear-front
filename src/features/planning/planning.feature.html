@@ -47,43 +47,50 @@
       </button>
     </div>
 
-    <app-segmented-toggle
-      [value]="currentCalendarView"
+    <app-segmented-toggle [value]="currentCalendarView"
       [options]="calendarViewOptions"
       [ariaLabel]="'Selection de la vue calendrier'"
       [testId]="'planning-view-toggle'"
       [name]="'planning-view-toggle'"
       [maxWidth]="'46rem'"
       class="planning-feature__view-toggle"
-      (valueChange)="switchCalendarView($event)">
-    </app-segmented-toggle>
+      (valueChange)="switchCalendarView($event)" />
   </div>
 
   <mat-card class="planning-feature__surface">
-    <div *ngIf="showPlanningStatus" class="planning-feature__status-bar">
-      <span *ngIf="loadingCycles" class="app-status-pill app-status-pill--neutral">
-        Chargement cycles...
-      </span>
-      <span *ngIf="loadingAssignments" class="app-status-pill app-status-pill--info">
-        Chargement planning...
-      </span>
-      <span *ngIf="loadingDayItems" class="app-status-pill app-status-pill--success">
-        {{
-          currentCalendarView === 'month'
+    @if (showPlanningStatus) {
+      <div class="planning-feature__status-bar">
+        @if (loadingCycles) {
+          <span class="app-status-pill app-status-pill--neutral">
+            Chargement cycles...
+          </span>
+        }
+        @if (loadingAssignments) {
+          <span class="app-status-pill app-status-pill--info">
+            Chargement planning...
+          </span>
+        }
+        @if (loadingDayItems) {
+          <span class="app-status-pill app-status-pill--success">
+            {{
+            currentCalendarView === 'month'
             ? 'Chargement input-month...'
             : currentCalendarView === 'week'
-              ? 'Chargement input-week...'
-              : 'Chargement input-day...'
-        }}
-      </span>
-      <span *ngIf="savingAssignment" class="app-status-pill app-status-pill--saving">
-        Sauvegarde assignement...
-      </span>
-    </div>
+            ? 'Chargement input-week...'
+            : 'Chargement input-day...'
+            }}
+          </span>
+        }
+        @if (savingAssignment) {
+          <span class="app-status-pill app-status-pill--saving">
+            Sauvegarde assignement...
+          </span>
+        }
+      </div>
+    }
 
     <div class="planning-feature__content" data-testid="planning-calendar">
-      <app-calendar
-        #calendarRef
+      <app-calendar #calendarRef
         [cycleAssignments]="cycleAssignments"
         [inputDayResponse]="inputDayResponse"
         [inputWeekResponse]="inputWeekResponse"
@@ -100,194 +107,191 @@
         (manageAssignment)="onCalendarManageAssignment($event)"
         (manageItems)="onCalendarManageItems($event)"
         (openDayView)="onCalendarOpenDayView($event)"
-        (monthClick)="onCalendarMonthClick($event)">
-      </app-calendar>
+        (monthClick)="onCalendarMonthClick($event)" />
     </div>
 
-    <mat-progress-bar
-      *ngIf="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment"
-      mode="indeterminate">
-    </mat-progress-bar>
+    @if (loadingCycles || loadingAssignments || loadingDayItems || savingAssignment) {
+      <mat-progress-bar mode="indeterminate" />
+    }
 
-    <div *ngIf="lastError" class="planning-feature__error-panel">
-      <app-ui-error-panel [error]="lastError"></app-ui-error-panel>
-    </div>
+    @if (lastError) {
+      <div class="planning-feature__error-panel">
+        <app-ui-error-panel [error]="lastError" />
+      </div>
+    }
   </mat-card>
 </section>
 
-<div class="modal-backdrop" *ngIf="activeModal" (click)="closeActiveModal()"></div>
-<div class="modal-shell" *ngIf="activeModal" [attr.data-testid]="'planning-modal-' + activeModal">
-  <mat-card
-    class="modal-card planning-modal"
-    [class.planning-modal--actions]="activeModal === 'actions'"
-    [class.planning-modal--assignment]="activeModal === 'assignment'"
-    [class.planning-modal--items]="activeModal === 'items'"
-    [class.modal-card--wide]="activeModal === 'items'"
-    (click)="$event.stopPropagation()">
-    <ng-container *ngIf="activeModal === 'actions'">
-      <div class="planning-actions-modal">
-        <div class="planning-actions-modal__header">
-          <div class="planning-actions-modal__copy">
-            <p class="planning-actions-modal__eyebrow">Planning</p>
-            <h3 class="planning-actions-modal__title">Actions du jour</h3>
-            <p class="planning-actions-modal__description">
-              Choisis si tu veux modifier le cycle du jour ou ouvrir l'editeur d'entrees.
-            </p>
+@if (activeModal) {
+  <div class="modal-backdrop" (click)="closeActiveModal()"></div>
+}
+@if (activeModal) {
+  <div class="modal-shell" [attr.data-testid]="'planning-modal-' + activeModal">
+    <mat-card
+      class="modal-card planning-modal"
+      [class.planning-modal--actions]="activeModal === 'actions'"
+      [class.planning-modal--assignment]="activeModal === 'assignment'"
+      [class.planning-modal--items]="activeModal === 'items'"
+      [class.modal-card--wide]="activeModal === 'items'"
+      (click)="$event.stopPropagation()">
+      @if (activeModal === 'actions') {
+        <div class="planning-actions-modal">
+          <div class="planning-actions-modal__header">
+            <div class="planning-actions-modal__copy">
+              <p class="planning-actions-modal__eyebrow">Planning</p>
+              <h3 class="planning-actions-modal__title">Actions du jour</h3>
+              <p class="planning-actions-modal__description">
+                Choisis si tu veux modifier le cycle du jour ou ouvrir l'editeur d'entrees.
+              </p>
+            </div>
+            <div class="planning-actions-modal__date-pill">
+              <span class="planning-actions-modal__date-label">Date</span>
+              <span class="planning-actions-modal__date-value">{{ selectedModalDateLocal }}</span>
+              @if (selectedOccurredAt) {
+                <span class="planning-actions-modal__date-time">
+                  {{ selectedOccurredAt | date: 'HH:mm' }}
+                </span>
+              }
+            </div>
           </div>
-
-          <div class="planning-actions-modal__date-pill">
-            <span class="planning-actions-modal__date-label">Date</span>
-            <span class="planning-actions-modal__date-value">{{ selectedModalDateLocal }}</span>
-            <span *ngIf="selectedOccurredAt" class="planning-actions-modal__date-time">
-              {{ selectedOccurredAt | date: 'HH:mm' }}
-            </span>
+          <div class="planning-actions-modal__grid">
+            <button
+              type="button"
+              class="planning-action-card planning-action-card--cycle"
+              data-testid="planning-action-cycle"
+              (click)="openAssignmentFromActions()">
+              <span class="planning-action-card__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h10M7 12h10M7 17h6" />
+                </svg>
+              </span>
+              <span class="planning-action-card__content">
+                <span class="planning-action-card__label">Cycle</span>
+                <span class="planning-action-card__title">Gerer le cycle</span>
+                <span class="planning-action-card__text">
+                  Ajouter, changer ou retirer l'assignation active pour cette date.
+                </span>
+              </span>
+              <span class="planning-action-card__arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 6l6 6-6 6" />
+                </svg>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="planning-action-card planning-action-card--item"
+              data-testid="planning-action-items"
+              (click)="openItemsFromActions()">
+              <span class="planning-action-card__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 7h12M6 12h12M6 17h8" />
+                </svg>
+              </span>
+              <span class="planning-action-card__content">
+                <span class="planning-action-card__label">Journee</span>
+                <span class="planning-action-card__title">Modifier la journee</span>
+                <span class="planning-action-card__text">
+                  Acceder directement a l'editeur des entrees pour cette date et ce contexte horaire.
+                </span>
+              </span>
+              <span class="planning-action-card__arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 6l6 6-6 6" />
+                </svg>
+              </span>
+            </button>
+          </div>
+          <div class="planning-actions-modal__footer">
+            <button
+              mat-stroked-button
+              type="button"
+              class="planning-actions-modal__close"
+              (click)="closeActiveModal()">
+              Fermer
+            </button>
           </div>
         </div>
-
-        <div class="planning-actions-modal__grid">
-          <button
-            type="button"
-            class="planning-action-card planning-action-card--cycle"
-            data-testid="planning-action-cycle"
-            (click)="openAssignmentFromActions()">
-            <span class="planning-action-card__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h10M7 12h10M7 17h6" />
-              </svg>
-            </span>
-            <span class="planning-action-card__content">
-              <span class="planning-action-card__label">Cycle</span>
-              <span class="planning-action-card__title">Gerer le cycle</span>
-              <span class="planning-action-card__text">
-                Ajouter, changer ou retirer l'assignation active pour cette date.
-              </span>
-            </span>
-            <span class="planning-action-card__arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 6l6 6-6 6" />
-              </svg>
-            </span>
+      }
+      @if (activeModal === 'assignment') {
+        <mat-card-header class="planning-assignment-modal__header">
+          <mat-card-title>
+            {{ editingAssignment ? 'Modifier un assignement' : 'Assigner un cycle' }}
+          </mat-card-title>
+          @if (editingAssignment) {
+            <mat-card-subtitle>
+              Assignement #{{ editingAssignment.id }} - {{ editingAssignment.cycle.title }}
+            </mat-card-subtitle>
+          }
+          @if (!editingAssignment) {
+            <mat-card-subtitle>
+              Date selectionnee: {{ clickedDateLocal }}
+            </mat-card-subtitle>
+          }
+        </mat-card-header>
+        <mat-card-content class="planning-assignment-modal__content space-y-4">
+          <div class="planning-assignment-modal__controls">
+            <mat-form-field appearance="outline" class="planning-assignment-modal__date-field w-full sm:w-80">
+              <mat-label>Date de depart</mat-label>
+              <input
+                matInput
+                type="date"
+                [(ngModel)]="modalStartDateLocal"
+                [ngModelOptions]="{ standalone: true }" />
+            </mat-form-field>
+          </div>
+          <app-list-cycle [mode]="'select-single'"
+            [cycles]="cycleListItems"
+            [selectedIds]="modalSelectedIds"
+            [showAddButton]="false"
+            (selected)="onModalCycleSelected($event)" />
+          @if (modalError) {
+            <app-ui-error-panel [error]="modalError" />
+          }
+        </mat-card-content>
+        <mat-card-actions align="end" class="planning-assignment-modal__actions gap-2">
+          <button mat-stroked-button type="button" (click)="closeActiveModal()" [disabled]="savingAssignment">
+            Annuler
           </button>
-
+          @if (editingAssignment) {
+            <button
+              mat-stroked-button
+              color="warn"
+              type="button"
+              (click)="removeAssignmentFromModal()"
+              [disabled]="savingAssignment">
+              Retirer
+            </button>
+          }
           <button
+            mat-raised-button
+            color="primary"
             type="button"
-            class="planning-action-card planning-action-card--item"
-            data-testid="planning-action-items"
-            (click)="openItemsFromActions()">
-            <span class="planning-action-card__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 7h12M6 12h12M6 17h8" />
-              </svg>
-            </span>
-            <span class="planning-action-card__content">
-              <span class="planning-action-card__label">Journee</span>
-              <span class="planning-action-card__title">Modifier la journee</span>
-              <span class="planning-action-card__text">
-                Acceder directement a l'editeur des entrees pour cette date et ce contexte horaire.
-              </span>
-            </span>
-            <span class="planning-action-card__arrow" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 6l6 6-6 6" />
-              </svg>
-            </span>
+            (click)="saveAssignmentFromModal()"
+            [disabled]="savingAssignment || !canSubmitModal">
+            Valider
           </button>
-        </div>
-
-        <div class="planning-actions-modal__footer">
-          <button
-            mat-stroked-button
-            type="button"
-            class="planning-actions-modal__close"
-            (click)="closeActiveModal()">
+        </mat-card-actions>
+      }
+      @if (activeModal === 'items') {
+        <mat-card-header>
+          <mat-card-title>Items du jour</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="pt-2">
+          <app-input-day [displayMode]="'embedded'"
+            [apiBaseUrl]="baseUrl"
+            [initialDateLocal]="selectedModalDateLocal"
+            [initialOccurredAt]="selectedOccurredAt"
+            [initialEditingItemId]="selectedItemId"
+            [lockDate]="true"
+            (itemsChanged)="onEmbeddedItemsChanged($event)" />
+        </mat-card-content>
+        <mat-card-actions align="end" class="gap-2 px-4 pb-4">
+          <button mat-stroked-button type="button" (click)="closeActiveModal()">
             Fermer
           </button>
-        </div>
-      </div>
-    </ng-container>
-
-    <ng-container *ngIf="activeModal === 'assignment'">
-      <mat-card-header class="planning-assignment-modal__header">
-        <mat-card-title>
-          {{ editingAssignment ? 'Modifier un assignement' : 'Assigner un cycle' }}
-        </mat-card-title>
-        <mat-card-subtitle *ngIf="editingAssignment">
-          Assignement #{{ editingAssignment.id }} - {{ editingAssignment.cycle.title }}
-        </mat-card-subtitle>
-        <mat-card-subtitle *ngIf="!editingAssignment">
-          Date selectionnee: {{ clickedDateLocal }}
-        </mat-card-subtitle>
-      </mat-card-header>
-
-      <mat-card-content class="planning-assignment-modal__content space-y-4">
-        <div class="planning-assignment-modal__controls">
-          <mat-form-field appearance="outline" class="planning-assignment-modal__date-field w-full sm:w-80">
-            <mat-label>Date de depart</mat-label>
-            <input
-              matInput
-              type="date"
-              [(ngModel)]="modalStartDateLocal"
-              [ngModelOptions]="{ standalone: true }" />
-          </mat-form-field>
-        </div>
-
-        <app-list-cycle
-          [mode]="'select-single'"
-          [cycles]="cycleListItems"
-          [selectedIds]="modalSelectedIds"
-          [showAddButton]="false"
-          (selected)="onModalCycleSelected($event)">
-        </app-list-cycle>
-
-        <app-ui-error-panel *ngIf="modalError" [error]="modalError"></app-ui-error-panel>
-      </mat-card-content>
-
-      <mat-card-actions align="end" class="planning-assignment-modal__actions gap-2">
-        <button mat-stroked-button type="button" (click)="closeActiveModal()" [disabled]="savingAssignment">
-          Annuler
-        </button>
-        <button
-          *ngIf="editingAssignment"
-          mat-stroked-button
-          color="warn"
-          type="button"
-          (click)="removeAssignmentFromModal()"
-          [disabled]="savingAssignment">
-          Retirer
-        </button>
-        <button
-          mat-raised-button
-          color="primary"
-          type="button"
-          (click)="saveAssignmentFromModal()"
-          [disabled]="savingAssignment || !canSubmitModal">
-          Valider
-        </button>
-      </mat-card-actions>
-    </ng-container>
-
-    <ng-container *ngIf="activeModal === 'items'">
-      <mat-card-header>
-        <mat-card-title>Items du jour</mat-card-title>
-      </mat-card-header>
-
-      <mat-card-content class="pt-2">
-        <app-input-day
-          [displayMode]="'embedded'"
-          [apiBaseUrl]="baseUrl"
-          [initialDateLocal]="selectedModalDateLocal"
-          [initialOccurredAt]="selectedOccurredAt"
-          [initialEditingItemId]="selectedItemId"
-          [lockDate]="true"
-          (itemsChanged)="onEmbeddedItemsChanged($event)">
-        </app-input-day>
-      </mat-card-content>
-
-      <mat-card-actions align="end" class="gap-2 px-4 pb-4">
-        <button mat-stroked-button type="button" (click)="closeActiveModal()">
-          Fermer
-        </button>
-      </mat-card-actions>
-    </ng-container>
-  </mat-card>
-</div>
+        </mat-card-actions>
+      }
+    </mat-card>
+  </div>
+}

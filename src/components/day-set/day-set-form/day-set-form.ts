@@ -1,14 +1,13 @@
-import { CommonModule } from '@angular/common';
+
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,35 +35,33 @@ export interface DaySetFormValue {
 @Component({
   selector: 'app-day-set-form',
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    SlotList,
-  ],
+    SlotList
+],
   templateUrl: './day-set-form.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './day-set-form.scss',
 })
 export class DaySetForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
-  @Input() mode: DaySetFormMode = 'add';
-  @Input() daySet: Partial<DaySetFormValue> | null = null;
-  @Input() showHeading = true;
-  @Input() inDialog = false;
-  @Input() nutritionKeys: NutritionKeyMeta[] = [];
-  @Input() slots: SlotListItem[] = [];
-  @Input() templates: TemplateSummary[] = [];
+  readonly mode = input<DaySetFormMode>('add');
+  readonly daySet = input<Partial<DaySetFormValue> | null>(null);
+  readonly showHeading = input(true);
+  readonly inDialog = input(false);
+  readonly nutritionKeys = input<NutritionKeyMeta[]>([]);
+  readonly slots = input<SlotListItem[]>([]);
+  readonly templates = input<TemplateSummary[]>([]);
 
-  @Output() readonly submitted = new EventEmitter<{
+  readonly submitted = output<{
     mode: DaySetFormMode;
     value: DaySetFormValue;
-  }>();
-  @Output() readonly menuClicked = new EventEmitter<void>();
+}>();
+  readonly menuClicked = output<void>();
 
   nutritionValues: CycleNutritionValue[] = [];
   selectedSlotIds: number[] = [];
@@ -89,7 +86,7 @@ export class DaySetForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode === 'edit' ? 'Modifier DaySet' : 'Ajouter DaySet';
+    return this.mode() === 'edit' ? 'Modifier DaySet' : 'Ajouter DaySet';
   }
 
   onMenuClick(): void {
@@ -107,7 +104,7 @@ export class DaySetForm implements OnInit, OnChanges {
       .filter((value) => value.nutritionKey !== '');
 
     this.submitted.emit({
-      mode: this.mode,
+      mode: this.mode(),
       value: {
         ...this.form.getRawValue(),
         nutritionValues,
@@ -167,17 +164,18 @@ export class DaySetForm implements OnInit, OnChanges {
       templateId: null,
     };
 
-    if (this.mode === 'edit' && this.daySet) {
+    const daySet = this.daySet();
+    if (this.mode() === 'edit' && daySet) {
       this.form.reset({
-        title: this.daySet.title ?? defaults.title,
+        title: daySet.title ?? defaults.title,
       });
-      this.selectedSlotIds = this.normalizeSlotIds(this.daySet.slotIds ?? defaults.slotIds);
+      this.selectedSlotIds = this.normalizeSlotIds(daySet.slotIds ?? defaults.slotIds);
       this.selectedTemplateId = this.normalizeTemplateId(
-        this.daySet.templateId ?? defaults.templateId,
+        daySet.templateId ?? defaults.templateId,
       );
       this.nutritionValues =
-        this.daySet.nutritionValues && this.daySet.nutritionValues.length > 0
-          ? this.cloneNutritionValues(this.daySet.nutritionValues)
+        daySet.nutritionValues && daySet.nutritionValues.length > 0
+          ? this.cloneNutritionValues(daySet.nutritionValues)
           : this.getDefaultNutritionValues();
       return;
     }
@@ -189,7 +187,7 @@ export class DaySetForm implements OnInit, OnChanges {
   }
 
   private getDefaultNutritionValues(): CycleNutritionValue[] {
-    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys).map((key) =>
+    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys()).map((key) =>
       this.buildDefaultNutritionValue(key),
     );
     return this.cloneNutritionValues(defaults);
@@ -244,7 +242,7 @@ export class DaySetForm implements OnInit, OnChanges {
       return [];
     }
 
-    const key = this.nutritionKeys.find(
+    const key = this.nutritionKeys().find(
       (item) =>
         item.value.toUpperCase() === nutritionKey.toUpperCase() ||
         item.key.toUpperCase() === nutritionKey.toUpperCase(),

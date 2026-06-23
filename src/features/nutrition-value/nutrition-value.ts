@@ -1,5 +1,5 @@
-import { CommonModule, JsonPipe } from '@angular/common';
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { JsonPipe } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -24,7 +24,6 @@ import {
   selector: 'app-nutrition-value',
   imports: [
     JsonPipe,
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
@@ -33,13 +32,15 @@ import {
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
-    UiErrorPanel,
-  ],
+    UiErrorPanel
+],
   templateUrl: './nutrition-value.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './nutrition-value.scss',
 })
 export class NutritionValues implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly nvSrv = inject(NutritionValueService);
+
   // Lie la baseUrl au service via getter/setter pour eviter "used before initialization".
   get baseUrl(): string {
     return this.nvSrv.baseUrl;
@@ -53,11 +54,6 @@ export class NutritionValues implements OnInit {
   lastResponse: unknown = null;
   lastError: unknown = null;
   loading = false;
-
-  constructor(
-    private readonly fb: FormBuilder,
-    private readonly nvSrv: NutritionValueService,
-  ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({

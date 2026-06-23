@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import {
   CdkDragDrop,
   DragDropModule,
@@ -6,14 +6,13 @@ import {
 } from '@angular/cdk/drag-drop';
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -64,7 +63,6 @@ type DurationPreset = {
 @Component({
   selector: 'app-form-cycle',
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     DragDropModule,
@@ -72,27 +70,26 @@ type DurationPreset = {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    DaySetList,
-  ],
+    DaySetList
+],
   templateUrl: './form-cycle.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './form-cycle.scss',
 })
 export class FormCycle implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
   private readonly defaultDaySetId = 0;
 
-  @Input() mode: CycleFormMode = 'add';
-  @Input() cycle: Partial<CycleFormValue> | null = null;
-  @Input() nutritionKeys: NutritionKeyMeta[] = [];
-  @Input() daySets: DaySetListItem[] = [];
-  @Input() showHeading = true;
-  @Input() inDialog = false;
+  readonly mode = input<CycleFormMode>('add');
+  readonly cycle = input<Partial<CycleFormValue> | null>(null);
+  readonly nutritionKeys = input<NutritionKeyMeta[]>([]);
+  readonly daySets = input<DaySetListItem[]>([]);
+  readonly showHeading = input(true);
+  readonly inDialog = input(false);
 
-  @Output() readonly submitted = new EventEmitter<{
+  readonly submitted = output<{
     mode: CycleFormMode;
     value: CycleFormValue;
-  }>();
+}>();
 
   nutritionValues: CycleNutritionValue[] = [];
   daySetTimeline: number[] = [];
@@ -136,7 +133,7 @@ export class FormCycle implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode === 'edit' ? 'Modifier un Cycle' : 'Ajouter un Cycle';
+    return this.mode() === 'edit' ? 'Modifier un Cycle' : 'Ajouter un Cycle';
   }
 
   get couleurSelectionnee(): string {
@@ -199,7 +196,7 @@ export class FormCycle implements OnInit, OnChanges {
     const daySetOrder = this.serializeDaySetTimeline(durationDays);
 
     this.submitted.emit({
-      mode: this.mode,
+      mode: this.mode(),
       value: {
         ...this.form.getRawValue(),
         nutritionValues,
@@ -336,27 +333,28 @@ export class FormCycle implements OnInit, OnChanges {
       daySetOrder: [this.defaultDaySetId],
     };
 
-    if (this.mode === 'edit' && this.cycle) {
+    const cycle = this.cycle();
+    if (this.mode() === 'edit' && cycle) {
       const durationDays = this.normalizePositiveInteger(
-        this.cycle.durationDays ?? this.cycle.nombre ?? defaults.durationDays,
+        cycle.durationDays ?? cycle.nombre ?? defaults.durationDays,
         defaults.durationDays,
       );
       const daySetOrder = this.normalizeDaySetTimeline(
-        this.cycle.daySetOrder ?? this.cycle.daySetIds ?? defaults.daySetOrder,
+        cycle.daySetOrder ?? cycle.daySetIds ?? defaults.daySetOrder,
         durationDays,
       );
 
       this.form.reset({
-        titre: this.cycle.titre ?? defaults.titre,
-        couleur: this.cycle.couleur ?? defaults.couleur,
-        nombre: this.normalizePositiveInteger(this.cycle.nombre ?? durationDays, durationDays),
-        typeDuree: this.cycle.typeDuree ?? defaults.typeDuree,
+        titre: cycle.titre ?? defaults.titre,
+        couleur: cycle.couleur ?? defaults.couleur,
+        nombre: this.normalizePositiveInteger(cycle.nombre ?? durationDays, durationDays),
+        typeDuree: cycle.typeDuree ?? defaults.typeDuree,
         durationDays,
       });
       this.daySetTimeline = this.reconcileDaySetTimeline(daySetOrder);
       this.nutritionValues =
-        this.cycle.nutritionValues && this.cycle.nutritionValues.length > 0
-          ? this.cloneNutritionValues(this.cycle.nutritionValues)
+        cycle.nutritionValues && cycle.nutritionValues.length > 0
+          ? this.cloneNutritionValues(cycle.nutritionValues)
           : this.getDefaultNutritionValues();
       this.showSelectionError = this.hasSelectedDaySetOverflow;
       return;
@@ -375,7 +373,7 @@ export class FormCycle implements OnInit, OnChanges {
   }
 
   private getDefaultNutritionValues(): CycleNutritionValue[] {
-    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys).map((key) =>
+    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys()).map((key) =>
       this.buildDefaultNutritionValue(key),
     );
     return this.cloneNutritionValues(defaults);
@@ -430,7 +428,7 @@ export class FormCycle implements OnInit, OnChanges {
       return [];
     }
 
-    const key = this.nutritionKeys.find(
+    const key = this.nutritionKeys().find(
       (item) =>
         item.value.toUpperCase() === nutritionKey.toUpperCase() ||
         item.key.toUpperCase() === nutritionKey.toUpperCase(),
@@ -501,7 +499,7 @@ export class FormCycle implements OnInit, OnChanges {
   }
 
   private getDaySetTitle(daySetId: number): string {
-    const matchingDaySet = this.daySets.find((daySet) => Number(daySet.id) === daySetId);
+    const matchingDaySet = this.daySets().find((daySet) => Number(daySet.id) === daySetId);
     return matchingDaySet?.title ?? `Day Set ${daySetId}`;
   }
 

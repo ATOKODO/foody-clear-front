@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router, Routes } from '@angular/router';
 import { APP_NAVIGATION } from './app.navigation';
@@ -6,7 +6,6 @@ import { App } from './app';
 
 @Component({
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.Eager,
   template: '<p>Page test</p>',
 })
 class DummyPage {}

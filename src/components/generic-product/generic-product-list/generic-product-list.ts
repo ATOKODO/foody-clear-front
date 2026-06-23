@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -29,28 +28,27 @@ export interface GenericProductListItem {
 @Component({
   selector: 'app-generic-product-list',
   imports: [
-    CommonModule,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
     MatTableModule,
-  ],
+    NgTemplateOutlet
+],
   templateUrl: './generic-product-list.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './generic-product-list.scss',
 })
 export class GenericProductList implements OnInit, OnChanges {
-  @Input() mode: GenericProductListMode = 'manage';
-  @Input() genericProducts: GenericProductListItem[] | null = null;
-  @Input() selectedIds: string[] | null = null;
-  @Input() compact = false;
-  @Input() embedded = false;
+  readonly mode = input<GenericProductListMode>('manage');
+  readonly genericProducts = input<GenericProductListItem[] | null>(null);
+  readonly selectedIds = input<string[] | null>(null);
+  readonly compact = input(false);
+  readonly embedded = input(false);
 
-  @Output() readonly addRequested = new EventEmitter<void>();
-  @Output() readonly editRequested = new EventEmitter<GenericProductListItem>();
-  @Output() readonly deleteRequested = new EventEmitter<GenericProductListItem>();
-  @Output() readonly selected = new EventEmitter<GenericProductListItem>();
-  @Output() readonly selectedMany = new EventEmitter<GenericProductListItem[]>();
+  readonly addRequested = output<void>();
+  readonly editRequested = output<GenericProductListItem>();
+  readonly deleteRequested = output<GenericProductListItem>();
+  readonly selected = output<GenericProductListItem>();
+  readonly selectedMany = output<GenericProductListItem[]>();
 
   readonly defaultGenericProducts: GenericProductListItem[] = [
     {
@@ -86,15 +84,15 @@ export class GenericProductList implements OnInit, OnChanges {
   }
 
   get isManageMode(): boolean {
-    return this.mode === 'manage';
+    return this.mode() === 'manage';
   }
 
   get isSingleSelectMode(): boolean {
-    return this.mode === 'select-single';
+    return this.mode() === 'select-single';
   }
 
   get isMultiSelectMode(): boolean {
-    return this.mode === 'select-multi';
+    return this.mode() === 'select-multi';
   }
 
   get hasItems(): boolean {
@@ -217,10 +215,11 @@ export class GenericProductList implements OnInit, OnChanges {
   }
 
   private applyInputState(): void {
+    const genericProducts = this.genericProducts();
     this.resolvedGenericProducts =
-      this.genericProducts === null ? [...this.defaultGenericProducts] : [...this.genericProducts];
+      genericProducts === null ? [...this.defaultGenericProducts] : [...genericProducts];
 
-    const initialIds = this.selectedIds ?? [];
+    const initialIds = this.selectedIds() ?? [];
     const availableIds = new Set(this.resolvedGenericProducts.map((item) => item.id));
     this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
 

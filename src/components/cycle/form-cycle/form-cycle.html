@@ -1,10 +1,12 @@
 <section
   class="mx-auto max-w-4xl text-gray-900 dark:text-gray-100"
-  [class.px-4]="!inDialog"
-  [class.py-10]="!inDialog"
-  [class.px-3]="inDialog"
-  [class.py-5]="inDialog">
-  <h2 *ngIf="showHeading" class="mb-6 text-xl font-medium">{{ heading }}</h2>
+  [class.px-4]="!inDialog()"
+  [class.py-10]="!inDialog()"
+  [class.px-3]="inDialog()"
+  [class.py-5]="inDialog()">
+  @if (showHeading()) {
+    <h2 class="mb-6 text-xl font-medium">{{ heading }}</h2>
+  }
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
     <div class="grid gap-4 md:grid-cols-12">
@@ -20,18 +22,20 @@
             <span
               class="inline-flex h-4 w-24 rounded-full align-middle"
               [style.backgroundColor]="couleurSelectionnee"
-              aria-hidden="true"></span>
+            aria-hidden="true"></span>
           </mat-select-trigger>
 
-          <mat-option *ngFor="let option of colorOptions" [value]="option.value">
-            <span class="inline-flex items-center gap-3">
-              <span
-                class="inline-flex h-3 w-8 rounded-full"
-                [style.backgroundColor]="option.value"
+          @for (option of colorOptions; track option) {
+            <mat-option [value]="option.value">
+              <span class="inline-flex items-center gap-3">
+                <span
+                  class="inline-flex h-3 w-8 rounded-full"
+                  [style.backgroundColor]="option.value"
                 aria-hidden="true"></span>
-              <span>{{ option.label }}</span>
-            </span>
-          </mat-option>
+                <span>{{ option.label }}</span>
+              </span>
+            </mat-option>
+          }
         </mat-select>
       </mat-form-field>
     </div>
@@ -46,9 +50,11 @@
             min="1"
             formControlName="durationDays"
             (input)="onDurationDaysInput()" />
-          <mat-error *ngIf="form.controls.durationDays.invalid">
-            Le cycle doit durer au moins 1 jour.
-          </mat-error>
+          @if (form.controls.durationDays.invalid) {
+            <mat-error>
+              Le cycle doit durer au moins 1 jour.
+            </mat-error>
+          }
         </mat-form-field>
 
         <div class="md:col-span-8">
@@ -59,13 +65,14 @@
           </p>
 
           <div class="mt-3 flex flex-wrap gap-2">
-            <button
-              *ngFor="let preset of durationPresets"
-              mat-stroked-button
-              type="button"
-              (click)="applyDurationPreset(preset)">
-              {{ preset.label }}
-            </button>
+            @for (preset of durationPresets; track preset) {
+              <button
+                mat-stroked-button
+                type="button"
+                (click)="applyDurationPreset(preset)">
+                {{ preset.label }}
+              </button>
+            }
           </div>
         </div>
       </div>
@@ -79,53 +86,60 @@
         </button>
       </div>
 
-      <p *ngIf="nutritionKeys.length === 0" class="text-sm text-slate-600">
-        Les cles nutritionnelles meta ne sont pas chargees, saisie libre active.
-      </p>
+      @if (nutritionKeys().length === 0) {
+        <p class="text-sm text-slate-600">
+          Les cles nutritionnelles meta ne sont pas chargees, saisie libre active.
+        </p>
+      }
 
-      <div *ngFor="let value of nutritionValues; let i = index" class="grid gap-3 md:grid-cols-12 md:items-start">
-        <mat-form-field appearance="fill" class="fc-field md:col-span-5">
-          <mat-label>Cle</mat-label>
-          <mat-select
-            [(ngModel)]="value.nutritionKey"
-            [ngModelOptions]="{ standalone: true }"
-            (selectionChange)="onNutritionKeyChange(i)">
-            <mat-option *ngFor="let item of nutritionKeys" [value]="item.value">
-              {{ item.label }}
-            </mat-option>
-          </mat-select>
-          <mat-hint *ngIf="nutritionKeys.length === 0">
-            Aucune cle meta disponible
-          </mat-hint>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="fc-field md:col-span-3">
-          <mat-label>Amount</mat-label>
-          <input
-            matInput
-            type="number"
-            min="0"
-            [(ngModel)]="value.amount"
-            [ngModelOptions]="{ standalone: true }" />
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="fc-field md:col-span-3">
-          <mat-label>Unite</mat-label>
-          <mat-select
-            [(ngModel)]="value.unit"
-            [ngModelOptions]="{ standalone: true }">
-            <mat-option *ngFor="let unit of getUnitsForKey(value.nutritionKey)" [value]="unit">
-              {{ unit }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <div class="md:col-span-1 md:pt-2">
-          <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
-            Retirer
-          </button>
+      @for (value of nutritionValues; track value; let i = $index) {
+        <div class="grid gap-3 md:grid-cols-12 md:items-start">
+          <mat-form-field appearance="fill" class="fc-field md:col-span-5">
+            <mat-label>Cle</mat-label>
+            <mat-select
+              [(ngModel)]="value.nutritionKey"
+              [ngModelOptions]="{ standalone: true }"
+              (selectionChange)="onNutritionKeyChange(i)">
+              @for (item of nutritionKeys(); track item) {
+                <mat-option [value]="item.value">
+                  {{ item.label }}
+                </mat-option>
+              }
+            </mat-select>
+            @if (nutritionKeys().length === 0) {
+              <mat-hint>
+                Aucune cle meta disponible
+              </mat-hint>
+            }
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="fc-field md:col-span-3">
+            <mat-label>Amount</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              [(ngModel)]="value.amount"
+              [ngModelOptions]="{ standalone: true }" />
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="fc-field md:col-span-3">
+            <mat-label>Unite</mat-label>
+            <mat-select
+              [(ngModel)]="value.unit"
+              [ngModelOptions]="{ standalone: true }">
+              @for (unit of getUnitsForKey(value.nutritionKey); track unit) {
+                <mat-option [value]="unit">
+                  {{ unit }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <div class="md:col-span-1 md:pt-2">
+            <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
+              Retirer
+            </button>
+          </div>
         </div>
-      </div>
+      }
     </div>
 
     <div class="space-y-3">
@@ -140,18 +154,18 @@
         </p>
       </div>
 
-      <p *ngIf="showSelectionError && hasSelectedDaySetOverflow" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-        Certains day sets sont places au-dela de la duree du cycle. Deplace-les dans la zone valide
-        ou retire-les avant d'enregistrer.
-      </p>
+      @if (showSelectionError && hasSelectedDaySetOverflow) {
+        <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          Certains day sets sont places au-dela de la duree du cycle. Deplace-les dans la zone valide
+          ou retire-les avant d'enregistrer.
+        </p>
+      }
 
-      <app-day-set-list
-        mode="select-multi"
-        [daySets]="daySets"
+      <app-day-set-list mode="select-multi"
+        [daySets]="daySets()"
         [selectedIds]="selectedDaySetIdsAsString"
         [maxSelections]="maxSelectableDaySets"
-        (selectedMany)="onDaySetsSelected($event)">
-      </app-day-set-list>
+        (selectedMany)="onDaySetsSelected($event)" />
     </div>
 
     <div class="space-y-3">
@@ -165,56 +179,60 @@
         class="fc-order-list"
         [cdkDropListData]="timelineSlots"
         (cdkDropListDropped)="onDaySetOrderDropped($event)">
-        <div
-          *ngFor="let slot of timelineSlots; trackBy: trackByTimelineSlot"
-          cdkDrag
-          class="fc-order-item rounded-xl border px-4 py-3 shadow-sm"
-          [class.border-red-300]="slot.isOverflow"
-          [class.bg-red-50]="slot.isOverflow"
-          [class.border-slate-200]="!slot.isOverflow"
-          [class.bg-white]="!slot.isOverflow">
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex min-w-0 items-center gap-3">
-              <button
-                cdkDragHandle
-                mat-stroked-button
-                type="button"
-                class="fc-drag-handle">
-                Deplacer
-              </button>
-
-              <div class="min-w-0">
-                <p class="truncate text-sm font-semibold text-slate-900">
-                  Jour {{ slot.dayNumber }}. {{ slot.title }}
-                </p>
-                <p *ngIf="slot.isDefault; else assignedDaySet" class="text-xs text-slate-500">
-                  Jour base sur l'objectif du cycle.
-                </p>
-                <ng-template #assignedDaySet>
-                  <p class="text-xs" [class.text-red-700]="slot.isOverflow" [class.text-slate-500]="!slot.isOverflow">
-                    <ng-container *ngIf="slot.isOverflow; else inRangeDaySet">
-                      Position hors duree du cycle. Deplace ce day set avant d'enregistrer.
-                    </ng-container>
-                    <ng-template #inRangeDaySet>Day set #{{ slot.daySetId }}</ng-template>
+        @for (slot of timelineSlots; track trackByTimelineSlot($index, slot)) {
+          <div
+            cdkDrag
+            class="fc-order-item rounded-xl border px-4 py-3 shadow-sm"
+            [class.border-red-300]="slot.isOverflow"
+            [class.bg-red-50]="slot.isOverflow"
+            [class.border-slate-200]="!slot.isOverflow"
+            [class.bg-white]="!slot.isOverflow">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex min-w-0 items-center gap-3">
+                <button
+                  cdkDragHandle
+                  mat-stroked-button
+                  type="button"
+                  class="fc-drag-handle">
+                  Deplacer
+                </button>
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-semibold text-slate-900">
+                    Jour {{ slot.dayNumber }}. {{ slot.title }}
                   </p>
-                </ng-template>
+                  @if (slot.isDefault) {
+                    <p class="text-xs text-slate-500">
+                      Jour base sur l'objectif du cycle.
+                    </p>
+                  } @else {
+                    <p class="text-xs" [class.text-red-700]="slot.isOverflow" [class.text-slate-500]="!slot.isOverflow">
+                      @if (slot.isOverflow) {
+                        Position hors duree du cycle. Deplace ce day set avant d'enregistrer.
+                      } @else {
+                        Day set #{{ slot.daySetId }}
+                      }
+                    </p>
+                  }
+                </div>
               </div>
+              @if (!slot.isDefault) {
+                <button
+                  mat-stroked-button
+                  color="warn"
+                  type="button"
+                  (click)="removeDaySetFromOrder(slot.daySetId)">
+                  Retirer
+                </button>
+              }
             </div>
-
-            <button
-              *ngIf="!slot.isDefault"
-              mat-stroked-button
-              color="warn"
-              type="button"
-              (click)="removeDaySetFromOrder(slot.daySetId)">
-              Retirer
-            </button>
           </div>
-        </div>
+        }
 
-        <p *ngIf="timelineSlots.length === 0" class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500">
-          Aucun jour configure.
-        </p>
+        @if (timelineSlots.length === 0) {
+          <p class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500">
+            Aucun jour configure.
+          </p>
+        }
       </div>
     </div>
 

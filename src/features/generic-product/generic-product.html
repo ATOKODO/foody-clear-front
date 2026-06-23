@@ -1,28 +1,28 @@
-<ng-container *ngIf="embedded; else standaloneTemplate">
+@if (embedded()) {
   <div class="space-y-4" data-testid="generic-product-embedded">
     <div class="app-status-row">
-      <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
-        Chargement...
-      </span>
-      <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
-        Sauvegarde...
-      </span>
+      @if (loading) {
+        <span class="app-status-pill app-status-pill--neutral">
+          Chargement...
+        </span>
+      }
+      @if (saving) {
+        <span class="app-status-pill app-status-pill--saving">
+          Sauvegarde...
+        </span>
+      }
     </div>
-
-    <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
-
-    <app-generic-product-list
-      mode="manage"
+    @if (lastError) {
+      <app-ui-error-panel [error]="lastError" />
+    }
+    <app-generic-product-list mode="manage"
       [genericProducts]="genericProductListItems"
       [embedded]="true"
       (addRequested)="onAddRequested()"
       (editRequested)="onEditRequested($event)"
-      (deleteRequested)="onDeleteRequested($event)">
-    </app-generic-product-list>
+      (deleteRequested)="onDeleteRequested($event)" />
   </div>
-</ng-container>
-
-<ng-template #standaloneTemplate>
+} @else {
   <section class="app-page" data-testid="generic-product-page">
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="flex items-center justify-between bg-slate-900 px-6 py-5 text-white">
@@ -36,65 +36,67 @@
           Rafraichir
         </button>
       </div>
-
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
-          <span *ngIf="loading" class="app-status-pill app-status-pill--neutral">
-            Chargement...
-          </span>
-          <span *ngIf="saving" class="app-status-pill app-status-pill--saving">
-            Sauvegarde...
-          </span>
+          @if (loading) {
+            <span class="app-status-pill app-status-pill--neutral">
+              Chargement...
+            </span>
+          }
+          @if (saving) {
+            <span class="app-status-pill app-status-pill--saving">
+              Sauvegarde...
+            </span>
+          }
         </div>
-
-        <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
-
-        <app-generic-product-list
-          mode="manage"
+        @if (lastError) {
+          <app-ui-error-panel [error]="lastError" />
+        }
+        <app-generic-product-list mode="manage"
           [genericProducts]="genericProductListItems"
           (addRequested)="onAddRequested()"
           (editRequested)="onEditRequested($event)"
-          (deleteRequested)="onDeleteRequested($event)">
-        </app-generic-product-list>
+          (deleteRequested)="onDeleteRequested($event)" />
       </div>
     </mat-card>
   </section>
-</ng-template>
+}
 
-<div class="app-modal-backdrop" *ngIf="formVisible" (click)="onCancelForm()"></div>
-<div class="app-modal-shell" *ngIf="formVisible">
-  <mat-card
-    appearance="outlined"
-    class="app-modal-card"
-    data-testid="generic-product-dialog"
-    role="dialog"
-    aria-modal="true"
-    (click)="$event.stopPropagation()"
-  >
-    <div class="app-dialog-header">
-      <div>
-        <p class="app-dialog-eyebrow">Catalogue</p>
-        <h3 class="app-dialog-title">
-          {{ formMode === 'edit' ? 'Modifier un produit generique' : 'Ajouter un produit generique' }}
-        </h3>
-        <p class="app-dialog-subtitle">
-          Definis les seuils minimums utiles pour les equivalences unite / metrique.
-        </p>
+
+@if (formVisible) {
+  <div class="app-modal-backdrop" (click)="onCancelForm()"></div>
+}
+@if (formVisible) {
+  <div class="app-modal-shell">
+    <mat-card
+      appearance="outlined"
+      class="app-modal-card"
+      data-testid="generic-product-dialog"
+      role="dialog"
+      aria-modal="true"
+      (click)="$event.stopPropagation()"
+      >
+      <div class="app-dialog-header">
+        <div>
+          <p class="app-dialog-eyebrow">Catalogue</p>
+          <h3 class="app-dialog-title">
+            {{ formMode === 'edit' ? 'Modifier un produit generique' : 'Ajouter un produit generique' }}
+          </h3>
+          <p class="app-dialog-subtitle">
+            Definis les seuils minimums utiles pour les equivalences unite / metrique.
+          </p>
+        </div>
+        <button mat-stroked-button type="button" (click)="onCancelForm()">
+          Fermer
+        </button>
       </div>
-
-      <button mat-stroked-button type="button" (click)="onCancelForm()">
-        Fermer
-      </button>
-    </div>
-
-    <div class="app-dialog-content">
-      <app-generic-product-form
-        [mode]="formMode"
-        [genericProduct]="formInitialValue"
-        [showHeading]="false"
-        (submitted)="onFormSubmitted($event)"
-        (menuClicked)="onMenuClicked()">
-      </app-generic-product-form>
-    </div>
-  </mat-card>
-</div>
+      <div class="app-dialog-content">
+        <app-generic-product-form [mode]="formMode"
+          [genericProduct]="formInitialValue"
+          [showHeading]="false"
+          (submitted)="onFormSubmitted($event)"
+          (menuClicked)="onMenuClicked()" />
+      </div>
+    </mat-card>
+  </div>
+}

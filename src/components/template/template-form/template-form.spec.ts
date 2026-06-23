@@ -89,12 +89,14 @@ describe('TemplateForm', () => {
     expect(component.selectedProductIds).toEqual(['8']);
   });
 
-  it('should preselect the edited product row in the embedded list', () => {
+  it('should preselect the edited product row in the embedded list', async () => {
     fixture.componentRef.setInput('products', products);
     fixture.componentRef.setInput('template', template);
     fixture.detectChanges();
 
     component.editItem(template.items[0]);
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     const nativeElement = fixture.nativeElement as HTMLElement;
@@ -104,7 +106,7 @@ describe('TemplateForm', () => {
     expect(selectedRow?.classList.contains('pl-active')).toBeTrue();
   });
 
-  it('should keep the item save button disabled until product and qty are valid', () => {
+  it('should keep the item save button disabled until product and qty are valid', async () => {
     fixture.componentRef.setInput('products', products);
     fixture.componentRef.setInput('template', template);
     fixture.detectChanges();
@@ -118,9 +120,12 @@ describe('TemplateForm', () => {
       id: '8',
       name: 'Riz',
     });
-    component.itemDraft.qty = 2;
+    component.updateItemDraft({ qty: 2 });
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(saveButton.disabled).toBeFalse();
+    const updatedSaveButton = nativeElement.querySelector('[data-testid="template-item-save"]') as HTMLButtonElement;
+    expect(updatedSaveButton.disabled).toBeFalse();
   });
 });

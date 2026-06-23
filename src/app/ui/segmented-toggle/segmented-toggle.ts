@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+
+import { Component, input, output } from '@angular/core';
 import {
   MatButtonToggleChange,
   MatButtonToggleModule,
@@ -13,20 +13,19 @@ export interface SegmentedToggleOption<TValue extends string = string> {
 
 @Component({
   selector: 'app-segmented-toggle',
-  imports: [CommonModule, MatButtonToggleModule],
+  imports: [MatButtonToggleModule],
   templateUrl: './segmented-toggle.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './segmented-toggle.scss',
 })
 export class SegmentedToggle<TValue extends string = string> {
-  @Input() value!: TValue;
-  @Input() options: readonly SegmentedToggleOption<TValue>[] = [];
-  @Input() name = 'segmented-toggle';
-  @Input() ariaLabel = 'Selection';
-  @Input() testId?: string;
-  @Input() maxWidth = '45.75rem';
+  readonly value = input.required<TValue>();
+  readonly options = input<readonly SegmentedToggleOption<TValue>[]>([]);
+  readonly name = input('segmented-toggle');
+  readonly ariaLabel = input('Selection');
+  readonly testId = input<string>();
+  readonly maxWidth = input('45.75rem');
 
-  @Output() readonly valueChange = new EventEmitter<TValue>();
+  readonly valueChange = output<TValue>();
 
   trackByValue(_: number, option: SegmentedToggleOption<TValue>): TValue {
     return option.value;

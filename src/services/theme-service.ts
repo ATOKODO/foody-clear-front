@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { BehaviorSubject, Observable } from 'rxjs';
 
@@ -6,12 +6,14 @@ export type ThemeMode = 'light' | 'dark';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
+  private document = inject<Document>(DOCUMENT);
+
   private readonly storageKey = 'theme';
   private readonly modeSubject = new BehaviorSubject<ThemeMode>('light');
 
   readonly mode$: Observable<ThemeMode> = this.modeSubject.asObservable();
 
-  constructor(@Inject(DOCUMENT) private document: Document) {
+  constructor() {
     const initialMode = this.getInitialMode();
     this.modeSubject.next(initialMode);
     this.applyMode(initialMode, false);

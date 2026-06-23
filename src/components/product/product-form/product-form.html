@@ -1,10 +1,11 @@
 <section class="mx-auto max-w-5xl px-4 py-8 text-gray-900" aria-label="Ajouter ou modifier un produit">
-  <div
-    *ngIf="showHeading"
-    class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
-    <h2 class="text-xl font-medium">{{ heading }}</h2>
-    <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
-  </div>
+  @if (showHeading()) {
+    <div
+      class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
+      <h2 class="text-xl font-medium">{{ heading }}</h2>
+      <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
+    </div>
+  }
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
     <div class="grid gap-4 md:grid-cols-12">
@@ -24,34 +25,46 @@
         <mat-label>Categorie</mat-label>
         <mat-select formControlName="categoryId">
           <mat-option [value]="''">Aucune</mat-option>
-          <mat-option *ngFor="let category of categories" [value]="category.id">
-            {{ category.name }}
-          </mat-option>
+          @for (category of categories(); track category) {
+            <mat-option [value]="category.id">
+              {{ category.name }}
+            </mat-option>
+          }
         </mat-select>
-        <mat-hint *ngIf="categories.length === 0">Aucune categorie disponible</mat-hint>
+        @if (categories().length === 0) {
+          <mat-hint>Aucune categorie disponible</mat-hint>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="pf-field md:col-span-4">
         <mat-label>Generic product</mat-label>
         <mat-select formControlName="genericProductId">
           <mat-option [value]="''">Aucun</mat-option>
-          <mat-option *ngFor="let genericProduct of genericProducts" [value]="genericProduct.id">
-            {{ genericProduct.name }}
-          </mat-option>
+          @for (genericProduct of genericProducts(); track genericProduct) {
+            <mat-option [value]="genericProduct.id">
+              {{ genericProduct.name }}
+            </mat-option>
+          }
         </mat-select>
-        <mat-hint *ngIf="genericProducts.length === 0">
-          Aucun generic product disponible
-        </mat-hint>
+        @if (genericProducts().length === 0) {
+          <mat-hint>
+            Aucun generic product disponible
+          </mat-hint>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="pf-field md:col-span-4">
         <mat-label>Tags</mat-label>
         <mat-select formControlName="tagIds" multiple>
-          <mat-option *ngFor="let tag of tags" [value]="tag.id">
-            {{ tag.name }}
-          </mat-option>
+          @for (tag of tags(); track tag) {
+            <mat-option [value]="tag.id">
+              {{ tag.name }}
+            </mat-option>
+          }
         </mat-select>
-        <mat-hint *ngIf="tags.length === 0">Aucun tag disponible</mat-hint>
+        @if (tags().length === 0) {
+          <mat-hint>Aucun tag disponible</mat-hint>
+        }
       </mat-form-field>
     </div>
 
@@ -59,9 +72,11 @@
       <mat-form-field appearance="fill" class="pf-field md:col-span-3">
         <mat-label>unitType *</mat-label>
         <mat-select formControlName="unitType">
-          <mat-option *ngFor="let unitType of unitTypeOptions" [value]="unitType">
-            {{ unitType }}
-          </mat-option>
+          @for (unitType of unitTypeOptions; track unitType) {
+            <mat-option [value]="unitType">
+              {{ unitType }}
+            </mat-option>
+          }
         </mat-select>
       </mat-form-field>
 
@@ -73,9 +88,11 @@
       <mat-form-field appearance="fill" class="pf-field md:col-span-3">
         <mat-label>quantityUnit *</mat-label>
         <mat-select formControlName="quantityUnit">
-          <mat-option *ngFor="let unit of quantityUnits" [value]="unit.value">
-            {{ unit.label }}
-          </mat-option>
+          @for (unit of quantityUnits(); track unit) {
+            <mat-option [value]="unit.value">
+              {{ unit.label }}
+            </mat-option>
+          }
         </mat-select>
       </mat-form-field>
     </div>
@@ -84,39 +101,51 @@
       <mat-form-field appearance="fill" class="pf-field md:col-span-4">
         <mat-label>price</mat-label>
         <input matInput type="number" min="0" step="0.01" formControlName="price" />
-        <mat-error *ngIf="form.controls.price.errors?.['requiredWithPrice']">
-          price et priceUnit doivent etre renseignes ensemble.
-        </mat-error>
+        @if (form.controls.price.errors?.['requiredWithPrice']) {
+          <mat-error>
+            price et priceUnit doivent etre renseignes ensemble.
+          </mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="pf-field md:col-span-4">
         <mat-label>priceUnit</mat-label>
         <mat-select formControlName="priceUnit">
           <mat-option value="">Aucune</mat-option>
-          <mat-option *ngFor="let option of priceUnitOptions" [value]="option.value">
-            {{ option.label }}
-          </mat-option>
+          @for (option of priceUnitOptions; track option) {
+            <mat-option [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          }
         </mat-select>
-        <mat-error *ngIf="form.controls.priceUnit.errors?.['requiredWithPrice']">
-          price et priceUnit doivent etre renseignes ensemble.
-        </mat-error>
+        @if (form.controls.priceUnit.errors?.['requiredWithPrice']) {
+          <mat-error>
+            price et priceUnit doivent etre renseignes ensemble.
+          </mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="pf-field md:col-span-4">
         <mat-label>priceEffectiveFrom</mat-label>
         <input matInput type="datetime-local" formControlName="priceEffectiveFrom" />
-        <mat-hint *ngIf="mode === 'edit'">
-          Laisser vide pour appliquer le changement maintenant.
-        </mat-hint>
-        <mat-hint *ngIf="mode !== 'edit'">
-          Non utilise a la creation en V1.
-        </mat-hint>
+        @if (mode() === 'edit') {
+          <mat-hint>
+            Laisser vide pour appliquer le changement maintenant.
+          </mat-hint>
+        }
+        @if (mode() !== 'edit') {
+          <mat-hint>
+            Non utilise a la creation en V1.
+          </mat-hint>
+        }
       </mat-form-field>
     </div>
 
-    <p *ngIf="mode === 'edit'" class="text-sm text-slate-600">
-      Modifier le prix cree une nouvelle version; les anciens prix sont conserves.
-    </p>
+    @if (mode() === 'edit') {
+      <p class="text-sm text-slate-600">
+        Modifier le prix cree une nouvelle version; les anciens prix sont conserves.
+      </p>
+    }
 
     <div class="grid gap-4 md:grid-cols-12">
       <mat-form-field appearance="fill" class="pf-field md:col-span-4">
@@ -128,13 +157,17 @@
         <mat-label>portionUnit</mat-label>
         <mat-select formControlName="portionUnit">
           <mat-option value="">-</mat-option>
-          <mat-option *ngFor="let portionUnit of portionUnitOptions" [value]="portionUnit">
-            {{ portionUnit }}
-          </mat-option>
+          @for (portionUnit of portionUnitOptions; track portionUnit) {
+            <mat-option [value]="portionUnit">
+              {{ portionUnit }}
+            </mat-option>
+          }
         </mat-select>
-        <mat-error *ngIf="form.controls.portionUnit.errors?.['requiredWithPortion']">
-          portionUnit est requis si portionCount ou portionQuantityNormalized est renseigne.
-        </mat-error>
+        @if (form.controls.portionUnit.errors?.['requiredWithPortion']) {
+          <mat-error>
+            portionUnit est requis si portionCount ou portionQuantityNormalized est renseigne.
+          </mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="pf-field md:col-span-4">
@@ -163,64 +196,72 @@
         </button>
       </div>
 
-      <p *ngIf="nutritionKeys.length === 0" class="text-sm text-slate-600">
-        Les cles nutritionnelles meta ne sont pas chargees, saisie libre active.
-      </p>
+      @if (nutritionKeys().length === 0) {
+        <p class="text-sm text-slate-600">
+          Les cles nutritionnelles meta ne sont pas chargees, saisie libre active.
+        </p>
+      }
 
-      <div *ngFor="let value of nutritionValues; let i = index" class="grid gap-3 md:grid-cols-12 md:items-start">
-        <mat-form-field appearance="fill" class="pf-field md:col-span-5">
-          <mat-label>Cle</mat-label>
-          <mat-select
-            [(ngModel)]="value.nutritionKey"
-            [ngModelOptions]="{ standalone: true }"
-            (selectionChange)="onNutritionKeyChange(i)">
-            <mat-option *ngFor="let item of nutritionKeys" [value]="item.value">
-              {{ item.label }}
-            </mat-option>
-          </mat-select>
-          <mat-hint *ngIf="nutritionKeys.length === 0">
-            Aucune cle meta disponible
-          </mat-hint>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="pf-field md:col-span-2">
-          <mat-label>Amount</mat-label>
-          <input
-            matInput
-            type="number"
-            min="0"
-            [(ngModel)]="value.amount"
-            [ngModelOptions]="{ standalone: true }" />
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="pf-field md:col-span-2">
-          <mat-label>Unite</mat-label>
-          <mat-select
-            [(ngModel)]="value.unit"
-            [ngModelOptions]="{ standalone: true }">
-            <mat-option *ngFor="let unit of getUnitsForKey(value.nutritionKey)" [value]="unit">
-              {{ unit }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="pf-field md:col-span-2">
-          <mat-label>Reference</mat-label>
-          <mat-select
-            [(ngModel)]="value.reference"
-            [ngModelOptions]="{ standalone: true }">
-            <mat-option *ngFor="let reference of referenceOptions" [value]="reference.value">
-              {{ reference.label }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <div class="md:col-span-1 md:pt-2">
-          <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
-            Retirer
-          </button>
+      @for (value of nutritionValues; track value; let i = $index) {
+        <div class="grid gap-3 md:grid-cols-12 md:items-start">
+          <mat-form-field appearance="fill" class="pf-field md:col-span-5">
+            <mat-label>Cle</mat-label>
+            <mat-select
+              [(ngModel)]="value.nutritionKey"
+              [ngModelOptions]="{ standalone: true }"
+              (selectionChange)="onNutritionKeyChange(i)">
+              @for (item of nutritionKeys(); track item) {
+                <mat-option [value]="item.value">
+                  {{ item.label }}
+                </mat-option>
+              }
+            </mat-select>
+            @if (nutritionKeys().length === 0) {
+              <mat-hint>
+                Aucune cle meta disponible
+              </mat-hint>
+            }
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="pf-field md:col-span-2">
+            <mat-label>Amount</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              [(ngModel)]="value.amount"
+              [ngModelOptions]="{ standalone: true }" />
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="pf-field md:col-span-2">
+            <mat-label>Unite</mat-label>
+            <mat-select
+              [(ngModel)]="value.unit"
+              [ngModelOptions]="{ standalone: true }">
+              @for (unit of getUnitsForKey(value.nutritionKey); track unit) {
+                <mat-option [value]="unit">
+                  {{ unit }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="pf-field md:col-span-2">
+            <mat-label>Reference</mat-label>
+            <mat-select
+              [(ngModel)]="value.reference"
+              [ngModelOptions]="{ standalone: true }">
+              @for (reference of referenceOptions; track reference) {
+                <mat-option [value]="reference.value">
+                  {{ reference.label }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <div class="md:col-span-1 md:pt-2">
+            <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
+              Retirer
+            </button>
+          </div>
         </div>
-      </div>
+      }
     </div>
 
     <div class="flex justify-center pt-2">

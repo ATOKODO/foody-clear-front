@@ -1,20 +1,21 @@
 <div class="segmented-toggle__shell">
   <mat-button-toggle-group
-    [value]="value"
+    [value]="value()"
     [hideSingleSelectionIndicator]="true"
     (change)="onSelectionChange($event)"
-    [attr.aria-label]="ariaLabel"
-    [attr.data-testid]="testId ?? null"
-    [name]="name"
+    [attr.aria-label]="ariaLabel()"
+    [attr.data-testid]="testId() ?? null"
+    [name]="name()"
     class="segmented-toggle"
-    [style.maxWidth]="maxWidth"
-  >
-    <mat-button-toggle
-      *ngFor="let option of options; trackBy: trackByValue"
-      [value]="option.value"
-      [attr.data-testid]="option.testId ?? null"
+    [style.maxWidth]="maxWidth()"
     >
-      {{ option.label }}
-    </mat-button-toggle>
+    @for (option of options(); track trackByValue($index, option)) {
+      <mat-button-toggle
+        [value]="option.value"
+        [attr.data-testid]="option.testId ?? null"
+        >
+        {{ option.label }}
+      </mat-button-toggle>
+    }
   </mat-button-toggle-group>
 </div>

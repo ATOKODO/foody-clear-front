@@ -9,160 +9,175 @@
           </span>
         </div>
 
-        <div *ngIf="sortedTemplates.length > 0; else noTemplates" class="template-master__table-wrap">
-          <table class="template-master__table w-full">
-            <thead>
-              <tr>
-                <th>Modele</th>
-                <th class="template-master__count-head">Lignes</th>
-                <th class="template-master__actions-head">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                *ngFor="let template of sortedTemplates"
-                [attr.data-testid]="'template-select-' + template.id"
-                class="template-master__row"
-                [class.template-master__row--active]="template.id === selectedTemplateId"
-                [class.template-master__row--selectable]="!busy"
-                tabindex="0"
-                role="button"
-                (click)="onTemplateClick(template.id)"
-                (keydown)="onTemplateKeydown($event, template.id)"
-              >
-                <td class="template-master__cell template-master__cell--main">
-                  <div class="template-master__summary">
-                    <p class="template-master__title">{{ template.title }}</p>
-                    <p class="template-master__meta">
-                      {{ template.items.length }} ligne(s) template
-                    </p>
-                  </div>
-                </td>
-                <td class="template-master__cell template-master__cell--count">
-                  {{ template.items.length }}
-                </td>
-                <td class="template-master__cell template-master__cell--actions" (click)="$event.stopPropagation()">
-                  <div class="template-master__actions">
-                    <button
-                      mat-stroked-button
-                      type="button"
-                      class="template-master__action template-master__action--edit"
-                      [attr.data-testid]="template.id === selectedTemplateId ? 'template-edit' : 'template-edit-' + template.id"
-                      (click)="onEditClick(template.id)"
-                      [disabled]="busy"
+        @if (sortedTemplates.length > 0) {
+          <div class="template-master__table-wrap">
+            <table class="template-master__table w-full">
+              <thead>
+                <tr>
+                  <th>Modele</th>
+                  <th class="template-master__count-head">Lignes</th>
+                  <th class="template-master__actions-head">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (template of sortedTemplates; track template) {
+                  <tr
+                    [attr.data-testid]="'template-select-' + template.id"
+                    class="template-master__row"
+                    [class.template-master__row--active]="template.id === selectedTemplateId()"
+                    [class.template-master__row--selectable]="!busy"
+                    tabindex="0"
+                    role="button"
+                    (click)="onTemplateClick(template.id)"
+                    (keydown)="onTemplateKeydown($event, template.id)"
                     >
-                      Modifier
-                    </button>
-                    <button
-                      mat-stroked-button
-                      type="button"
-                      class="template-master__action template-master__action--delete"
-                      [attr.data-testid]="'template-delete-' + template.id"
-                      (click)="onDeleteClick(template.id)"
-                      [disabled]="busy"
-                    >
-                      Retirer
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                    <td class="template-master__cell template-master__cell--main">
+                      <div class="template-master__summary">
+                        <p class="template-master__title">{{ template.title }}</p>
+                        <p class="template-master__meta">
+                          {{ template.items.length }} ligne(s) template
+                        </p>
+                      </div>
+                    </td>
+                    <td class="template-master__cell template-master__cell--count">
+                      {{ template.items.length }}
+                    </td>
+                    <td class="template-master__cell template-master__cell--actions" (click)="$event.stopPropagation()">
+                      <div class="template-master__actions">
+                        <button
+                          mat-stroked-button
+                          type="button"
+                          class="template-master__action template-master__action--edit"
+                          [attr.data-testid]="template.id === selectedTemplateId() ? 'template-edit' : 'template-edit-' + template.id"
+                          (click)="onEditClick(template.id)"
+                          [disabled]="busy"
+                          >
+                          Modifier
+                        </button>
+                        <button
+                          mat-stroked-button
+                          type="button"
+                          class="template-master__action template-master__action--delete"
+                          [attr.data-testid]="'template-delete-' + template.id"
+                          (click)="onDeleteClick(template.id)"
+                          [disabled]="busy"
+                          >
+                          Retirer
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div
+            class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-600"
+            >
+            Aucun modele disponible.
+          </div>
+        }
       </mat-card-content>
     </mat-card>
 
     <div class="template-detail">
-      <ng-container *ngIf="selectedTemplate as template; else noSelectedTemplate">
+      @if (selectedTemplate(); as template) {
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-header>
             <mat-card-title>Lignes du modele</mat-card-title>
             <mat-card-subtitle>{{ template.title }}</mat-card-subtitle>
           </mat-card-header>
-
           <mat-card-content class="pt-2">
-            <div
-              *ngIf="template.items.length > 0; else noTemplateItems"
-              class="overflow-x-auto rounded-xl border border-slate-200"
-            >
-              <table class="min-w-full text-sm">
-                <thead class="bg-slate-50 text-left text-slate-700">
-                  <tr>
-                    <th class="px-3 py-2">Produit</th>
-                    <th class="px-3 py-2">Qty</th>
-                    <th class="px-3 py-2">Slot</th>
-                    <th class="px-3 py-2">Stock global</th>
-                    <th class="px-3 py-2">Detail inventaires</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    *ngFor="let item of template.items"
-                    [attr.data-testid]="'template-item-row-' + item.id"
-                    class="border-t border-slate-100 align-top"
-                  >
-                    <td class="px-3 py-2">
-                      <p class="font-medium text-slate-900">{{ item.productName }}</p>
-                      <p class="text-xs text-slate-500">#{{ item.productId }}</p>
-                    </td>
-                    <td class="px-3 py-2">
-                      {{ formatNutritionAmount(item.qty) }}
-                      <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
-                    </td>
-                    <td class="px-3 py-2">{{ resolveTemplateItemSlotLabel(item) }}</td>
-                    <td class="px-3 py-2">
-                      <span
-                        class="rounded-full px-2 py-1 text-xs font-medium"
-                        [class.bg-emerald-100]="item.stockAvailability.enoughStock"
-                        [class.text-emerald-700]="item.stockAvailability.enoughStock"
-                        [class.bg-red-100]="!item.stockAvailability.enoughStock"
-                        [class.text-red-700]="!item.stockAvailability.enoughStock"
-                      >
-                        {{ item.stockAvailability.enoughStock ? 'Stock OK' : 'Stock insuffisant' }}
-                      </span>
-                      <p class="mt-2 text-xs text-slate-600">
-                        {{ formatNutritionAmount(item.stockAvailability.totalAvailableNormalized) }}
-                        dispo /
-                        {{ formatNutritionAmount(item.stockAvailability.requestedQtyNormalized) }}
-                        demande
-                      </p>
-                    </td>
-                    <td class="px-3 py-2">
-                      <details [attr.data-testid]="'template-stock-detail-' + item.id">
-                        <summary class="cursor-pointer text-xs font-medium text-slate-700">
-                          Voir le detail
-                        </summary>
-                        <div class="mt-2 space-y-1">
-                          <p
-                            *ngFor="let stock of item.stockByInventory"
-                            class="text-xs text-slate-600"
-                          >
-                            {{ stock.inventoryName }}:
-                            {{ formatNutritionAmount(stock.qtyAvailableNormalized) }}
-                            <span
-                              class="font-medium"
-                              [class.text-emerald-700]="stock.enoughStock"
-                              [class.text-red-700]="!stock.enoughStock"
+            @if (template.items.length > 0) {
+              <div
+                class="overflow-x-auto rounded-xl border border-slate-200"
+                >
+                <table class="min-w-full text-sm">
+                  <thead class="bg-slate-50 text-left text-slate-700">
+                    <tr>
+                      <th class="px-3 py-2">Produit</th>
+                      <th class="px-3 py-2">Qty</th>
+                      <th class="px-3 py-2">Slot</th>
+                      <th class="px-3 py-2">Stock global</th>
+                      <th class="px-3 py-2">Detail inventaires</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of template.items; track item) {
+                      <tr
+                        [attr.data-testid]="'template-item-row-' + item.id"
+                        class="border-t border-slate-100 align-top"
+                        >
+                        <td class="px-3 py-2">
+                          <p class="font-medium text-slate-900">{{ item.productName }}</p>
+                          <p class="text-xs text-slate-500">#{{ item.productId }}</p>
+                        </td>
+                        <td class="px-3 py-2">
+                          {{ formatNutritionAmount(item.qty) }}
+                          <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
+                        </td>
+                        <td class="px-3 py-2">{{ resolveTemplateItemSlotLabel(item) }}</td>
+                        <td class="px-3 py-2">
+                          <span
+                            class="rounded-full px-2 py-1 text-xs font-medium"
+                            [class.bg-emerald-100]="item.stockAvailability?.enoughStock === true"
+                            [class.text-emerald-700]="item.stockAvailability?.enoughStock === true"
+                            [class.bg-red-100]="item.stockAvailability?.enoughStock === false"
+                            [class.text-red-700]="item.stockAvailability?.enoughStock === false"
                             >
-                              ({{ stock.enoughStock ? 'OK' : 'KO' }})
-                            </span>
+                            {{ getStockAvailabilityLabel(item) }}
+                          </span>
+                          <p class="mt-2 text-xs text-slate-600">
+                            {{ formatNutritionAmount(item.stockAvailability?.totalAvailableNormalized) }}
+                            dispo /
+                            {{ formatNutritionAmount(item.stockAvailability?.requestedQtyNormalized) }}
+                            demande
                           </p>
-                          <p
-                            *ngIf="item.stockByInventory.length === 0"
-                            class="text-xs text-slate-500"
-                          >
-                            Aucun detail d'inventaire.
-                          </p>
-                        </div>
-                      </details>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+                        </td>
+                        <td class="px-3 py-2">
+                          <details [attr.data-testid]="'template-stock-detail-' + item.id">
+                            <summary class="cursor-pointer text-xs font-medium text-slate-700">
+                              Voir le detail
+                            </summary>
+                            <div class="mt-2 space-y-1">
+                              @for (stock of item.stockByInventory ?? []; track stock) {
+                                <p
+                                  class="text-xs text-slate-600"
+                                  >
+                                  {{ stock.inventoryName }}:
+                                  {{ formatNutritionAmount(stock.qtyAvailableNormalized) }}
+                                  <span
+                                    class="font-medium"
+                                    [class.text-emerald-700]="stock.enoughStock"
+                                    [class.text-red-700]="!stock.enoughStock"
+                                    >
+                                    ({{ stock.enoughStock ? 'OK' : 'KO' }})
+                                  </span>
+                                </p>
+                              }
+                              @if ((item.stockByInventory ?? []).length === 0) {
+                                <p
+                                  class="text-xs text-slate-500"
+                                  >
+                                  Aucun detail d'inventaire.
+                                </p>
+                              }
+                            </div>
+                          </details>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                Aucune ligne dans ce modele.
+              </p>
+            }
           </mat-card-content>
         </mat-card>
-
         <div class="template-detail__side">
           <mat-card appearance="outlined" class="rounded-xl">
             <mat-card-content class="space-y-4 p-4">
@@ -173,126 +188,127 @@
                     {{ getTargetSourceText(template.totalsMacros?.targetSource ?? 'none') }}
                   </p>
                 </div>
-
                 <mat-form-field appearance="fill" class="template-compare-card__field">
                   <mat-label>Comparer au day-set</mat-label>
                   <mat-select
-                    [ngModel]="compareDaySetId"
+                    [ngModel]="compareDaySetId()"
                     (ngModelChange)="onCompareDaySetChange($event)"
-                  >
+                    >
                     <mat-option [value]="null">Aucune comparaison</mat-option>
-                    <mat-option *ngFor="let daySet of sortedDaySets" [value]="daySet.id">
-                      {{ daySet.title }}
-                    </mat-option>
+                    @for (daySet of sortedDaySets; track daySet) {
+                      <mat-option [value]="daySet.id">
+                        {{ daySet.title }}
+                      </mat-option>
+                    }
                   </mat-select>
                 </mat-form-field>
               </div>
-
-              <div
-                *ngIf="template.comparisonDaySet as daySet"
-                class="rounded-lg border border-slate-200 bg-slate-50 p-3"
-              >
-                <p class="text-sm font-semibold text-slate-900">{{ daySet.title }}</p>
-                <p class="text-xs text-slate-500">
-                  Day-set de reference pour la comparaison.
-                </p>
-              </div>
-
-              <div *ngIf="template.totalsMacros as totals" class="grid gap-3 md:grid-cols-3">
-                <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Total modele
-                  </p>
-                  <p *ngFor="let entry of totals.dayTotal | keyvalue" class="text-sm text-slate-700">
-                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                    {{ formatMacroValue(entry.value) }}
-                  </p>
-                </div>
-
-                <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Targets
-                  </p>
-                  <p *ngIf="!hasEntries(totals.targets)" class="text-sm text-slate-500">
-                    Aucune cible.
-                  </p>
-                  <p *ngFor="let entry of totals.targets | keyvalue" class="text-sm text-slate-700">
-                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                    {{ formatNutritionAmount(entry.value) }}
-                  </p>
-                </div>
-
-                <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Delta
-                  </p>
-                  <p *ngIf="!hasEntries(totals.deltaToTargets)" class="text-sm text-slate-500">
-                    Aucun delta.
-                  </p>
-                  <p
-                    *ngFor="let entry of totals.deltaToTargets | keyvalue"
-                    class="text-sm text-slate-700"
-                  >
-                    <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                    {{ formatMacroValue(entry.value) }}
-                  </p>
-                </div>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <ng-container *ngIf="template.totalsMacros as totals">
-            <mat-card *ngIf="totals.bySlot.length > 0" appearance="outlined" class="rounded-xl">
-              <mat-card-content class="space-y-3 p-4">
-                <p class="text-sm font-semibold text-slate-900">Par slot</p>
+              @if (template.comparisonDaySet; as daySet) {
                 <div
-                  *ngFor="let slotTotals of totals.bySlot"
-                  class="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3"
-                >
-                  <p class="text-sm font-medium text-slate-900">
-                    {{ slotTotals.slot.title }} ({{ slotTotals.slot.slotKey }})
-                  </p>
-                  <p class="text-xs text-slate-600">
-                    {{ slotTotals.slot.startTime ?? '--' }} -
-                    {{ slotTotals.slot.endTime ?? '--' }}
-                  </p>
-                  <div
-                    *ngIf="getSlotMacroEntries(slotTotals).length > 0"
-                    class="text-sm text-slate-700"
+                  class="rounded-lg border border-slate-200 bg-slate-50 p-3"
                   >
-                    <p class="font-medium text-slate-900">Consomme</p>
-                    <p *ngFor="let entry of getSlotMacroEntries(slotTotals)">
-                      {{ entry.key }}: {{ formatMacroValue(entry.value) }}
+                  <p class="text-sm font-semibold text-slate-900">{{ daySet.title }}</p>
+                  <p class="text-xs text-slate-500">
+                    Day-set de reference pour la comparaison.
+                  </p>
+                </div>
+              }
+              @if (template.totalsMacros; as totals) {
+                <div class="grid gap-3 md:grid-cols-3">
+                  <div class="rounded-lg border border-slate-200 p-3">
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Total modele
                     </p>
+                    @for (entry of totals.dayTotal | keyvalue; track entry) {
+                      <p class="text-sm text-slate-700">
+                        <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                        {{ formatMacroValue(entry.value) }}
+                      </p>
+                    }
+                  </div>
+                  <div class="rounded-lg border border-slate-200 p-3">
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Targets
+                    </p>
+                    @if (!hasEntries(totals.targets)) {
+                      <p class="text-sm text-slate-500">
+                        Aucune cible.
+                      </p>
+                    }
+                    @for (entry of totals.targets | keyvalue; track entry) {
+                      <p class="text-sm text-slate-700">
+                        <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                        {{ formatNutritionAmount(entry.value) }}
+                      </p>
+                    }
+                  </div>
+                  <div class="rounded-lg border border-slate-200 p-3">
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Delta
+                    </p>
+                    @if (!hasEntries(totals.deltaToTargets)) {
+                      <p class="text-sm text-slate-500">
+                        Aucun delta.
+                      </p>
+                    }
+                    @for (entry of totals.deltaToTargets | keyvalue; track entry) {
+                      <p
+                        class="text-sm text-slate-700"
+                        >
+                        <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                        {{ formatMacroValue(entry.value) }}
+                      </p>
+                    }
                   </div>
                 </div>
-              </mat-card-content>
-            </mat-card>
-          </ng-container>
+              }
+            </mat-card-content>
+          </mat-card>
+          @if (template.totalsMacros; as totals) {
+            @if (totals.bySlot.length > 0) {
+              <mat-card appearance="outlined" class="rounded-xl">
+                <mat-card-content class="space-y-3 p-4">
+                  <p class="text-sm font-semibold text-slate-900">Par slot</p>
+                  @for (slotTotals of totals.bySlot; track slotTotals) {
+                    <div
+                      class="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3"
+                      >
+                      <p class="text-sm font-medium text-slate-900">
+                        {{ slotTotals.slot.title }} ({{ slotTotals.slot.slotKey }})
+                      </p>
+                      <p class="text-xs text-slate-600">
+                        {{ slotTotals.slot.startTime ?? '--' }} -
+                        {{ slotTotals.slot.endTime ?? '--' }}
+                      </p>
+                      @if (getSlotMacroEntries(slotTotals).length > 0) {
+                        <div
+                          class="text-sm text-slate-700"
+                          >
+                          <p class="font-medium text-slate-900">Consomme</p>
+                          @for (entry of getSlotMacroEntries(slotTotals); track entry) {
+                            <p>
+                              {{ entry.key }}: {{ formatMacroValue(entry.value) }}
+                            </p>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </mat-card-content>
+              </mat-card>
+            }
+          }
         </div>
-      </ng-container>
+      } @else {
+        <mat-card appearance="outlined" class="rounded-xl">
+          <mat-card-content class="p-4 text-sm text-slate-600">
+            Cree un modele ou selectionne-en un pour voir ses lignes et ses comparaisons.
+          </mat-card-content>
+        </mat-card>
+      }
     </div>
   </div>
 </div>
 
-<ng-template #noTemplates>
-  <div
-    class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-600"
-  >
-    Aucun modele disponible.
-  </div>
-</ng-template>
 
-<ng-template #noSelectedTemplate>
-  <mat-card appearance="outlined" class="rounded-xl">
-    <mat-card-content class="p-4 text-sm text-slate-600">
-      Cree un modele ou selectionne-en un pour voir ses lignes et ses comparaisons.
-    </mat-card-content>
-  </mat-card>
-</ng-template>
 
-<ng-template #noTemplateItems>
-  <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-    Aucune ligne dans ce modele.
-  </p>
-</ng-template>

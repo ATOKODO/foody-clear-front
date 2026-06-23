@@ -1,6 +1,6 @@
-import { CommonModule } from '@angular/common';
+
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Component, DestroyRef, HostListener, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import {
@@ -13,10 +13,12 @@ import { ThemeMode, ThemeService } from '../services/theme-service';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
+  host: {
+    '(document:keydown.escape)': 'onEscapeKey()',
+  },
 })
 export class App {
   readonly navigationGroups = APP_SIDEBAR_NAVIGATION;
@@ -71,7 +73,6 @@ export class App {
     this.mobileNavigationOpen = false;
   }
 
-  @HostListener('document:keydown.escape')
   onEscapeKey(): void {
     this.closeMobileNavigation();
   }

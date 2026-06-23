@@ -1,4 +1,4 @@
-<ng-container *ngIf="isStandaloneMode; else embeddedLayout">
+@if (isStandaloneMode) {
   <section class="app-page app-page--wide">
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="bg-slate-900 px-4 py-4 text-white sm:px-6 sm:py-5">
@@ -7,17 +7,15 @@
           Gestion des items, du template actif et des totaux quotidiens.
         </p>
       </div>
-
       <div class="space-y-5 p-3 sm:space-y-6 sm:p-6">
-        <ng-container *ngTemplateOutlet="inputDayContent"></ng-container>
+        <ng-container *ngTemplateOutlet="inputDayContent" />
       </div>
-
-      <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+      @if (loading) {
+        <mat-progress-bar mode="indeterminate" />
+      }
     </mat-card>
   </section>
-</ng-container>
-
-<ng-template #embeddedLayout>
+} @else {
   <div class="space-y-5">
     <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3">
       <div>
@@ -26,7 +24,6 @@
           {{ selectedDateLabel }}
         </p>
       </div>
-
       <button
         mat-stroked-button
         type="button"
@@ -36,30 +33,33 @@
         Rafraichir
       </button>
     </div>
-
-    <ng-container *ngTemplateOutlet="inputDayContent"></ng-container>
-
-    <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+    <ng-container *ngTemplateOutlet="inputDayContent" />
+    @if (loading) {
+      <mat-progress-bar mode="indeterminate" />
+    }
   </div>
-</ng-template>
+}
+
 
 <ng-template #inputDayContent>
   <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" class="space-y-5" data-testid="input-day-form">
-    <mat-card *ngIf="isStandaloneMode" appearance="outlined" class="rounded-xl">
-      <mat-card-content class="pt-4">
-        <mat-form-field appearance="fill" class="w-full">
-          <mat-label>Base URL</mat-label>
-          <input
-            data-testid="input-day-base-url"
-            matInput
-            type="text"
-            [(ngModel)]="baseUrl"
-            [ngModelOptions]="{ standalone: true }"
-            (change)="onBaseUrlChange()"
-            placeholder="http://localhost:3000" />
-        </mat-form-field>
-      </mat-card-content>
-    </mat-card>
+    @if (isStandaloneMode) {
+      <mat-card appearance="outlined" class="rounded-xl">
+        <mat-card-content class="pt-4">
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Base URL</mat-label>
+            <input
+              data-testid="input-day-base-url"
+              matInput
+              type="text"
+              [(ngModel)]="baseUrl"
+              [ngModelOptions]="{ standalone: true }"
+              (change)="onBaseUrlChange()"
+              placeholder="http://localhost:3000" />
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+    }
 
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
@@ -71,14 +71,14 @@
 
       <mat-card-content class="space-y-4 pt-2">
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <ng-container *ngIf="isStandaloneMode && lockDate">
+          @if (isStandaloneMode && lockDate()) {
             <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
               <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Date</p>
               <p class="mt-1 text-sm text-slate-900">{{ selectedDateLabel }}</p>
             </div>
-          </ng-container>
+          }
 
-          <ng-container *ngIf="isStandaloneMode && !lockDate">
+          @if (isStandaloneMode && !lockDate()) {
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>dateLocal (YYYY-MM-DD)</mat-label>
               <input
@@ -86,15 +86,17 @@
                 [matDatepicker]="dateLocalPicker"
                 formControlName="dateLocal"
                 placeholder="2026-02-08" />
-              <mat-datepicker-toggle matIconSuffix [for]="dateLocalPicker"></mat-datepicker-toggle>
-              <mat-datepicker #dateLocalPicker></mat-datepicker>
+              <mat-datepicker-toggle matIconSuffix [for]="dateLocalPicker" />
+              <mat-datepicker #dateLocalPicker />
             </mat-form-field>
-          </ng-container>
+          }
 
-          <mat-form-field *ngIf="isStandaloneMode" appearance="fill" class="w-full">
-            <mat-label>timezone</mat-label>
-            <input matInput type="text" formControlName="timezone" placeholder="UTC" />
-          </mat-form-field>
+          @if (isStandaloneMode) {
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>timezone</mat-label>
+              <input matInput type="text" formControlName="timezone" placeholder="UTC" />
+            </mat-form-field>
+          }
 
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Inventories</mat-label>
@@ -104,9 +106,11 @@
               [ngModelOptions]="{ standalone: true }"
               multiple
               (ngModelChange)="onSelectedInventoryChange($event)">
-              <mat-option *ngFor="let inventory of inventories" [value]="inventory.id">
-                {{ inventory.name }} (#{{ inventory.id }})
-              </mat-option>
+              @for (inventory of inventories; track inventory) {
+                <mat-option [value]="inventory.id">
+                  {{ inventory.name }} (#{{ inventory.id }})
+                </mat-option>
+              }
             </mat-select>
           </mat-form-field>
 
@@ -117,763 +121,799 @@
               [(ngModel)]="selectedSlotId"
               [ngModelOptions]="{ standalone: true }">
               <mat-option [value]="null">Sans slot</mat-option>
-              <mat-option *ngFor="let slot of availableSlots" [value]="slot.slotId">
-                {{ slot.sortOrder }}. {{ slot.title }} ({{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }})
-              </mat-option>
+              @for (slot of availableSlots; track slot) {
+                <mat-option [value]="slot.slotId">
+                  {{ slot.sortOrder }}. {{ slot.title }} ({{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }})
+                </mat-option>
+              }
             </mat-select>
           </mat-form-field>
         </div>
 
-        <p *ngIf="initialDateError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {{ initialDateError }}
-        </p>
+        @if (initialDateError) {
+          <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {{ initialDateError }}
+          </p>
+        }
 
-        <div *ngIf="isStandaloneMode" class="flex flex-wrap justify-end gap-2">
-          <button
-            mat-stroked-button
-            type="button"
-            data-testid="input-day-load"
-            (click)="loadDay()"
-            [disabled]="loading || !hasValidSelectedDate || initialDateError !== null">
-            Rafraichir
-          </button>
-          <button *ngIf="isStandaloneMode" mat-stroked-button type="button" (click)="fillDemo()">
-            Exemple
-          </button>
-          <button *ngIf="isStandaloneMode" mat-button type="button" (click)="clear()">
-            Effacer
-          </button>
-        </div>
+        @if (isStandaloneMode) {
+          <div class="flex flex-wrap justify-end gap-2">
+            <button
+              mat-stroked-button
+              type="button"
+              data-testid="input-day-load"
+              (click)="loadDay()"
+              [disabled]="loading || !hasValidSelectedDate || initialDateError !== null">
+              Rafraichir
+            </button>
+            @if (isStandaloneMode) {
+              <button mat-stroked-button type="button" (click)="fillDemo()">
+                Exemple
+              </button>
+            }
+            @if (isStandaloneMode) {
+              <button mat-button type="button" (click)="clear()">
+                Effacer
+              </button>
+            }
+          </div>
+        }
       </mat-card-content>
     </mat-card>
-</form>
+  </form>
 
-  <app-ui-error-panel *ngIf="lastError" [error]="lastError"></app-ui-error-panel>
+  @if (lastError) {
+    <app-ui-error-panel [error]="lastError" />
+  }
 
-  <ng-container *ngIf="shouldShowEmbeddedInventoryGuide; else inputDaySections">
+  @if (shouldShowEmbeddedInventoryGuide) {
     <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
       Selectionne au moins un inventory pour afficher les produits, les modeles et les elements saisis.
     </p>
-  </ng-container>
-
-  <ng-template #inputDaySections>
-    <div *ngIf="isEmbeddedMode" class="space-y-3">
-      <app-segmented-toggle
-        [value]="activeEmbeddedSection"
-        [options]="embeddedSectionOptions"
-        (valueChange)="onActiveEmbeddedSectionChange($event)"
-        ariaLabel="Selection de la vue input day active"
-        data-testid="input-day-section-toggle"
-        name="input-day-section"
-        maxWidth="28rem">
-      </app-segmented-toggle>
-    </div>
-
-    <mat-card *ngIf="isStandaloneMode || isStockSectionActive" appearance="outlined" class="rounded-xl">
-      <mat-card-header>
-        <mat-card-title>{{ isEditingItem ? 'Modifier une entree' : 'Ajouter des entrees' }}</mat-card-title>
-        <mat-card-subtitle>
-          {{
+  } @else {
+    @if (isEmbeddedMode) {
+      <div class="space-y-3">
+        <app-segmented-toggle [value]="activeEmbeddedSection"
+          [options]="embeddedSectionOptions"
+          (valueChange)="onActiveEmbeddedSectionChange($event)"
+          ariaLabel="Selection de la vue input day active"
+          data-testid="input-day-section-toggle"
+          name="input-day-section"
+          maxWidth="28rem" />
+      </div>
+    }
+    @if (isStandaloneMode || isStockSectionActive) {
+      <mat-card appearance="outlined" class="rounded-xl">
+        <mat-card-header>
+          <mat-card-title>{{ isEditingItem ? 'Modifier une entree' : 'Ajouter des entrees' }}</mat-card-title>
+          <mat-card-subtitle>
+            {{
             isEditingItem
-              ? 'Edition complete via PATCH /items/:itemId'
-              : 'Selectionne un inventory, choisis les produits puis renseigne les details communs.'
-          }}
-        </mat-card-subtitle>
-      </mat-card-header>
-
-      <mat-card-content class="space-y-4 pt-2">
-        <p *ngIf="productsError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          Impossible de charger les produits.
-        </p>
-        <p *ngIf="inventoriesError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          Impossible de charger les inventories.
-        </p>
-        <p *ngIf="inventoryProductsError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          Impossible de charger les produits de l'inventory selectionne.
-        </p>
-
-        <ng-container *ngIf="isEditingItem; else createComposer">
-          <div [formGroup]="itemEditorForm" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Date metier</mat-label>
-              <input matInput type="date" formControlName="dateLocal" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>occurredAt</mat-label>
-              <input matInput type="datetime-local" formControlName="occurredAt" />
-            </mat-form-field>
-
-            <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Inventory actif</p>
-              <p class="mt-1 text-sm text-slate-900">{{ selectedInventoriesLabel }}</p>
-              <p class="mt-1 text-xs text-slate-500">
-                La selection d'inventories se fait dans Contexte du jour.
-              </p>
-            </div>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Produit</mat-label>
-              <mat-select formControlName="productId">
-                <mat-option [value]="null">Selectionner</mat-option>
-                <mat-option *ngFor="let product of editorProductOptions" [value]="+product.id">
-                  {{ product.name }} (#{{ product.id }})
-                </mat-option>
-              </mat-select>
-              <mat-hint *ngIf="!hasSelectedInventories">
-                Choisis d'abord au moins un inventory dans le contexte du jour.
-              </mat-hint>
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Quantite</mat-label>
-              <input matInput type="number" min="0.01" step="0.01" formControlName="qty" />
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Unite</mat-label>
-              <mat-select formControlName="qtyUnit">
-                <mat-option [value]="null">Auto</mat-option>
-                <mat-option *ngFor="let unit of qtyUnitOptions" [value]="unit">
-                  {{ unit }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Slot explicite</mat-label>
-              <mat-select
-                formControlName="slotId"
-                (selectionChange)="onItemEditorSlotIdChange($event.value)">
-                <mat-option [value]="null">Sans slot</mat-option>
-                <mat-option *ngFor="let slot of availableSlots" [value]="slot.slotId">
-                  {{ slot.sortOrder }}. {{ slot.title }} ({{ slot.slotKey }})
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>slotKey libre</mat-label>
-              <input
-                matInput
-                type="text"
-                formControlName="slotKey"
-                [readonly]="itemEditorSelectedSlotId !== null"
-                placeholder="ex: breakfast" />
-            </mat-form-field>
-          </div>
-
-          <p *ngIf="itemEditorError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {{ itemEditorError }}
-          </p>
-
-          <div class="flex flex-wrap justify-end gap-2">
-            <button mat-stroked-button type="button" (click)="resetItemEditor()">
-              Annuler edition
-            </button>
-            <button
-              mat-stroked-button
-              color="warn"
-              type="button"
-              data-testid="input-day-delete-item"
-              (click)="removeItem()"
-              [disabled]="loading">
-              Supprimer
-            </button>
-            <button
-              mat-raised-button
-              color="primary"
-              type="button"
-              data-testid="input-day-submit-item"
-              (click)="submitItemEditor()"
-              [disabled]="!canSubmitItemEditor">
-              Enregistrer l entree
-            </button>
-          </div>
-        </ng-container>
-
-        <ng-template #createComposer>
-          <ng-container *ngIf="hasSelectedInventories; else selectInventoryHint">
-            <p *ngIf="loadingInventoryProducts" class="text-sm text-slate-500">
-              Chargement des produits des inventories...
+            ? 'Edition complete via PATCH /items/:itemId'
+            : 'Selectionne un inventory, choisis les produits puis renseigne les details communs.'
+            }}
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="space-y-4 pt-2">
+          @if (productsError) {
+            <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              Impossible de charger les produits.
             </p>
-
-            <app-product-list
-              [mode]="'select-multi'"
-              [products]="selectableProductListItems"
-              [selectedIds]="selectedProductIds"
-              [compact]="true"
-              [showAvailableQty]="true"
-              (selectedMany)="onProductsSelected($event)">
-            </app-product-list>
-
-            <ng-container *ngIf="selectedProductRows.length > 0; else noSelectedProducts">
-              <div [formGroup]="itemEditorForm" class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <div class="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p class="text-sm font-semibold text-slate-900">Details communs</p>
-                    <p class="text-sm text-slate-600">
-                      {{ selectedProductRows.length }}
-                      {{ selectedProductRows.length > 1 ? 'produits selectionnes' : 'produit selectionne' }}
-                      depuis {{ selectedInventoriesLabel }}.
-                    </p>
+          }
+          @if (inventoriesError) {
+            <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              Impossible de charger les inventories.
+            </p>
+          }
+          @if (inventoryProductsError) {
+            <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              Impossible de charger les produits de l'inventory selectionne.
+            </p>
+          }
+          @if (isEditingItem) {
+            <div [formGroup]="itemEditorForm" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Date metier</mat-label>
+                <input matInput type="date" formControlName="dateLocal" />
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>occurredAt</mat-label>
+                <input matInput type="datetime-local" formControlName="occurredAt" />
+              </mat-form-field>
+              <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Inventory actif</p>
+                <p class="mt-1 text-sm text-slate-900">{{ selectedInventoriesLabel }}</p>
+                <p class="mt-1 text-xs text-slate-500">
+                  La selection d'inventories se fait dans Contexte du jour.
+                </p>
+              </div>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Produit</mat-label>
+                <mat-select formControlName="productId">
+                  <mat-option [value]="null">Selectionner</mat-option>
+                  @for (product of editorProductOptions; track product) {
+                    <mat-option [value]="+product.id">
+                      {{ product.name }} (#{{ product.id }})
+                    </mat-option>
+                  }
+                </mat-select>
+                @if (!hasSelectedInventories) {
+                  <mat-hint>
+                    Choisis d'abord au moins un inventory dans le contexte du jour.
+                  </mat-hint>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Quantite</mat-label>
+                <input matInput type="number" min="0.01" step="0.01" formControlName="qty" />
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Unite</mat-label>
+                <mat-select formControlName="qtyUnit">
+                  <mat-option [value]="null">Auto</mat-option>
+                  @for (unit of qtyUnitOptions; track unit) {
+                    <mat-option [value]="unit">
+                      {{ unit }}
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Slot explicite</mat-label>
+                <mat-select
+                  formControlName="slotId"
+                  (selectionChange)="onItemEditorSlotIdChange($event.value)">
+                  <mat-option [value]="null">Sans slot</mat-option>
+                  @for (slot of availableSlots; track slot) {
+                    <mat-option [value]="slot.slotId">
+                      {{ slot.sortOrder }}. {{ slot.title }} ({{ slot.slotKey }})
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>slotKey libre</mat-label>
+                <input
+                  matInput
+                  type="text"
+                  formControlName="slotKey"
+                  [readonly]="itemEditorSelectedSlotId !== null"
+                  placeholder="ex: breakfast" />
+              </mat-form-field>
+            </div>
+            @if (itemEditorError) {
+              <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {{ itemEditorError }}
+              </p>
+            }
+            <div class="flex flex-wrap justify-end gap-2">
+              <button mat-stroked-button type="button" (click)="resetItemEditor()">
+                Annuler edition
+              </button>
+              <button
+                mat-stroked-button
+                color="warn"
+                type="button"
+                data-testid="input-day-delete-item"
+                (click)="removeItem()"
+                [disabled]="loading">
+                Supprimer
+              </button>
+              <button
+                mat-raised-button
+                color="primary"
+                type="button"
+                data-testid="input-day-submit-item"
+                (click)="submitItemEditor()"
+                [disabled]="!canSubmitItemEditor">
+                Enregistrer l entree
+              </button>
+            </div>
+          } @else {
+            @if (hasSelectedInventories) {
+              @if (loadingInventoryProducts) {
+                <p class="text-sm text-slate-500">
+                  Chargement des produits des inventories...
+                </p>
+              }
+              <app-product-list [mode]="'select-multi'"
+                [products]="selectableProductListItems"
+                [selectedIds]="selectedProductIds"
+                [compact]="true"
+                [showAvailableQty]="true"
+                (selectedMany)="onProductsSelected($event)" />
+              @if (selectedProductRows.length > 0) {
+                <div [formGroup]="itemEditorForm" class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p class="text-sm font-semibold text-slate-900">Details communs</p>
+                      <p class="text-sm text-slate-600">
+                        {{ selectedProductRows.length }}
+                        {{ selectedProductRows.length > 1 ? 'produits selectionnes' : 'produit selectionne' }}
+                        depuis {{ selectedInventoriesLabel }}.
+                      </p>
+                    </div>
+                    <div class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                      <span class="font-medium text-slate-900">Slot batch:</span> {{ selectedBatchSlotLabel }}
+                    </div>
                   </div>
-
-                  <div class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
-                    <span class="font-medium text-slate-900">Slot batch:</span> {{ selectedBatchSlotLabel }}
+                  <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <mat-form-field appearance="fill" class="w-full">
+                      <mat-label>Date metier</mat-label>
+                      <input matInput type="date" formControlName="dateLocal" />
+                    </mat-form-field>
+                    <mat-form-field appearance="fill" class="w-full">
+                      <mat-label>occurredAt commun</mat-label>
+                      <input matInput type="datetime-local" formControlName="occurredAt" />
+                    </mat-form-field>
+                    <mat-form-field appearance="fill" class="w-full">
+                      <mat-label>slotKey libre</mat-label>
+                      <input
+                        matInput
+                        type="text"
+                        formControlName="slotKey"
+                        [readonly]="selectedSlotId !== null"
+                        placeholder="ex: breakfast" />
+                      @if (selectedSlotId !== null) {
+                        <mat-hint>
+                          Le slot choisi dans le contexte du jour sera applique a tous les produits.
+                        </mat-hint>
+                      }
+                    </mat-form-field>
                   </div>
                 </div>
-
-                <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  <mat-form-field appearance="fill" class="w-full">
-                    <mat-label>Date metier</mat-label>
-                    <input matInput type="date" formControlName="dateLocal" />
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                  <table class="w-full min-w-[640px] text-sm">
+                    <thead class="bg-slate-50 text-left text-slate-700">
+                      <tr>
+                        <th class="px-3 py-2">Produit</th>
+                        <th class="px-3 py-2">Qty</th>
+                        <th class="px-3 py-2">QtyUnit</th>
+                        <th class="px-3 py-2 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of selectedProductRows; track trackBySelectedProductRow($index, row)) {
+                        <tr
+                          [attr.data-testid]="'input-day-selected-product-' + row.productId"
+                          class="border-t border-slate-100 align-top">
+                          <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
+                          <td class="px-3 py-2">
+                            <mat-form-field appearance="fill" class="w-full">
+                              <mat-label>Quantite</mat-label>
+                              <input
+                                matInput
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                [(ngModel)]="row.qty"
+                                [ngModelOptions]="{ standalone: true }" />
+                            </mat-form-field>
+                          </td>
+                          <td class="px-3 py-2">
+                            <mat-form-field appearance="fill" class="w-full">
+                              <mat-label>Unite</mat-label>
+                              <mat-select
+                                [(ngModel)]="row.qtyUnit"
+                                [ngModelOptions]="{ standalone: true }">
+                                <mat-option [value]="null">Auto</mat-option>
+                                @for (unit of qtyUnitOptions; track unit) {
+                                  <mat-option [value]="unit">
+                                    {{ unit }}
+                                  </mat-option>
+                                }
+                              </mat-select>
+                            </mat-form-field>
+                          </td>
+                          <td class="px-3 py-2 text-right">
+                            <button
+                              mat-stroked-button
+                              color="warn"
+                              type="button"
+                              (click)="removeSelectedProduct(row.productId)">
+                              Retirer
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                @if (itemsFormError) {
+                  <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {{ itemsFormError }}
+                  </p>
+                }
+                <div class="flex flex-wrap justify-end gap-2">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    data-testid="input-day-reset-create"
+                    (click)="resetCreateComposer()">
+                    Reinitialiser
+                  </button>
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    type="button"
+                    data-testid="input-day-create-items"
+                    (click)="createSelectedItems()"
+                    [disabled]="!canCreateSelectedItems">
+                    {{ createSelectedItemsLabel }}
+                  </button>
+                </div>
+              } @else {
+                <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                  Selectionne un ou plusieurs produits pour afficher les champs de saisie et preparer l'ajout.
+                </p>
+              }
+            } @else {
+              <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                Selectionne au moins un inventory dans le contexte du jour pour afficher ses produits.
+              </p>
+            }
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+    @if (inputDayResponse; as response) {
+      <div class="space-y-3">
+        @if (isStandaloneMode) {
+          <h3 class="text-base font-semibold text-slate-900">Resume de la journee</h3>
+        }
+        @if (isStandaloneMode) {
+          <mat-card appearance="outlined" class="rounded-xl">
+            <mat-card-content class="space-y-3 p-4">
+              <div class="grid gap-3 sm:grid-cols-2">
+                <p class="text-sm text-slate-700">
+                  <span class="font-semibold text-slate-900">Date:</span> {{ response.dateLocal }}
+                </p>
+                <p class="text-sm text-slate-700">
+                  <span class="font-semibold text-slate-900">Timezone:</span> {{ response.timezone }}
+                </p>
+              </div>
+              @if (response.assignment; as assignment) {
+                <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p class="text-sm font-semibold text-slate-900">Cycle actif</p>
+                  <p class="text-sm text-slate-700">
+                    Cycle #{{ assignment.cycleId }} - {{ assignment.cycleTitle }}
+                  </p>
+                  <p class="text-sm text-slate-700">
+                    Du {{ assignment.startDateLocal }} au {{ assignment.endDateLocal }} (jour {{ assignment.dayIndex }})
+                  </p>
+                </div>
+              } @else {
+                <p class="text-sm text-slate-600">Aucune assignation pour cette date.</p>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+        @if (isStandaloneMode) {
+          <mat-card appearance="outlined" class="rounded-xl">
+            <mat-card-content class="space-y-3 p-4">
+              @if (response.daySet; as daySet) {
+                <div>
+                  <p class="text-sm font-semibold text-slate-900">
+                    DaySet #{{ daySet.id }} - {{ daySet.title }}
+                  </p>
+                  @if (hasEntries(daySet.nutritionValue)) {
+                    <div class="flex flex-wrap gap-2">
+                      @for (target of daySet.nutritionValue | keyvalue; track target) {
+                        <span
+                          class="rounded-full bg-indigo-50 px-2 py-1 text-xs text-indigo-700">
+                          {{ target.key }}: {{ formatNutritionAmount(target.value) }}
+                        </span>
+                      }
+                    </div>
+                  } @else {
+                    <p class="text-xs text-slate-500">Aucune cible nutritionnelle definie pour ce daySet.</p>
+                  }
+                  <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="min-w-full text-sm">
+                      <thead class="bg-slate-50 text-left text-slate-700">
+                        <tr>
+                          <th class="px-3 py-2">Slot</th>
+                          <th class="px-3 py-2">Horaire</th>
+                          <th class="px-3 py-2">Cibles</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (slot of daySet.slots; track slot) {
+                          <tr class="border-t border-slate-100">
+                            <td class="px-3 py-2">
+                              {{ slot.sortOrder }}. {{ slot.title }} <span class="text-slate-500">({{ slot.slotKey }})</span>
+                            </td>
+                            <td class="px-3 py-2">{{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}</td>
+                            <td class="px-3 py-2">
+                              @if (hasEntries(slot.nutritionValue)) {
+                                <div class="flex flex-wrap gap-1">
+                                  @for (target of slot.nutritionValue | keyvalue; track target) {
+                                    <span
+                                      class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                                      {{ target.key }}: {{ formatNutritionAmount(target.value) }}
+                                    </span>
+                                  }
+                                </div>
+                              } @else {
+                                <span class="text-xs text-slate-500">-</span>
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              } @else {
+                @if (response.totalsMacros?.targetSource === 'cycle') {
+                  <p
+                    class="text-sm text-slate-600">
+                    Aucun daySet actif pour cette journee. Les cibles quotidiennes proviennent du cycle.
+                  </p>
+                } @else {
+                  <p class="text-sm text-slate-600">Aucun daySet retourne.</p>
+                }
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+        @if (isStandaloneMode || isTemplatesSectionActive) {
+          <mat-card appearance="outlined" class="rounded-xl">
+            <mat-card-content class="space-y-4 p-4">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p class="text-sm font-semibold text-slate-900">Template associe</p>
+                  <p class="text-sm text-slate-600">{{ activeTemplateLabel }}</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <mat-form-field appearance="fill" class="w-full min-w-[16rem] sm:w-72">
+                    <mat-label>Remplacement template</mat-label>
+                    <mat-select
+                      data-testid="input-day-template-select"
+                      [ngModel]="manualTemplateSelectionId"
+                      [ngModelOptions]="{ standalone: true }"
+                      (ngModelChange)="onManualTemplateSelectionChange($event)">
+                      <mat-option [value]="null">Aucun override</mat-option>
+                      @for (template of templates; track template) {
+                        <mat-option [value]="template.id">
+                          {{ template.title }}
+                        </mat-option>
+                      }
+                    </mat-select>
                   </mat-form-field>
-
-                  <mat-form-field appearance="fill" class="w-full">
-                    <mat-label>occurredAt commun</mat-label>
-                    <input matInput type="datetime-local" formControlName="occurredAt" />
-                  </mat-form-field>
-
-                  <mat-form-field appearance="fill" class="w-full">
-                    <mat-label>slotKey libre</mat-label>
-                    <input
-                      matInput
-                      type="text"
-                      formControlName="slotKey"
-                      [readonly]="selectedSlotId !== null"
-                      placeholder="ex: breakfast" />
-                    <mat-hint *ngIf="selectedSlotId !== null">
-                      Le slot choisi dans le contexte du jour sera applique a tous les produits.
-                    </mat-hint>
-                  </mat-form-field>
+                  @if (hasManualTemplateOverride) {
+                    <button
+                      mat-stroked-button
+                      type="button"
+                      data-testid="input-day-template-clear"
+                      (click)="clearManualTemplateOverride()">
+                      Retirer le remplacement
+                    </button>
+                  }
                 </div>
               </div>
-
-              <div class="overflow-x-auto rounded-xl border border-slate-200">
-                <table class="w-full min-w-[640px] text-sm">
+              @if (templateError) {
+                <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {{ templateError }}
+                </p>
+              }
+              @if (templateActionError) {
+                <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {{ templateActionError }}
+                </p>
+              }
+              @if (templateItems.length > 0) {
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                  <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50 text-left text-slate-700">
+                      <tr>
+                        <th class="px-3 py-2">Produit</th>
+                        <th class="px-3 py-2">Qty</th>
+                        <th class="px-3 py-2">Slot</th>
+                        <th class="px-3 py-2">Statut</th>
+                        <th class="px-3 py-2">Stock global</th>
+                        <th class="px-3 py-2">Selection active</th>
+                        <th class="px-3 py-2">Inventaires</th>
+                        <th class="px-3 py-2 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (item of templateItems; track trackByTemplateItem($index, item)) {
+                        <tr [attr.data-testid]="'input-day-template-item-' + item.id" class="border-t border-slate-100 align-top">
+                          <td class="px-3 py-2">
+                            <p class="font-medium text-slate-900">{{ item.productName }}</p>
+                            <p class="text-xs text-slate-500">#{{ item.productId }}</p>
+                          </td>
+                          <td class="px-3 py-2">
+                            {{ formatNutritionAmount(item.qty) }}
+                            <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
+                          </td>
+                          <td class="px-3 py-2">
+                            {{ resolveTemplateItemSlotTitle(item) }}
+                            <span class="text-xs text-slate-500">({{ resolveTemplateItemSlotKey(item) }})</span>
+                          </td>
+                          <td class="px-3 py-2">
+                            <span
+                              class="rounded-full px-2 py-1 text-xs font-medium"
+                              [class.bg-sky-100]="item.status === 'pending'"
+                              [class.text-sky-700]="item.status === 'pending'"
+                              [class.bg-emerald-100]="item.status === 'converted'"
+                              [class.text-emerald-700]="item.status === 'converted'">
+                              {{ item.status === 'converted' ? 'Converti' : 'Previsionnel' }}
+                            </span>
+                          </td>
+                          <td class="px-3 py-2">
+                            <span
+                              class="rounded-full px-2 py-1 text-xs font-medium"
+                              [class.bg-emerald-100]="item.stockAvailability.enoughStock"
+                              [class.text-emerald-700]="item.stockAvailability.enoughStock"
+                              [class.bg-red-100]="!item.stockAvailability.enoughStock"
+                              [class.text-red-700]="!item.stockAvailability.enoughStock">
+                              {{ item.stockAvailability.enoughStock ? 'Stock OK' : 'Stock insuffisant' }}
+                            </span>
+                            <p class="mt-2 text-xs text-slate-600">
+                              {{ formatNutritionAmount(item.stockAvailability.totalAvailableNormalized) }} dispo /
+                              {{ formatNutritionAmount(item.stockAvailability.requestedQtyNormalized) }} demande
+                            </p>
+                          </td>
+                          <td class="px-3 py-2">
+                            @if (getSelectedInventoriesTemplateStock(item); as inventoryStock) {
+                              <p class="text-sm text-slate-700">
+                                {{ formatNutritionAmount(inventoryStock.qtyAvailableNormalized) }}
+                              </p>
+                              <p
+                                class="text-xs font-medium"
+                                [class.text-emerald-700]="inventoryStock.enoughStock"
+                                [class.text-red-700]="!inventoryStock.enoughStock">
+                                {{ inventoryStock.enoughStock ? 'OK pour conversion' : 'KO pour conversion' }}
+                              </p>
+                            } @else {
+                              <p class="text-xs text-slate-500">Selectionne au moins un inventory.</p>
+                            }
+                          </td>
+                          <td class="px-3 py-2">
+                            <details>
+                              <summary class="cursor-pointer text-xs font-medium text-slate-700">Voir</summary>
+                              <div class="mt-2 space-y-1">
+                                @for (stock of item.stockByInventory; track stock) {
+                                  <p class="text-xs text-slate-600">
+                                    {{ stock.inventoryName }}:
+                                    {{ formatNutritionAmount(stock.qtyAvailableNormalized) }}
+                                    <span
+                                      class="font-medium"
+                                      [class.text-emerald-700]="stock.enoughStock"
+                                      [class.text-red-700]="!stock.enoughStock">
+                                      ({{ stock.enoughStock ? 'OK' : 'KO' }})
+                                    </span>
+                                  </p>
+                                }
+                              </div>
+                            </details>
+                          </td>
+                          <td class="px-3 py-2 text-right">
+                            <button
+                              mat-raised-button
+                              color="primary"
+                              type="button"
+                              [attr.data-testid]="'input-day-convert-template-' + item.id"
+                              (click)="convertTemplateItem(item)"
+                              [disabled]="!canConvertTemplateItem(item)">
+                              {{ item.status === 'converted' ? 'Deja converti' : 'Convertir' }}
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
+                <p class="text-sm text-slate-600">Aucune ligne template pour cette journee.</p>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+        <mat-card appearance="outlined" class="rounded-xl">
+          <mat-card-content class="space-y-3 p-4">
+            <p class="text-sm font-semibold text-slate-900">Elements saisis</p>
+            @if (response.items.length > 0) {
+              <div class="overflow-x-auto rounded-lg border border-slate-200">
+                <table class="min-w-full text-sm">
                   <thead class="bg-slate-50 text-left text-slate-700">
                     <tr>
                       <th class="px-3 py-2">Produit</th>
+                      <th class="px-3 py-2">Inventory</th>
                       <th class="px-3 py-2">Qty</th>
-                      <th class="px-3 py-2">QtyUnit</th>
-                      <th class="px-3 py-2 text-right">Action</th>
+                      <th class="px-3 py-2">occurredAt</th>
+                      <th class="px-3 py-2">insertedAt</th>
+                      <th class="px-3 py-2">Slot</th>
+                      <th class="px-3 py-2">slotKey</th>
+                      <th class="px-3 py-2">Nutrition</th>
+                      <th class="px-3 py-2 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                <tr
-                  *ngFor="let row of selectedProductRows; trackBy: trackBySelectedProductRow"
-                  [attr.data-testid]="'input-day-selected-product-' + row.productId"
-                  class="border-t border-slate-100 align-top">
-                      <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
-                      <td class="px-3 py-2">
-                        <mat-form-field appearance="fill" class="w-full">
-                          <mat-label>Quantite</mat-label>
-                          <input
-                            matInput
-                            type="number"
-                            min="0.01"
-                            step="0.01"
-                            [(ngModel)]="row.qty"
-                            [ngModelOptions]="{ standalone: true }" />
-                        </mat-form-field>
-                      </td>
-                      <td class="px-3 py-2">
-                        <mat-form-field appearance="fill" class="w-full">
-                          <mat-label>Unite</mat-label>
-                          <mat-select
-                            [(ngModel)]="row.qtyUnit"
-                            [ngModelOptions]="{ standalone: true }">
-                            <mat-option [value]="null">Auto</mat-option>
-                            <mat-option *ngFor="let unit of qtyUnitOptions" [value]="unit">
-                              {{ unit }}
-                            </mat-option>
-                          </mat-select>
-                        </mat-form-field>
-                      </td>
-                      <td class="px-3 py-2 text-right">
-                        <button
-                          mat-stroked-button
-                          color="warn"
-                          type="button"
-                          (click)="removeSelectedProduct(row.productId)">
-                          Retirer
-                        </button>
-                      </td>
-                    </tr>
+                    @for (item of response.items; track trackByInputDayItem($index, item)) {
+                      <tr [attr.data-testid]="'input-day-item-' + item.id" class="border-t border-slate-100 align-top">
+                        <td class="px-3 py-2">
+                          <p class="font-medium text-slate-900">
+                            {{ item.productName }}
+                            <span class="text-slate-500">(#{{ item.productId }})</span>
+                          </p>
+                          @if (item.templateItemId) {
+                            <span
+                              class="mt-1 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                              Effective depuis template
+                            </span>
+                          }
+                        </td>
+                        <td class="px-3 py-2">{{ item.inventoryId ?? '-' }}</td>
+                        <td class="px-3 py-2">
+                          {{ formatNutritionAmount(item.qty) }} <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
+                        </td>
+                        <td class="px-3 py-2">{{ formatDateTime(item.occurredAt) }}</td>
+                        <td class="px-3 py-2">{{ formatDateTime(item.insertedAt) }}</td>
+                        <td class="px-3 py-2">{{ resolveItemSlotTitle(item) }}</td>
+                        <td class="px-3 py-2">{{ resolveItemSlotKey(item) }}</td>
+                        <td class="px-3 py-2">
+                          <div class="flex flex-wrap gap-1">
+                            @for (nutrition of item.nutritionValue | keyvalue; track nutrition) {
+                              <span
+                                class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                                {{ nutrition.key }}: {{ formatNutritionAmount(nutrition.value) }}
+                              </span>
+                            }
+                          </div>
+                        </td>
+                        <td class="px-3 py-2">
+                          <div class="flex justify-end gap-2">
+                            <button
+                              mat-stroked-button
+                              type="button"
+                              class="input-day-edit-item"
+                              (click)="startEditingItem(item.id)">
+                              Modifier
+                            </button>
+                            <button
+                              mat-stroked-button
+                              color="warn"
+                              type="button"
+                              class="input-day-delete-item"
+                              (click)="removeItem(item.id)">
+                              Supprimer
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
                   </tbody>
                 </table>
               </div>
-
-              <p *ngIf="itemsFormError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {{ itemsFormError }}
-              </p>
-
-              <div class="flex flex-wrap justify-end gap-2">
-                <button
-                  mat-stroked-button
-                  type="button"
-                  data-testid="input-day-reset-create"
-                  (click)="resetCreateComposer()">
-                  Reinitialiser
-                </button>
-                <button
-                  mat-raised-button
-                  color="primary"
-                  type="button"
-                  data-testid="input-day-create-items"
-                  (click)="createSelectedItems()"
-                  [disabled]="!canCreateSelectedItems">
-                  {{ createSelectedItemsLabel }}
-                </button>
-              </div>
-            </ng-container>
-          </ng-container>
-
-        <ng-template #selectInventoryHint>
-            <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-              Selectionne au moins un inventory dans le contexte du jour pour afficher ses produits.
-            </p>
-          </ng-template>
-
-          <ng-template #noSelectedProducts>
-            <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-              Selectionne un ou plusieurs produits pour afficher les champs de saisie et preparer l'ajout.
-            </p>
-          </ng-template>
-        </ng-template>
-      </mat-card-content>
-    </mat-card>
-
-    <div *ngIf="inputDayResponse as response" class="space-y-3">
-      <h3 *ngIf="isStandaloneMode" class="text-base font-semibold text-slate-900">Resume de la journee</h3>
-
-      <mat-card *ngIf="isStandaloneMode" appearance="outlined" class="rounded-xl">
-        <mat-card-content class="space-y-3 p-4">
-          <div class="grid gap-3 sm:grid-cols-2">
-            <p class="text-sm text-slate-700">
-              <span class="font-semibold text-slate-900">Date:</span> {{ response.dateLocal }}
-            </p>
-            <p class="text-sm text-slate-700">
-              <span class="font-semibold text-slate-900">Timezone:</span> {{ response.timezone }}
-            </p>
-          </div>
-
-          <div *ngIf="response.assignment as assignment; else noAssignment" class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <p class="text-sm font-semibold text-slate-900">Cycle actif</p>
-            <p class="text-sm text-slate-700">
-              Cycle #{{ assignment.cycleId }} - {{ assignment.cycleTitle }}
-            </p>
-            <p class="text-sm text-slate-700">
-              Du {{ assignment.startDateLocal }} au {{ assignment.endDateLocal }} (jour {{ assignment.dayIndex }})
-            </p>
-          </div>
-
-          <ng-template #noAssignment>
-            <p class="text-sm text-slate-600">Aucune assignation pour cette date.</p>
-          </ng-template>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card *ngIf="isStandaloneMode" appearance="outlined" class="rounded-xl">
-        <mat-card-content class="space-y-3 p-4">
-          <div *ngIf="response.daySet as daySet; else noDaySet">
-            <p class="text-sm font-semibold text-slate-900">
-              DaySet #{{ daySet.id }} - {{ daySet.title }}
-            </p>
-
-            <div *ngIf="hasEntries(daySet.nutritionValue); else noDaySetTargets" class="flex flex-wrap gap-2">
-              <span
-                *ngFor="let target of daySet.nutritionValue | keyvalue"
-                class="rounded-full bg-indigo-50 px-2 py-1 text-xs text-indigo-700">
-                {{ target.key }}: {{ formatNutritionAmount(target.value) }}
-              </span>
-            </div>
-
-            <ng-template #noDaySetTargets>
-              <p class="text-xs text-slate-500">Aucune cible nutritionnelle definie pour ce daySet.</p>
-            </ng-template>
-
-            <div class="overflow-x-auto rounded-lg border border-slate-200">
-              <table class="min-w-full text-sm">
-                <thead class="bg-slate-50 text-left text-slate-700">
-                  <tr>
-                    <th class="px-3 py-2">Slot</th>
-                    <th class="px-3 py-2">Horaire</th>
-                    <th class="px-3 py-2">Cibles</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let slot of daySet.slots" class="border-t border-slate-100">
-                    <td class="px-3 py-2">
-                      {{ slot.sortOrder }}. {{ slot.title }} <span class="text-slate-500">({{ slot.slotKey }})</span>
-                    </td>
-                    <td class="px-3 py-2">{{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}</td>
-                    <td class="px-3 py-2">
-                      <div *ngIf="hasEntries(slot.nutritionValue); else noSlotTargets" class="flex flex-wrap gap-1">
-                        <span
-                          *ngFor="let target of slot.nutritionValue | keyvalue"
-                          class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
-                          {{ target.key }}: {{ formatNutritionAmount(target.value) }}
-                        </span>
+            } @else {
+              <p class="text-sm text-slate-600">Aucun item saisi pour cette journee.</p>
+            }
+          </mat-card-content>
+        </mat-card>
+        @if (isStandaloneMode) {
+          <div class="grid gap-4 xl:grid-cols-2">
+            @if (response.totalsMacros; as totals) {
+              <mat-card appearance="outlined" class="rounded-xl">
+                <mat-card-content class="space-y-3 p-4">
+                  <p class="text-sm font-semibold text-slate-900">Effectif / day-set</p>
+                  <p class="text-xs text-slate-500">
+                    {{ getTargetSourceText(totals.targetSource) }}
+                  </p>
+                  <div class="grid gap-3 md:grid-cols-3">
+                    <div class="rounded-lg border border-slate-200 p-3">
+                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Total jour</p>
+                      <div class="space-y-1 text-sm text-slate-700">
+                        @for (entry of totals.dayTotal | keyvalue; track entry) {
+                          <p>
+                            <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                            {{ formatMacroValue(entry.value) }}
+                          </p>
+                        }
                       </div>
-                      <ng-template #noSlotTargets>
-                        <span class="text-xs text-slate-500">-</span>
-                      </ng-template>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <ng-template #noDaySet>
-            <p
-              *ngIf="response.totalsMacros?.targetSource === 'cycle'; else noResolvedDaySet"
-              class="text-sm text-slate-600">
-              Aucun daySet actif pour cette journee. Les cibles quotidiennes proviennent du cycle.
-            </p>
-            <ng-template #noResolvedDaySet>
-              <p class="text-sm text-slate-600">Aucun daySet retourne.</p>
-            </ng-template>
-          </ng-template>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card *ngIf="isStandaloneMode || isTemplatesSectionActive" appearance="outlined" class="rounded-xl">
-        <mat-card-content class="space-y-4 p-4">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p class="text-sm font-semibold text-slate-900">Template associe</p>
-              <p class="text-sm text-slate-600">{{ activeTemplateLabel }}</p>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-              <mat-form-field appearance="fill" class="w-full min-w-[16rem] sm:w-72">
-              <mat-label>Remplacement template</mat-label>
-                <mat-select
-                  data-testid="input-day-template-select"
-                  [ngModel]="manualTemplateSelectionId"
-                  [ngModelOptions]="{ standalone: true }"
-                  (ngModelChange)="onManualTemplateSelectionChange($event)">
-                  <mat-option [value]="null">Aucun override</mat-option>
-                  <mat-option *ngFor="let template of templates" [value]="template.id">
-                    {{ template.title }}
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <button
-                *ngIf="hasManualTemplateOverride"
-                mat-stroked-button
-                type="button"
-                data-testid="input-day-template-clear"
-                (click)="clearManualTemplateOverride()">
-                Retirer le remplacement
-              </button>
-            </div>
-          </div>
-
-          <p *ngIf="templateError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {{ templateError }}
-          </p>
-
-          <p *ngIf="templateActionError" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {{ templateActionError }}
-          </p>
-
-          <div *ngIf="templateItems.length > 0; else noTemplateItems" class="overflow-x-auto rounded-lg border border-slate-200">
-            <table class="min-w-full text-sm">
-              <thead class="bg-slate-50 text-left text-slate-700">
-                <tr>
-                  <th class="px-3 py-2">Produit</th>
-                  <th class="px-3 py-2">Qty</th>
-                  <th class="px-3 py-2">Slot</th>
-                  <th class="px-3 py-2">Statut</th>
-                  <th class="px-3 py-2">Stock global</th>
-                  <th class="px-3 py-2">Selection active</th>
-                  <th class="px-3 py-2">Inventaires</th>
-                  <th class="px-3 py-2 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of templateItems; trackBy: trackByTemplateItem" [attr.data-testid]="'input-day-template-item-' + item.id" class="border-t border-slate-100 align-top">
-                  <td class="px-3 py-2">
-                    <p class="font-medium text-slate-900">{{ item.productName }}</p>
-                    <p class="text-xs text-slate-500">#{{ item.productId }}</p>
-                  </td>
-                  <td class="px-3 py-2">
-                    {{ formatNutritionAmount(item.qty) }}
-                    <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
-                  </td>
-                  <td class="px-3 py-2">
-                    {{ resolveTemplateItemSlotTitle(item) }}
-                    <span class="text-xs text-slate-500">({{ resolveTemplateItemSlotKey(item) }})</span>
-                  </td>
-                  <td class="px-3 py-2">
-                    <span
-                      class="rounded-full px-2 py-1 text-xs font-medium"
-                      [class.bg-sky-100]="item.status === 'pending'"
-                      [class.text-sky-700]="item.status === 'pending'"
-                      [class.bg-emerald-100]="item.status === 'converted'"
-                      [class.text-emerald-700]="item.status === 'converted'">
-                      {{ item.status === 'converted' ? 'Converti' : 'Previsionnel' }}
-                    </span>
-                  </td>
-                  <td class="px-3 py-2">
-                    <span
-                      class="rounded-full px-2 py-1 text-xs font-medium"
-                      [class.bg-emerald-100]="item.stockAvailability.enoughStock"
-                      [class.text-emerald-700]="item.stockAvailability.enoughStock"
-                      [class.bg-red-100]="!item.stockAvailability.enoughStock"
-                      [class.text-red-700]="!item.stockAvailability.enoughStock">
-                      {{ item.stockAvailability.enoughStock ? 'Stock OK' : 'Stock insuffisant' }}
-                    </span>
-                    <p class="mt-2 text-xs text-slate-600">
-                      {{ formatNutritionAmount(item.stockAvailability.totalAvailableNormalized) }} dispo /
-                      {{ formatNutritionAmount(item.stockAvailability.requestedQtyNormalized) }} demande
-                    </p>
-                  </td>
-                  <td class="px-3 py-2">
-                    <ng-container *ngIf="getSelectedInventoriesTemplateStock(item) as inventoryStock; else noSelectedInventoryStock">
-                      <p class="text-sm text-slate-700">
-                        {{ formatNutritionAmount(inventoryStock.qtyAvailableNormalized) }}
-                      </p>
-                      <p
-                        class="text-xs font-medium"
-                        [class.text-emerald-700]="inventoryStock.enoughStock"
-                        [class.text-red-700]="!inventoryStock.enoughStock">
-                        {{ inventoryStock.enoughStock ? 'OK pour conversion' : 'KO pour conversion' }}
-                      </p>
-                    </ng-container>
-                    <ng-template #noSelectedInventoryStock>
-                      <p class="text-xs text-slate-500">Selectionne au moins un inventory.</p>
-                    </ng-template>
-                  </td>
-                  <td class="px-3 py-2">
-                    <details>
-                      <summary class="cursor-pointer text-xs font-medium text-slate-700">Voir</summary>
-                      <div class="mt-2 space-y-1">
-                        <p *ngFor="let stock of item.stockByInventory" class="text-xs text-slate-600">
-                          {{ stock.inventoryName }}:
-                          {{ formatNutritionAmount(stock.qtyAvailableNormalized) }}
-                          <span
-                            class="font-medium"
-                            [class.text-emerald-700]="stock.enoughStock"
-                            [class.text-red-700]="!stock.enoughStock">
-                            ({{ stock.enoughStock ? 'OK' : 'KO' }})
-                          </span>
-                        </p>
+                    </div>
+                    <div class="rounded-lg border border-slate-200 p-3">
+                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Cibles</p>
+                      @if (hasEntries(totals.targets)) {
+                        <div class="space-y-1 text-sm text-slate-700">
+                          @for (entry of totals.targets | keyvalue; track entry) {
+                            <p>
+                              <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                              {{ formatNutritionAmount(entry.value) }}
+                            </p>
+                          }
+                        </div>
+                      } @else {
+                        <p class="text-sm text-slate-500">Aucune cible.</p>
+                      }
+                    </div>
+                    <div class="rounded-lg border border-slate-200 p-3">
+                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ecart aux cibles</p>
+                      @if (hasEntries(totals.deltaToTargets)) {
+                        <div class="space-y-1 text-sm text-slate-700">
+                          @for (entry of totals.deltaToTargets | keyvalue; track entry) {
+                            <p>
+                              <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                              {{ formatMacroValue(entry.value) }}
+                            </p>
+                          }
+                        </div>
+                      } @else {
+                        <p class="text-sm text-slate-500">Aucun delta.</p>
+                      }
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            }
+            @if (response.projectedTotalsMacros; as projectedTotals) {
+              <mat-card appearance="outlined" class="rounded-xl">
+                <mat-card-content class="space-y-3 p-4">
+                  <p class="text-sm font-semibold text-slate-900">Effectif + template / day-set</p>
+                  <p class="text-xs text-slate-500">
+                    {{ getTemplateTargetSourceText(projectedTotals) }}
+                  </p>
+                  <div class="grid gap-3 md:grid-cols-3">
+                    <div class="rounded-lg border border-slate-200 p-3">
+                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Total jour</p>
+                      <div class="space-y-1 text-sm text-slate-700">
+                        @for (entry of projectedTotals.dayTotal | keyvalue; track entry) {
+                          <p>
+                            <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                            {{ formatMacroValue(entry.value) }}
+                          </p>
+                        }
                       </div>
-                    </details>
-                  </td>
-                  <td class="px-3 py-2 text-right">
-                    <button
-                      mat-raised-button
-                      color="primary"
-                      type="button"
-                      [attr.data-testid]="'input-day-convert-template-' + item.id"
-                      (click)="convertTemplateItem(item)"
-                      [disabled]="!canConvertTemplateItem(item)">
-                      {{ item.status === 'converted' ? 'Deja converti' : 'Convertir' }}
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <ng-template #noTemplateItems>
-            <p class="text-sm text-slate-600">Aucune ligne template pour cette journee.</p>
-          </ng-template>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card appearance="outlined" class="rounded-xl">
-        <mat-card-content class="space-y-3 p-4">
-          <p class="text-sm font-semibold text-slate-900">Elements saisis</p>
-
-          <div *ngIf="response.items.length > 0; else noItems" class="overflow-x-auto rounded-lg border border-slate-200">
-            <table class="min-w-full text-sm">
-              <thead class="bg-slate-50 text-left text-slate-700">
-                <tr>
-                  <th class="px-3 py-2">Produit</th>
-                  <th class="px-3 py-2">Inventory</th>
-                  <th class="px-3 py-2">Qty</th>
-                  <th class="px-3 py-2">occurredAt</th>
-                  <th class="px-3 py-2">insertedAt</th>
-                  <th class="px-3 py-2">Slot</th>
-                  <th class="px-3 py-2">slotKey</th>
-                  <th class="px-3 py-2">Nutrition</th>
-                  <th class="px-3 py-2 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of response.items; trackBy: trackByInputDayItem" [attr.data-testid]="'input-day-item-' + item.id" class="border-t border-slate-100 align-top">
-                  <td class="px-3 py-2">
-                    <p class="font-medium text-slate-900">
-                      {{ item.productName }}
-                      <span class="text-slate-500">(#{{ item.productId }})</span>
-                    </p>
-                    <span
-                      *ngIf="item.templateItemId"
-                      class="mt-1 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
-                      Effective depuis template
-                    </span>
-                  </td>
-                  <td class="px-3 py-2">{{ item.inventoryId ?? '-' }}</td>
-                  <td class="px-3 py-2">
-                    {{ formatNutritionAmount(item.qty) }} <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
-                  </td>
-                  <td class="px-3 py-2">{{ formatDateTime(item.occurredAt) }}</td>
-                  <td class="px-3 py-2">{{ formatDateTime(item.insertedAt) }}</td>
-                  <td class="px-3 py-2">{{ resolveItemSlotTitle(item) }}</td>
-                  <td class="px-3 py-2">{{ resolveItemSlotKey(item) }}</td>
-                  <td class="px-3 py-2">
-                    <div class="flex flex-wrap gap-1">
-                      <span
-                        *ngFor="let nutrition of item.nutritionValue | keyvalue"
-                        class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
-                        {{ nutrition.key }}: {{ formatNutritionAmount(nutrition.value) }}
-                      </span>
                     </div>
-                  </td>
-                  <td class="px-3 py-2">
-                    <div class="flex justify-end gap-2">
-                      <button
-                        mat-stroked-button
-                        type="button"
-                        class="input-day-edit-item"
-                        (click)="startEditingItem(item.id)">
-                        Modifier
-                      </button>
-                      <button
-                        mat-stroked-button
-                        color="warn"
-                        type="button"
-                        class="input-day-delete-item"
-                        (click)="removeItem(item.id)">
-                        Supprimer
-                      </button>
+                    <div class="rounded-lg border border-slate-200 p-3">
+                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Cibles</p>
+                      @if (hasEntries(projectedTotals.targets)) {
+                        <div class="space-y-1 text-sm text-slate-700">
+                          @for (entry of projectedTotals.targets | keyvalue; track entry) {
+                            <p>
+                              <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                              {{ formatNutritionAmount(entry.value) }}
+                            </p>
+                          }
+                        </div>
+                      } @else {
+                        <p class="text-sm text-slate-500">Aucune cible.</p>
+                      }
                     </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    <div class="rounded-lg border border-slate-200 p-3">
+                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ecart aux cibles</p>
+                      @if (hasEntries(projectedTotals.deltaToTargets)) {
+                        <div class="space-y-1 text-sm text-slate-700">
+                          @for (entry of projectedTotals.deltaToTargets | keyvalue; track entry) {
+                            <p>
+                              <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                              {{ formatMacroValue(entry.value) }}
+                            </p>
+                          }
+                        </div>
+                      } @else {
+                        <p class="text-sm text-slate-500">Aucun delta.</p>
+                      }
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            }
           </div>
+        }
+      </div>
+    }
+    @if (isStandaloneMode) {
+      <div class="space-y-3">
+        <mat-divider />
+        <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
+        <pre class="app-code-panel input-day-response max-h-[65vh] p-3 text-[11px] sm:p-4 sm:text-xs">
+          {{ lastResponse | json }}
+        </pre>
+      </div>
+    }
+  }
 
-          <ng-template #noItems>
-            <p class="text-sm text-slate-600">Aucun item saisi pour cette journee.</p>
-          </ng-template>
-        </mat-card-content>
-      </mat-card>
-
-      <ng-container *ngIf="isStandaloneMode">
-        <div class="grid gap-4 xl:grid-cols-2">
-          <mat-card *ngIf="response.totalsMacros as totals" appearance="outlined" class="rounded-xl">
-            <mat-card-content class="space-y-3 p-4">
-              <p class="text-sm font-semibold text-slate-900">Effectif / day-set</p>
-              <p class="text-xs text-slate-500">
-                {{ getTargetSourceText(totals.targetSource) }}
-              </p>
-
-              <div class="grid gap-3 md:grid-cols-3">
-                <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Total jour</p>
-                  <div class="space-y-1 text-sm text-slate-700">
-                    <p *ngFor="let entry of totals.dayTotal | keyvalue">
-                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                      {{ formatMacroValue(entry.value) }}
-                    </p>
-                  </div>
-                </div>
-
-                <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Cibles</p>
-                  <div *ngIf="hasEntries(totals.targets); else noDayTargets" class="space-y-1 text-sm text-slate-700">
-                    <p *ngFor="let entry of totals.targets | keyvalue">
-                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                      {{ formatNutritionAmount(entry.value) }}
-                    </p>
-                  </div>
-                  <ng-template #noDayTargets>
-                    <p class="text-sm text-slate-500">Aucune cible.</p>
-                  </ng-template>
-                </div>
-
-                <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ecart aux cibles</p>
-                  <div *ngIf="hasEntries(totals.deltaToTargets); else noDayDelta" class="space-y-1 text-sm text-slate-700">
-                    <p *ngFor="let entry of totals.deltaToTargets | keyvalue">
-                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                      {{ formatMacroValue(entry.value) }}
-                    </p>
-                  </div>
-                  <ng-template #noDayDelta>
-                    <p class="text-sm text-slate-500">Aucun delta.</p>
-                  </ng-template>
-                </div>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <mat-card *ngIf="response.projectedTotalsMacros as projectedTotals" appearance="outlined" class="rounded-xl">
-            <mat-card-content class="space-y-3 p-4">
-              <p class="text-sm font-semibold text-slate-900">Effectif + template / day-set</p>
-              <p class="text-xs text-slate-500">
-                {{ getTemplateTargetSourceText(projectedTotals) }}
-              </p>
-
-              <div class="grid gap-3 md:grid-cols-3">
-                <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Total jour</p>
-                  <div class="space-y-1 text-sm text-slate-700">
-                    <p *ngFor="let entry of projectedTotals.dayTotal | keyvalue">
-                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                      {{ formatMacroValue(entry.value) }}
-                    </p>
-                  </div>
-                </div>
-
-                <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Cibles</p>
-                  <div *ngIf="hasEntries(projectedTotals.targets); else noProjectedDayTargets" class="space-y-1 text-sm text-slate-700">
-                    <p *ngFor="let entry of projectedTotals.targets | keyvalue">
-                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                      {{ formatNutritionAmount(entry.value) }}
-                    </p>
-                  </div>
-                  <ng-template #noProjectedDayTargets>
-                    <p class="text-sm text-slate-500">Aucune cible.</p>
-                  </ng-template>
-                </div>
-
-                <div class="rounded-lg border border-slate-200 p-3">
-                  <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ecart aux cibles</p>
-                  <div *ngIf="hasEntries(projectedTotals.deltaToTargets); else noProjectedDayDelta" class="space-y-1 text-sm text-slate-700">
-                    <p *ngFor="let entry of projectedTotals.deltaToTargets | keyvalue">
-                      <span class="font-medium text-slate-900">{{ entry.key }}:</span>
-                      {{ formatMacroValue(entry.value) }}
-                    </p>
-                  </div>
-                  <ng-template #noProjectedDayDelta>
-                    <p class="text-sm text-slate-500">Aucun delta.</p>
-                  </ng-template>
-                </div>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </div>
-      </ng-container>
-    </div>
-
-    <div *ngIf="isStandaloneMode" class="space-y-3">
-      <mat-divider></mat-divider>
-
-      <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
-      <pre class="app-code-panel input-day-response max-h-[65vh] p-3 text-[11px] sm:p-4 sm:text-xs">
-{{ lastResponse | json }}
-      </pre>
-    </div>
-  </ng-template>
 </ng-template>

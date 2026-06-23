@@ -21,7 +21,7 @@
 
       <div class="mt-6 w-50 flex items-start md:col-span-4 md:items-end">
         <button mat-raised-button color="primary" type="submit" class="w-full">
-          {{ mode === 'edit' ? 'Mettre a jour' : 'Creer' }}
+          {{ mode() === 'edit' ? 'Mettre a jour' : 'Creer' }}
         </button>
       </div>
     </div>

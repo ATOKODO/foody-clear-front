@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
@@ -22,10 +22,10 @@ export type UpdateCategoryDto = Partial<CreateCategoryDto>;
 
 @Injectable({ providedIn: 'root' })
 export class CategoryService {
+  private http = inject(HttpClient);
+
   /** Modifie-la dans le composant si besoin */
   baseUrl = defaultApiBaseUrl;
-
-  constructor(private http: HttpClient) {}
 
   setBaseUrl(url: string) {
     this.baseUrl = normalizeApiBaseUrl(url);

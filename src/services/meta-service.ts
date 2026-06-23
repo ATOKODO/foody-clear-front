@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
@@ -20,9 +20,9 @@ export interface NutritionKeyMeta {
 
 @Injectable({ providedIn: 'root' })
 export class MetaService {
-  baseUrl = defaultApiBaseUrl;
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
+  baseUrl = defaultApiBaseUrl;
 
   setBaseUrl(url: string): void {
     this.baseUrl = normalizeApiBaseUrl(url);

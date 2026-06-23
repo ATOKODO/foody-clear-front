@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
@@ -25,9 +25,9 @@ export type UpdateNutritionValueDto = Partial<CreateNutritionValueDto>;
 
 @Injectable({ providedIn: 'root' })
 export class NutritionValueService {
-  baseUrl = defaultApiBaseUrl;
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
+  baseUrl = defaultApiBaseUrl;
 
   setBaseUrl(url: string) {
     this.baseUrl = normalizeApiBaseUrl(url);

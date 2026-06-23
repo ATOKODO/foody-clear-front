@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
@@ -18,31 +18,30 @@ import { Calendar } from '../../components/calendar/calendar';
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.Eager,
   template: '',
 })
 class CalendarStub {
-  @Input() cycleAssignments: unknown = null;
-  @Input() inputDayResponse: unknown = null;
-  @Input() inputWeekResponse: unknown = null;
-  @Input() inputMonthResponse: unknown = null;
-  @Input() inputDayItemsBySlot: unknown = null;
-  @Input() inputDayTimezone: unknown = null;
-  @Input() loadingDayItems: unknown = null;
-  @Input() dayItemsError: unknown = null;
-  @Input() showHeader = true;
+  readonly cycleAssignments = input<unknown>(null);
+  readonly inputDayResponse = input<unknown>(null);
+  readonly inputWeekResponse = input<unknown>(null);
+  readonly inputMonthResponse = input<unknown>(null);
+  readonly inputDayItemsBySlot = input<unknown>(null);
+  readonly inputDayTimezone = input<unknown>(null);
+  readonly loadingDayItems = input<unknown>(null);
+  readonly dayItemsError = input<unknown>(null);
+  readonly showHeader = input(true);
 
   currentView = 'month';
   currentViewLabel = 'mars 2026';
 
-  @Output() readonly viewChanged = new EventEmitter<unknown>();
-  @Output() readonly dayClick = new EventEmitter<unknown>();
-  @Output() readonly hourClick = new EventEmitter<unknown>();
-  @Output() readonly itemClick = new EventEmitter<unknown>();
-  @Output('manageAssignment') readonly manageAssignmentRequested = new EventEmitter<unknown>();
-  @Output() readonly manageItems = new EventEmitter<unknown>();
-  @Output() readonly monthClick = new EventEmitter<unknown>();
-  @Output('openDayView') readonly openDayViewRequested = new EventEmitter<unknown>();
+  readonly viewChanged = output<unknown>();
+  readonly dayClick = output<unknown>();
+  readonly hourClick = output<unknown>();
+  readonly itemClick = output<unknown>();
+  readonly manageAssignmentRequested = output<unknown>({ alias: 'manageAssignment' });
+  readonly manageItems = output<unknown>();
+  readonly monthClick = output<unknown>();
+  readonly openDayViewRequested = output<unknown>({ alias: 'openDayView' });
 
   goToToday(): void {}
 
@@ -247,12 +246,12 @@ describe('PlanningFeature', () => {
       .componentInstance as InputDayFeature;
 
     expect(component.activeModal).toBe('items');
-    expect(inputDay.displayMode).toBe('embedded');
-    expect(inputDay.initialDateLocal).toBe('2026-02-16');
-    expect(inputDay.initialOccurredAt).toBe('2026-02-16T08:00:00Z');
-    expect(inputDay.initialEditingItemId).toBeNull();
-    expect(inputDay.apiBaseUrl).toBe(component.baseUrl);
-    expect(inputDay.lockDate).toBeTrue();
+    expect(inputDay.displayMode()).toBe('embedded');
+    expect(inputDay.initialDateLocal()).toBe('2026-02-16');
+    expect(inputDay.initialOccurredAt()).toBe('2026-02-16T08:00:00Z');
+    expect(inputDay.initialEditingItemId()).toBeNull();
+    expect(inputDay.apiBaseUrl()).toBe(component.baseUrl);
+    expect(inputDay.lockDate()).toBeTrue();
     expect(fixture.nativeElement.querySelector('[data-testid="planning-modal-actions"]')).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Date selectionnee:');
   });
@@ -275,8 +274,8 @@ describe('PlanningFeature', () => {
       .componentInstance as InputDayFeature;
 
     expect(component.activeModal).toBe('items');
-    expect(inputDay.initialDateLocal).toBe('2026-02-19');
-    expect(inputDay.initialOccurredAt).toBe('2026-02-19T18:30:00Z');
+    expect(inputDay.initialDateLocal()).toBe('2026-02-19');
+    expect(inputDay.initialOccurredAt()).toBe('2026-02-19T18:30:00Z');
     expect(fixture.nativeElement.querySelector('[data-testid="planning-modal-actions"]')).toBeNull();
   });
 
@@ -304,8 +303,8 @@ describe('PlanningFeature', () => {
       .componentInstance as InputDayFeature;
 
     expect(component.activeModal).toBe('items');
-    expect(inputDay.initialEditingItemId).toBe(77);
-    expect(inputDay.initialOccurredAt).toBeNull();
+    expect(inputDay.initialEditingItemId()).toBe(77);
+    expect(inputDay.initialOccurredAt()).toBeNull();
   });
 
   it('should keep manage items button opening items modal directly', () => {

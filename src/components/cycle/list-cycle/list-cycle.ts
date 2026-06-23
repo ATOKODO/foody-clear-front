@@ -1,13 +1,12 @@
-import { CommonModule } from '@angular/common';
+
 import {
   Component,
-  EventEmitter,
-  Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  input,
+  output
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -83,24 +82,23 @@ export interface CycleListItem extends CycleMacroTotals {
 
 @Component({
   selector: 'app-list-cycle',
-  imports: [CommonModule, MatButtonModule, MatCardModule, MatCheckboxModule],
+  imports: [MatButtonModule, MatCardModule, MatCheckboxModule],
   templateUrl: './list-cycle.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './list-cycle.scss',
 })
 export class ListCycle implements OnInit, OnChanges {
-  @Input() mode: CycleListMode = 'manage';
-  @Input() cycles: CycleListItem[] | null = null;
-  @Input() selectedIds: number[] | null = null;
-  @Input() activeCycleId: number | null = null;
-  @Input() showAddButton = true;
-  @Input() embedded = false;
+  readonly mode = input<CycleListMode>('manage');
+  readonly cycles = input<CycleListItem[] | null>(null);
+  readonly selectedIds = input<number[] | null>(null);
+  readonly activeCycleId = input<number | null>(null);
+  readonly showAddButton = input(true);
+  readonly embedded = input(false);
 
-  @Output() readonly addRequested = new EventEmitter<void>();
-  @Output() readonly editRequested = new EventEmitter<CycleListItem>();
-  @Output() readonly deleteRequested = new EventEmitter<CycleListItem>();
-  @Output() readonly selected = new EventEmitter<CycleListItem>();
-  @Output() readonly selectedMany = new EventEmitter<CycleListItem[]>();
+  readonly addRequested = output<void>();
+  readonly editRequested = output<CycleListItem>();
+  readonly deleteRequested = output<CycleListItem>();
+  readonly selected = output<CycleListItem>();
+  readonly selectedMany = output<CycleListItem[]>();
 
   resolvedCycles: CycleListItem[] = [];
 
@@ -123,19 +121,19 @@ export class ListCycle implements OnInit, OnChanges {
   }
 
   get isManageMode(): boolean {
-    return this.mode === 'manage';
+    return this.mode() === 'manage';
   }
 
   get isEmbeddedManageMode(): boolean {
-    return this.embedded && this.isManageMode;
+    return this.embedded() && this.isManageMode;
   }
 
   get isSingleSelectMode(): boolean {
-    return this.mode === 'select-single';
+    return this.mode() === 'select-single';
   }
 
   get isMultiSelectMode(): boolean {
-    return this.mode === 'select-multi';
+    return this.mode() === 'select-multi';
   }
 
   get hasItems(): boolean {
@@ -172,8 +170,9 @@ export class ListCycle implements OnInit, OnChanges {
 
   isRowActive(cycle: CycleListItem, index: number): boolean {
     if (this.isManageMode) {
-      if (this.activeCycleId !== null) {
-        return cycle.id === this.activeCycleId;
+      const activeCycleId = this.activeCycleId();
+      if (activeCycleId !== null) {
+        return cycle.id === activeCycleId;
       }
 
       return index === 0;
@@ -350,9 +349,10 @@ export class ListCycle implements OnInit, OnChanges {
   }
 
   private applyInputState(): void {
-    this.resolvedCycles = this.cycles === null ? [] : [...this.cycles];
+    const cycles = this.cycles();
+    this.resolvedCycles = cycles === null ? [] : [...cycles];
 
-    const initialIds = this.selectedIds ?? [];
+    const initialIds = this.selectedIds() ?? [];
     const availableIds = new Set(this.resolvedCycles.map((item) => item.id));
 
     this.selectedIdSet.clear();

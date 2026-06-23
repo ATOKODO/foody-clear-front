@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
@@ -9,9 +9,9 @@ import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 @Injectable({ providedIn: 'root' })
 export class StatisticService {
-  baseUrl = defaultApiBaseUrl;
+  private readonly http = inject(HttpClient);
 
-  constructor(private readonly http: HttpClient) {}
+  baseUrl = defaultApiBaseUrl;
 
   setBaseUrl(url: string): void {
     this.baseUrl = normalizeApiBaseUrl(url);

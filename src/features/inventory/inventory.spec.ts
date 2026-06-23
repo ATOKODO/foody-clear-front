@@ -278,12 +278,14 @@ describe('Inventory', () => {
     });
   });
 
-  it('should open edit mode with inline product management already visible', () => {
+  it('should open edit mode with inline product management already visible', async () => {
     component.onEditRequested({
       id: '4',
       name: 'Stock principal',
       productCount: 1,
     });
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
@@ -315,7 +317,7 @@ describe('Inventory', () => {
     expect(component.manageProductRows.length).toBe(1);
   });
 
-  it('should render the inline empty state when no product is linked', () => {
+  it('should render the inline empty state when no product is linked', async () => {
     component.inventories = [
       {
         id: 4,
@@ -330,6 +332,8 @@ describe('Inventory', () => {
       name: 'Stock principal',
       productCount: 0,
     });
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     expect(component.manageProductRows).toEqual([]);
@@ -355,12 +359,14 @@ describe('Inventory', () => {
     expect(component.activeModal).toBeNull();
   });
 
-  it('should render inline manage section without recomputing template state indefinitely', () => {
+  it('should render inline manage section without recomputing template state indefinitely', async () => {
     component.onEditRequested({
       id: '4',
       name: 'Stock principal',
       productCount: 1,
     });
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
 
     const manageTitle = fixture.nativeElement.querySelector('.inventory-manage-products h3');

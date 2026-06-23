@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, HostListener, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { AfterViewInit, ChangeDetectorRef, Component, OnInit, viewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -63,7 +63,6 @@ const PLANNING_CALENDAR_VIEW_OPTIONS: readonly SegmentedToggleOption<CalendarVie
 @Component({
   selector: 'app-planning',
   imports: [
-    CommonModule,
     FormsModule,
     Calendar,
     InputDayFeature,
@@ -75,13 +74,23 @@ const PLANNING_CALENDAR_VIEW_OPTIONS: readonly SegmentedToggleOption<CalendarVie
     MatProgressBarModule,
     SegmentedToggle,
     UiErrorPanel,
-  ],
+    DatePipe
+],
   templateUrl: './planning.feature.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './planning.feature.scss',
+  host: {
+    '(window:focus)': 'onWindowFocus()',
+    '(document:visibilitychange)': 'onVisibilityChange()',
+    '(document:keydown.escape)': 'onEscapeKey()',
+  },
 })
 export class PlanningFeature implements OnInit, AfterViewInit {
-  @ViewChild('calendarRef') private calendarRef?: PlanningCalendarController;
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
+  private readonly cycleService = inject(CycleService);
+  private readonly cycleAssignmentService = inject(CycleAssignementService);
+  private readonly inputDayService = inject(InputDayService);
+
+  private readonly calendarRef = viewChild<PlanningCalendarController>('calendarRef');
 
   baseUrl = '';
 
@@ -123,13 +132,6 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   lastErrorText = '';
   private inputDayRequestId = 0;
 
-  constructor(
-    private readonly changeDetectorRef: ChangeDetectorRef,
-    private readonly cycleService: CycleService,
-    private readonly cycleAssignmentService: CycleAssignementService,
-    private readonly inputDayService: InputDayService,
-  ) {}
-
   ngOnInit(): void {
     this.baseUrl = this.cycleAssignmentService.baseUrl;
     this.cycleService.setBaseUrl(this.baseUrl);
@@ -149,19 +151,16 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.refreshPlanningData();
   }
 
-  @HostListener('window:focus')
   onWindowFocus(): void {
     this.refreshPlanningData();
   }
 
-  @HostListener('document:visibilitychange')
   onVisibilityChange(): void {
     if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
       this.refreshPlanningData();
     }
   }
 
-  @HostListener('document:keydown.escape')
   onEscapeKey(): void {
     this.closeActiveModal();
   }
@@ -177,12 +176,12 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   goToCalendarToday(): void {
-    this.calendarRef?.goToToday();
+    this.calendarRef()?.goToToday();
     this.syncCalendarHeaderState();
   }
 
   navigateCalendar(direction: 'prev' | 'next'): void {
-    this.calendarRef?.navigate(direction);
+    this.calendarRef()?.navigate(direction);
     this.syncCalendarHeaderState();
   }
 
@@ -191,12 +190,12 @@ export class PlanningFeature implements OnInit, AfterViewInit {
       return;
     }
 
-    this.calendarRef?.switchView(view as CalendarView);
+    this.calendarRef()?.switchView(view as CalendarView);
     this.syncCalendarHeaderState();
   }
 
   getCalendarViewLabel(view: CalendarView): string {
-    return this.calendarRef?.getViewLabel(view) ?? this.getFallbackCalendarViewLabel(view);
+    return this.calendarRef()?.getViewLabel(view) ?? this.getFallbackCalendarViewLabel(view);
   }
 
   get showPlanningStatus(): boolean {
@@ -237,7 +236,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   onCalendarOpenDayView(event: CalendarOpenDayViewEvent): void {
-    this.calendarRef?.openDayView(event.dateLocal);
+    this.calendarRef()?.openDayView(event.dateLocal);
     this.syncCalendarHeaderState();
   }
 
@@ -680,12 +679,13 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   private syncCalendarHeaderState(): void {
-    if (this.calendarRef?.currentView) {
-      this.currentCalendarView = this.calendarRef.currentView;
+    const calendarRef = this.calendarRef();
+    if (calendarRef?.currentView) {
+      this.currentCalendarView = calendarRef.currentView;
     }
 
-    if (this.calendarRef?.currentViewLabel) {
-      this.calendarHeaderLabel = this.calendarRef.currentViewLabel;
+    if (calendarRef?.currentViewLabel) {
+      this.calendarHeaderLabel = calendarRef.currentViewLabel;
     }
   }
 

@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
+
+import { Component, OnInit, input, output, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -19,14 +19,16 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 @Component({
   selector: 'app-slot-feature',
-  imports: [CommonModule, MatButtonModule, MatCardModule, UiErrorPanel, SlotList, SlotForm],
+  imports: [MatButtonModule, MatCardModule, UiErrorPanel, SlotList, SlotForm],
   templateUrl: './slot.feature.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './slot.feature.scss',
 })
 export class SlotFeature implements OnInit {
-  @Input() embedded = false;
-  @Output() readonly dataChanged = new EventEmitter<void>();
+  private readonly slotSrv = inject(SlotService);
+  private readonly metaSrv = inject(MetaService);
+
+  readonly embedded = input(false);
+  readonly dataChanged = output<void>();
 
   slots: Slot[] = [];
   loading = false;
@@ -42,11 +44,6 @@ export class SlotFeature implements OnInit {
   loadingMeta = false;
   lastMetaError: unknown = null;
   nutritionKeys: NutritionKeyMeta[] = [];
-
-  constructor(
-    private readonly slotSrv: SlotService,
-    private readonly metaSrv: MetaService,
-  ) {}
 
   ngOnInit(): void {
     this.refresh();

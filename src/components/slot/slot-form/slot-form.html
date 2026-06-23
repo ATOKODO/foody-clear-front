@@ -1,8 +1,10 @@
 <section class="mx-auto max-w-4xl px-4 py-8 text-gray-900" aria-label="Ajouter ou modifier un slot">
-  <div *ngIf="showHeading" class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
-    <h2 class="text-xl font-medium">{{ heading }}</h2>
-    <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
-  </div>
+  @if (showHeading()) {
+    <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
+      <h2 class="text-xl font-medium">{{ heading }}</h2>
+      <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
+    </div>
+  }
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
     <div class="grid gap-4 md:grid-cols-12">
@@ -42,64 +44,72 @@
         </button>
       </div>
 
-      <p *ngIf="nutritionKeys.length === 0" class="text-sm text-slate-600">
-        Les cles nutritionnelles meta ne sont pas chargees, saisie libre active.
-      </p>
+      @if (nutritionKeys().length === 0) {
+        <p class="text-sm text-slate-600">
+          Les cles nutritionnelles meta ne sont pas chargees, saisie libre active.
+        </p>
+      }
 
-      <div *ngFor="let value of nutritionValues; let i = index" class="grid gap-3 md:grid-cols-12 md:items-start">
-        <mat-form-field appearance="fill" class="ssf-field md:col-span-4">
-          <mat-label>Cle</mat-label>
-          <mat-select
-            [(ngModel)]="value.nutritionKey"
-            [ngModelOptions]="{ standalone: true }"
-            (selectionChange)="onNutritionKeyChange(i)">
-            <mat-option *ngFor="let item of nutritionKeys" [value]="item.value">
-              {{ item.label }}
-            </mat-option>
-          </mat-select>
-          <mat-hint *ngIf="nutritionKeys.length === 0">
-            Aucune cle meta disponible
-          </mat-hint>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="ssf-field md:col-span-2">
-          <mat-label>Amount</mat-label>
-          <input
-            matInput
-            type="number"
-            min="0"
-            [(ngModel)]="value.amount"
-            [ngModelOptions]="{ standalone: true }" />
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="ssf-field md:col-span-2">
-          <mat-label>Unite</mat-label>
-          <mat-select
-            [(ngModel)]="value.unit"
-            [ngModelOptions]="{ standalone: true }">
-            <mat-option *ngFor="let unit of getUnitsForKey(value.nutritionKey)" [value]="unit">
-              {{ unit }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="fill" class="ssf-field md:col-span-3">
-          <mat-label>Reference</mat-label>
-          <mat-select
-            [(ngModel)]="value.reference"
-            [ngModelOptions]="{ standalone: true }">
-            <mat-option *ngFor="let reference of referenceOptions" [value]="reference.value">
-              {{ reference.label }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <div class="md:col-span-1 md:pt-2">
-          <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
-            Retirer
-          </button>
+      @for (value of nutritionValues; track value; let i = $index) {
+        <div class="grid gap-3 md:grid-cols-12 md:items-start">
+          <mat-form-field appearance="fill" class="ssf-field md:col-span-4">
+            <mat-label>Cle</mat-label>
+            <mat-select
+              [(ngModel)]="value.nutritionKey"
+              [ngModelOptions]="{ standalone: true }"
+              (selectionChange)="onNutritionKeyChange(i)">
+              @for (item of nutritionKeys(); track item) {
+                <mat-option [value]="item.value">
+                  {{ item.label }}
+                </mat-option>
+              }
+            </mat-select>
+            @if (nutritionKeys().length === 0) {
+              <mat-hint>
+                Aucune cle meta disponible
+              </mat-hint>
+            }
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="ssf-field md:col-span-2">
+            <mat-label>Amount</mat-label>
+            <input
+              matInput
+              type="number"
+              min="0"
+              [(ngModel)]="value.amount"
+              [ngModelOptions]="{ standalone: true }" />
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="ssf-field md:col-span-2">
+            <mat-label>Unite</mat-label>
+            <mat-select
+              [(ngModel)]="value.unit"
+              [ngModelOptions]="{ standalone: true }">
+              @for (unit of getUnitsForKey(value.nutritionKey); track unit) {
+                <mat-option [value]="unit">
+                  {{ unit }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="fill" class="ssf-field md:col-span-3">
+            <mat-label>Reference</mat-label>
+            <mat-select
+              [(ngModel)]="value.reference"
+              [ngModelOptions]="{ standalone: true }">
+              @for (reference of referenceOptions; track reference) {
+                <mat-option [value]="reference.value">
+                  {{ reference.label }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <div class="md:col-span-1 md:pt-2">
+            <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
+              Retirer
+            </button>
+          </div>
         </div>
-      </div>
+      }
     </div>
 
     <div class="flex justify-center pt-2">
