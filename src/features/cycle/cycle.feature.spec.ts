@@ -586,6 +586,35 @@ describe('CycleFeature', () => {
     expect(component.cycles[0].title).toBe('Seche');
   });
 
+  it('should render cycles after an async refresh without switching views', async () => {
+    fixture.autoDetectChanges();
+
+    component.onRefreshRequested();
+
+    httpController.expectOne('http://localhost:3000/meta/nutrition-keys').flush([]);
+    httpController.expectOne('http://localhost:3000/day-set').flush([]);
+    httpController.expectOne('http://localhost:3000/slot').flush([]);
+    httpController.expectOne('http://localhost:3000/cycle').flush([
+      {
+        id: 11,
+        title: 'Cycle async',
+        color: 'green',
+        durationDays: 7,
+        durationCount: 1,
+        durationType: 'semaine',
+        nutritionValues: [nutritionValue('PROTEIN', 180)],
+        daySetOrder: [],
+      },
+    ]);
+
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(component.activeView).toBe('cycle');
+    expect(element.querySelector('[data-testid="cycle-card-11"]')).not.toBeNull();
+    expect(element.textContent).toContain('Cycle async');
+  });
+
   function clickToggle(index: number): void {
     const toggleButtons = fixture.nativeElement.querySelectorAll('mat-button-toggle button');
     (toggleButtons[index] as HTMLButtonElement).click();

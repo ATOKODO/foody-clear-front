@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 
 import { Inventory } from './inventory';
 import { InventoryService } from '../../services/inventory-service';
@@ -177,6 +177,33 @@ describe('Inventory', () => {
         productCount: 7,
       },
     ]);
+  });
+
+  it('should render inventories after an async refresh without another interaction', async () => {
+    const inventories$ = new Subject<unknown[]>();
+    const products$ = new Subject<unknown[]>();
+    inventoryServiceMock.findAll.and.returnValue(inventories$);
+    productServiceMock.findAll.and.returnValue(products$);
+    fixture.autoDetectChanges();
+
+    component.onRefreshRequested();
+    products$.next([]);
+    products$.complete();
+    inventories$.next([
+      {
+        id: 6,
+        name: 'Stock async',
+        productCount: 3,
+        inventoryProducts: [],
+      },
+    ]);
+    inventories$.complete();
+
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('[data-testid="inventory-row-6"]')).not.toBeNull();
+    expect(element.textContent).toContain('Stock async');
   });
 
   it('should create an inventory with selected products', () => {

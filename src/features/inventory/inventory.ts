@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -119,8 +119,18 @@ export class Inventory implements OnInit {
   loadingInventoryProducts = false;
   loadingProducts = false;
 
-  inventories: InventoryApiModel[] = [];
-  products: ProductApiModel[] = [];
+  private readonly inventoriesState = signal<InventoryApiModel[]>([]);
+  private readonly productsState = signal<ProductApiModel[]>([]);
+  private readonly inventoryListItemsState = computed<InventoryListItem[]>(() =>
+    this.inventoriesState().map((inventory) => ({
+      id: String(inventory.id),
+      name: inventory.name,
+      productCount: this.resolveProductCount(inventory),
+    })),
+  );
+  private readonly productListItemsState = computed<ProductListItem[]>(() =>
+    this.productsState().map((product) => mapProductToProductListItem(product)),
+  );
 
   private readonly formVisibleState = signal(false);
   private readonly formModeState = signal<InventoryFormMode>('add');
@@ -195,16 +205,28 @@ export class Inventory implements OnInit {
     this.manageProductRowsState.set(value);
   }
 
+  get inventories(): InventoryApiModel[] {
+    return this.inventoriesState();
+  }
+
+  set inventories(value: InventoryApiModel[]) {
+    this.inventoriesState.set(value);
+  }
+
+  get products(): ProductApiModel[] {
+    return this.productsState();
+  }
+
+  set products(value: ProductApiModel[]) {
+    this.productsState.set(value);
+  }
+
   get inventoryListItems(): InventoryListItem[] {
-    return this.inventories.map((inventory) => ({
-      id: String(inventory.id),
-      name: inventory.name,
-      productCount: this.resolveProductCount(inventory),
-    }));
+    return this.inventoryListItemsState();
   }
 
   get productListItems(): ProductListItem[] {
-    return this.products.map((product) => mapProductToProductListItem(product));
+    return this.productListItemsState();
   }
 
   get addableProductListItems(): ProductListItem[] {

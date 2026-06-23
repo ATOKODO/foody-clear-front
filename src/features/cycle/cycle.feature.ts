@@ -1,5 +1,5 @@
 
-import { Component, OnInit, TemplateRef, inject, viewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DateTime } from 'luxon';
 import { MatButtonModule } from '@angular/material/button';
@@ -123,9 +123,26 @@ export class CycleFeature implements OnInit {
   saving = false;
   loadingMeta = false;
 
-  cycles: Cycle[] = [];
-  daySets: DaySet[] = [];
-  slots: Slot[] = [];
+  private readonly cyclesState = signal<Cycle[]>([]);
+  private readonly daySetsState = signal<DaySet[]>([]);
+  private readonly slotsState = signal<Slot[]>([]);
+  private readonly cycleListItemsState = computed<CycleListItem[]>(() =>
+    this.cyclesState().map((cycle) =>
+      buildCycleListItem(cycle, {
+        macroNutritionKeys: this.macroNutritionKeys,
+        fallbackDaySets: this.daySetsState(),
+        fallbackSlots: this.slotsState(),
+      }),
+    ),
+  );
+  private readonly daySetListItemsState = computed<DaySetListItem[]>(() =>
+    this.daySetsState().map((daySet) => ({
+      id: String(daySet.id),
+      title: daySet.title,
+      nutritionValues: daySet.nutritionValues ?? [],
+    })),
+  );
+
   selectedCycleId: number | null = null;
   activeView: CycleHubView = 'cycle';
 
@@ -143,11 +160,11 @@ export class CycleFeature implements OnInit {
   readonly viewOptions = CYCLE_HUB_VIEW_OPTIONS;
   private dialogRef: MatDialogRef<unknown> | null = null;
   private impactDialogRef: MatDialogRef<unknown> | null = null;
-  private macroNutritionKeys = {
+  private readonly macroNutritionKeysState = signal({
     proteins: 'PROTEIN',
     carbs: 'CARBOHYDRATE',
     lipids: 'FAT',
-  };
+  });
   private pendingCycleUpdatePayload: CreateCycleDto | null = null;
 
   impactScope: CycleAssignmentRescheduleScope = 'future';
@@ -175,22 +192,44 @@ export class CycleFeature implements OnInit {
     this.loadCycles();
   }
 
+  private get macroNutritionKeys(): { proteins: string; carbs: string; lipids: string } {
+    return this.macroNutritionKeysState();
+  }
+
+  private set macroNutritionKeys(value: { proteins: string; carbs: string; lipids: string }) {
+    this.macroNutritionKeysState.set(value);
+  }
+
+  get cycles(): Cycle[] {
+    return this.cyclesState();
+  }
+
+  set cycles(value: Cycle[]) {
+    this.cyclesState.set(value);
+  }
+
+  get daySets(): DaySet[] {
+    return this.daySetsState();
+  }
+
+  set daySets(value: DaySet[]) {
+    this.daySetsState.set(value);
+  }
+
+  get slots(): Slot[] {
+    return this.slotsState();
+  }
+
+  set slots(value: Slot[]) {
+    this.slotsState.set(value);
+  }
+
   get cycleListItems(): CycleListItem[] {
-    return this.cycles.map((cycle) =>
-      buildCycleListItem(cycle, {
-        macroNutritionKeys: this.macroNutritionKeys,
-        fallbackDaySets: this.daySets,
-        fallbackSlots: this.slots,
-      }),
-    );
+    return this.cycleListItemsState();
   }
 
   get daySetListItems(): DaySetListItem[] {
-    return this.daySets.map((daySet) => ({
-      id: String(daySet.id),
-      title: daySet.title,
-      nutritionValues: daySet.nutritionValues ?? [],
-    }));
+    return this.daySetListItemsState();
   }
 
   get formDialogTitle(): string {
