@@ -1,5 +1,5 @@
 
-import { Component, OnInit, TemplateRef, inject, viewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -119,7 +119,35 @@ export class Product implements OnInit {
   loadingMeta = false;
   linkedDataDirty = false;
 
-  products: ProductApiModel[] = [];
+  private readonly productsState = signal<ProductApiModel[]>([]);
+  readonly productListItems = computed<ProductListItem[]>(() =>
+    this.productsState().map((product) => ({
+      id: String(product.id),
+      name: product.name,
+      barcode: product.barcode ?? null,
+      unitType: product.unitType,
+      quantityPerUnit: product.quantityPerUnit,
+      quantityUnit: product.quantityUnit,
+      portionCount: product.portionCount ?? null,
+      portionUnit: product.portionUnit ?? null,
+      portionQuantityNormalized: product.portionQuantityNormalized ?? null,
+      price: product.price ?? null,
+      priceUnit: product.priceUnit ?? null,
+      tagNames: this.resolveTagNames(product.tags),
+      nutritionValuesCount: this.extractNutritionValues(product).length,
+      category: this.resolveLinkedEntityName(product.category),
+      genericProduct: this.resolveLinkedEntityName(product.genericProduct),
+    })),
+  );
+
+  get products(): ProductApiModel[] {
+    return this.productsState();
+  }
+
+  set products(value: ProductApiModel[]) {
+    this.productsState.set(value);
+  }
+
   categoryOptions: CategoryApiModel[] = [];
   genericProductOptions: GenericProductApiModel[] = [];
   tagOptions: TagApiModel[] = [];
@@ -152,26 +180,6 @@ export class Product implements OnInit {
     this.loadMeta();
     this.loadLinkedOptions();
     this.loadProducts();
-  }
-
-  get productListItems(): ProductListItem[] {
-    return this.products.map((product) => ({
-      id: String(product.id),
-      name: product.name,
-      barcode: product.barcode ?? null,
-      unitType: product.unitType,
-      quantityPerUnit: product.quantityPerUnit,
-      quantityUnit: product.quantityUnit,
-      portionCount: product.portionCount ?? null,
-      portionUnit: product.portionUnit ?? null,
-      portionQuantityNormalized: product.portionQuantityNormalized ?? null,
-      price: product.price ?? null,
-      priceUnit: product.priceUnit ?? null,
-      tagNames: this.resolveTagNames(product.tags),
-      nutritionValuesCount: this.extractNutritionValues(product).length,
-      category: this.resolveLinkedEntityName(product.category),
-      genericProduct: this.resolveLinkedEntityName(product.genericProduct),
-    }));
   }
 
   get activeViewConfig(): ProductHubViewConfig {

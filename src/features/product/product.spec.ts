@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 import { Product } from './product';
@@ -160,6 +160,23 @@ describe('Product', () => {
     expect(component.activeView).toBe('product');
     expect(component.linkedDataDirty).toBeFalse();
     expect(productServiceMock.findAll).toHaveBeenCalledTimes(1);
+  });
+
+  it('should render products after an async load without switching views', async () => {
+    const products$ = new Subject<ProductModel[]>();
+    productServiceMock.findAll.and.returnValue(products$);
+    fixture.autoDetectChanges();
+
+    component.onRefreshRequested();
+    products$.next([buildProduct({ id: 42, name: 'Produit async' })]);
+    products$.complete();
+
+    await fixture.whenStable();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+    expect(component.activeView).toBe('product');
+    expect(nativeElement.querySelector('[data-testid="product-row-42"]')).not.toBeNull();
+    expect(nativeElement.textContent).toContain('Produit async');
   });
 
   it('should refresh the current product form state after reloading products', () => {

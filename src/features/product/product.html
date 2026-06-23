@@ -78,7 +78,7 @@
               </p>
             }
             <app-product-list mode="manage"
-              [products]="productListItems"
+              [products]="productListItems()"
               [embedded]="true"
               (addRequested)="onAddRequested()"
               (editRequested)="onEditRequested($event)"
