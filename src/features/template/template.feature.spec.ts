@@ -1,5 +1,7 @@
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { of, Subject } from 'rxjs';
 
 import { TemplateFeature } from './template.feature';
 import { TemplateService } from '../../services/template-service';
@@ -11,6 +13,7 @@ import { TemplateItemDraft } from '../../components/template/template-form/templ
 describe('TemplateFeature', () => {
   let component: TemplateFeature;
   let fixture: ComponentFixture<TemplateFeature>;
+  let overlayContainer: OverlayContainer;
 
   const templates = [
     {
@@ -105,6 +108,7 @@ describe('TemplateFeature', () => {
         { provide: ProductService, useValue: productServiceMock },
         { provide: DaySetService, useValue: daySetServiceMock },
         { provide: SlotService, useValue: slotServiceMock },
+        provideNoopAnimations(),
       ],
     })
     .compileComponents();
@@ -139,7 +143,12 @@ describe('TemplateFeature', () => {
 
     fixture = TestBed.createComponent(TemplateFeature);
     component = fixture.componentInstance;
+    overlayContainer = TestBed.inject(OverlayContainer);
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    overlayContainer.ngOnDestroy();
   });
 
   it('should create', () => {
@@ -155,6 +164,65 @@ describe('TemplateFeature', () => {
       .toContain('Rafraichir');
     expect(nativeElement.querySelector('[data-testid="template-add"]')?.textContent)
       .toContain('Nouveau modele');
+  });
+
+  it('should enable the header actions after initial loading completes', async () => {
+    fixture.autoDetectChanges();
+    await fixture.whenStable();
+
+    const refreshButton = fixture.nativeElement.querySelector(
+      '[data-testid="template-refresh-action"]',
+    ) as HTMLButtonElement;
+    const addButton = fixture.nativeElement.querySelector(
+      '[data-testid="template-add"]',
+    ) as HTMLButtonElement;
+
+    expect(refreshButton.disabled).toBeFalse();
+    expect(addButton.disabled).toBeFalse();
+  });
+
+  it('should open the new template dialog from the header action', async () => {
+    fixture.autoDetectChanges();
+    await fixture.whenStable();
+
+    const addButton = fixture.nativeElement.querySelector(
+      '[data-testid="template-add"]',
+    ) as HTMLButtonElement;
+    addButton.click();
+    await fixture.whenStable();
+
+    const overlay = overlayContainer.getContainerElement();
+    expect(overlay.querySelector('[data-testid="template-dialog"]')).not.toBeNull();
+    expect(overlay.textContent).toContain('Nouveau template');
+  });
+
+  it('should render refreshed templates after an async response', async () => {
+    const refreshedTemplates$ = new Subject<typeof templates>();
+    templateServiceMock.findAll.and.returnValue(refreshedTemplates$);
+    component.selectedTemplateId = null;
+    component.selectedTemplate = null;
+    fixture.autoDetectChanges();
+    await fixture.whenStable();
+
+    const refreshButton = fixture.nativeElement.querySelector(
+      '[data-testid="template-refresh-action"]',
+    ) as HTMLButtonElement;
+    refreshButton.click();
+
+    refreshedTemplates$.next([
+      {
+        id: 77,
+        title: 'Modele async',
+        items: [],
+        totalsMacros: null,
+      },
+    ]);
+    refreshedTemplates$.complete();
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('[data-testid="template-select-77"]')).not.toBeNull();
+    expect(element.textContent).toContain('Modele async');
   });
 
   it('should refresh all template dependencies and preserve the current selection', () => {

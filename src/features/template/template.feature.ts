@@ -1,5 +1,5 @@
 
-import { Component, OnInit, TemplateRef, inject, viewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -67,27 +67,52 @@ export class TemplateFeature implements OnInit {
   ];
 
   baseUrl = '';
-  templates: Template[] = [];
-  products: ProductApiModel[] = [];
-  daySets: DaySet[] = [];
-  slots: Slot[] = [];
+  private readonly templatesState = signal<Template[]>([]);
+  private readonly productsState = signal<ProductApiModel[]>([]);
+  private readonly daySetsState = signal<DaySet[]>([]);
+  private readonly slotsState = signal<Slot[]>([]);
+  private readonly selectedTemplateIdState = signal<number | null>(null);
+  private readonly selectedTemplateState = signal<Template | null>(null);
+  private readonly compareDaySetIdState = signal<number | null>(null);
+  private readonly loadingTemplatesState = signal(false);
+  private readonly loadingProductsState = signal(false);
+  private readonly loadingDaySetsState = signal(false);
+  private readonly loadingSlotsState = signal(false);
+  private readonly savingTemplateState = signal(false);
+  private readonly savingItemState = signal(false);
+  private readonly lastErrorState = signal<unknown>(null);
+  private readonly itemErrorState = signal<string | null>(null);
 
-  selectedTemplateId: number | null = null;
-  selectedTemplate: Template | null = null;
-  compareDaySetId: number | null = null;
+  private readonly productOptionsState = computed<ProductApiModel[]>(() =>
+    [...this.productsState()].sort((left, right) =>
+      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
+    ),
+  );
+  private readonly daySetOptionsState = computed<DaySet[]>(() =>
+    [...this.daySetsState()].sort((left, right) =>
+      left.title.localeCompare(right.title, 'fr', { sensitivity: 'base' }),
+    ),
+  );
+  private readonly slotOptionsState = computed<Slot[]>(() =>
+    [...this.slotsState()].sort(
+      (left, right) =>
+        left.sortOrder - right.sortOrder ||
+        left.title.localeCompare(right.title, 'fr', { sensitivity: 'base' }),
+    ),
+  );
+  private readonly busyState = computed(
+    () =>
+      this.loadingTemplatesState() ||
+      this.loadingProductsState() ||
+      this.loadingDaySetsState() ||
+      this.loadingSlotsState() ||
+      this.savingTemplateState() ||
+      this.savingItemState(),
+  );
+
   formMode: TemplateFormMode = 'add';
   editingTemplateId: number | null = null;
-
-  loadingTemplates = false;
-  loadingProducts = false;
-  loadingDaySets = false;
-  loadingSlots = false;
-  savingTemplate = false;
-  savingItem = false;
-
   lastResponse: unknown = null;
-  lastError: unknown = null;
-  itemError: string | null = null;
   private dialogRef: MatDialogRef<unknown> | null = null;
 
   ngOnInit(): void {
@@ -97,6 +122,126 @@ export class TemplateFeature implements OnInit {
     this.loadDaySets();
     this.loadSlots();
     this.loadTemplates({ autoSelectFirst: true });
+  }
+
+  get templates(): Template[] {
+    return this.templatesState();
+  }
+
+  set templates(value: Template[]) {
+    this.templatesState.set(value);
+  }
+
+  get products(): ProductApiModel[] {
+    return this.productsState();
+  }
+
+  set products(value: ProductApiModel[]) {
+    this.productsState.set(value);
+  }
+
+  get daySets(): DaySet[] {
+    return this.daySetsState();
+  }
+
+  set daySets(value: DaySet[]) {
+    this.daySetsState.set(value);
+  }
+
+  get slots(): Slot[] {
+    return this.slotsState();
+  }
+
+  set slots(value: Slot[]) {
+    this.slotsState.set(value);
+  }
+
+  get selectedTemplateId(): number | null {
+    return this.selectedTemplateIdState();
+  }
+
+  set selectedTemplateId(value: number | null) {
+    this.selectedTemplateIdState.set(value);
+  }
+
+  get selectedTemplate(): Template | null {
+    return this.selectedTemplateState();
+  }
+
+  set selectedTemplate(value: Template | null) {
+    this.selectedTemplateState.set(value);
+  }
+
+  get compareDaySetId(): number | null {
+    return this.compareDaySetIdState();
+  }
+
+  set compareDaySetId(value: number | null) {
+    this.compareDaySetIdState.set(value);
+  }
+
+  get loadingTemplates(): boolean {
+    return this.loadingTemplatesState();
+  }
+
+  set loadingTemplates(value: boolean) {
+    this.loadingTemplatesState.set(value);
+  }
+
+  get loadingProducts(): boolean {
+    return this.loadingProductsState();
+  }
+
+  set loadingProducts(value: boolean) {
+    this.loadingProductsState.set(value);
+  }
+
+  get loadingDaySets(): boolean {
+    return this.loadingDaySetsState();
+  }
+
+  set loadingDaySets(value: boolean) {
+    this.loadingDaySetsState.set(value);
+  }
+
+  get loadingSlots(): boolean {
+    return this.loadingSlotsState();
+  }
+
+  set loadingSlots(value: boolean) {
+    this.loadingSlotsState.set(value);
+  }
+
+  get savingTemplate(): boolean {
+    return this.savingTemplateState();
+  }
+
+  set savingTemplate(value: boolean) {
+    this.savingTemplateState.set(value);
+  }
+
+  get savingItem(): boolean {
+    return this.savingItemState();
+  }
+
+  set savingItem(value: boolean) {
+    this.savingItemState.set(value);
+  }
+
+  get lastError(): unknown {
+    return this.lastErrorState();
+  }
+
+  set lastError(value: unknown) {
+    this.lastErrorState.set(value);
+  }
+
+  get itemError(): string | null {
+    return this.itemErrorState();
+  }
+
+  set itemError(value: string | null) {
+    this.itemErrorState.set(value);
   }
 
   get editedTemplate(): Template | null {
@@ -118,34 +263,19 @@ export class TemplateFeature implements OnInit {
   }
 
   get productOptions(): ProductApiModel[] {
-    return [...this.products].sort((left, right) =>
-      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
-    );
+    return this.productOptionsState();
   }
 
   get daySetOptions(): DaySet[] {
-    return [...this.daySets].sort((left, right) =>
-      left.title.localeCompare(right.title, 'fr', { sensitivity: 'base' }),
-    );
+    return this.daySetOptionsState();
   }
 
   get slotOptions(): Slot[] {
-    return [...this.slots].sort(
-      (left, right) =>
-        left.sortOrder - right.sortOrder ||
-        left.title.localeCompare(right.title, 'fr', { sensitivity: 'base' }),
-    );
+    return this.slotOptionsState();
   }
 
   get busy(): boolean {
-    return (
-      this.loadingTemplates ||
-      this.loadingProducts ||
-      this.loadingDaySets ||
-      this.loadingSlots ||
-      this.savingTemplate ||
-      this.savingItem
-    );
+    return this.busyState();
   }
 
   onBaseUrlChange(): void {
