@@ -116,7 +116,14 @@ describe('CycleFeature', () => {
     clickAddAction();
     await fixture.whenStable();
 
-    expect(fixture.nativeElement.querySelector('[data-testid="slot-dialog"]')).not.toBeNull();
+    const dialog = fixture.nativeElement.querySelector(
+      '[data-testid="slot-dialog"]',
+    ) as HTMLElement;
+    const dialogHeader = dialog.querySelector('.slot-feature__dialog-header');
+
+    expect(dialog).not.toBeNull();
+    expect(dialog.classList).toContain('app-modal-shell--embedded-slot');
+    expect(dialogHeader).not.toBeNull();
   });
 
   it('should build breakdowns from daySetOrder and slotIds fallbacks', () => {

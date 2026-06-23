@@ -6,3 +6,36 @@
   display: grid;
   gap: 1rem;
 }
+
+.slot-feature__dialog-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.slot-feature__dialog-card--embedded {
+  max-height: calc(100vh - var(--slot-dialog-top-offset, 0px) - 2rem);
+}
+
+.slot-feature__dialog-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex: 0 0 auto;
+  background: var(--app-surface);
+}
+
+.slot-feature__dialog-content {
+  padding: 0;
+}
+
+.app-modal-backdrop--embedded-slot {
+  inset: var(--slot-dialog-top-offset, 0px) 0 0 0;
+}
+
+.app-modal-shell--embedded-slot {
+  top: var(--slot-dialog-top-offset, 0px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  place-items: start center;
+}

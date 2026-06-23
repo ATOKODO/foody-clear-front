@@ -1,4 +1,5 @@
 
+import { DOCUMENT } from '@angular/common';
 import { Component, OnInit, computed, input, output, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -22,10 +23,14 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
   imports: [MatButtonModule, MatCardModule, UiErrorPanel, SlotList, SlotForm],
   templateUrl: './slot.feature.html',
   styleUrl: './slot.feature.scss',
+  host: {
+    '(window:resize)': 'onWindowResize()',
+  },
 })
 export class SlotFeature implements OnInit {
   private readonly slotSrv = inject(SlotService);
   private readonly metaSrv = inject(MetaService);
+  private readonly document = inject(DOCUMENT);
 
   readonly embedded = input(false);
   readonly dataChanged = output<void>();
@@ -55,9 +60,18 @@ export class SlotFeature implements OnInit {
   loadingMeta = false;
   lastMetaError: unknown = null;
   nutritionKeys: NutritionKeyMeta[] = [];
+  readonly embeddedDialogTopOffset = signal(0);
 
   ngOnInit(): void {
     this.refresh();
+  }
+
+  onWindowResize(): void {
+    if (!this.formVisible() || !this.embedded()) {
+      return;
+    }
+
+    this.syncEmbeddedDialogLayout();
   }
 
   refresh(): void {
@@ -77,7 +91,7 @@ export class SlotFeature implements OnInit {
     this.formMode = 'add';
     this.editingSlotId = null;
     this.formInitialValue = null;
-    this.formVisible.set(true);
+    this.openForm();
   }
 
   openCreate(): void {
@@ -105,7 +119,7 @@ export class SlotFeature implements OnInit {
       endTime: slot.endTime ?? null,
       nutritionValues: this.getEditableNutritionValues(slot),
     };
-    this.formVisible.set(true);
+    this.openForm();
   }
 
   onDeleteRequested(item: SlotListItem): void {
@@ -145,7 +159,7 @@ export class SlotFeature implements OnInit {
           this.lastResponse = response;
           this.lastError = null;
           this.saving = false;
-          this.formVisible.set(false);
+          this.closeForm();
           this.dataChanged.emit();
           this.loadSlots();
         },
@@ -162,7 +176,7 @@ export class SlotFeature implements OnInit {
         this.lastResponse = response;
         this.lastError = null;
         this.saving = false;
-        this.formVisible.set(false);
+        this.closeForm();
         this.dataChanged.emit();
         this.loadSlots();
       },
@@ -181,10 +195,39 @@ export class SlotFeature implements OnInit {
   }
 
   onCancelForm(): void {
+    this.closeForm();
+  }
+
+  private openForm(): void {
+    this.formVisible.set(true);
+    this.syncEmbeddedDialogLayout();
+  }
+
+  private closeForm(): void {
     this.formVisible.set(false);
     this.formMode = 'add';
     this.formInitialValue = null;
     this.editingSlotId = null;
+  }
+
+  private syncEmbeddedDialogLayout(): void {
+    if (!this.embedded()) {
+      this.embeddedDialogTopOffset.set(0);
+      return;
+    }
+
+    const view = this.document.defaultView;
+    if (!view) {
+      this.embeddedDialogTopOffset.set(0);
+      return;
+    }
+
+    view.requestAnimationFrame(() => {
+      const header = this.document.querySelector('.app-shell__header');
+      this.embeddedDialogTopOffset.set(
+        header instanceof HTMLElement ? Math.ceil(header.getBoundingClientRect().bottom) : 0,
+      );
+    });
   }
 
   private loadNutritionKeys(): void {

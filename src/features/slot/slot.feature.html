@@ -81,18 +81,27 @@
 
 
 @if (formVisible()) {
-  <div class="app-modal-backdrop" (click)="onCancelForm()"></div>
+  <div
+    class="app-modal-backdrop"
+    [class.app-modal-backdrop--embedded-slot]="embedded()"
+    [style.--slot-dialog-top-offset.px]="embeddedDialogTopOffset()"
+    (click)="onCancelForm()"></div>
 }
 @if (formVisible()) {
-  <div class="app-modal-shell" data-testid="slot-dialog">
+  <div
+    class="app-modal-shell"
+    [class.app-modal-shell--embedded-slot]="embedded()"
+    [style.--slot-dialog-top-offset.px]="embeddedDialogTopOffset()"
+    data-testid="slot-dialog">
     <mat-card
       appearance="outlined"
-      class="app-modal-card"
+      class="app-modal-card slot-feature__dialog-card"
+      [class.slot-feature__dialog-card--embedded]="embedded()"
       role="dialog"
       aria-modal="true"
       (click)="$event.stopPropagation()"
       >
-      <div class="app-dialog-header">
+      <div class="app-dialog-header slot-feature__dialog-header">
         <div>
           <p class="app-dialog-eyebrow">Planning</p>
           <h3 class="app-dialog-title">
@@ -106,7 +115,7 @@
           Fermer
         </button>
       </div>
-      <div class="app-dialog-content">
+      <div class="app-dialog-content slot-feature__dialog-content">
         <app-slot-form [mode]="formMode"
           [slot]="formInitialValue"
           [showHeading]="false"
