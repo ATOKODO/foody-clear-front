@@ -43,7 +43,9 @@ describe('ListCycle', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.lc-shell__header')).toBeNull();
-    expect(fixture.nativeElement.querySelector('.lc-card__footer')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.lc-card__footer'),
+    ).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('KCAL');
     expect(fixture.nativeElement.textContent).toContain('Sous cible');
     expect(fixture.nativeElement.textContent).toContain('55.56%');
@@ -57,7 +59,9 @@ describe('ListCycle', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('mat-card')).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Aucun cycle disponible.');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Aucun cycle disponible.',
+    );
   });
 
   it('should emit addRequested when plus button is clicked', () => {
@@ -136,28 +140,50 @@ describe('ListCycle', () => {
   });
 
   it('should render the day set summary and overflow badges', () => {
-    fixture.componentRef.setInput(
-      'cycles',
-      [
-        createCycle({
-          missingDayCount: 4,
-          daySetMetrics: [
-            createMetric({ key: 'proteins', label: 'Proteines', value: 190, target: 180, percentage: 105.56, status: 'over' }),
-            createMetric({ key: 'carbs', label: 'Glucides', value: 110, target: 120, percentage: 91.67, status: 'under' }),
-            createMetric({ key: 'lipids', label: 'Lipides', value: 55, target: 60, percentage: 91.67, status: 'under' }),
-          ],
-          hasDaySetOverflow: true,
-          hasSlotOverflow: true,
-          hasMissingSlotBreakdown: true,
-        }),
-      ],
-    );
+    fixture.componentRef.setInput('cycles', [
+      createCycle({
+        missingDayCount: 4,
+        daySetMetrics: [
+          createMetric({
+            key: 'proteins',
+            label: 'Proteines',
+            value: 190,
+            target: 180,
+            percentage: 105.56,
+            status: 'over',
+          }),
+          createMetric({
+            key: 'carbs',
+            label: 'Glucides',
+            value: 110,
+            target: 120,
+            percentage: 91.67,
+            status: 'under',
+          }),
+          createMetric({
+            key: 'lipids',
+            label: 'Lipides',
+            value: 55,
+            target: 60,
+            percentage: 91.67,
+            status: 'under',
+          }),
+        ],
+        hasDaySetOverflow: true,
+        hasSlotOverflow: true,
+        hasMissingSlotBreakdown: true,
+      }),
+    ]);
     fixture.detectChanges();
 
     const textContent = fixture.nativeElement.textContent;
 
-    expect(textContent).toContain('Moyenne journaliere effective / cible cycle');
-    expect(textContent).toContain('4 jour(s) sans day set reprennent directement la cible du cycle.');
+    expect(textContent).toContain(
+      'Moyenne journaliere effective / cible cycle',
+    );
+    expect(textContent).toContain(
+      '4 jour(s) sans day set reprennent directement la cible du cycle.',
+    );
     expect(textContent).toContain('Day sets > cycle');
     expect(textContent).toContain('Slots > day set');
     expect(textContent).toContain('Decomposition slots partielle');
@@ -171,7 +197,9 @@ describe('ListCycle', () => {
 
     toggleButton.click();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('.lc-detail-panel')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.lc-detail-panel'),
+    ).not.toBeNull();
 
     toggleButton.click();
     fixture.detectChanges();
@@ -192,31 +220,34 @@ describe('ListCycle', () => {
     expect(textContent).toContain('Petit dejeuner');
     expect(textContent).toContain('08:00 - 09:00');
     expect(textContent).toContain('50%');
+    expect(textContent).toContain('KCAL');
+    expect(textContent).toContain('1070 / 1740 kcal');
+    expect(textContent).toContain('1070 / 1070 kcal');
+    expect(textContent).toContain('Pile cible');
   });
 
   it('should show an unavailable slot breakdown state when slots cannot be reconstructed', () => {
-    fixture.componentRef.setInput(
-      'cycles',
-      [
-        createCycle({
-          daySets: [
-            createDaySet({
-              slots: [],
-              slotMetrics: [],
-              hasMissingSlotBreakdown: true,
-            }),
-          ],
-          hasMissingSlotBreakdown: true,
-        }),
-      ],
-    );
+    fixture.componentRef.setInput('cycles', [
+      createCycle({
+        daySets: [
+          createDaySet({
+            slots: [],
+            slotMetrics: [],
+            hasMissingSlotBreakdown: true,
+          }),
+        ],
+        hasMissingSlotBreakdown: true,
+      }),
+    ]);
     fixture.detectChanges();
 
     const toggleButton = fixture.nativeElement.querySelector('.lc-toggle-btn');
     toggleButton.click();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.lc-slot-missing')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.lc-slot-missing'),
+    ).not.toBeNull();
   });
 
   function createMetric(
@@ -225,6 +256,7 @@ describe('ListCycle', () => {
     return {
       key: 'proteins',
       label: 'Proteines',
+      unit: 'g',
       value: 50,
       target: 100,
       percentage: 50,
@@ -241,11 +273,41 @@ describe('ListCycle', () => {
       title: 'Petit dejeuner',
       key: 'breakfast',
       timeRange: '08:00 - 09:00',
-      totals: { proteins: 50, carbs: 25, lipids: 10 },
+      totals: { energyKcal: 390, proteins: 50, carbs: 25, lipids: 10 },
       metrics: [
-        createMetric({ key: 'proteins', label: 'Proteines', value: 50, target: 100, percentage: 50, status: 'under' }),
-        createMetric({ key: 'carbs', label: 'Glucides', value: 25, target: 100, percentage: 25, status: 'under' }),
-        createMetric({ key: 'lipids', label: 'Lipides', value: 10, target: 30, percentage: 33.33, status: 'under' }),
+        createMetric({
+          key: 'kcal',
+          label: 'KCAL',
+          unit: 'kcal',
+          value: 390,
+          target: 1070,
+          percentage: 36.45,
+          status: 'under',
+        }),
+        createMetric({
+          key: 'proteins',
+          label: 'Proteines',
+          value: 50,
+          target: 100,
+          percentage: 50,
+          status: 'under',
+        }),
+        createMetric({
+          key: 'carbs',
+          label: 'Glucides',
+          value: 25,
+          target: 100,
+          percentage: 25,
+          status: 'under',
+        }),
+        createMetric({
+          key: 'lipids',
+          label: 'Lipides',
+          value: 10,
+          target: 30,
+          percentage: 33.33,
+          status: 'under',
+        }),
       ],
       ...overrides,
     };
@@ -257,17 +319,77 @@ describe('ListCycle', () => {
     return {
       id: 1,
       title: 'Training',
-      totals: { proteins: 100, carbs: 100, lipids: 30 },
+      totals: { energyKcal: 1070, proteins: 100, carbs: 100, lipids: 30 },
       metrics: [
-        createMetric({ key: 'proteins', label: 'Proteines', value: 100, target: 180, percentage: 55.56, status: 'under' }),
-        createMetric({ key: 'carbs', label: 'Glucides', value: 100, target: 120, percentage: 83.33, status: 'under' }),
-        createMetric({ key: 'lipids', label: 'Lipides', value: 30, target: 60, percentage: 50, status: 'under' }),
+        createMetric({
+          key: 'kcal',
+          label: 'KCAL',
+          unit: 'kcal',
+          value: 1070,
+          target: 1740,
+          percentage: 61.49,
+          status: 'under',
+        }),
+        createMetric({
+          key: 'proteins',
+          label: 'Proteines',
+          value: 100,
+          target: 180,
+          percentage: 55.56,
+          status: 'under',
+        }),
+        createMetric({
+          key: 'carbs',
+          label: 'Glucides',
+          value: 100,
+          target: 120,
+          percentage: 83.33,
+          status: 'under',
+        }),
+        createMetric({
+          key: 'lipids',
+          label: 'Lipides',
+          value: 30,
+          target: 60,
+          percentage: 50,
+          status: 'under',
+        }),
       ],
-      slotTotals: { proteins: 100, carbs: 100, lipids: 30 },
+      slotTotals: { energyKcal: 1070, proteins: 100, carbs: 100, lipids: 30 },
       slotMetrics: [
-        createMetric({ key: 'proteins', label: 'Proteines', value: 100, target: 100, percentage: 100, status: 'exact' }),
-        createMetric({ key: 'carbs', label: 'Glucides', value: 100, target: 100, percentage: 100, status: 'exact' }),
-        createMetric({ key: 'lipids', label: 'Lipides', value: 30, target: 30, percentage: 100, status: 'exact' }),
+        createMetric({
+          key: 'kcal',
+          label: 'KCAL',
+          unit: 'kcal',
+          value: 1070,
+          target: 1070,
+          percentage: 100,
+          status: 'exact',
+        }),
+        createMetric({
+          key: 'proteins',
+          label: 'Proteines',
+          value: 100,
+          target: 100,
+          percentage: 100,
+          status: 'exact',
+        }),
+        createMetric({
+          key: 'carbs',
+          label: 'Glucides',
+          value: 100,
+          target: 100,
+          percentage: 100,
+          status: 'exact',
+        }),
+        createMetric({
+          key: 'lipids',
+          label: 'Lipides',
+          value: 30,
+          target: 30,
+          percentage: 100,
+          status: 'exact',
+        }),
       ],
       slots: [createSlot()],
       hasSlotOverflow: false,
@@ -281,6 +403,7 @@ describe('ListCycle', () => {
       id: 1,
       title: 'Seche',
       color: '#22c55e',
+      energyKcal: 1740,
       proteins: 180,
       carbs: 120,
       lipids: 60,
@@ -288,11 +411,41 @@ describe('ListCycle', () => {
       durationCount: 4,
       durationType: 'semaine',
       missingDayCount: 0,
-      daySetTotals: { proteins: 100, carbs: 100, lipids: 30 },
+      daySetTotals: { energyKcal: 1070, proteins: 100, carbs: 100, lipids: 30 },
       daySetMetrics: [
-        createMetric({ key: 'proteins', label: 'Proteines', value: 100, target: 180, percentage: 55.56, status: 'under' }),
-        createMetric({ key: 'carbs', label: 'Glucides', value: 100, target: 120, percentage: 83.33, status: 'under' }),
-        createMetric({ key: 'lipids', label: 'Lipides', value: 30, target: 60, percentage: 50, status: 'under' }),
+        createMetric({
+          key: 'kcal',
+          label: 'KCAL',
+          unit: 'kcal',
+          value: 1070,
+          target: 1740,
+          percentage: 61.49,
+          status: 'under',
+        }),
+        createMetric({
+          key: 'proteins',
+          label: 'Proteines',
+          value: 100,
+          target: 180,
+          percentage: 55.56,
+          status: 'under',
+        }),
+        createMetric({
+          key: 'carbs',
+          label: 'Glucides',
+          value: 100,
+          target: 120,
+          percentage: 83.33,
+          status: 'under',
+        }),
+        createMetric({
+          key: 'lipids',
+          label: 'Lipides',
+          value: 30,
+          target: 60,
+          percentage: 50,
+          status: 'under',
+        }),
       ],
       daySets: [createDaySet()],
       hasDaySetOverflow: false,

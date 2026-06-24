@@ -54,13 +54,21 @@ describe('CycleFeature', () => {
 
     expect(toggleLabels).toEqual(['Cycles', 'Targets', 'Slots']);
     expect(component.activeView).toBe('cycle');
-    expect(fixture.nativeElement.querySelector('app-list-cycle')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('app-day-set-feature')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('app-list-cycle'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('app-day-set-feature'),
+    ).toBeNull();
     expect(fixture.nativeElement.querySelector('app-slot-feature')).toBeNull();
-    expect(fixture.nativeElement.querySelector('[data-testid="cycle-panel-title"]')?.textContent)
-      .toContain('Cycles');
-    expect(fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')?.textContent)
-      .toContain('Ajouter un cycle');
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="cycle-panel-title"]')
+        ?.textContent,
+    ).toContain('Cycles');
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')
+        ?.textContent,
+    ).toContain('Ajouter un cycle');
   });
 
   it('should show the day set feature when selecting its toggle', () => {
@@ -69,14 +77,24 @@ describe('CycleFeature', () => {
     fixture.detectChanges();
 
     expect(component.activeView).toBe('daySet');
-    expect(fixture.nativeElement.querySelector('app-day-set-feature')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('app-day-set-feature'),
+    ).not.toBeNull();
     expect(fixture.nativeElement.querySelector('app-list-cycle')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-slot-feature')).toBeNull();
-    expect(fixture.nativeElement.querySelector('[data-testid="cycle-panel-title"]')?.textContent)
-      .toContain('Targets');
-    expect(fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')?.textContent)
-      .toContain('Ajouter un day set');
-    expect(fixture.nativeElement.querySelector('app-day-set-feature section.app-page')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="cycle-panel-title"]')
+        ?.textContent,
+    ).toContain('Targets');
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')
+        ?.textContent,
+    ).toContain('Ajouter un day set');
+    expect(
+      fixture.nativeElement.querySelector(
+        'app-day-set-feature section.app-page',
+      ),
+    ).toBeNull();
   });
 
   it('should show the slot feature when selecting its toggle', () => {
@@ -85,14 +103,38 @@ describe('CycleFeature', () => {
     fixture.detectChanges();
 
     expect(component.activeView).toBe('slot');
-    expect(fixture.nativeElement.querySelector('app-slot-feature')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('app-slot-feature'),
+    ).not.toBeNull();
     expect(fixture.nativeElement.querySelector('app-list-cycle')).toBeNull();
-    expect(fixture.nativeElement.querySelector('app-day-set-feature')).toBeNull();
-    expect(fixture.nativeElement.querySelector('[data-testid="cycle-panel-title"]')?.textContent)
-      .toContain('Slots');
-    expect(fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')?.textContent)
-      .toContain('Ajouter un slot');
-    expect(fixture.nativeElement.querySelector('app-slot-feature section.app-page')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('app-day-set-feature'),
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="cycle-panel-title"]')
+        ?.textContent,
+    ).toContain('Slots');
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')
+        ?.textContent,
+    ).toContain('Ajouter un slot');
+    expect(
+      fixture.nativeElement.querySelector('app-slot-feature section.app-page'),
+    ).toBeNull();
+  });
+
+  it('should reactivate target and slot actions after empty async loads', () => {
+    clickToggle(1);
+    expectHubActionsDisabled(true);
+    flushDaySetRequests();
+    fixture.detectChanges();
+    expectHubActionsDisabled(false);
+
+    clickToggle(2);
+    expectHubActionsDisabled(true);
+    flushSlotRequests();
+    fixture.detectChanges();
+    expectHubActionsDisabled(false);
   });
 
   it('should open the target dialog from the hub add action', async () => {
@@ -104,7 +146,9 @@ describe('CycleFeature', () => {
     clickAddAction();
     await fixture.whenStable();
 
-    expect(fixture.nativeElement.querySelector('[data-testid="day-set-dialog"]')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="day-set-dialog"]'),
+    ).not.toBeNull();
   });
 
   it('should open the slot dialog from the hub add action', async () => {
@@ -281,23 +325,25 @@ describe('CycleFeature', () => {
   });
 
   it('should map durationDays and daySetOrder in create dto', () => {
-    const dto = (component as unknown as {
-      toCreateDto: (value: {
-        titre: string;
-        couleur: string;
-        nutritionValues: Array<{
-          nutritionKey: string;
-          amount: number;
-          unit: string;
-          reference: 'PER_100G' | 'PER_100ML';
-        }>;
-        nombre: number;
-        typeDuree: 'jour' | 'semaine' | 'mois';
-        durationDays: number;
-        daySetIds: number[];
-        daySetOrder: number[];
-      }) => unknown;
-    }).toCreateDto({
+    const dto = (
+      component as unknown as {
+        toCreateDto: (value: {
+          titre: string;
+          couleur: string;
+          nutritionValues: Array<{
+            nutritionKey: string;
+            amount: number;
+            unit: string;
+            reference: 'PER_100G' | 'PER_100ML';
+          }>;
+          nombre: number;
+          typeDuree: 'jour' | 'semaine' | 'mois';
+          durationDays: number;
+          daySetIds: number[];
+          daySetOrder: number[];
+        }) => unknown;
+      }
+    ).toCreateDto({
       titre: 'Cut',
       couleur: 'green',
       nutritionValues: [nutritionValue('PROTEIN', 180)],
@@ -338,6 +384,7 @@ describe('CycleFeature', () => {
       id: 9,
       title: 'Reverse',
       color: 'pink',
+      energyKcal: 480,
       proteins: 120,
       carbs: 0,
       lipids: 0,
@@ -345,7 +392,7 @@ describe('CycleFeature', () => {
       durationCount: 10,
       durationType: 'jour',
       missingDayCount: 0,
-      daySetTotals: { proteins: 0, carbs: 0, lipids: 0 },
+      daySetTotals: { energyKcal: 0, proteins: 0, carbs: 0, lipids: 0 },
       daySetMetrics: [],
       daySets: [],
       hasDaySetOverflow: false,
@@ -383,6 +430,7 @@ describe('CycleFeature', () => {
       id: 10,
       title: 'Canon',
       color: 'blue',
+      energyKcal: 480,
       proteins: 140,
       carbs: 0,
       lipids: 0,
@@ -390,7 +438,7 @@ describe('CycleFeature', () => {
       durationCount: 14,
       durationType: 'jour',
       missingDayCount: 14,
-      daySetTotals: { proteins: 0, carbs: 0, lipids: 0 },
+      daySetTotals: { energyKcal: 0, proteins: 0, carbs: 0, lipids: 0 },
       daySetMetrics: [],
       daySets: [],
       hasDaySetOverflow: false,
@@ -428,6 +476,7 @@ describe('CycleFeature', () => {
       id: 9,
       title: 'Reverse',
       color: 'pink',
+      energyKcal: 480,
       proteins: 120,
       carbs: 0,
       lipids: 0,
@@ -435,7 +484,7 @@ describe('CycleFeature', () => {
       durationCount: 10,
       durationType: 'jour',
       missingDayCount: 0,
-      daySetTotals: { proteins: 0, carbs: 0, lipids: 0 },
+      daySetTotals: { energyKcal: 0, proteins: 0, carbs: 0, lipids: 0 },
       daySetMetrics: [],
       daySets: [],
       hasDaySetOverflow: false,
@@ -448,7 +497,9 @@ describe('CycleFeature', () => {
 
     expect(component.formVisible).toBeTrue();
     expect(dialogText).toContain('Modifier un cycle');
-    expect(dialogText).toContain('Les changements sont appliques sans quitter la liste.');
+    expect(dialogText).toContain(
+      'Les changements sont appliques sans quitter la liste.',
+    );
   });
 
   it('should confirm impact and send reschedule options when durationDays changes on edit', () => {
@@ -469,6 +520,7 @@ describe('CycleFeature', () => {
       id: 9,
       title: 'Reverse',
       color: 'pink',
+      energyKcal: 480,
       proteins: 120,
       carbs: 0,
       lipids: 0,
@@ -476,7 +528,7 @@ describe('CycleFeature', () => {
       durationCount: 1,
       durationType: 'semaine',
       missingDayCount: 7,
-      daySetTotals: { proteins: 0, carbs: 0, lipids: 0 },
+      daySetTotals: { energyKcal: 0, proteins: 0, carbs: 0, lipids: 0 },
       daySetMetrics: [],
       daySets: [],
       hasDaySetOverflow: false,
@@ -500,14 +552,18 @@ describe('CycleFeature', () => {
     });
     fixture.detectChanges();
 
-    expect(httpController.match('http://localhost:3000/cycle/9').length).toBe(0);
+    expect(httpController.match('http://localhost:3000/cycle/9').length).toBe(
+      0,
+    );
     expect(overlayContainer.getContainerElement().textContent ?? '').toContain(
       'Impact sur les assignations',
     );
 
     component.confirmImpactUpdate();
 
-    const updateRequest = httpController.expectOne('http://localhost:3000/cycle/9');
+    const updateRequest = httpController.expectOne(
+      'http://localhost:3000/cycle/9',
+    );
     expect(updateRequest.request.method).toBe('PATCH');
     expect(updateRequest.request.body).toEqual({
       title: 'Reverse',
@@ -580,7 +636,9 @@ describe('CycleFeature', () => {
   it('should reload nutrition keys, cycles, day sets and slots when refreshed', () => {
     component.onRefreshRequested();
 
-    httpController.expectOne('http://localhost:3000/meta/nutrition-keys').flush([]);
+    httpController
+      .expectOne('http://localhost:3000/meta/nutrition-keys')
+      .flush([]);
     httpController.expectOne('http://localhost:3000/day-set').flush([
       {
         id: 10,
@@ -622,7 +680,9 @@ describe('CycleFeature', () => {
 
     component.onRefreshRequested();
 
-    httpController.expectOne('http://localhost:3000/meta/nutrition-keys').flush([]);
+    httpController
+      .expectOne('http://localhost:3000/meta/nutrition-keys')
+      .flush([]);
     httpController.expectOne('http://localhost:3000/day-set').flush([]);
     httpController.expectOne('http://localhost:3000/slot').flush([]);
     httpController.expectOne('http://localhost:3000/cycle').flush([
@@ -642,14 +702,30 @@ describe('CycleFeature', () => {
 
     const element = fixture.nativeElement as HTMLElement;
     expect(component.activeView).toBe('cycle');
-    expect(element.querySelector('[data-testid="cycle-card-11"]')).not.toBeNull();
+    expect(
+      element.querySelector('[data-testid="cycle-card-11"]'),
+    ).not.toBeNull();
     expect(element.textContent).toContain('Cycle async');
   });
 
   function clickToggle(index: number): void {
-    const toggleButtons = fixture.nativeElement.querySelectorAll('mat-button-toggle button');
+    const toggleButtons = fixture.nativeElement.querySelectorAll(
+      'mat-button-toggle button',
+    );
     (toggleButtons[index] as HTMLButtonElement).click();
     fixture.detectChanges();
+  }
+
+  function expectHubActionsDisabled(expected: boolean): void {
+    const refreshButton = fixture.nativeElement.querySelector(
+      '[data-testid="cycle-refresh-action"]',
+    ) as HTMLButtonElement;
+    const addButton = fixture.nativeElement.querySelector(
+      '[data-testid="cycle-add-action"]',
+    ) as HTMLButtonElement;
+
+    expect(refreshButton.disabled).toBe(expected);
+    expect(addButton.disabled).toBe(expected);
   }
 
   function clickAddAction(): void {
@@ -659,11 +735,7 @@ describe('CycleFeature', () => {
     addButton.click();
   }
 
-  function nutritionValue(
-    nutritionKey: string,
-    amount: number,
-    unit = 'G',
-  ) {
+  function nutritionValue(nutritionKey: string, amount: number, unit = 'G') {
     return {
       nutritionKey,
       amount,
@@ -673,21 +745,27 @@ describe('CycleFeature', () => {
   }
 
   function flushCycleRequests(): void {
-    httpController.expectOne('http://localhost:3000/meta/nutrition-keys').flush([]);
+    httpController
+      .expectOne('http://localhost:3000/meta/nutrition-keys')
+      .flush([]);
     httpController.expectOne('http://localhost:3000/day-set').flush([]);
     httpController.expectOne('http://localhost:3000/slot').flush([]);
     httpController.expectOne('http://localhost:3000/cycle').flush([]);
   }
 
   function flushDaySetRequests(): void {
-    httpController.expectOne('http://localhost:3000/meta/nutrition-keys').flush([]);
+    httpController
+      .expectOne('http://localhost:3000/meta/nutrition-keys')
+      .flush([]);
     httpController.expectOne('http://localhost:3000/slot').flush([]);
     httpController.expectOne('http://localhost:3000/template').flush([]);
     httpController.expectOne('http://localhost:3000/day-set').flush([]);
   }
 
   function flushSlotRequests(): void {
-    httpController.expectOne('http://localhost:3000/meta/nutrition-keys').flush([]);
+    httpController
+      .expectOne('http://localhost:3000/meta/nutrition-keys')
+      .flush([]);
     httpController.expectOne('http://localhost:3000/slot').flush([]);
   }
 });

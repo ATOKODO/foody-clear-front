@@ -6,11 +6,14 @@ import {
   CycleMacroTotals,
   CycleSlotBreakdown,
 } from './list-cycle';
-import { Cycle, CycleNutritionValue } from '../../../interfaces/cycle.interface';
+import {
+  Cycle,
+  CycleNutritionValue,
+} from '../../../interfaces/cycle.interface';
 import { DaySet } from '../../../interfaces/day-set.interface';
 import { Slot } from '../../../interfaces/slot.interface';
 
-type MacroKey = keyof CycleMacroTotals;
+type MacroKey = 'proteins' | 'carbs' | 'lipids';
 
 type DaySetRecord = {
   id: number;
@@ -57,31 +60,50 @@ export const DEFAULT_MACRO_NUTRITION_KEYS: MacroNutritionKeys = {
   lipids: 'FAT',
 };
 
-const MACRO_DEFINITIONS: Array<{ key: MacroKey; label: string }> = [
-  { key: 'proteins', label: 'Proteines' },
-  { key: 'carbs', label: 'Glucides' },
-  { key: 'lipids', label: 'Lipides' },
+const NUTRITION_DEFINITIONS: Array<{
+  key: CycleBreakdownMetric['key'];
+  totalKey: keyof CycleMacroTotals;
+  label: string;
+  unit: CycleBreakdownMetric['unit'];
+}> = [
+  { key: 'kcal', totalKey: 'energyKcal', label: 'KCAL', unit: 'kcal' },
+  { key: 'proteins', totalKey: 'proteins', label: 'Proteines', unit: 'g' },
+  { key: 'carbs', totalKey: 'carbs', label: 'Glucides', unit: 'g' },
+  { key: 'lipids', totalKey: 'lipids', label: 'Lipides', unit: 'g' },
 ];
 
 export function buildCycleListItem(
   cycle: Cycle,
   options: BuildCycleListItemOptions = {},
 ): CycleListItem {
-  const macroNutritionKeys = resolveMacroNutritionKeys(options.macroNutritionKeys);
+  const macroNutritionKeys = resolveMacroNutritionKeys(
+    options.macroNutritionKeys,
+  );
   const cycleTotals = getCycleMacroTotals(cycle, macroNutritionKeys);
   const durationDays = resolveCycleDurationDays(cycle);
   const durationPresentation = deriveCycleDurationPresentation(durationDays);
   const daySetTimeline = resolveCycleDaySetTimeline(cycle);
-  const daySets = resolveCycleDaySets(cycle, options.fallbackDaySets ?? []).map((daySet) =>
-    buildDaySetBreakdown(daySet, cycleTotals, macroNutritionKeys, options.fallbackSlots ?? []),
+  const daySets = resolveCycleDaySets(cycle, options.fallbackDaySets ?? []).map(
+    (daySet) =>
+      buildDaySetBreakdown(
+        daySet,
+        cycleTotals,
+        macroNutritionKeys,
+        options.fallbackSlots ?? [],
+      ),
   );
-  const missingDayCount = daySetTimeline.filter((daySetId) => daySetId === 0).length;
-  const daySetTotals = buildEffectiveDailyTotals(
-    daySets.map((daySet) => daySet.totals),
-    cycleTotals,
-    durationDays,
-    missingDayCount,
+  const missingDayCount = daySetTimeline.filter(
+    (daySetId) => daySetId === 0,
+  ).length;
+  const daySetById = new Map(
+    daySets.map((daySet) => [daySet.id, daySet] as const),
   );
+  const dailyTotals = daySetTimeline.map((daySetId) =>
+    daySetId === 0
+      ? cycleTotals
+      : (daySetById.get(daySetId)?.totals ?? cycleTotals),
+  );
+  const daySetTotals = buildEffectiveDailyTotals(dailyTotals, durationDays);
   const daySetMetrics = buildMetrics(daySetTotals, cycleTotals);
 
   return {
@@ -98,7 +120,9 @@ export function buildCycleListItem(
     daySets,
     hasDaySetOverflow: hasOverflow(daySetMetrics),
     hasSlotOverflow: daySets.some((daySet) => daySet.hasSlotOverflow),
-    hasMissingSlotBreakdown: daySets.some((daySet) => daySet.hasMissingSlotBreakdown),
+    hasMissingSlotBreakdown: daySets.some(
+      (daySet) => daySet.hasMissingSlotBreakdown,
+    ),
   };
 }
 
@@ -113,16 +137,22 @@ export function getCycleMacroTotals(
   }
 
   return {
-    proteins: toNumber((cycle as Partial<Cycle>).proteins),
-    carbs: toNumber((cycle as Partial<Cycle>).carbs),
-    lipids: toNumber((cycle as Partial<Cycle>).lipids),
+    ...withEnergyFallback({
+      energyKcal: toOptionalNumber((cycle as Partial<Cycle>).energyKcal),
+      proteins: toNumber((cycle as Partial<Cycle>).proteins),
+      carbs: toNumber((cycle as Partial<Cycle>).carbs),
+      lipids: toNumber((cycle as Partial<Cycle>).lipids),
+    }),
   };
 }
 
 export function resolveCycleDurationDays(
   cycle: Pick<Cycle, 'durationDays' | 'durationCount' | 'durationType'>,
 ): number {
-  const directDuration = normalizePositiveInteger((cycle as Partial<Cycle>).durationDays, 0);
+  const directDuration = normalizePositiveInteger(
+    (cycle as Partial<Cycle>).durationDays,
+    0,
+  );
   if (directDuration > 0) {
     return directDuration;
   }
@@ -139,7 +169,9 @@ export function resolveCycleDurationDays(
   return durationCount;
 }
 
-export function deriveCycleDurationPresentation(durationDays: number): CycleDurationPresentation {
+export function deriveCycleDurationPresentation(
+  durationDays: number,
+): CycleDurationPresentation {
   const normalizedDurationDays = normalizePositiveInteger(durationDays, 1);
 
   if (normalizedDurationDays % 30 === 0) {
@@ -166,13 +198,27 @@ export function deriveCycleDurationPresentation(durationDays: number): CycleDura
 }
 
 export function resolveCycleDaySetIds(
-  cycle: Pick<Cycle, 'daySetOrder' | 'daySets' | 'durationDays' | 'durationCount' | 'durationType'>,
+  cycle: Pick<
+    Cycle,
+    | 'daySetOrder'
+    | 'daySets'
+    | 'durationDays'
+    | 'durationCount'
+    | 'durationType'
+  >,
 ): number[] {
   return normalizeDaySetIds(resolveCycleDaySetTimeline(cycle));
 }
 
 export function resolveCycleDaySetTimeline(
-  cycle: Pick<Cycle, 'daySetOrder' | 'daySets' | 'durationDays' | 'durationCount' | 'durationType'>,
+  cycle: Pick<
+    Cycle,
+    | 'daySetOrder'
+    | 'daySets'
+    | 'durationDays'
+    | 'durationCount'
+    | 'durationType'
+  >,
 ): number[] {
   const durationDays = resolveCycleDurationDays(cycle);
   const rawTimeline =
@@ -180,7 +226,11 @@ export function resolveCycleDaySetTimeline(
       ? cycle.daySetOrder
       : (cycle.daySets ?? [])
           .map((daySet) => {
-            if (typeof daySet !== 'object' || daySet === null || !('id' in daySet)) {
+            if (
+              typeof daySet !== 'object' ||
+              daySet === null ||
+              !('id' in daySet)
+            ) {
               return NaN;
             }
 
@@ -243,14 +293,15 @@ function buildMetrics(
   totals: CycleMacroTotals,
   targets: CycleMacroTotals,
 ): CycleBreakdownMetric[] {
-  return MACRO_DEFINITIONS.map(({ key, label }) =>
-    buildMetric(key, label, totals[key], targets[key]),
+  return NUTRITION_DEFINITIONS.map(({ key, totalKey, label, unit }) =>
+    buildMetric(key, label, unit, totals[totalKey], targets[totalKey]),
   );
 }
 
 function buildMetric(
-  key: MacroKey,
+  key: CycleBreakdownMetric['key'],
   label: string,
+  unit: CycleBreakdownMetric['unit'],
   value: number,
   target: number,
 ): CycleBreakdownMetric {
@@ -260,15 +311,21 @@ function buildMetric(
   return {
     key,
     label,
+    unit,
     value: normalizedValue,
     target: normalizedTarget,
     percentage:
-      normalizedTarget > 0 ? roundNumber((normalizedValue / normalizedTarget) * 100) : null,
+      normalizedTarget > 0
+        ? roundNumber((normalizedValue / normalizedTarget) * 100)
+        : null,
     status: resolveMetricStatus(normalizedValue, normalizedTarget),
   };
 }
 
-function resolveMetricStatus(value: number, target: number): CycleBreakdownStatus {
+function resolveMetricStatus(
+  value: number,
+  target: number,
+): CycleBreakdownStatus {
   if (target === 0) {
     return value > 0 ? 'over' : 'exact';
   }
@@ -291,41 +348,24 @@ function hasOverflow(metrics: CycleBreakdownMetric[]): boolean {
 function sumMacroTotals(values: CycleMacroTotals[]): CycleMacroTotals {
   return values.reduce<CycleMacroTotals>(
     (totals, value) => ({
+      energyKcal: roundNumber(totals.energyKcal + value.energyKcal),
       proteins: roundNumber(totals.proteins + value.proteins),
       carbs: roundNumber(totals.carbs + value.carbs),
       lipids: roundNumber(totals.lipids + value.lipids),
     }),
-    { proteins: 0, carbs: 0, lipids: 0 },
+    { energyKcal: 0, proteins: 0, carbs: 0, lipids: 0 },
   );
 }
 
 function buildEffectiveDailyTotals(
-  daySetTotals: CycleMacroTotals[],
-  cycleTotals: CycleMacroTotals,
+  dailyTotals: CycleMacroTotals[],
   durationDays: number,
-  missingDayCount: number,
 ): CycleMacroTotals {
   if (durationDays <= 0) {
-    return sumMacroTotals(daySetTotals);
+    return sumMacroTotals(dailyTotals);
   }
 
-  const combinedTotals = addMacroTotals(
-    sumMacroTotals(daySetTotals),
-    scaleMacroTotals(cycleTotals, missingDayCount),
-  );
-
-  return scaleMacroTotals(combinedTotals, 1 / durationDays);
-}
-
-function addMacroTotals(
-  left: CycleMacroTotals,
-  right: CycleMacroTotals,
-): CycleMacroTotals {
-  return {
-    proteins: roundNumber(left.proteins + right.proteins),
-    carbs: roundNumber(left.carbs + right.carbs),
-    lipids: roundNumber(left.lipids + right.lipids),
-  };
+  return scaleMacroTotals(sumMacroTotals(dailyTotals), 1 / durationDays);
 }
 
 function scaleMacroTotals(
@@ -333,13 +373,17 @@ function scaleMacroTotals(
   factor: number,
 ): CycleMacroTotals {
   return {
+    energyKcal: roundNumber(totals.energyKcal * factor),
     proteins: roundNumber(totals.proteins * factor),
     carbs: roundNumber(totals.carbs * factor),
     lipids: roundNumber(totals.lipids * factor),
   };
 }
 
-function resolveCycleDaySets(cycle: Cycle, fallbackDaySets: DaySet[]): DaySetRecord[] {
+function resolveCycleDaySets(
+  cycle: Cycle,
+  fallbackDaySets: DaySet[],
+): DaySetRecord[] {
   const globalById = new Map<number, DaySetRecord>();
   fallbackDaySets.forEach((daySet) => {
     const record = toDaySetRecord(daySet);
@@ -351,17 +395,26 @@ function resolveCycleDaySets(cycle: Cycle, fallbackDaySets: DaySet[]): DaySetRec
   const embeddedDaySets = (cycle.daySets ?? [])
     .map((daySet) => toDaySetRecord(daySet))
     .filter((daySet): daySet is DaySetRecord => daySet !== null);
-  const embeddedById = new Map(embeddedDaySets.map((daySet) => [daySet.id, daySet]));
+  const embeddedById = new Map(
+    embeddedDaySets.map((daySet) => [daySet.id, daySet]),
+  );
 
   if (Array.isArray(cycle.daySetOrder) && cycle.daySetOrder.length > 0) {
     return resolveCycleDaySetIds(cycle)
-      .map((id) => mergeDaySetRecords(embeddedById.get(id) ?? null, globalById.get(id) ?? null))
+      .map((id) =>
+        mergeDaySetRecords(
+          embeddedById.get(id) ?? null,
+          globalById.get(id) ?? null,
+        ),
+      )
       .filter((daySet): daySet is DaySetRecord => daySet !== null);
   }
 
   if (embeddedDaySets.length > 0) {
     return embeddedDaySets
-      .map((daySet) => mergeDaySetRecords(daySet, globalById.get(daySet.id) ?? null))
+      .map((daySet) =>
+        mergeDaySetRecords(daySet, globalById.get(daySet.id) ?? null),
+      )
       .filter((daySet): daySet is DaySetRecord => daySet !== null);
   }
 
@@ -390,15 +443,21 @@ function mergeDaySetRecords(
     id: primary.id,
     title: primary.title || fallback.title,
     nutritionValues:
-      primary.nutritionValues.length > 0 ? primary.nutritionValues : fallback.nutritionValues,
+      primary.nutritionValues.length > 0
+        ? primary.nutritionValues
+        : fallback.nutritionValues,
     slotIds: primary.hasSlotIdsProperty ? primary.slotIds : fallback.slotIds,
-    hasSlotIdsProperty: primary.hasSlotIdsProperty || fallback.hasSlotIdsProperty,
+    hasSlotIdsProperty:
+      primary.hasSlotIdsProperty || fallback.hasSlotIdsProperty,
     slots: primary.hasSlotsProperty ? primary.slots : fallback.slots,
     hasSlotsProperty: primary.hasSlotsProperty || fallback.hasSlotsProperty,
   });
 }
 
-function resolveDaySetSlots(daySet: DaySetRecord, fallbackSlots: Slot[]): SlotResolution {
+function resolveDaySetSlots(
+  daySet: DaySetRecord,
+  fallbackSlots: Slot[],
+): SlotResolution {
   if (daySet.hasSlotsProperty) {
     if (daySet.slots === null) {
       return { slots: [], hasMissingSlotBreakdown: true };
@@ -423,7 +482,11 @@ function resolveDaySetSlots(daySet: DaySetRecord, fallbackSlots: Slot[]): SlotRe
       };
     }
 
-    if (daySet.hasSlotIdsProperty && daySet.slotIds !== null && daySet.slotIds.length > 0) {
+    if (
+      daySet.hasSlotIdsProperty &&
+      daySet.slotIds !== null &&
+      daySet.slotIds.length > 0
+    ) {
       const slots: SlotRecord[] = [];
       let hasMissing = false;
 
@@ -478,7 +541,10 @@ function resolveDaySetSlots(daySet: DaySetRecord, fallbackSlots: Slot[]): SlotRe
   };
 }
 
-function resolveSlotReference(value: unknown, fallbackSlots: Slot[]): SlotRecord | null {
+function resolveSlotReference(
+  value: unknown,
+  fallbackSlots: Slot[],
+): SlotRecord | null {
   if (typeof value === 'number') {
     return getSlotRecordById(fallbackSlots, value);
   }
@@ -492,7 +558,10 @@ function resolveSlotReference(value: unknown, fallbackSlots: Slot[]): SlotRecord
     return embeddedSlot;
   }
 
-  return mergeSlotRecords(embeddedSlot, getSlotRecordById(fallbackSlots, embeddedSlot.id));
+  return mergeSlotRecords(
+    embeddedSlot,
+    getSlotRecordById(fallbackSlots, embeddedSlot.id),
+  );
 }
 
 function mergeSlotRecords(
@@ -519,11 +588,16 @@ function mergeSlotRecords(
     startTime: primary.startTime ?? fallback.startTime,
     endTime: primary.endTime ?? fallback.endTime,
     nutritionValues:
-      primary.nutritionValues.length > 0 ? primary.nutritionValues : fallback.nutritionValues,
+      primary.nutritionValues.length > 0
+        ? primary.nutritionValues
+        : fallback.nutritionValues,
   });
 }
 
-function getSlotRecordById(fallbackSlots: Slot[], id: number): SlotRecord | null {
+function getSlotRecordById(
+  fallbackSlots: Slot[],
+  id: number,
+): SlotRecord | null {
   const slot = fallbackSlots.find((value) => value.id === id);
   return slot ? toSlotRecord(slot) : null;
 }
@@ -593,7 +667,10 @@ function ensureDaySetTitle(record: DaySetRecord): DaySetRecord {
 function ensureSlotTitle(record: SlotRecord): SlotRecord {
   return {
     ...record,
-    title: record.title || record.key || (record.id !== null ? `Slot ${record.id}` : 'Slot'),
+    title:
+      record.title ||
+      record.key ||
+      (record.id !== null ? `Slot ${record.id}` : 'Slot'),
   };
 }
 
@@ -630,33 +707,66 @@ function extractMacroTotals(
   values: CycleNutritionValue[],
   macroNutritionKeys: MacroNutritionKeys,
 ): CycleMacroTotals {
-  const totals: CycleMacroTotals = { proteins: 0, carbs: 0, lipids: 0 };
+  const macros = { proteins: 0, carbs: 0, lipids: 0 };
+  let explicitEnergyKcal: number | null = null;
 
   values.forEach((value) => {
-    const amount = toGrams(value.amount, value.unit);
     const key = value.nutritionKey.toUpperCase();
 
+    if (isEnergyNutritionKey(key)) {
+      explicitEnergyKcal =
+        roundNumber(explicitEnergyKcal ?? 0) + toKcal(value.amount, value.unit);
+      return;
+    }
+
+    const amount = toGrams(value.amount, value.unit);
     if (key === macroNutritionKeys.proteins || key === 'PROTEIN') {
-      totals.proteins += amount;
+      macros.proteins += amount;
     } else if (key === macroNutritionKeys.carbs || key === 'CARBOHYDRATE') {
-      totals.carbs += amount;
+      macros.carbs += amount;
     } else if (key === macroNutritionKeys.lipids || key === 'FAT') {
-      totals.lipids += amount;
+      macros.lipids += amount;
     }
   });
 
+  return withEnergyFallback({
+    energyKcal: explicitEnergyKcal,
+    proteins: roundNumber(macros.proteins),
+    carbs: roundNumber(macros.carbs),
+    lipids: roundNumber(macros.lipids),
+  });
+}
+
+function withEnergyFallback(
+  totals: Omit<CycleMacroTotals, 'energyKcal'> & { energyKcal: number | null },
+): CycleMacroTotals {
   return {
+    energyKcal:
+      totals.energyKcal === null
+        ? roundNumber(
+            totals.proteins * 4 + totals.carbs * 4 + totals.lipids * 9,
+          )
+        : roundNumber(totals.energyKcal),
     proteins: roundNumber(totals.proteins),
     carbs: roundNumber(totals.carbs),
     lipids: roundNumber(totals.lipids),
   };
 }
 
+function isEnergyNutritionKey(key: string): boolean {
+  return ['ENERGY_KCAL', 'ENERGY', 'CALORIES', 'CALORIE', 'KCAL'].includes(key);
+}
+
+function toKcal(amount: number, _unit: string): number {
+  return amount;
+}
+
 function resolveMacroNutritionKeys(
   macroNutritionKeys: Partial<MacroNutritionKeys> | undefined,
 ): MacroNutritionKeys {
   return {
-    proteins: macroNutritionKeys?.proteins ?? DEFAULT_MACRO_NUTRITION_KEYS.proteins,
+    proteins:
+      macroNutritionKeys?.proteins ?? DEFAULT_MACRO_NUTRITION_KEYS.proteins,
     carbs: macroNutritionKeys?.carbs ?? DEFAULT_MACRO_NUTRITION_KEYS.carbs,
     lipids: macroNutritionKeys?.lipids ?? DEFAULT_MACRO_NUTRITION_KEYS.lipids,
   };
@@ -690,7 +800,10 @@ function extractOptionalIdArray(value: unknown): number[] | null {
   );
 }
 
-function formatSlotRange(startTime: string | null, endTime: string | null): string | null {
+function formatSlotRange(
+  startTime: string | null,
+  endTime: string | null,
+): string | null {
   const start = formatTimeValue(startTime);
   const end = formatTimeValue(endTime);
 
@@ -721,6 +834,15 @@ function toGrams(amount: number, unit: string): number {
   }
 
   return 0;
+}
+
+function toOptionalNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function toNumber(value: unknown): number {
@@ -755,10 +877,15 @@ function roundNumber(value: number): number {
 }
 
 function normalizeDaySetIds(daySetIds: number[] | null | undefined): number[] {
-  return Array.from(new Set((daySetIds ?? []).filter((id) => Number.isInteger(id) && id > 0)));
+  return Array.from(
+    new Set((daySetIds ?? []).filter((id) => Number.isInteger(id) && id > 0)),
+  );
 }
 
-function normalizeDaySetTimeline(daySetOrder: number[] | null | undefined, durationDays: number): number[] {
+function normalizeDaySetTimeline(
+  daySetOrder: number[] | null | undefined,
+  durationDays: number,
+): number[] {
   const timeline = Array.isArray(daySetOrder)
     ? daySetOrder
         .slice(0, Math.max(0, durationDays))

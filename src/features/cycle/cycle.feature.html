@@ -1,13 +1,14 @@
 <section class="app-page cycle-page" data-testid="cycle-page">
   <div class="cycle-page__toggle-wrap">
-    <app-segmented-toggle [value]="activeView"
+    <app-segmented-toggle
+      [value]="activeView"
       [options]="viewOptions"
       (valueChange)="onActiveViewChange($event)"
       ariaLabel="Selection de la vue cycle active"
       data-testid="cycle-view-toggle"
       name="cycle-view"
       maxWidth="41rem"
-     />
+    />
   </div>
 
   <mat-card class="cycle-panel" data-testid="cycle-panel">
@@ -21,9 +22,10 @@
           mat-stroked-button
           type="button"
           class="cycle-action cycle-action--secondary"
+          data-testid="cycle-refresh-action"
           (click)="onRefreshActiveView()"
           [disabled]="activeViewBusy"
-          >
+        >
           Rafraichir
         </button>
 
@@ -34,7 +36,7 @@
           (click)="onAddActiveView()"
           [disabled]="activeViewBusy"
           data-testid="cycle-add-action"
-          >
+        >
           {{ activeViewConfig.addLabel }}
         </button>
       </div>
@@ -42,7 +44,7 @@
 
     <div class="cycle-panel__content">
       @switch (activeView) {
-        @case ('cycle') {
+        @case ("cycle") {
           <div class="cycle-panel__section" data-testid="cycle-list-view">
             <div class="app-status-row">
               @if (loading) {
@@ -60,34 +62,48 @@
                   Meta nutrition...
                 </span>
               }
+              @if (loadingDaySets) {
+                <span class="app-status-pill app-status-pill--info">
+                  Targets...
+                </span>
+              }
+              @if (loadingSlots) {
+                <span class="app-status-pill app-status-pill--info">
+                  Slots...
+                </span>
+              }
             </div>
             @if (lastError) {
               <app-ui-error-panel [error]="lastError" />
             }
             @if (lastMetaError) {
               <p class="app-alert">
-                Impossible de charger les cles nutritionnelles meta, fallback actif.
+                Impossible de charger les cles nutritionnelles meta, fallback
+                actif.
               </p>
             }
-            <app-list-cycle [cycles]="cycleListItems"
+            <app-list-cycle
+              [cycles]="cycleListItems"
               [activeCycleId]="selectedCycleId"
               [showAddButton]="false"
               [embedded]="true"
               (addRequested)="onAddRequested()"
               (editRequested)="onEditRequested($event)"
               (deleteRequested)="onDeleteRequested($event)"
-               />
+            />
           </div>
         }
-        @case ('daySet') {
-          <app-day-set-feature [embedded]="true"
+        @case ("daySet") {
+          <app-day-set-feature
+            [embedded]="true"
             (dataChanged)="onLinkedDataChanged()"
-           />
+          />
         }
-        @case ('slot') {
-          <app-slot-feature [embedded]="true"
+        @case ("slot") {
+          <app-slot-feature
+            [embedded]="true"
             (dataChanged)="onLinkedDataChanged()"
-           />
+          />
         }
       }
     </div>
@@ -109,13 +125,15 @@
     </div>
 
     <mat-dialog-content class="cycle-form-dialog__content">
-      <app-form-cycle [mode]="formMode"
+      <app-form-cycle
+        [mode]="formMode"
         [cycle]="formInitialValue"
         [daySets]="daySetListItems"
         [nutritionKeys]="nutritionKeys"
         [showHeading]="false"
         [inDialog]="true"
-        (submitted)="onFormSubmitted($event)" />
+        (submitted)="onFormSubmitted($event)"
+      />
     </mat-dialog-content>
   </div>
 </ng-template>
@@ -137,8 +155,9 @@
         <div>
           <p class="text-sm font-semibold text-slate-900">Portee du recalcul</p>
           <p class="mt-1 text-sm text-slate-600">
-            `Futures` applique le changement a partir d'aujourd'hui ({{ impactEffectiveDateLocal }}).
-            `Toutes` rejoue toute la timeline.
+            `Futures` applique le changement a partir d'aujourd'hui ({{
+              impactEffectiveDateLocal
+            }}). `Toutes` rejoue toute la timeline.
           </p>
         </div>
 
@@ -146,7 +165,8 @@
           [(ngModel)]="impactScope"
           [hideSingleSelectionIndicator]="true"
           class="cycle-impact-toggle"
-          name="impactScope">
+          name="impactScope"
+        >
           <mat-button-toggle value="future">Futures</mat-button-toggle>
           <mat-button-toggle value="all">Toutes</mat-button-toggle>
         </mat-button-toggle-group>
@@ -156,7 +176,8 @@
         <div>
           <p class="text-sm font-semibold text-slate-900">Gestion des trous</p>
           <p class="mt-1 text-sm text-slate-600">
-            `Conserver` laisse les trous existants. `Compacter` recolle toute la suite sans vide.
+            `Conserver` laisse les trous existants. `Compacter` recolle toute la
+            suite sans vide.
           </p>
         </div>
 
@@ -164,7 +185,8 @@
           [(ngModel)]="impactGapMode"
           [hideSingleSelectionIndicator]="true"
           class="cycle-impact-toggle"
-          name="impactGapMode">
+          name="impactGapMode"
+        >
           <mat-button-toggle value="preserve">Conserver</mat-button-toggle>
           <mat-button-toggle value="compact">Compacter</mat-button-toggle>
         </mat-button-toggle-group>
@@ -172,10 +194,21 @@
     </mat-dialog-content>
 
     <mat-dialog-actions align="end" class="gap-2">
-      <button mat-stroked-button type="button" (click)="cancelImpactUpdate()" [disabled]="saving">
+      <button
+        mat-stroked-button
+        type="button"
+        (click)="cancelImpactUpdate()"
+        [disabled]="saving"
+      >
         Annuler
       </button>
-      <button mat-raised-button color="primary" type="button" (click)="confirmImpactUpdate()" [disabled]="saving">
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        (click)="confirmImpactUpdate()"
+        [disabled]="saving"
+      >
         Appliquer
       </button>
     </mat-dialog-actions>

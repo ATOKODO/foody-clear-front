@@ -18,6 +18,7 @@ export interface Cycle {
   proteins?: number;
   carbs?: number;
   lipids?: number;
+  energyKcal?: number;
   nutritionValues?: CycleNutritionValue[];
   durationDays: number;
   durationCount: number;

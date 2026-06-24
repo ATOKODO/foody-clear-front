@@ -1,4 +1,3 @@
-
 import {
   Component,
   OnChanges,
@@ -6,7 +5,7 @@ import {
   SimpleChanges,
   ChangeDetectionStrategy,
   input,
-  output
+  output,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -15,9 +14,10 @@ import { TypeDuree } from '../form-cycle/form-cycle';
 
 export type CycleListMode = 'manage' | 'select-single' | 'select-multi';
 export type CycleBreakdownStatus = 'under' | 'exact' | 'over' | 'missing';
-export type CycleBreakdownMetricKey = 'proteins' | 'carbs' | 'lipids';
+export type CycleBreakdownMetricKey = 'kcal' | 'proteins' | 'carbs' | 'lipids';
 
 export interface CycleMacroTotals {
+  energyKcal: number;
   proteins: number;
   carbs: number;
   lipids: number;
@@ -26,6 +26,7 @@ export interface CycleMacroTotals {
 export interface CycleBreakdownMetric {
   key: CycleBreakdownMetricKey;
   label: string;
+  unit: 'g' | 'kcal';
   value: number;
   target: number;
   percentage: number | null;
@@ -54,7 +55,7 @@ export interface CycleDaySetBreakdown {
 }
 
 export interface CycleEmbeddedSummaryCard {
-  key: 'kcal' | CycleBreakdownMetricKey;
+  key: CycleBreakdownMetricKey;
   label: string;
   unit: 'g' | 'kcal';
   value: number;
@@ -186,7 +187,9 @@ export class ListCycle implements OnInit, OnChanges {
   }
 
   formatAmount(value: number): string {
-    return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, '');
+    return Number.isInteger(value)
+      ? String(value)
+      : value.toFixed(2).replace(/\.?0+$/, '');
   }
 
   formatPercent(percentage: number | null): string {
@@ -211,15 +214,12 @@ export class ListCycle implements OnInit, OnChanges {
   }
 
   getEmbeddedSummaryCards(cycle: CycleListItem): CycleEmbeddedSummaryCard[] {
-    const targetCalories = this.calculateCalories(cycle);
-    const effectiveCalories = this.calculateCalories(cycle.daySetTotals);
-
     return [
       this.buildEmbeddedSummaryCard(
         'kcal',
         'KCAL',
-        effectiveCalories,
-        targetCalories,
+        cycle.daySetTotals.energyKcal,
+        cycle.energyKcal,
         'kcal',
       ),
       this.buildEmbeddedSummaryCard(
@@ -367,7 +367,9 @@ export class ListCycle implements OnInit, OnChanges {
     );
 
     if (this.isSingleSelectMode && this.selectedIdSet.size > 1) {
-      const firstSelected = this.resolvedCycles.find((item) => this.selectedIdSet.has(item.id));
+      const firstSelected = this.resolvedCycles.find((item) =>
+        this.selectedIdSet.has(item.id),
+      );
       this.selectedIdSet.clear();
       if (firstSelected) {
         this.selectedIdSet.add(firstSelected.id);
@@ -376,11 +378,9 @@ export class ListCycle implements OnInit, OnChanges {
   }
 
   private getSelectedItems(): CycleListItem[] {
-    return this.resolvedCycles.filter((item) => this.selectedIdSet.has(item.id));
-  }
-
-  private calculateCalories(totals: CycleMacroTotals): number {
-    return this.roundNumber((totals.proteins * 4) + (totals.carbs * 4) + (totals.lipids * 9));
+    return this.resolvedCycles.filter((item) =>
+      this.selectedIdSet.has(item.id),
+    );
   }
 
   private buildEmbeddedSummaryCard(
@@ -400,7 +400,9 @@ export class ListCycle implements OnInit, OnChanges {
       value: roundedValue,
       target: roundedTarget,
       percentage:
-        roundedTarget > 0 ? this.roundNumber((roundedValue / roundedTarget) * 100) : null,
+        roundedTarget > 0
+          ? this.roundNumber((roundedValue / roundedTarget) * 100)
+          : null,
       status: this.resolveComparisonStatus(roundedValue, roundedTarget),
       caption: 'Moyenne journaliere effective',
     };

@@ -1,5 +1,13 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -24,7 +32,13 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 @Component({
   selector: 'app-day-set-feature',
-  imports: [MatButtonModule, MatCardModule, UiErrorPanel, DaySetList, DaySetForm],
+  imports: [
+    MatButtonModule,
+    MatCardModule,
+    UiErrorPanel,
+    DaySetList,
+    DaySetForm,
+  ],
   templateUrl: './day-set.feature.html',
   styleUrl: './day-set.feature.scss',
   host: {
@@ -63,8 +77,8 @@ export class DaySetFeature implements OnInit {
       nutritionValues: slot.nutritionValues ?? [],
     })),
   );
-  loading = false;
-  saving = false;
+  private readonly loadingState = signal(false);
+  private readonly savingState = signal(false);
 
   readonly formVisible = signal(false);
   formMode: DaySetFormMode = 'add';
@@ -73,7 +87,7 @@ export class DaySetFeature implements OnInit {
 
   lastResponse: unknown = null;
   lastError: unknown = null;
-  loadingMeta = false;
+  private readonly loadingMetaState = signal(false);
   lastMetaError: unknown = null;
   nutritionKeys: NutritionKeyMeta[] = [];
   templates: TemplateSummary[] = [];
@@ -96,6 +110,30 @@ export class DaySetFeature implements OnInit {
     this.loadSlots();
     this.loadTemplates();
     this.loadDaySets();
+  }
+
+  get loading(): boolean {
+    return this.loadingState();
+  }
+
+  set loading(value: boolean) {
+    this.loadingState.set(value);
+  }
+
+  get saving(): boolean {
+    return this.savingState();
+  }
+
+  set saving(value: boolean) {
+    this.savingState.set(value);
+  }
+
+  get loadingMeta(): boolean {
+    return this.loadingMetaState();
+  }
+
+  set loadingMeta(value: boolean) {
+    this.loadingMetaState.set(value);
   }
 
   get daySets(): DaySet[] {
@@ -174,7 +212,10 @@ export class DaySetFeature implements OnInit {
     });
   }
 
-  onFormSubmitted(event: { mode: DaySetFormMode; value: DaySetFormValue }): void {
+  onFormSubmitted(event: {
+    mode: DaySetFormMode;
+    value: DaySetFormValue;
+  }): void {
     const payload = this.toCreateDto(event.value);
     this.saving = true;
 
@@ -250,7 +291,9 @@ export class DaySetFeature implements OnInit {
     view.requestAnimationFrame(() => {
       const header = this.document.querySelector('.app-shell__header');
       this.embeddedDialogTopOffset.set(
-        header instanceof HTMLElement ? Math.ceil(header.getBoundingClientRect().bottom) : 0,
+        header instanceof HTMLElement
+          ? Math.ceil(header.getBoundingClientRect().bottom)
+          : 0,
       );
     });
   }
@@ -329,7 +372,9 @@ export class DaySetFeature implements OnInit {
     });
   }
 
-  private normalizeNutritionValues(values: CycleNutritionValue[]): CycleNutritionValue[] {
+  private normalizeNutritionValues(
+    values: CycleNutritionValue[],
+  ): CycleNutritionValue[] {
     return values
       .map((value) => ({
         nutritionKey: value.nutritionKey.trim().toUpperCase(),
@@ -396,6 +441,8 @@ export class DaySetFeature implements OnInit {
   }
 
   private normalizeSlotIds(slotIds: number[] | null | undefined): number[] {
-    return Array.from(new Set((slotIds ?? []).filter((id) => Number.isInteger(id) && id > 0)));
+    return Array.from(
+      new Set((slotIds ?? []).filter((id) => Number.isInteger(id) && id > 0)),
+    );
   }
 }

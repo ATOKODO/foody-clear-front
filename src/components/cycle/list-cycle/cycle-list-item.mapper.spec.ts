@@ -1,5 +1,8 @@
 import { buildCycleListItem } from './cycle-list-item.mapper';
-import { Cycle, CycleNutritionValue } from '../../../interfaces/cycle.interface';
+import {
+  Cycle,
+  CycleNutritionValue,
+} from '../../../interfaces/cycle.interface';
 import { DaySet } from '../../../interfaces/day-set.interface';
 import { Slot } from '../../../interfaces/slot.interface';
 
@@ -18,6 +21,7 @@ describe('buildCycleListItem', () => {
     expect(item.proteins).toBe(180);
     expect(item.carbs).toBe(120);
     expect(item.lipids).toBe(60);
+    expect(item.energyKcal).toBe(1740);
   });
 
   it('should respect daySetOrder when resolving day sets', () => {
@@ -185,11 +189,14 @@ describe('buildCycleListItem', () => {
 
     expect(item.missingDayCount).toBe(4);
     expect(item.daySetTotals).toEqual({
+      energyKcal: 975,
       proteins: 90,
       carbs: 75,
       lipids: 35,
     });
-    expect(item.daySetMetrics.every((metric) => metric.status !== 'over')).toBeTrue();
+    expect(
+      item.daySetMetrics.every((metric) => metric.status !== 'over'),
+    ).toBeTrue();
   });
 
   it('should detect overflow from the effective daily average when associated day sets exceed the target', () => {
@@ -232,7 +239,9 @@ describe('buildCycleListItem', () => {
 
     expect(item.missingDayCount).toBe(4);
     expect(item.daySetTotals.proteins).toBe(138.57);
-    expect(item.daySetMetrics.find((metric) => metric.key === 'proteins')?.status).toBe('over');
+    expect(
+      item.daySetMetrics.find((metric) => metric.key === 'proteins')?.status,
+    ).toBe('over');
     expect(item.hasDaySetOverflow).toBeTrue();
   });
 
@@ -251,11 +260,78 @@ describe('buildCycleListItem', () => {
 
     expect(item.missingDayCount).toBe(5);
     expect(item.daySetTotals).toEqual({
+      energyKcal: 1615,
       proteins: 150,
       carbs: 130,
       lipids: 55,
     });
-    expect(item.daySetMetrics.every((metric) => metric.status === 'exact')).toBeTrue();
+    expect(
+      item.daySetMetrics.every((metric) => metric.status === 'exact'),
+    ).toBeTrue();
+  });
+
+  it('should use explicit ENERGY_KCAL values from the backend', () => {
+    const item = buildCycleListItem(
+      createCycle({
+        durationDays: 2,
+        nutritionValues: [
+          nutritionValue('ENERGY_KCAL', 2072, 'KCAL'),
+          nutritionValue('PROTEIN', 126),
+          nutritionValue('CARBOHYDRATE', 276),
+          nutritionValue('FAT', 59),
+        ],
+        daySetOrder: [1, 0],
+        daySets: [
+          createDaySet({
+            id: 1,
+            nutritionValues: [
+              nutritionValue('ENERGY_KCAL', 1800, 'KCAL'),
+              nutritionValue('PROTEIN', 100),
+              nutritionValue('CARBOHYDRATE', 200),
+              nutritionValue('FAT', 50),
+            ],
+          }),
+        ],
+      }),
+    );
+
+    expect(item.energyKcal).toBe(2072);
+    expect(item.daySets[0].totals.energyKcal).toBe(1800);
+    expect(item.daySetTotals.energyKcal).toBe(1936);
+  });
+
+  it('should fill zero timeline days with cycle nutrition targets', () => {
+    const item = buildCycleListItem(
+      createCycle({
+        durationDays: 30,
+        nutritionValues: [
+          nutritionValue('ENERGY_KCAL', 2072, 'KCAL'),
+          nutritionValue('PROTEIN', 126),
+          nutritionValue('CARBOHYDRATE', 276),
+          nutritionValue('FAT', 59),
+        ],
+        daySetOrder: [0, 0, 0, 1],
+        daySets: [
+          createDaySet({
+            id: 1,
+            nutritionValues: [
+              nutritionValue('ENERGY_KCAL', 2072, 'KCAL'),
+              nutritionValue('PROTEIN', 126),
+              nutritionValue('CARBOHYDRATE', 276),
+              nutritionValue('FAT', 59),
+            ],
+          }),
+        ],
+      }),
+    );
+
+    expect(item.missingDayCount).toBe(29);
+    expect(item.daySetTotals).toEqual({
+      energyKcal: 2072,
+      proteins: 126,
+      carbs: 276,
+      lipids: 59,
+    });
   });
 
   it('should derive the secondary duration label from durationDays', () => {

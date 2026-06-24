@@ -1,11 +1,22 @@
-
-import { Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  TemplateRef,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DateTime } from 'luxon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -15,7 +26,10 @@ import {
   CycleFormValue,
   FormCycle,
 } from '../../components/cycle/form-cycle/form-cycle';
-import { CycleListItem, ListCycle } from '../../components/cycle/list-cycle/list-cycle';
+import {
+  CycleListItem,
+  ListCycle,
+} from '../../components/cycle/list-cycle/list-cycle';
 import {
   buildCycleListItem,
   deriveCycleDurationPresentation,
@@ -42,6 +56,10 @@ import { SlotService } from '../../services/slot-service';
 import { DaySetFeature } from '../day-set/day-set.feature';
 import { SlotFeature } from '../slot/slot.feature';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import {
+  getFallbackUnitsForNutritionKey,
+  resolveDefaultNutritionKeys,
+} from '../../components/shared/default-nutrition-values';
 import {
   SegmentedToggle,
   SegmentedToggleOption,
@@ -99,8 +117,8 @@ const CYCLE_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<CycleHubView>[] = [
     SegmentedToggle,
     UiErrorPanel,
     DaySetFeature,
-    SlotFeature
-],
+    SlotFeature,
+  ],
   templateUrl: './cycle.feature.html',
   styleUrl: './cycle.feature.scss',
 })
@@ -110,18 +128,22 @@ export class CycleFeature implements OnInit {
   private readonly metaSrv = inject(MetaService);
   private readonly slotSrv = inject(SlotService);
 
-  private readonly cycleFormDialogTemplate = viewChild<TemplateRef<unknown>>('cycleFormDialog');
+  private readonly cycleFormDialogTemplate =
+    viewChild<TemplateRef<unknown>>('cycleFormDialog');
 
-  private readonly cycleImpactDialogTemplate = viewChild<TemplateRef<unknown>>('cycleImpactDialog');
+  private readonly cycleImpactDialogTemplate =
+    viewChild<TemplateRef<unknown>>('cycleImpactDialog');
   private readonly daySetFeature = viewChild(DaySetFeature);
   private readonly slotFeature = viewChild(SlotFeature);
 
   private readonly dialog = inject(MatDialog);
 
   baseUrl = '';
-  loading = false;
-  saving = false;
-  loadingMeta = false;
+  private readonly loadingState = signal(false);
+  private readonly savingState = signal(false);
+  private readonly loadingMetaState = signal(false);
+  private readonly loadingDaySetsState = signal(false);
+  private readonly loadingSlotsState = signal(false);
 
   private readonly cyclesState = signal<Cycle[]>([]);
   private readonly daySetsState = signal<DaySet[]>([]);
@@ -192,12 +214,60 @@ export class CycleFeature implements OnInit {
     this.loadCycles();
   }
 
-  private get macroNutritionKeys(): { proteins: string; carbs: string; lipids: string } {
+  private get macroNutritionKeys(): {
+    proteins: string;
+    carbs: string;
+    lipids: string;
+  } {
     return this.macroNutritionKeysState();
   }
 
-  private set macroNutritionKeys(value: { proteins: string; carbs: string; lipids: string }) {
+  private set macroNutritionKeys(value: {
+    proteins: string;
+    carbs: string;
+    lipids: string;
+  }) {
     this.macroNutritionKeysState.set(value);
+  }
+
+  get loading(): boolean {
+    return this.loadingState();
+  }
+
+  set loading(value: boolean) {
+    this.loadingState.set(value);
+  }
+
+  get saving(): boolean {
+    return this.savingState();
+  }
+
+  set saving(value: boolean) {
+    this.savingState.set(value);
+  }
+
+  get loadingMeta(): boolean {
+    return this.loadingMetaState();
+  }
+
+  set loadingMeta(value: boolean) {
+    this.loadingMetaState.set(value);
+  }
+
+  get loadingDaySets(): boolean {
+    return this.loadingDaySetsState();
+  }
+
+  set loadingDaySets(value: boolean) {
+    this.loadingDaySetsState.set(value);
+  }
+
+  get loadingSlots(): boolean {
+    return this.loadingSlotsState();
+  }
+
+  set loadingSlots(value: boolean) {
+    this.loadingSlotsState.set(value);
   }
 
   get cycles(): Cycle[] {
@@ -241,7 +311,33 @@ export class CycleFeature implements OnInit {
   }
 
   get activeViewBusy(): boolean {
-    return this.activeView === 'cycle' && (this.loading || this.loadingMeta || this.saving);
+    const daySetFeature = this.daySetFeature();
+    const slotFeature = this.slotFeature();
+
+    switch (this.activeView) {
+      case 'cycle':
+        return (
+          this.loading ||
+          this.loadingMeta ||
+          this.loadingDaySets ||
+          this.loadingSlots ||
+          this.saving
+        );
+      case 'daySet':
+        return (
+          !!daySetFeature &&
+          (daySetFeature.loading ||
+            daySetFeature.loadingMeta ||
+            daySetFeature.saving)
+        );
+      case 'slot':
+        return (
+          !!slotFeature &&
+          (slotFeature.loading || slotFeature.loadingMeta || slotFeature.saving)
+        );
+      default:
+        return false;
+    }
   }
 
   get formDialogSubtitle(): string {
@@ -306,7 +402,9 @@ export class CycleFeature implements OnInit {
       return;
     }
 
-    const durationPresentation = deriveCycleDurationPresentation(resolveCycleDurationDays(cycle));
+    const durationPresentation = deriveCycleDurationPresentation(
+      resolveCycleDurationDays(cycle),
+    );
 
     this.formMode = 'edit';
     this.editingCycleId = cycle.id;
@@ -379,16 +477,25 @@ export class CycleFeature implements OnInit {
   }
 
   confirmImpactUpdate(): void {
-    if (this.pendingCycleUpdatePayload === null || this.editingCycleId === null) {
+    if (
+      this.pendingCycleUpdatePayload === null ||
+      this.editingCycleId === null
+    ) {
       return;
     }
 
-    this.submitCycleUpdate(this.editingCycleId, this.pendingCycleUpdatePayload, {
-      assignmentRescheduleScope: this.impactScope,
-      assignmentGapMode: this.impactGapMode,
-      assignmentEffectiveDateLocal:
-        this.impactScope === 'future' ? this.resolveTodayDateLocal() : undefined,
-    });
+    this.submitCycleUpdate(
+      this.editingCycleId,
+      this.pendingCycleUpdatePayload,
+      {
+        assignmentRescheduleScope: this.impactScope,
+        assignmentGapMode: this.impactGapMode,
+        assignmentEffectiveDateLocal:
+          this.impactScope === 'future'
+            ? this.resolveTodayDateLocal()
+            : undefined,
+      },
+    );
   }
 
   cancelImpactUpdate(): void {
@@ -506,23 +613,29 @@ export class CycleFeature implements OnInit {
   }
 
   private loadDaySets(): void {
+    this.loadingDaySets = true;
     this.daySetSrv.findAll().subscribe({
       next: (response) => {
         this.daySets = response;
+        this.loadingDaySets = false;
       },
       error: () => {
         this.daySets = [];
+        this.loadingDaySets = false;
       },
     });
   }
 
   private loadSlots(): void {
+    this.loadingSlots = true;
     this.slotSrv.findAll().subscribe({
       next: (response) => {
         this.slots = response;
+        this.loadingSlots = false;
       },
       error: () => {
         this.slots = [];
+        this.loadingSlots = false;
       },
     });
   }
@@ -558,7 +671,11 @@ export class CycleFeature implements OnInit {
     }
 
     const macros = getCycleMacroTotals(cycle, this.macroNutritionKeys);
-    return this.buildNutritionValues(macros.proteins, macros.carbs, macros.lipids);
+    return this.buildNutritionValues(
+      macros.proteins,
+      macros.carbs,
+      macros.lipids,
+    );
   }
 
   private toCreateDto(value: CycleFormValue): CreateCycleDto {
@@ -619,7 +736,9 @@ export class CycleFeature implements OnInit {
       return false;
     }
 
-    const existingCycle = this.cycles.find((cycle) => cycle.id === this.editingCycleId);
+    const existingCycle = this.cycles.find(
+      (cycle) => cycle.id === this.editingCycleId,
+    );
     if (!existingCycle) {
       return false;
     }
@@ -636,7 +755,11 @@ export class CycleFeature implements OnInit {
     carbs: number,
     lipids: number,
   ): CycleNutritionValue[] {
+    const [energyKey] = resolveDefaultNutritionKeys(this.nutritionKeys);
+    const energyKcal = this.roundNumber((proteins * 4) + (carbs * 4) + (lipids * 9));
+
     return [
+      this.buildNutritionValue(energyKey, energyKcal),
       this.buildNutritionValue(this.macroNutritionKeys.proteins, proteins),
       this.buildNutritionValue(this.macroNutritionKeys.carbs, carbs),
       this.buildNutritionValue(this.macroNutritionKeys.lipids, lipids),
@@ -691,10 +814,12 @@ export class CycleFeature implements OnInit {
         key.key.toUpperCase() === nutritionKey.toUpperCase(),
     );
     if (!found || found.allowedUnits.length === 0) {
-      return 'G';
+      return getFallbackUnitsForNutritionKey(nutritionKey)[0];
     }
 
-    const gramUnit = found.allowedUnits.find((unit) => unit.toUpperCase() === 'G');
+    const gramUnit = found.allowedUnits.find(
+      (unit) => unit.toUpperCase() === 'G',
+    );
     return gramUnit ?? found.allowedUnits[0];
   }
 
@@ -712,10 +837,14 @@ export class CycleFeature implements OnInit {
   }
 
   private normalizeDaySetIds(daySetIds: number[] | null | undefined): number[] {
-    return Array.from(new Set((daySetIds ?? []).filter((id) => Number.isInteger(id) && id > 0)));
+    return Array.from(
+      new Set((daySetIds ?? []).filter((id) => Number.isInteger(id) && id > 0)),
+    );
   }
 
-  private normalizeDaySetTimeline(daySetOrder: number[] | null | undefined): number[] {
+  private normalizeDaySetTimeline(
+    daySetOrder: number[] | null | undefined,
+  ): number[] {
     return (daySetOrder ?? [])
       .map((id) => Math.trunc(Number(id)))
       .filter((id) => Number.isInteger(id) && id >= 0);

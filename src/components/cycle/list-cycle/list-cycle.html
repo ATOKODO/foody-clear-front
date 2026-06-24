@@ -3,12 +3,16 @@
   [class.lc-shell--select-single]="isSingleSelectMode"
   [class.lc-shell--embedded]="isEmbeddedManageMode"
   data-testid="cycle-list"
-  aria-label="Liste des cycles">
+  aria-label="Liste des cycles"
+>
   @if (!isEmbeddedManageMode) {
     <div
       class="lc-shell__header mb-4 flex items-center justify-between gap-3"
-      [class.lc-shell__header--select-single]="isSingleSelectMode">
-      <h3 class="lc-shell__title text-lg font-semibold text-slate-900">Cycles</h3>
+      [class.lc-shell__header--select-single]="isSingleSelectMode"
+    >
+      <h3 class="lc-shell__title text-lg font-semibold text-slate-900">
+        Cycles
+      </h3>
       @if (isManageMode && showAddButton()) {
         <button
           mat-raised-button
@@ -16,7 +20,8 @@
           data-testid="cycle-add"
           class="add-btn"
           type="button"
-          (click)="onAddCycle()">
+          (click)="onAddCycle()"
+        >
           Ajouter un cycle
         </button>
       }
@@ -25,43 +30,65 @@
 
   @if (hasItems) {
     <div class="grid gap-3">
-      @for (cycle of resolvedCycles; track trackById(i, cycle); let i = $index) {
+      @for (
+        cycle of resolvedCycles;
+        track trackById(i, cycle);
+        let i = $index
+      ) {
         <mat-card
           appearance="outlined"
           [attr.data-testid]="'cycle-card-' + cycle.id"
           class="lc-card rounded-2xl"
           [class.lc-card--select-single]="isSingleSelectMode"
           [class.lc-card--embedded]="isEmbeddedManageMode"
-          [class.lc-card-active]="isRowActive(cycle, i)">
+          [class.lc-card-active]="isRowActive(cycle, i)"
+        >
           <mat-card-content
             class="lc-card__content p-3 sm:p-4"
             [class.cursor-pointer]="isSingleSelectMode"
             [attr.tabindex]="isSingleSelectMode ? 0 : null"
             [attr.role]="isSingleSelectMode ? 'button' : null"
             (click)="onRowClick(cycle)"
-            (keydown)="onRowKeydown($event, cycle)">
+            (keydown)="onRowKeydown($event, cycle)"
+          >
             @if (isEmbeddedManageMode) {
               <div class="lc-card__body lc-card__body--embedded">
                 <div class="lc-card__identity flex flex-wrap items-start gap-3">
-                  <span class="lc-color-dot mt-1" [style.backgroundColor]="cycle.color"></span>
+                  <span
+                    class="lc-color-dot mt-1"
+                    [style.backgroundColor]="cycle.color"
+                  ></span>
                   <div class="lc-card__identity-copy min-w-0 flex-1">
-                    <div class="lc-card__meta flex flex-wrap items-center gap-2">
-                      <p class="lc-cycle-title text-base font-semibold text-slate-900">{{ cycle.title }}</p>
+                    <div
+                      class="lc-card__meta flex flex-wrap items-center gap-2"
+                    >
+                      <p
+                        class="lc-cycle-title text-base font-semibold text-slate-900"
+                      >
+                        {{ cycle.title }}
+                      </p>
                       @if (cycle.missingDayCount > 0) {
                         <span class="lc-meta-chip">
                           {{ cycle.missingDayCount }} jour(s) sans day set
                         </span>
                       }
                       @if (cycle.hasDaySetOverflow) {
-                        <span class="lc-meta-chip">
-                          Day sets &gt; cycle
-                        </span>
+                        <span class="lc-meta-chip"> Day sets &gt; cycle </span>
                       }
-                      <span class="lc-meta-chip">{{ cycle.durationDays }} jour(s)</span>
+                      <span class="lc-meta-chip"
+                        >{{ cycle.durationDays }} jour(s)</span
+                      >
                       <span class="lc-meta-chip">
-                        {{ formatDuration(cycle.durationCount, cycle.durationType) }}
+                        {{
+                          formatDuration(
+                            cycle.durationCount,
+                            cycle.durationType
+                          )
+                        }}
                       </span>
-                      <span class="lc-meta-chip">{{ cycle.daySets.length }} day set(s)</span>
+                      <span class="lc-meta-chip"
+                        >{{ cycle.daySets.length }} day set(s)</span
+                      >
                     </div>
                     <div class="lc-card__alerts mt-2 flex flex-wrap gap-2">
                       @if (cycle.hasSlotOverflow) {
@@ -70,7 +97,9 @@
                         </span>
                       }
                       @if (cycle.hasMissingSlotBreakdown) {
-                        <span class="lc-overview-badge lc-overview-badge-missing">
+                        <span
+                          class="lc-overview-badge lc-overview-badge-missing"
+                        >
                           Decomposition slots partielle
                         </span>
                       }
@@ -80,32 +109,52 @@
                 <section class="lc-embedded-summary rounded-2xl p-4">
                   <div class="lc-embedded-summary__copy">
                     <p class="lc-section-label">Cible cycle</p>
-                    <p class="lc-summary-panel__subtitle text-xs text-slate-500">
-                      Vue synthese de la cible et de la moyenne journaliere effective.
+                    <p
+                      class="lc-summary-panel__subtitle text-xs text-slate-500"
+                    >
+                      Vue synthese de la cible et de la moyenne journaliere
+                      effective.
                     </p>
                   </div>
-                  <div class="lc-embedded-summary__grid mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    @for (card of getEmbeddedSummaryCards(cycle); track trackByEmbeddedCard($index, card)) {
+                  <div
+                    class="lc-embedded-summary__grid mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+                  >
+                    @for (
+                      card of getEmbeddedSummaryCards(cycle);
+                      track trackByEmbeddedCard($index, card)
+                    ) {
                       <article
                         class="lc-breakdown-card lc-breakdown-card--summary rounded-2xl p-3"
-                        [class]="getStatusClass(card.status)">
+                        [class]="getStatusClass(card.status)"
+                      >
                         <div class="lc-breakdown-head">
-                          <p class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500">
+                          <p
+                            class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500"
+                          >
                             {{ card.label }}
                           </p>
-                          <span class="lc-status-badge" [class]="getStatusClass(card.status)">
+                          <span
+                            class="lc-status-badge"
+                            [class]="getStatusClass(card.status)"
+                          >
                             {{ getStatusLabel(card.status) }}
                           </span>
                         </div>
-                        <p class="lc-breakdown-card__value mt-3 text-sm font-semibold text-slate-900">
-                          {{ formatAmount(card.value) }} / {{ formatAmount(card.target) }} {{ card.unit }}
+                        <p
+                          class="lc-breakdown-card__value mt-3 text-sm font-semibold text-slate-900"
+                        >
+                          {{ formatAmount(card.value) }} /
+                          {{ formatAmount(card.target) }} {{ card.unit }}
                         </p>
                         <p
                           class="lc-breakdown-card__percentage mt-2 text-xs font-medium lc-status-text"
-                          [class]="getStatusClass(card.status)">
+                          [class]="getStatusClass(card.status)"
+                        >
                           {{ formatPercent(card.percentage) }}
                         </p>
-                        <p class="lc-breakdown-card__caption mt-2 text-xs text-slate-500">
+                        <p
+                          class="lc-breakdown-card__caption mt-2 text-xs text-slate-500"
+                        >
                           {{ card.caption }}
                         </p>
                       </article>
@@ -116,49 +165,84 @@
             } @else {
               <div
                 class="lc-card__layout flex items-start gap-3"
-                [class.lc-card__layout--select-single]="isSingleSelectMode">
+                [class.lc-card__layout--select-single]="isSingleSelectMode"
+              >
                 @if (isMultiSelectMode) {
-                  <mat-checkbox class="pt-0.5"
+                  <mat-checkbox
+                    class="pt-0.5"
                     [checked]="isSelected(cycle.id)"
                     [attr.aria-label]="'Selectionner ' + cycle.title"
-                    (click)="onCheckboxClick($event, cycle)" />
+                    (click)="onCheckboxClick($event, cycle)"
+                  />
                 }
                 <div
                   class="lc-card__body flex-1 space-y-3"
-                  [class.lc-card__body--select-single]="isSingleSelectMode">
+                  [class.lc-card__body--select-single]="isSingleSelectMode"
+                >
                   <div
                     class="lc-card__top flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between"
-                    [class.lc-card__top--select-single]="isSingleSelectMode">
+                    [class.lc-card__top--select-single]="isSingleSelectMode"
+                  >
                     <div class="lc-card__main min-w-0 flex-1 space-y-3">
-                      <div class="lc-card__identity flex flex-wrap items-start gap-3">
-                        <span class="lc-color-dot mt-1" [style.backgroundColor]="cycle.color"></span>
+                      <div
+                        class="lc-card__identity flex flex-wrap items-start gap-3"
+                      >
+                        <span
+                          class="lc-color-dot mt-1"
+                          [style.backgroundColor]="cycle.color"
+                        ></span>
                         <div class="lc-card__identity-copy min-w-0 flex-1">
-                          <div class="lc-card__meta flex flex-wrap items-center gap-2">
-                            <p class="lc-cycle-title text-base font-semibold text-slate-900">{{ cycle.title }}</p>
-                            <span class="lc-meta-chip">{{ cycle.durationDays }} jour(s)</span>
+                          <div
+                            class="lc-card__meta flex flex-wrap items-center gap-2"
+                          >
+                            <p
+                              class="lc-cycle-title text-base font-semibold text-slate-900"
+                            >
+                              {{ cycle.title }}
+                            </p>
+                            <span class="lc-meta-chip"
+                              >{{ cycle.durationDays }} jour(s)</span
+                            >
                             <span class="lc-meta-chip">
-                              {{ formatDuration(cycle.durationCount, cycle.durationType) }}
+                              {{
+                                formatDuration(
+                                  cycle.durationCount,
+                                  cycle.durationType
+                                )
+                              }}
                             </span>
-                            <span class="lc-meta-chip">{{ cycle.daySets.length }} day set(s)</span>
+                            <span class="lc-meta-chip"
+                              >{{ cycle.daySets.length }} day set(s)</span
+                            >
                           </div>
-                          <div class="lc-card__alerts mt-2 flex flex-wrap gap-2">
+                          <div
+                            class="lc-card__alerts mt-2 flex flex-wrap gap-2"
+                          >
                             @if (cycle.missingDayCount > 0) {
-                              <span class="lc-overview-badge lc-overview-badge-missing">
+                              <span
+                                class="lc-overview-badge lc-overview-badge-missing"
+                              >
                                 {{ cycle.missingDayCount }} jour(s) sans day set
                               </span>
                             }
                             @if (cycle.hasDaySetOverflow) {
-                              <span class="lc-overview-badge lc-overview-badge-over">
+                              <span
+                                class="lc-overview-badge lc-overview-badge-over"
+                              >
                                 Day sets &gt; cycle
                               </span>
                             }
                             @if (cycle.hasSlotOverflow) {
-                              <span class="lc-overview-badge lc-overview-badge-over">
+                              <span
+                                class="lc-overview-badge lc-overview-badge-over"
+                              >
                                 Slots &gt; day set
                               </span>
                             }
                             @if (cycle.hasMissingSlotBreakdown) {
-                              <span class="lc-overview-badge lc-overview-badge-missing">
+                              <span
+                                class="lc-overview-badge lc-overview-badge-missing"
+                              >
                                 Decomposition slots partielle
                               </span>
                             }
@@ -167,40 +251,83 @@
                       </div>
                       <div
                         class="lc-summary-grid grid gap-3 lg:grid-cols-2"
-                        [class.lc-summary-grid--select-single]="isSingleSelectMode">
+                        [class.lc-summary-grid--select-single]="
+                          isSingleSelectMode
+                        "
+                      >
                         <section
                           class="lc-summary-panel lc-summary-panel--target rounded-2xl p-3"
-                          [class.lc-summary-panel--select-single]="isSingleSelectMode">
+                          [class.lc-summary-panel--select-single]="
+                            isSingleSelectMode
+                          "
+                        >
                           <div class="lc-summary-panel__copy">
                             <p class="lc-section-label">Cible cycle</p>
-                            <p class="lc-summary-panel__subtitle text-xs text-slate-500">
+                            <p
+                              class="lc-summary-panel__subtitle text-xs text-slate-500"
+                            >
                               Macros ciblees sur une journee type du cycle.
                             </p>
                           </div>
                           <div
-                            class="lc-macro-grid mt-3 grid gap-2 sm:grid-cols-3"
-                            [class.lc-macro-grid--select-single]="isSingleSelectMode">
-                            <div class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700">
-                              <p class="lc-macro-card__label text-xs uppercase tracking-wide text-slate-500">
+                            class="lc-macro-grid mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
+                            [class.lc-macro-grid--select-single]="
+                              isSingleSelectMode
+                            "
+                          >
+                            <div
+                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700"
+                            >
+                              <p
+                                class="lc-macro-card__label text-xs uppercase tracking-wide text-slate-500"
+                              >
+                                KCAL
+                              </p>
+                              <p
+                                class="lc-macro-card__value mt-1 text-base font-semibold text-slate-900"
+                              >
+                                {{ formatAmount(cycle.energyKcal) }} kcal
+                              </p>
+                            </div>
+                            <div
+                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700"
+                            >
+                              <p
+                                class="lc-macro-card__label text-xs uppercase tracking-wide text-slate-500"
+                              >
                                 Proteines
                               </p>
-                              <p class="lc-macro-card__value mt-1 text-base font-semibold text-slate-900">
+                              <p
+                                class="lc-macro-card__value mt-1 text-base font-semibold text-slate-900"
+                              >
                                 {{ formatAmount(cycle.proteins) }} g
                               </p>
                             </div>
-                            <div class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700">
-                              <p class="lc-macro-card__label text-xs uppercase tracking-wide text-slate-500">
+                            <div
+                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700"
+                            >
+                              <p
+                                class="lc-macro-card__label text-xs uppercase tracking-wide text-slate-500"
+                              >
                                 Glucides
                               </p>
-                              <p class="lc-macro-card__value mt-1 text-base font-semibold text-slate-900">
+                              <p
+                                class="lc-macro-card__value mt-1 text-base font-semibold text-slate-900"
+                              >
                                 {{ formatAmount(cycle.carbs) }} g
                               </p>
                             </div>
-                            <div class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700">
-                              <p class="lc-macro-card__label text-xs uppercase tracking-wide text-slate-500">
+                            <div
+                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700"
+                            >
+                              <p
+                                class="lc-macro-card__label text-xs uppercase tracking-wide text-slate-500"
+                              >
                                 Lipides
                               </p>
-                              <p class="lc-macro-card__value mt-1 text-base font-semibold text-slate-900">
+                              <p
+                                class="lc-macro-card__value mt-1 text-base font-semibold text-slate-900"
+                              >
                                 {{ formatAmount(cycle.lipids) }} g
                               </p>
                             </div>
@@ -208,14 +335,25 @@
                         </section>
                         <section
                           class="lc-summary-panel lc-summary-panel--effective rounded-2xl p-3"
-                          [class.lc-summary-panel--select-single]="isSingleSelectMode">
+                          [class.lc-summary-panel--select-single]="
+                            isSingleSelectMode
+                          "
+                        >
                           <div
                             class="lc-panel-head flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between"
-                            [class.lc-panel-head--select-single]="isSingleSelectMode">
+                            [class.lc-panel-head--select-single]="
+                              isSingleSelectMode
+                            "
+                          >
                             <div class="lc-summary-panel__copy">
-                              <p class="lc-section-label">Moyenne journaliere effective / cible cycle</p>
-                              <p class="lc-summary-panel__subtitle text-xs text-slate-500">
-                                {{ cycle.daySets.length }} day set(s) rattache(s)
+                              <p class="lc-section-label">
+                                Moyenne journaliere effective / cible cycle
+                              </p>
+                              <p
+                                class="lc-summary-panel__subtitle text-xs text-slate-500"
+                              >
+                                {{ cycle.daySets.length }} day set(s)
+                                rattache(s)
                               </p>
                             </div>
                             <button
@@ -223,38 +361,61 @@
                               type="button"
                               class="lc-toggle-btn"
                               [attr.aria-expanded]="isExpanded(cycle.id)"
-                              (click)="onToggleExpanded($event, cycle.id)">
+                              (click)="onToggleExpanded($event, cycle.id)"
+                            >
                               {{ getToggleLabel(cycle.id) }}
                             </button>
                           </div>
                           @if (cycle.missingDayCount > 0) {
                             <p class="mt-2 text-xs text-amber-700">
-                              {{ cycle.missingDayCount }} jour(s) sans day set reprennent directement la cible du cycle.
+                              {{ cycle.missingDayCount }} jour(s) sans day set
+                              reprennent directement la cible du cycle.
                             </p>
                           }
                           <div
-                            class="lc-breakdown-grid mt-3 grid gap-2 sm:grid-cols-3"
-                            [class.lc-breakdown-grid--select-single]="isSingleSelectMode">
-                            @for (metric of cycle.daySetMetrics; track trackByMetric($index, metric)) {
+                            class="lc-breakdown-grid mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
+                            [class.lc-breakdown-grid--select-single]="
+                              isSingleSelectMode
+                            "
+                          >
+                            @for (
+                              metric of cycle.daySetMetrics;
+                              track trackByMetric($index, metric)
+                            ) {
                               <div
                                 class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
-                                [class.lc-breakdown-card--select-single]="isSingleSelectMode"
-                                [class]="getStatusClass(metric.status)">
+                                [class.lc-breakdown-card--select-single]="
+                                  isSingleSelectMode
+                                "
+                                [class]="getStatusClass(metric.status)"
+                              >
                                 <div class="lc-breakdown-head">
-                                  <p class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500">
+                                  <p
+                                    class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500"
+                                  >
                                     {{ metric.label }}
                                   </p>
-                                  <span class="lc-status-badge" [class]="getStatusClass(metric.status)">
+                                  <span
+                                    class="lc-status-badge"
+                                    [class]="getStatusClass(metric.status)"
+                                  >
                                     {{ getStatusLabel(metric.status) }}
                                   </span>
                                 </div>
-                                <div class="mt-2 flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
-                                  <p class="lc-breakdown-card__value text-sm font-semibold text-slate-900">
-                                    {{ formatAmount(metric.value) }} / {{ formatAmount(metric.target) }} g
+                                <div
+                                  class="mt-2 flex flex-wrap items-end justify-between gap-x-3 gap-y-1"
+                                >
+                                  <p
+                                    class="lc-breakdown-card__value text-sm font-semibold text-slate-900"
+                                  >
+                                    {{ formatAmount(metric.value) }} /
+                                    {{ formatAmount(metric.target) }}
+                                    {{ metric.unit }}
                                   </p>
                                   <p
                                     class="lc-breakdown-card__percentage text-xs font-medium lc-status-text"
-                                    [class]="getStatusClass(metric.status)">
+                                    [class]="getStatusClass(metric.status)"
+                                  >
                                     {{ formatPercent(metric.percentage) }}
                                   </p>
                                 </div>
@@ -264,9 +425,16 @@
                         </section>
                       </div>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2 xl:max-w-xs xl:justify-end">
+                    <div
+                      class="flex flex-wrap items-center gap-2 xl:max-w-xs xl:justify-end"
+                    >
                       @if (isManageMode) {
-                        <button mat-stroked-button type="button" [attr.data-testid]="'cycle-edit-' + cycle.id" (click)="stopPropagation($event); onEdit(cycle)">
+                        <button
+                          mat-stroked-button
+                          type="button"
+                          [attr.data-testid]="'cycle-edit-' + cycle.id"
+                          (click)="stopPropagation($event); onEdit(cycle)"
+                        >
                           Modifier
                         </button>
                         <button
@@ -274,7 +442,8 @@
                           color="warn"
                           type="button"
                           [attr.data-testid]="'cycle-delete-' + cycle.id"
-                          (click)="stopPropagation($event); onDelete(cycle)">
+                          (click)="stopPropagation($event); onDelete(cycle)"
+                        >
                           Supprimer
                         </button>
                       }
@@ -287,52 +456,91 @@
               <div class="lc-detail-panel border-t border-slate-200 pt-3">
                 @if (cycle.daySets.length > 0) {
                   <div class="grid gap-3">
-                    @for (daySet of cycle.daySets; track trackByDaySetId($index, daySet)) {
+                    @for (
+                      daySet of cycle.daySets;
+                      track trackByDaySetId($index, daySet)
+                    ) {
                       <div
-                        class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-                        <div class="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                        class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
+                      >
+                        <div
+                          class="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between"
+                        >
                           <div class="min-w-0">
                             <div class="flex flex-wrap items-center gap-2">
-                              <p class="lc-dayset-title text-sm font-semibold text-slate-900">{{ daySet.title }}</p>
-                              <span class="lc-meta-chip">{{ daySet.slots.length }} slot(s)</span>
+                              <p
+                                class="lc-dayset-title text-sm font-semibold text-slate-900"
+                              >
+                                {{ daySet.title }}
+                              </p>
+                              <span class="lc-meta-chip"
+                                >{{ daySet.slots.length }} slot(s)</span
+                              >
                             </div>
-                            <p class="text-xs text-slate-500">Part du day set dans le cycle</p>
+                            <p class="text-xs text-slate-500">
+                              Part du day set dans le cycle
+                            </p>
                           </div>
                           <div class="flex flex-wrap gap-2">
                             @if (daySet.hasSlotOverflow) {
-                              <span class="lc-overview-badge lc-overview-badge-over">
+                              <span
+                                class="lc-overview-badge lc-overview-badge-over"
+                              >
                                 Slots &gt; day set
                               </span>
                             }
                             @if (daySet.hasMissingSlotBreakdown) {
                               <span
-                                class="lc-overview-badge lc-overview-badge-missing">
-                                {{ daySet.slots.length > 0 ? 'Slots partiels' : 'Slots indisponibles' }}
+                                class="lc-overview-badge lc-overview-badge-missing"
+                              >
+                                {{
+                                  daySet.slots.length > 0
+                                    ? "Slots partiels"
+                                    : "Slots indisponibles"
+                                }}
                               </span>
                             }
                           </div>
                         </div>
                         <div class="mt-3 grid gap-3 lg:grid-cols-2">
                           <section class="lc-subsection rounded-xl p-3">
-                            <p class="lc-section-label">Part du day set dans le cycle</p>
-                            <div class="mt-2 grid gap-2 sm:grid-cols-3">
-                              @for (metric of daySet.metrics; track trackByMetric($index, metric)) {
+                            <p class="lc-section-label">
+                              Part du day set dans le cycle
+                            </p>
+                            <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                              @for (
+                                metric of daySet.metrics;
+                                track trackByMetric($index, metric)
+                              ) {
                                 <div
                                   class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
-                                  [class]="getStatusClass(metric.status)">
+                                  [class]="getStatusClass(metric.status)"
+                                >
                                   <div class="lc-breakdown-head">
-                                    <p class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500">
+                                    <p
+                                      class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500"
+                                    >
                                       {{ metric.label }}
                                     </p>
-                                    <span class="lc-status-badge" [class]="getStatusClass(metric.status)">
+                                    <span
+                                      class="lc-status-badge"
+                                      [class]="getStatusClass(metric.status)"
+                                    >
                                       {{ getStatusLabel(metric.status) }}
                                     </span>
                                   </div>
                                   <div class="mt-3 grid gap-2">
-                                    <p class="lc-breakdown-card__value text-sm font-semibold text-slate-900">
-                                      {{ formatAmount(metric.value) }} / {{ formatAmount(metric.target) }} g
+                                    <p
+                                      class="lc-breakdown-card__value text-sm font-semibold text-slate-900"
+                                    >
+                                      {{ formatAmount(metric.value) }} /
+                                      {{ formatAmount(metric.target) }}
+                                      {{ metric.unit }}
                                     </p>
-                                    <p class="lc-breakdown-card__percentage text-xs font-medium lc-status-text" [class]="getStatusClass(metric.status)">
+                                    <p
+                                      class="lc-breakdown-card__percentage text-xs font-medium lc-status-text"
+                                      [class]="getStatusClass(metric.status)"
+                                    >
                                       {{ formatPercent(metric.percentage) }}
                                     </p>
                                   </div>
@@ -343,29 +551,49 @@
                           <section class="lc-subsection rounded-xl p-3">
                             <div class="flex items-start justify-between gap-3">
                               <div>
-                                <p class="lc-section-label">Totaux slots / day set</p>
-                                <p class="text-xs text-slate-500">{{ daySet.slots.length }} slot(s) resolu(s)</p>
+                                <p class="lc-section-label">
+                                  Totaux slots / day set
+                                </p>
+                                <p class="text-xs text-slate-500">
+                                  {{ daySet.slots.length }} slot(s) resolu(s)
+                                </p>
                               </div>
                             </div>
                             @if (hasSlotMetrics(daySet)) {
-                              <div class="mt-2 grid gap-2 sm:grid-cols-3">
-                                @for (metric of daySet.slotMetrics; track trackByMetric($index, metric)) {
+                              <div class="mt-2 grid gap-2 sm:grid-cols-2">
+                                @for (
+                                  metric of daySet.slotMetrics;
+                                  track trackByMetric($index, metric)
+                                ) {
                                   <div
                                     class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
-                                    [class]="getStatusClass(metric.status)">
+                                    [class]="getStatusClass(metric.status)"
+                                  >
                                     <div class="lc-breakdown-head">
-                                      <p class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500">
+                                      <p
+                                        class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500"
+                                      >
                                         {{ metric.label }}
                                       </p>
-                                      <span class="lc-status-badge" [class]="getStatusClass(metric.status)">
+                                      <span
+                                        class="lc-status-badge"
+                                        [class]="getStatusClass(metric.status)"
+                                      >
                                         {{ getStatusLabel(metric.status) }}
                                       </span>
                                     </div>
                                     <div class="mt-3 grid gap-2">
-                                      <p class="lc-breakdown-card__value text-sm font-semibold text-slate-900">
-                                        {{ formatAmount(metric.value) }} / {{ formatAmount(metric.target) }} g
+                                      <p
+                                        class="lc-breakdown-card__value text-sm font-semibold text-slate-900"
+                                      >
+                                        {{ formatAmount(metric.value) }} /
+                                        {{ formatAmount(metric.target) }}
+                                        {{ metric.unit }}
                                       </p>
-                                      <p class="lc-breakdown-card__percentage text-xs font-medium lc-status-text" [class]="getStatusClass(metric.status)">
+                                      <p
+                                        class="lc-breakdown-card__percentage text-xs font-medium lc-status-text"
+                                        [class]="getStatusClass(metric.status)"
+                                      >
                                         {{ formatPercent(metric.percentage) }}
                                       </p>
                                     </div>
@@ -373,23 +601,40 @@
                                 }
                               </div>
                             } @else {
-                              <p class="lc-slot-missing mt-2 text-sm text-amber-700">
-                                Decomposition des slots indisponible pour ce day set.
+                              <p
+                                class="lc-slot-missing mt-2 text-sm text-amber-700"
+                              >
+                                Decomposition des slots indisponible pour ce day
+                                set.
                               </p>
                             }
                           </section>
                         </div>
                         @if (daySet.slots.length > 0) {
                           <div class="mt-3 grid gap-2">
-                            @for (slot of daySet.slots; track trackBySlotId($index, slot)) {
+                            @for (
+                              slot of daySet.slots;
+                              track trackBySlotId($index, slot)
+                            ) {
                               <div
-                                class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                                <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                                class="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                              >
+                                <div
+                                  class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between"
+                                >
                                   <div class="min-w-0">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                      <p class="lc-slot-title text-sm font-semibold text-slate-900">{{ slot.title }}</p>
+                                    <div
+                                      class="flex flex-wrap items-center gap-2"
+                                    >
+                                      <p
+                                        class="lc-slot-title text-sm font-semibold text-slate-900"
+                                      >
+                                        {{ slot.title }}
+                                      </p>
                                       @if (slot.key) {
-                                        <span class="lc-slot-key">{{ slot.key }}</span>
+                                        <span class="lc-slot-key">{{
+                                          slot.key
+                                        }}</span>
                                       }
                                     </div>
                                     @if (slot.timeRange) {
@@ -399,24 +644,46 @@
                                     }
                                   </div>
                                 </div>
-                                <div class="mt-2 grid gap-2 sm:grid-cols-3">
-                                  @for (metric of slot.metrics; track trackByMetric($index, metric)) {
+                                <div
+                                  class="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
+                                >
+                                  @for (
+                                    metric of slot.metrics;
+                                    track trackByMetric($index, metric)
+                                  ) {
                                     <div
                                       class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
-                                      [class]="getStatusClass(metric.status)">
+                                      [class]="getStatusClass(metric.status)"
+                                    >
                                       <div class="lc-breakdown-head">
-                                        <p class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500">
+                                        <p
+                                          class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500"
+                                        >
                                           {{ metric.label }}
                                         </p>
-                                        <span class="lc-status-badge" [class]="getStatusClass(metric.status)">
+                                        <span
+                                          class="lc-status-badge"
+                                          [class]="
+                                            getStatusClass(metric.status)
+                                          "
+                                        >
                                           {{ getStatusLabel(metric.status) }}
                                         </span>
                                       </div>
                                       <div class="mt-3 grid gap-2">
-                                        <p class="lc-breakdown-card__value text-sm font-semibold text-slate-900">
-                                          {{ formatAmount(metric.value) }} / {{ formatAmount(metric.target) }} g
+                                        <p
+                                          class="lc-breakdown-card__value text-sm font-semibold text-slate-900"
+                                        >
+                                          {{ formatAmount(metric.value) }} /
+                                          {{ formatAmount(metric.target) }}
+                                          {{ metric.unit }}
                                         </p>
-                                        <p class="lc-breakdown-card__percentage text-xs font-medium lc-status-text" [class]="getStatusClass(metric.status)">
+                                        <p
+                                          class="lc-breakdown-card__percentage text-xs font-medium lc-status-text"
+                                          [class]="
+                                            getStatusClass(metric.status)
+                                          "
+                                        >
                                           {{ formatPercent(metric.percentage) }}
                                         </p>
                                       </div>
@@ -437,18 +704,23 @@
                     }
                   </div>
                 } @else {
-                  <p class="text-sm text-slate-500">Aucun day set rattache a ce cycle.</p>
+                  <p class="text-sm text-slate-500">
+                    Aucun day set rattache a ce cycle.
+                  </p>
                 }
               </div>
             }
             @if (isEmbeddedManageMode) {
-              <div class="lc-card__footer flex flex-wrap gap-2 border-t border-slate-200 pt-3">
+              <div
+                class="lc-card__footer flex flex-wrap gap-2 border-t border-slate-200 pt-3"
+              >
                 <button
                   mat-stroked-button
                   type="button"
                   class="lc-footer-action lc-footer-action--detail"
                   [attr.aria-expanded]="isExpanded(cycle.id)"
-                  (click)="onToggleExpanded($event, cycle.id)">
+                  (click)="onToggleExpanded($event, cycle.id)"
+                >
                   {{ getToggleLabel(cycle.id) }}
                 </button>
                 <button
@@ -456,7 +728,8 @@
                   type="button"
                   class="lc-footer-action"
                   [attr.data-testid]="'cycle-edit-' + cycle.id"
-                  (click)="stopPropagation($event); onEdit(cycle)">
+                  (click)="stopPropagation($event); onEdit(cycle)"
+                >
                   Modifier
                 </button>
                 <button
@@ -465,7 +738,8 @@
                   type="button"
                   class="lc-footer-action lc-footer-action--danger"
                   [attr.data-testid]="'cycle-delete-' + cycle.id"
-                  (click)="stopPropagation($event); onDelete(cycle)">
+                  (click)="stopPropagation($event); onDelete(cycle)"
+                >
                   Retirer
                 </button>
               </div>
@@ -476,9 +750,7 @@
     </div>
   } @else {
     @if (isEmbeddedManageMode) {
-      <p class="lc-empty text-sm text-slate-600">
-        Aucun cycle disponible.
-      </p>
+      <p class="lc-empty text-sm text-slate-600">Aucun cycle disponible.</p>
     } @else {
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-content class="p-4 text-sm text-slate-600">
@@ -487,5 +759,4 @@
       </mat-card>
     }
   }
-
 </section>
