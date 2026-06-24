@@ -1,5 +1,5 @@
 
-import { Component, OnInit, input, output, inject } from '@angular/core';
+import { Component, OnInit, input, output, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -45,8 +45,8 @@ export class GenericProduct implements OnInit {
   readonly dataChanged = output<void>();
 
   baseUrl = '';
-  loading = false;
-  saving = false;
+  readonly loading = signal(false);
+  readonly saving = signal(false);
 
   genericProducts: GenericProductApiModel[] = [];
 
@@ -123,12 +123,12 @@ export class GenericProduct implements OnInit {
       return;
     }
 
-    this.saving = true;
+    this.saving.set(true);
     this.gpSrv.remove(genericProductId).subscribe({
       next: () => {
         this.lastResponse = { deleted: true, id: genericProductId };
         this.lastError = null;
-        this.saving = false;
+        this.saving.set(false);
         this.dataChanged.emit();
 
         if (this.editingGenericProductId === genericProductId) {
@@ -139,7 +139,7 @@ export class GenericProduct implements OnInit {
       },
       error: (error) => {
         this.lastError = error;
-        this.saving = false;
+        this.saving.set(false);
       },
     });
   }
@@ -148,7 +148,7 @@ export class GenericProduct implements OnInit {
     mode: GenericProductFormMode;
     value: GenericProductFormValue;
   }): void {
-    this.saving = true;
+    this.saving.set(true);
 
     if (event.mode === 'edit' && this.editingGenericProductId !== null) {
       const payload = this.toUpdateDto(event.value);
@@ -156,14 +156,14 @@ export class GenericProduct implements OnInit {
         next: (response) => {
           this.lastResponse = response;
           this.lastError = null;
-          this.saving = false;
+          this.saving.set(false);
           this.dataChanged.emit();
           this.onCancelForm();
           this.loadGenericProducts();
         },
         error: (error) => {
           this.lastError = error;
-          this.saving = false;
+          this.saving.set(false);
         },
       });
       return;
@@ -174,14 +174,14 @@ export class GenericProduct implements OnInit {
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
-        this.saving = false;
+        this.saving.set(false);
         this.dataChanged.emit();
         this.onCancelForm();
         this.loadGenericProducts();
       },
       error: (error) => {
         this.lastError = error;
-        this.saving = false;
+        this.saving.set(false);
       },
     });
   }
@@ -201,13 +201,13 @@ export class GenericProduct implements OnInit {
   }
 
   private loadGenericProducts(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.gpSrv.findAll().subscribe({
       next: (response) => {
         this.genericProducts = this.extractGenericProductsFromResponse(response);
         this.lastResponse = response;
         this.lastError = null;
-        this.loading = false;
+        this.loading.set(false);
 
         if (this.editingGenericProductId !== null) {
           const currentGenericProduct =
@@ -225,7 +225,7 @@ export class GenericProduct implements OnInit {
       },
       error: (error) => {
         this.lastError = error;
-        this.loading = false;
+        this.loading.set(false);
       },
     });
   }

@@ -146,6 +146,33 @@ describe('Product', () => {
     expect(nativeElement.querySelector('app-tag section.app-page')).toBeNull();
   });
 
+  it('should enable linked-view actions after empty async responses', () => {
+    const genericProducts$ = new Subject<never[]>();
+    genericProductServiceMock.findAll.and.returnValue(genericProducts$);
+
+    clickToggle(2);
+    expectHeaderActionsDisabled(true);
+
+    genericProducts$.next([]);
+    fixture.detectChanges();
+
+    expectHeaderActionsDisabled(false);
+    expect(fixture.nativeElement.textContent).not.toContain('Chargement...');
+
+    const tags$ = new Subject<never[]>();
+    tagServiceMock.findAll.and.returnValue(tags$);
+
+    clickToggle(3);
+    expectHeaderActionsDisabled(true);
+
+    tags$.next([]);
+    fixture.detectChanges();
+
+    expectHeaderActionsDisabled(false);
+    expect(fixture.nativeElement.textContent).not.toContain('Chargement...');
+    expect(fixture.nativeElement.textContent).toContain('Aucun tag disponible.');
+  });
+
   it('should reload products when returning to product after linked data changes', () => {
     productServiceMock.findAll.calls.reset();
 
@@ -270,6 +297,19 @@ describe('Product', () => {
     tagServiceMock.create.calls.reset();
     tagServiceMock.update.calls.reset();
     tagServiceMock.remove.calls.reset();
+  }
+
+  function expectHeaderActionsDisabled(expected: boolean): void {
+    const nativeElement = fixture.nativeElement as HTMLElement;
+    const refreshButton = nativeElement.querySelector(
+      '[data-testid="catalogue-refresh-action"]',
+    ) as HTMLButtonElement;
+    const addButton = nativeElement.querySelector(
+      '[data-testid="catalogue-add-action"]',
+    ) as HTMLButtonElement;
+
+    expect(refreshButton.disabled).toBe(expected);
+    expect(addButton.disabled).toBe(expected);
   }
 
   function clickToggle(index: number): void {

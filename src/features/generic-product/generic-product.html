@@ -1,12 +1,12 @@
 @if (embedded()) {
   <div class="space-y-4" data-testid="generic-product-embedded">
     <div class="app-status-row">
-      @if (loading) {
+      @if (loading()) {
         <span class="app-status-pill app-status-pill--neutral">
           Chargement...
         </span>
       }
-      @if (saving) {
+      @if (saving()) {
         <span class="app-status-pill app-status-pill--saving">
           Sauvegarde...
         </span>
@@ -38,12 +38,12 @@
       </div>
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
-          @if (loading) {
+          @if (loading()) {
             <span class="app-status-pill app-status-pill--neutral">
               Chargement...
             </span>
           }
-          @if (saving) {
+          @if (saving()) {
             <span class="app-status-pill app-status-pill--saving">
               Sauvegarde...
             </span>

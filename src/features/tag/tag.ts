@@ -1,5 +1,5 @@
 
-import { Component, OnInit, input, output, inject } from '@angular/core';
+import { Component, OnInit, input, output, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -41,8 +41,8 @@ export class Tag implements OnInit {
   readonly dataChanged = output<void>();
 
   baseUrl = '';
-  loading = false;
-  saving = false;
+  readonly loading = signal(false);
+  readonly saving = signal(false);
 
   tags: TagApiModel[] = [];
 
@@ -113,12 +113,12 @@ export class Tag implements OnInit {
       return;
     }
 
-    this.saving = true;
+    this.saving.set(true);
     this.tagSrv.remove(tagId).subscribe({
       next: () => {
         this.lastResponse = { deleted: true, id: tagId };
         this.lastError = null;
-        this.saving = false;
+        this.saving.set(false);
         this.dataChanged.emit();
 
         if (this.editingTagId === tagId) {
@@ -129,13 +129,13 @@ export class Tag implements OnInit {
       },
       error: (error) => {
         this.lastError = error;
-        this.saving = false;
+        this.saving.set(false);
       },
     });
   }
 
   onFormSubmitted(event: { mode: TagFormMode; value: TagFormValue }): void {
-    this.saving = true;
+    this.saving.set(true);
 
     if (event.mode === 'edit' && this.editingTagId !== null) {
       const payload = this.toUpdateDto(event.value);
@@ -143,14 +143,14 @@ export class Tag implements OnInit {
         next: (response) => {
           this.lastResponse = response;
           this.lastError = null;
-          this.saving = false;
+          this.saving.set(false);
           this.dataChanged.emit();
           this.onCancelForm();
           this.loadTags();
         },
         error: (error) => {
           this.lastError = error;
-          this.saving = false;
+          this.saving.set(false);
         },
       });
       return;
@@ -161,14 +161,14 @@ export class Tag implements OnInit {
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
-        this.saving = false;
+        this.saving.set(false);
         this.dataChanged.emit();
         this.onCancelForm();
         this.loadTags();
       },
       error: (error) => {
         this.lastError = error;
-        this.saving = false;
+        this.saving.set(false);
       },
     });
   }
@@ -188,13 +188,13 @@ export class Tag implements OnInit {
   }
 
   private loadTags(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.tagSrv.findAll().subscribe({
       next: (response) => {
         this.tags = this.extractTagsFromResponse(response);
         this.lastResponse = response;
         this.lastError = null;
-        this.loading = false;
+        this.loading.set(false);
 
         if (this.editingTagId !== null) {
           const currentTag = this.tags.find((tag) => tag.id === this.editingTagId) ?? null;
@@ -209,7 +209,7 @@ export class Tag implements OnInit {
       },
       error: (error) => {
         this.lastError = error;
-        this.loading = false;
+        this.loading.set(false);
       },
     });
   }

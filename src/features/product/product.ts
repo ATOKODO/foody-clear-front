@@ -196,9 +196,11 @@ export class Product implements OnInit {
       case 'category':
         return !!categoryFeature && (categoryFeature.store.loading() || categoryFeature.store.saving());
       case 'genericProduct':
-        return !!genericProductFeature && (genericProductFeature.loading || genericProductFeature.saving);
+        return !!genericProductFeature && (
+          genericProductFeature.loading() || genericProductFeature.saving()
+        );
       case 'tag':
-        return !!tagFeature && (tagFeature.loading || tagFeature.saving);
+        return !!tagFeature && (tagFeature.loading() || tagFeature.saving());
       default:
         return false;
     }
