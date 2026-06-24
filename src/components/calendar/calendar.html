@@ -949,7 +949,25 @@
                             </div>
                           }
                         </div>
-                      } @else {
+                      }
+                      @if (block.plannedItems.length > 0) {
+                        <div class="calendar-week-block__items">
+                          @for (plannedItem of block.plannedItems; track plannedItem.id) {
+                            <div
+                              [attr.data-testid]="'calendar-day-planned-template-item-' + plannedItem.id"
+                              class="calendar-week-block__item calendar-week-block__item--planned">
+                              <div class="calendar-week-block__item-top">
+                                <span class="calendar-week-block__item-name">{{ plannedItem.productName }}</span>
+                                <span class="calendar-week-block__item-time">Prévu · à saisir</span>
+                              </div>
+                              <div class="calendar-week-block__item-meta">
+                                qte: {{ plannedItem.qtyLabel }}
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                      @if (block.items.length === 0 && block.plannedItems.length === 0) {
                         <p class="calendar-week-block__empty">Aucun item saisi sur cette plage.</p>
                       }
                     </div>

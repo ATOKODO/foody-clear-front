@@ -625,6 +625,113 @@ describe('Calendar', () => {
     expect(textContent).not.toContain('Plan proteine');
   });
 
+  it('should render pending day-set template items as muted planned entries in day slots', () => {
+    fixture.componentRef.setInput('slotCatalog', [{
+      id: 11,
+      key: 'breakfast',
+      title: 'Petit dejeuner',
+      sortOrder: 0,
+      startTime: null,
+      endTime: null,
+    }]);
+    fixture.componentRef.setInput('inputDayResponse', {
+      dateLocal: '2026-02-17',
+      timezone: 'UTC',
+      assignment: {
+        id: 8,
+        cycleId: 2,
+        cycleTitle: 'Seche',
+        startDateLocal: '2026-02-16',
+        endDateLocal: '2026-02-22',
+        dayIndex: 2,
+      },
+      daySet: {
+        id: 1,
+        title: 'Jour standard',
+        nutritionValue: null,
+        slots: [],
+      },
+      templateAssociation: {
+        source: 'daySet',
+        template: { id: 13, title: 'Plan proteine' },
+      },
+      templateItems: [
+        {
+          id: 91,
+          productId: 8,
+          productName: 'Skyr',
+          qty: 1,
+          qtyUnit: 'portion',
+          qtyNormalized: 150,
+          slotId: 11,
+          slotKey: 'breakfast',
+          status: 'pending',
+          convertedItemId: null,
+          stockAvailability: {
+            enoughStock: true,
+            totalAvailableNormalized: 300,
+            requestedQtyNormalized: 150,
+          },
+          stockByInventory: [],
+          nutritionValue: {},
+        },
+        {
+          id: 92,
+          productId: 9,
+          productName: 'Avoine',
+          qty: 80,
+          qtyUnit: 'g',
+          qtyNormalized: 80,
+          slotId: 11,
+          slotKey: 'breakfast',
+          status: 'converted',
+          convertedItemId: 44,
+          stockAvailability: {
+            enoughStock: true,
+            totalAvailableNormalized: 200,
+            requestedQtyNormalized: 80,
+          },
+          stockByInventory: [],
+          nutritionValue: {},
+        },
+      ],
+      items: [{
+        id: 44,
+        productId: 9,
+        productName: 'Avoine',
+        inventoryId: 4,
+        qty: 80,
+        qtyUnit: 'g',
+        qtyNormalized: 80,
+        insertedAt: '2026-02-17T08:25:00Z',
+        occurredAt: '2026-02-17T08:15:00Z',
+        slotId: 11,
+        slotKey: 'breakfast',
+        templateItemId: 92,
+        nutritionValue: {},
+      }],
+      totalsMacros: null,
+      itemsBySlot: [],
+      slots: [],
+    });
+    renderView('day', '2026-02-17');
+
+    const root = fixture.nativeElement;
+    const pendingItem = root.querySelector(
+      '[data-testid="calendar-day-planned-template-item-91"]',
+    );
+
+    expect(pendingItem).toBeTruthy();
+    expect(pendingItem.classList).toContain('calendar-week-block__item--planned');
+    expect(pendingItem.textContent).toContain('Skyr');
+    expect(pendingItem.textContent).toContain('Prévu · à saisir');
+    expect(pendingItem.textContent).toContain('1 portion');
+    expect(
+      root.querySelector('[data-testid="calendar-day-planned-template-item-92"]'),
+    ).toBeNull();
+    expect(root.querySelector('[data-testid="calendar-day-item-44"]')).toBeTruthy();
+  });
+
   it('should emit manageAssignment and manageItems from day summary actions', () => {
     const assignmentEvents: Array<unknown> = [];
     const itemEvents: Array<unknown> = [];

@@ -2128,6 +2128,21 @@
   transform: translateY(-1px);
 }
 
+.calendar-week-block__item--planned {
+  cursor: inherit;
+  border-style: dashed;
+  border-color: rgba(148, 163, 184, 0.72);
+  background: rgba(248, 250, 252, 0.72);
+  box-shadow: none;
+  opacity: 0.78;
+}
+
+.calendar-week-block__item--planned:hover {
+  border-color: rgba(148, 163, 184, 0.72);
+  background: rgba(248, 250, 252, 0.72);
+  transform: none;
+}
+
 .calendar-week-block__item-top {
   display: flex;
   align-items: baseline;
@@ -2403,6 +2418,12 @@
 }
 
 :host-context(.dark) .calendar-day-grid__half-hour-cell--mid {
+  background: var(--app-surface-muted);
+}
+
+:host-context(.dark) .calendar-week-block__item--planned,
+:host-context(.dark) .calendar-week-block__item--planned:hover {
+  border-color: var(--app-border-strong);
   background: var(--app-surface-muted);
 }
 

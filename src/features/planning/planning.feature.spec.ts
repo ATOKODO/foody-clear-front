@@ -10,6 +10,7 @@ import { InputDayService } from '../../services/input-day-service';
 import { ProductService } from '../../services/product-service';
 import { InventoryService } from '../../services/inventory-service';
 import { TemplateService } from '../../services/template-service';
+import { SlotService } from '../../services/slot-service';
 import { InputDayResponse } from '../../interfaces/input-day.interface';
 import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
 import { InputDayFeature } from '../input-day/input-day.feature';
@@ -27,6 +28,7 @@ class CalendarStub {
   readonly inputMonthResponse = input<unknown>(null);
   readonly inputDayItemsBySlot = input<unknown>(null);
   readonly inputDayTimezone = input<unknown>(null);
+  readonly slotCatalog = input<unknown>(null);
   readonly loadingDayItems = input<unknown>(null);
   readonly dayItemsError = input<unknown>(null);
   readonly showHeader = input(true);
@@ -173,6 +175,12 @@ describe('PlanningFeature', () => {
     findProducts: jasmine.createSpy('findProducts').and.returnValue(of([])),
   };
 
+  const slotServiceMock = {
+    baseUrl: 'http://localhost:3000',
+    setBaseUrl: jasmine.createSpy('setBaseUrl'),
+    findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
+  };
+
   const templateServiceMock = {
     baseUrl: 'http://localhost:3000',
     setBaseUrl: jasmine.createSpy('setBaseUrl'),
@@ -189,6 +197,7 @@ describe('PlanningFeature', () => {
           useValue: cycleAssignmentServiceMock,
         },
         { provide: InputDayService, useValue: inputDayServiceMock },
+        { provide: SlotService, useValue: slotServiceMock },
         { provide: ProductService, useValue: productServiceMock },
         { provide: InventoryService, useValue: inventoryServiceMock },
         { provide: TemplateService, useValue: templateServiceMock },

@@ -34,6 +34,7 @@ import { buildCycleListItem } from '../../components/cycle/list-cycle/cycle-list
 import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
 import { Cycle } from '../../interfaces/cycle.interface';
 import { CalendarView } from '../../interfaces/calendar.interface';
+import { Slot } from '../../interfaces/slot.interface';
 import {
   InputDayItemsBySlotEntry,
   InputMonthResponse,
@@ -43,6 +44,7 @@ import {
 import { CycleAssignementService } from '../../services/cycle-assignement-service';
 import { CycleService } from '../../services/cycle-service';
 import { InputDayService } from '../../services/input-day-service';
+import { SlotService } from '../../services/slot-service';
 import { InputDayFeature } from '../input-day/input-day.feature';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 import {
@@ -98,6 +100,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   private readonly cycleService = inject(CycleService);
   private readonly cycleAssignmentService = inject(CycleAssignementService);
   private readonly inputDayService = inject(InputDayService);
+  private readonly slotService = inject(SlotService);
 
   private readonly calendarRef =
     viewChild<PlanningCalendarController>('calendarRef');
@@ -115,6 +118,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   inputWeekResponse: InputWeekResponse | null = null;
   inputMonthResponse: InputMonthResponse | null = null;
   inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
+  slots: Slot[] = [];
   inputDayTimezone = DateTime.local().zoneName || 'UTC';
   readonly calendarViewOptions = PLANNING_CALENDAR_VIEW_OPTIONS;
   calendarHeaderLabel = 'Chargement...';
@@ -188,6 +192,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.baseUrl = this.cycleAssignmentService.baseUrl;
     this.cycleService.setBaseUrl(this.baseUrl);
     this.inputDayService.setBaseUrl(this.baseUrl);
+    this.slotService.setBaseUrl(this.baseUrl);
     this.refreshPlanningData();
   }
 
@@ -200,6 +205,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.cycleService.setBaseUrl(this.baseUrl);
     this.cycleAssignmentService.setBaseUrl(this.baseUrl);
     this.inputDayService.setBaseUrl(this.baseUrl);
+    this.slotService.setBaseUrl(this.baseUrl);
     this.refreshPlanningData();
   }
 
@@ -427,8 +433,21 @@ export class PlanningFeature implements OnInit, AfterViewInit {
 
   refreshPlanningData(): void {
     this.loadCycles();
+    this.loadSlots();
     this.reloadAssignmentsForCurrentRange();
     this.reloadInputDataForCurrentView();
+  }
+
+  private loadSlots(): void {
+    this.slotService.findAll().subscribe({
+      next: (response) => {
+        this.slots = response;
+      },
+      error: (error) => {
+        this.slots = [];
+        this.setLastError(error);
+      },
+    });
   }
 
   private loadCycles(): void {
