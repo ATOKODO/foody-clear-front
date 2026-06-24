@@ -14,7 +14,7 @@ export type ProductQuantityInputUnit =
 
 export interface InputDayItemCommand {
   productId: number;
-  inventoryIds: number[];
+  inventoryId: number;
   qty: number;
   occurredAt?: string;
   qtyUnit?: ProductQuantityInputUnit;
@@ -29,7 +29,7 @@ export interface CreateInputDayItemsDto {
 export interface UpdateInputDayItemDto {
   dateLocal: string;
   productId: number;
-  inventoryIds: number[];
+  inventoryId: number;
   qty: number;
   occurredAt?: string;
   qtyUnit?: ProductQuantityInputUnit;

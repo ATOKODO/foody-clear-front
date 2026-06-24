@@ -337,7 +337,7 @@ describe('InputDayFeature', () => {
       items: [
         {
           productId: 1,
-          inventoryIds: [4],
+          inventoryId: 4,
           qty: 120,
           occurredAt: '2026-02-17T08:00:00Z',
           qtyUnit: 'g',
@@ -345,7 +345,7 @@ describe('InputDayFeature', () => {
         },
         {
           productId: 2,
-          inventoryIds: [4],
+          inventoryId: 4,
           qty: 80,
           occurredAt: '2026-02-17T08:00:00Z',
           slotId: 11,
@@ -379,7 +379,7 @@ describe('InputDayFeature', () => {
       items: [
         {
           productId: 1,
-          inventoryIds: [4],
+          inventoryId: 4,
           qty: 120,
           qtyUnit: 'g',
           slotKey: 'snack',
@@ -409,7 +409,7 @@ describe('InputDayFeature', () => {
 
     expect(inputDayServiceMock.createItem).toHaveBeenCalledWith('2026-02-16', {
       productId: 1,
-      inventoryIds: [4],
+      inventoryId: 4,
       qty: 150,
       occurredAt: '2026-02-16T08:00:00Z',
       qtyUnit: 'g',
@@ -469,7 +469,7 @@ describe('InputDayFeature', () => {
     expect(inputDayServiceMock.updateItem).toHaveBeenCalledWith('2026-02-16', 31, {
       dateLocal: '2026-02-17',
       productId: 2,
-      inventoryIds: [4],
+      inventoryId: 4,
       qty: 200,
       occurredAt: '2026-02-17T09:30:00Z',
       qtyUnit: 'g',

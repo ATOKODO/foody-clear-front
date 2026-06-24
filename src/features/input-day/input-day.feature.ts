@@ -1247,6 +1247,8 @@ export class InputDayFeature implements OnInit, OnChanges {
       return null;
     }
 
+    const inventoryId = this.selectedInventoryIds[0];
+
     const productId = this.normalizePositiveInteger(this.itemEditorForm.value.productId);
     if (productId === null) {
       this.itemEditorError = 'Selectionne un produit.';
@@ -1284,7 +1286,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     if (itemId === null) {
       const payload: InputDayItemCommand = {
         productId,
-        inventoryIds: this.selectedInventoryIds,
+        inventoryId,
         qty,
         ...(occurredAt ? { occurredAt } : {}),
         ...(qtyUnit ? { qtyUnit } : {}),
@@ -1307,7 +1309,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     const payload: UpdateInputDayItemDto = {
       dateLocal,
       productId,
-      inventoryIds: this.selectedInventoryIds,
+      inventoryId,
       qty,
       ...(occurredAt ? { occurredAt } : {}),
       ...(qtyUnit ? { qtyUnit } : {}),
@@ -1332,6 +1334,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     const requestDateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
+    const inventoryId = this.selectedInventoryIds[0];
     const occurredAtRaw = String(this.itemEditorForm.value.occurredAt ?? '').trim();
     const occurredAt = occurredAtRaw === '' ? null : this.buildOccurredAtIso(occurredAtRaw);
     const slotKey =
@@ -1343,7 +1346,7 @@ export class InputDayFeature implements OnInit, OnChanges {
           const qtyUnit = this.normalizeQtyUnit(row.qtyUnit);
           return {
             productId: row.productId,
-            inventoryIds: this.selectedInventoryIds,
+            inventoryId,
             qty: row.qty as number,
             ...(occurredAt ? { occurredAt } : {}),
             ...(qtyUnit ? { qtyUnit } : {}),
