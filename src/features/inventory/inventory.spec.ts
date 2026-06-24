@@ -204,6 +204,17 @@ describe('Inventory', () => {
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelector('[data-testid="inventory-row-6"]')).not.toBeNull();
     expect(element.textContent).toContain('Stock async');
+    expect(element.textContent).not.toContain('Chargement...');
+    expect(element.textContent).not.toContain('Produits...');
+
+    const refreshButton = element.querySelector(
+      '[data-testid="inventory-refresh-action"]',
+    ) as HTMLButtonElement;
+    const addButton = element.querySelector(
+      '[data-testid="inventory-add-action"]',
+    ) as HTMLButtonElement;
+    expect(refreshButton.disabled).toBeFalse();
+    expect(addButton.disabled).toBeFalse();
   });
 
   it('should create an inventory with selected products', () => {

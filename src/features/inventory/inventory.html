@@ -8,6 +8,7 @@
           mat-stroked-button
           type="button"
           class="inventory-action inventory-action--secondary"
+          data-testid="inventory-refresh-action"
           (click)="onRefreshRequested()"
           [disabled]="loading || loadingProducts || loadingInventoryProducts || saving"
           >

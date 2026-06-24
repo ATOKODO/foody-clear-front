@@ -114,10 +114,10 @@ export class Inventory implements OnInit {
   private readonly productSrv = inject(ProductService);
 
   baseUrl = '';
-  loading = false;
-  saving = false;
-  loadingInventoryProducts = false;
-  loadingProducts = false;
+  private readonly loadingState = signal(false);
+  private readonly savingState = signal(false);
+  private readonly loadingInventoryProductsState = signal(false);
+  private readonly loadingProductsState = signal(false);
 
   private readonly inventoriesState = signal<InventoryApiModel[]>([]);
   private readonly productsState = signal<ProductApiModel[]>([]);
@@ -163,6 +163,38 @@ export class Inventory implements OnInit {
     this.productSrv.setBaseUrl(this.baseUrl);
     this.loadProducts();
     this.loadInventories();
+  }
+
+  get loading(): boolean {
+    return this.loadingState();
+  }
+
+  set loading(value: boolean) {
+    this.loadingState.set(value);
+  }
+
+  get saving(): boolean {
+    return this.savingState();
+  }
+
+  set saving(value: boolean) {
+    this.savingState.set(value);
+  }
+
+  get loadingInventoryProducts(): boolean {
+    return this.loadingInventoryProductsState();
+  }
+
+  set loadingInventoryProducts(value: boolean) {
+    this.loadingInventoryProductsState.set(value);
+  }
+
+  get loadingProducts(): boolean {
+    return this.loadingProductsState();
+  }
+
+  set loadingProducts(value: boolean) {
+    this.loadingProductsState.set(value);
   }
 
   get formVisible(): boolean {
