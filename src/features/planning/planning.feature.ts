@@ -66,7 +66,7 @@ const PLANNING_CALENDAR_VIEW_OPTIONS: readonly SegmentedToggleOption<CalendarVie
     { value: 'day', label: 'Jour', testId: 'planning-view-day' },
     { value: 'week', label: 'Semaine', testId: 'planning-view-week' },
     { value: 'month', label: 'Mois', testId: 'planning-view-month' },
-    { value: 'year', label: 'Annee', testId: 'planning-view-year' },
+    { value: 'year', label: 'Année', testId: 'planning-view-year' },
   ];
 
 @Component({
@@ -787,7 +787,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
 
   private getFallbackCalendarViewLabel(view: CalendarView): string {
     if (view === 'year') {
-      return 'Annee';
+      return 'Année';
     }
 
     if (view === 'month') {

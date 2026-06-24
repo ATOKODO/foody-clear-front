@@ -541,7 +541,7 @@ export class Calendar implements OnInit, OnChanges {
 
   getViewLabel(view: CalendarView): string {
     if (view === 'year') {
-      return 'Annee';
+      return 'Année';
     }
 
     if (view === 'month') {

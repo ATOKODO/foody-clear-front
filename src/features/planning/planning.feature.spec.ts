@@ -66,7 +66,7 @@ class CalendarStub {
 
   getViewLabel(view: string): string {
     if (view === 'year') {
-      return 'Annee';
+      return 'Année';
     }
 
     if (view === 'month') {
