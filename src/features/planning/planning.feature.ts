@@ -1,5 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, OnInit, viewChild, inject } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  viewChild,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -53,12 +61,13 @@ type PlanningCalendarController = Pick<
   | 'getViewLabel'
 >;
 
-const PLANNING_CALENDAR_VIEW_OPTIONS: readonly SegmentedToggleOption<CalendarView>[] = [
-  { value: 'day', label: 'Jour', testId: 'planning-view-day' },
-  { value: 'week', label: 'Semaine', testId: 'planning-view-week' },
-  { value: 'month', label: 'Mois', testId: 'planning-view-month' },
-  { value: 'year', label: 'Annee', testId: 'planning-view-year' },
-];
+const PLANNING_CALENDAR_VIEW_OPTIONS: readonly SegmentedToggleOption<CalendarView>[] =
+  [
+    { value: 'day', label: 'Jour', testId: 'planning-view-day' },
+    { value: 'week', label: 'Semaine', testId: 'planning-view-week' },
+    { value: 'month', label: 'Mois', testId: 'planning-view-month' },
+    { value: 'year', label: 'Annee', testId: 'planning-view-year' },
+  ];
 
 @Component({
   selector: 'app-planning',
@@ -74,8 +83,8 @@ const PLANNING_CALENDAR_VIEW_OPTIONS: readonly SegmentedToggleOption<CalendarVie
     MatProgressBarModule,
     SegmentedToggle,
     UiErrorPanel,
-    DatePipe
-],
+    DatePipe,
+  ],
   templateUrl: './planning.feature.html',
   styleUrl: './planning.feature.scss',
   host: {
@@ -90,14 +99,15 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   private readonly cycleAssignmentService = inject(CycleAssignementService);
   private readonly inputDayService = inject(InputDayService);
 
-  private readonly calendarRef = viewChild<PlanningCalendarController>('calendarRef');
+  private readonly calendarRef =
+    viewChild<PlanningCalendarController>('calendarRef');
 
   baseUrl = '';
 
-  loadingCycles = false;
-  loadingAssignments = false;
-  loadingDayItems = false;
-  savingAssignment = false;
+  private readonly loadingCyclesState = signal(false);
+  private readonly loadingAssignmentsState = signal(false);
+  private readonly loadingDayItemsState = signal(false);
+  private readonly savingAssignmentState = signal(false);
 
   cycles: Cycle[] = [];
   cycleAssignments: CycleAssignment[] = [];
@@ -114,7 +124,9 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   currentRangeFromLocal: string | null = null;
   currentRangeToLocal: string | null = null;
 
-  activeModal: 'actions' | 'assignment' | 'items' | null = null;
+  private readonly activeModalState = signal<
+    'actions' | 'assignment' | 'items' | null
+  >(null);
   clickedDateLocal = '';
   selectedModalDateLocal = '';
   selectedOccurredAt: string | null = null;
@@ -131,6 +143,46 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   lastResponseText = 'null';
   lastErrorText = '';
   private inputDayRequestId = 0;
+
+  get loadingCycles(): boolean {
+    return this.loadingCyclesState();
+  }
+
+  set loadingCycles(value: boolean) {
+    this.loadingCyclesState.set(value);
+  }
+
+  get loadingAssignments(): boolean {
+    return this.loadingAssignmentsState();
+  }
+
+  set loadingAssignments(value: boolean) {
+    this.loadingAssignmentsState.set(value);
+  }
+
+  get loadingDayItems(): boolean {
+    return this.loadingDayItemsState();
+  }
+
+  set loadingDayItems(value: boolean) {
+    this.loadingDayItemsState.set(value);
+  }
+
+  get savingAssignment(): boolean {
+    return this.savingAssignmentState();
+  }
+
+  set savingAssignment(value: boolean) {
+    this.savingAssignmentState.set(value);
+  }
+
+  get activeModal(): 'actions' | 'assignment' | 'items' | null {
+    return this.activeModalState();
+  }
+
+  set activeModal(value: 'actions' | 'assignment' | 'items' | null) {
+    this.activeModalState.set(value);
+  }
 
   ngOnInit(): void {
     this.baseUrl = this.cycleAssignmentService.baseUrl;
@@ -156,7 +208,10 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   onVisibilityChange(): void {
-    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+    if (
+      typeof document !== 'undefined' &&
+      document.visibilityState === 'visible'
+    ) {
       this.refreshPlanningData();
     }
   }
@@ -195,11 +250,19 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   getCalendarViewLabel(view: CalendarView): string {
-    return this.calendarRef()?.getViewLabel(view) ?? this.getFallbackCalendarViewLabel(view);
+    return (
+      this.calendarRef()?.getViewLabel(view) ??
+      this.getFallbackCalendarViewLabel(view)
+    );
   }
 
   get showPlanningStatus(): boolean {
-    return this.loadingCycles || this.loadingAssignments || this.loadingDayItems || this.savingAssignment;
+    return (
+      this.loadingCycles ||
+      this.loadingAssignments ||
+      this.loadingDayItems ||
+      this.savingAssignment
+    );
   }
 
   onCalendarDayClick(event: CalendarDayClickEvent): void {
@@ -253,7 +316,9 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   get modalSelectedIds(): number[] {
-    return this.modalSelectedCycleId === null ? [] : [this.modalSelectedCycleId];
+    return this.modalSelectedCycleId === null
+      ? []
+      : [this.modalSelectedCycleId];
   }
 
   get canSubmitModal(): boolean {
@@ -269,11 +334,18 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   openAssignmentFromActions(): void {
-    this.openAssignmentModal(this.selectedModalDateLocal, this.selectedActionAssignment);
+    this.openAssignmentModal(
+      this.selectedModalDateLocal,
+      this.selectedActionAssignment,
+    );
   }
 
   openItemsFromActions(): void {
-    this.openItemsModal(this.selectedModalDateLocal, this.selectedOccurredAt, null);
+    this.openItemsModal(
+      this.selectedModalDateLocal,
+      this.selectedOccurredAt,
+      null,
+    );
   }
 
   closeActiveModal(): void {
@@ -289,7 +361,9 @@ export class PlanningFeature implements OnInit, AfterViewInit {
       return;
     }
 
-    const selectedCycle = this.cycles.find((cycle) => cycle.id === this.modalSelectedCycleId);
+    const selectedCycle = this.cycles.find(
+      (cycle) => cycle.id === this.modalSelectedCycleId,
+    );
     if (!selectedCycle) {
       return;
     }
@@ -303,14 +377,16 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.modalError = null;
 
     if (this.editingAssignment) {
-      this.cycleAssignmentService.update(this.editingAssignment.id, payload).subscribe({
-        next: (response) => {
-          this.onMutationSuccess(response);
-        },
-        error: (error) => {
-          this.onMutationError(error);
-        },
-      });
+      this.cycleAssignmentService
+        .update(this.editingAssignment.id, payload)
+        .subscribe({
+          next: (response) => {
+            this.onMutationSuccess(response);
+          },
+          error: (error) => {
+            this.onMutationError(error);
+          },
+        });
       return;
     }
 
@@ -334,7 +410,10 @@ export class PlanningFeature implements OnInit, AfterViewInit {
 
     this.cycleAssignmentService.remove(this.editingAssignment.id).subscribe({
       next: () => {
-        this.onMutationSuccess({ removed: true, id: this.editingAssignment?.id });
+        this.onMutationSuccess({
+          removed: true,
+          id: this.editingAssignment?.id,
+        });
       },
       error: (error) => {
         this.onMutationError(error);
@@ -368,25 +447,30 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     });
   }
 
-  private loadAssignmentsInRange(fromDateLocal: string, toDateLocal: string): void {
+  private loadAssignmentsInRange(
+    fromDateLocal: string,
+    toDateLocal: string,
+  ): void {
     if (!this.isDateLocal(fromDateLocal) || !this.isDateLocal(toDateLocal)) {
       return;
     }
 
     this.loadingAssignments = true;
 
-    this.cycleAssignmentService.findInRange(fromDateLocal, toDateLocal).subscribe({
-      next: (response) => {
-        this.cycleAssignments = response;
-        this.setLastResponse(response);
-        this.setLastError(null);
-        this.loadingAssignments = false;
-      },
-      error: (error) => {
-        this.setLastError(error);
-        this.loadingAssignments = false;
-      },
-    });
+    this.cycleAssignmentService
+      .findInRange(fromDateLocal, toDateLocal)
+      .subscribe({
+        next: (response) => {
+          this.cycleAssignments = response;
+          this.setLastResponse(response);
+          this.setLastError(null);
+          this.loadingAssignments = false;
+        },
+        error: (error) => {
+          this.setLastError(error);
+          this.loadingAssignments = false;
+        },
+      });
   }
 
   private reloadAssignmentsForCurrentRange(): void {
@@ -394,7 +478,10 @@ export class PlanningFeature implements OnInit, AfterViewInit {
       return;
     }
 
-    this.loadAssignmentsInRange(this.currentRangeFromLocal, this.currentRangeToLocal);
+    this.loadAssignmentsInRange(
+      this.currentRangeFromLocal,
+      this.currentRangeToLocal,
+    );
   }
 
   private reloadInputDataForCurrentView(): void {
@@ -453,27 +540,30 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.inputWeekResponse = null;
     this.inputDayItemsBySlot = [];
 
-    this.inputDayService.getInputDay(dateLocal, this.resolveTimezone()).subscribe({
-      next: (response) => {
-        if (requestId !== this.inputDayRequestId) {
-          return;
-        }
-        this.inputDayResponse = response;
-        this.inputDayTimezone = response.timezone?.trim() || this.resolveTimezone();
-        this.inputDayItemsBySlot = response.itemsBySlot ?? [];
-        this.loadingDayItems = false;
-      },
-      error: (error) => {
-        if (requestId !== this.inputDayRequestId) {
-          return;
-        }
-        this.inputDayResponse = null;
-        this.inputWeekResponse = null;
-        this.inputDayItemsBySlot = [];
-        this.dayItemsError = error;
-        this.loadingDayItems = false;
-      },
-    });
+    this.inputDayService
+      .getInputDay(dateLocal, this.resolveTimezone())
+      .subscribe({
+        next: (response) => {
+          if (requestId !== this.inputDayRequestId) {
+            return;
+          }
+          this.inputDayResponse = response;
+          this.inputDayTimezone =
+            response.timezone?.trim() || this.resolveTimezone();
+          this.inputDayItemsBySlot = response.itemsBySlot ?? [];
+          this.loadingDayItems = false;
+        },
+        error: (error) => {
+          if (requestId !== this.inputDayRequestId) {
+            return;
+          }
+          this.inputDayResponse = null;
+          this.inputWeekResponse = null;
+          this.inputDayItemsBySlot = [];
+          this.dayItemsError = error;
+          this.loadingDayItems = false;
+        },
+      });
   }
 
   private loadInputMonth(dateLocal: string): void {
@@ -490,27 +580,30 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.inputWeekResponse = null;
     this.inputDayItemsBySlot = [];
 
-    this.inputDayService.getInputMonth(dateLocal, this.resolveTimezone()).subscribe({
-      next: (response) => {
-        if (requestId !== this.inputDayRequestId) {
-          return;
-        }
+    this.inputDayService
+      .getInputMonth(dateLocal, this.resolveTimezone())
+      .subscribe({
+        next: (response) => {
+          if (requestId !== this.inputDayRequestId) {
+            return;
+          }
 
-        this.inputMonthResponse = response;
-        this.inputDayTimezone = response.timezone?.trim() || this.resolveTimezone();
-        this.loadingDayItems = false;
-      },
-      error: (error) => {
-        if (requestId !== this.inputDayRequestId) {
-          return;
-        }
+          this.inputMonthResponse = response;
+          this.inputDayTimezone =
+            response.timezone?.trim() || this.resolveTimezone();
+          this.loadingDayItems = false;
+        },
+        error: (error) => {
+          if (requestId !== this.inputDayRequestId) {
+            return;
+          }
 
-        this.inputMonthResponse = null;
-        this.inputDayItemsBySlot = [];
-        this.dayItemsError = error;
-        this.loadingDayItems = false;
-      },
-    });
+          this.inputMonthResponse = null;
+          this.inputDayItemsBySlot = [];
+          this.dayItemsError = error;
+          this.loadingDayItems = false;
+        },
+      });
   }
 
   private loadInputWeek(startDateLocal: string): void {
@@ -527,27 +620,30 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.inputWeekResponse = null;
     this.inputDayItemsBySlot = [];
 
-    this.inputDayService.getInputWeek(startDateLocal, this.resolveTimezone()).subscribe({
-      next: (response) => {
-        if (requestId !== this.inputDayRequestId) {
-          return;
-        }
+    this.inputDayService
+      .getInputWeek(startDateLocal, this.resolveTimezone())
+      .subscribe({
+        next: (response) => {
+          if (requestId !== this.inputDayRequestId) {
+            return;
+          }
 
-        this.inputWeekResponse = response;
-        this.inputDayTimezone = response.timezone?.trim() || this.resolveTimezone();
-        this.loadingDayItems = false;
-      },
-      error: (error) => {
-        if (requestId !== this.inputDayRequestId) {
-          return;
-        }
+          this.inputWeekResponse = response;
+          this.inputDayTimezone =
+            response.timezone?.trim() || this.resolveTimezone();
+          this.loadingDayItems = false;
+        },
+        error: (error) => {
+          if (requestId !== this.inputDayRequestId) {
+            return;
+          }
 
-        this.inputWeekResponse = null;
-        this.inputDayItemsBySlot = [];
-        this.dayItemsError = error;
-        this.loadingDayItems = false;
-      },
-    });
+          this.inputWeekResponse = null;
+          this.inputDayItemsBySlot = [];
+          this.dayItemsError = error;
+          this.loadingDayItems = false;
+        },
+      });
   }
 
   private clearInputDayState(): void {

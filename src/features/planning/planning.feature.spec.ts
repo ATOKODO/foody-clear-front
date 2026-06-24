@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 
 import { PlanningFeature } from './planning.feature';
 import { CycleService } from '../../services/cycle-service';
@@ -38,7 +38,9 @@ class CalendarStub {
   readonly dayClick = output<unknown>();
   readonly hourClick = output<unknown>();
   readonly itemClick = output<unknown>();
-  readonly manageAssignmentRequested = output<unknown>({ alias: 'manageAssignment' });
+  readonly manageAssignmentRequested = output<unknown>({
+    alias: 'manageAssignment',
+  });
   readonly manageItems = output<unknown>();
   readonly monthClick = output<unknown>();
   readonly openDayViewRequested = output<unknown>({ alias: 'openDayView' });
@@ -127,7 +129,9 @@ describe('PlanningFeature', () => {
   const inputDayServiceMock = {
     baseUrl: 'http://localhost:3000',
     setBaseUrl: jasmine.createSpy('setBaseUrl'),
-    getInputDay: jasmine.createSpy('getInputDay').and.returnValue(of(dayResponse)),
+    getInputDay: jasmine
+      .createSpy('getInputDay')
+      .and.returnValue(of(dayResponse)),
     getInputMonth: jasmine.createSpy('getInputMonth').and.returnValue(
       of({
         startDateLocal: '2026-02-01',
@@ -148,8 +152,12 @@ describe('PlanningFeature', () => {
     createItems: jasmine.createSpy('createItems').and.returnValue(of([])),
     updateItem: jasmine.createSpy('updateItem').and.returnValue(of(null)),
     removeItem: jasmine.createSpy('removeItem').and.returnValue(of(void 0)),
-    setTemplate: jasmine.createSpy('setTemplate').and.returnValue(of(dayResponse)),
-    convertTemplateItem: jasmine.createSpy('convertTemplateItem').and.returnValue(of(dayResponse)),
+    setTemplate: jasmine
+      .createSpy('setTemplate')
+      .and.returnValue(of(dayResponse)),
+    convertTemplateItem: jasmine
+      .createSpy('convertTemplateItem')
+      .and.returnValue(of(dayResponse)),
   };
 
   const productServiceMock = {
@@ -176,7 +184,10 @@ describe('PlanningFeature', () => {
       imports: [PlanningFeature],
       providers: [
         { provide: CycleService, useValue: cycleServiceMock },
-        { provide: CycleAssignementService, useValue: cycleAssignmentServiceMock },
+        {
+          provide: CycleAssignementService,
+          useValue: cycleAssignmentServiceMock,
+        },
         { provide: InputDayService, useValue: inputDayServiceMock },
         { provide: ProductService, useValue: productServiceMock },
         { provide: InventoryService, useValue: inventoryServiceMock },
@@ -201,12 +212,22 @@ describe('PlanningFeature', () => {
   it('should keep only planning controls in the local header', () => {
     const textContent = fixture.nativeElement.textContent;
 
-    expect(fixture.nativeElement.querySelector('[data-testid="planning-today"]')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('[data-testid="planning-refresh"]')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('[data-testid="planning-view-toggle"]')).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="planning-today"]'),
+    ).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="planning-refresh"]'),
+    ).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="planning-view-toggle"]',
+      ),
+    ).toBeTruthy();
     expect(textContent).not.toContain('Planning');
     expect(textContent).not.toContain('Assignations');
-    expect(textContent).not.toContain('Affectation des cycles et suivi des jours');
+    expect(textContent).not.toContain(
+      'Affectation des cycles et suivi des jours',
+    );
   });
 
   it('should open actions modal from calendar day click', () => {
@@ -252,8 +273,14 @@ describe('PlanningFeature', () => {
     expect(inputDay.initialEditingItemId()).toBeNull();
     expect(inputDay.apiBaseUrl()).toBe(component.baseUrl);
     expect(inputDay.lockDate()).toBeTrue();
-    expect(fixture.nativeElement.querySelector('[data-testid="planning-modal-actions"]')).toBeNull();
-    expect(fixture.nativeElement.textContent).not.toContain('Date selectionnee:');
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="planning-modal-actions"]',
+      ),
+    ).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Date selectionnee:',
+    );
   });
 
   it('should open input-day modal directly from week hour click', () => {
@@ -276,7 +303,11 @@ describe('PlanningFeature', () => {
     expect(component.activeModal).toBe('items');
     expect(inputDay.initialDateLocal()).toBe('2026-02-19');
     expect(inputDay.initialOccurredAt()).toBe('2026-02-19T18:30:00Z');
-    expect(fixture.nativeElement.querySelector('[data-testid="planning-modal-actions"]')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="planning-modal-actions"]',
+      ),
+    ).toBeNull();
   });
 
   it('should open items modal in edit mode from calendar item click', () => {
@@ -369,7 +400,11 @@ describe('PlanningFeature', () => {
     expect(component.selectedModalDateLocal).toBe('2026-02-16');
     expect(component.editingAssignment).toEqual(sourceAssignment);
     expect(component.modalSelectedCycleId).toBe(7);
-    expect(fixture.nativeElement.querySelector('[data-testid="planning-modal-actions"]')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="planning-modal-actions"]',
+      ),
+    ).toBeNull();
   });
 
   it('should reload current input data when embedded items change', () => {
@@ -526,6 +561,50 @@ describe('PlanningFeature', () => {
     expect(item.daySets[0].slots[0].title).toBe('Petit dejeuner');
     expect(item.missingDayCount).toBe(27);
     expect(item.daySetTotals.proteins).toBeCloseTo(177.14, 2);
+  });
+
+  it('should close the assignment modal after an async create succeeds', () => {
+    const createResponse$ = new Subject<CycleAssignment>();
+    cycleAssignmentServiceMock.create.and.returnValue(createResponse$);
+    component.cycles = [
+      {
+        id: 11,
+        title: 'Mois fixe',
+        color: 'blue',
+        durationDays: 30,
+        durationCount: 1,
+        durationType: 'mois',
+        nutritionValues: [],
+      },
+    ];
+    component.onCalendarManageAssignment({
+      view: 'month',
+      currentDateIso: '2026-03-10T00:00:00.000Z',
+      dateLocal: '2026-03-10',
+      sourceAssignment: null,
+    });
+    component.modalSelectedCycleId = 11;
+    fixture.detectChanges();
+
+    component.saveAssignmentFromModal();
+    expect(component.activeModal).toBe('assignment');
+    expect(component.savingAssignment).toBeTrue();
+
+    createResponse$.next({
+      id: 42,
+      cycle: component.cycles[0],
+      startDateLocal: '2026-03-10',
+      endDateLocal: '2026-04-08',
+    });
+    fixture.detectChanges();
+
+    expect(component.activeModal).toBeNull();
+    expect(component.savingAssignment).toBeFalse();
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="planning-modal-assignment"]',
+      ),
+    ).toBeNull();
   });
 
   it('should submit assignment payload without endDateLocal', () => {
