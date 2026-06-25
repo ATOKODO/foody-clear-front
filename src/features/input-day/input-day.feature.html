@@ -17,7 +17,9 @@
   </section>
 } @else {
   <div class="space-y-5">
-    <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3">
+    <div
+      class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3"
+    >
       <div>
         <h2 class="text-lg font-semibold text-slate-900">Elements du jour</h2>
         <p class="text-sm text-slate-500">
@@ -29,7 +31,10 @@
         type="button"
         data-testid="input-day-refresh"
         (click)="loadDay()"
-        [disabled]="loading || !hasValidSelectedDate || initialDateError !== null">
+        [disabled]="
+          loading || !hasValidSelectedDate || initialDateError !== null
+        "
+      >
         Rafraichir
       </button>
     </div>
@@ -40,9 +45,13 @@
   </div>
 }
 
-
 <ng-template #inputDayContent>
-  <form [formGroup]="form" (ngSubmit)="$event.preventDefault()" class="space-y-5" data-testid="input-day-form">
+  <form
+    [formGroup]="form"
+    (ngSubmit)="$event.preventDefault()"
+    class="space-y-5"
+    data-testid="input-day-form"
+  >
     @if (isStandaloneMode) {
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-content class="pt-4">
@@ -55,7 +64,8 @@
               [(ngModel)]="baseUrl"
               [ngModelOptions]="{ standalone: true }"
               (change)="onBaseUrlChange()"
-              placeholder="http://localhost:3000" />
+              placeholder="http://localhost:3000"
+            />
           </mat-form-field>
         </mat-card-content>
       </mat-card>
@@ -65,15 +75,25 @@
       <mat-card-header>
         <mat-card-title>Contexte du jour</mat-card-title>
         <mat-card-subtitle>
-          {{ isStandaloneMode ? 'Date, timezone, inventories et slot batch' : 'Inventories et slot batch' }}
+          {{
+            isStandaloneMode
+              ? "Date, timezone, inventories et slot batch"
+              : "Inventories et slot batch"
+          }}
         </mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content class="space-y-4 pt-2">
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           @if (isStandaloneMode && lockDate()) {
-            <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Date</p>
+            <div
+              class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3"
+            >
+              <p
+                class="text-xs font-semibold uppercase tracking-wide text-slate-500"
+              >
+                Date
+              </p>
               <p class="mt-1 text-sm text-slate-900">{{ selectedDateLabel }}</p>
             </div>
           }
@@ -85,7 +105,8 @@
                 matInput
                 [matDatepicker]="dateLocalPicker"
                 formControlName="dateLocal"
-                placeholder="2026-02-08" />
+                placeholder="2026-02-08"
+              />
               <mat-datepicker-toggle matIconSuffix [for]="dateLocalPicker" />
               <mat-datepicker #dateLocalPicker />
             </mat-form-field>
@@ -94,7 +115,12 @@
           @if (isStandaloneMode) {
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>timezone</mat-label>
-              <input matInput type="text" formControlName="timezone" placeholder="UTC" />
+              <input
+                matInput
+                type="text"
+                formControlName="timezone"
+                placeholder="UTC"
+              />
             </mat-form-field>
           }
 
@@ -105,7 +131,8 @@
               [ngModel]="selectedInventoryIds"
               [ngModelOptions]="{ standalone: true }"
               multiple
-              (ngModelChange)="onSelectedInventoryChange($event)">
+              (ngModelChange)="onSelectedInventoryChange($event)"
+            >
               @for (inventory of inventories; track inventory) {
                 <mat-option [value]="inventory.id">
                   {{ inventory.name }} (#{{ inventory.id }})
@@ -119,11 +146,15 @@
             <mat-select
               data-testid="input-day-slot-select"
               [(ngModel)]="selectedSlotId"
-              [ngModelOptions]="{ standalone: true }">
+              [ngModelOptions]="{ standalone: true }"
+            >
               <mat-option [value]="null">Sans slot</mat-option>
               @for (slot of availableSlots; track slot) {
                 <mat-option [value]="slot.slotId">
-                  {{ slot.sortOrder }}. {{ slot.title }} ({{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }})
+                  {{ slot.sortOrder }}. {{ slot.title }} ({{
+                    formatTime(slot.startTime)
+                  }}
+                  - {{ formatTime(slot.endTime) }})
                 </mat-option>
               }
             </mat-select>
@@ -131,7 +162,9 @@
         </div>
 
         @if (initialDateError) {
-          <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p
+            class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          >
             {{ initialDateError }}
           </p>
         }
@@ -143,7 +176,10 @@
               type="button"
               data-testid="input-day-load"
               (click)="loadDay()"
-              [disabled]="loading || !hasValidSelectedDate || initialDateError !== null">
+              [disabled]="
+                loading || !hasValidSelectedDate || initialDateError !== null
+              "
+            >
               Rafraichir
             </button>
             @if (isStandaloneMode) {
@@ -167,62 +203,90 @@
   }
 
   @if (shouldShowEmbeddedInventoryGuide) {
-    <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-      Selectionne au moins un inventory pour afficher les produits, les modeles et les elements saisis.
+    <p
+      class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+    >
+      Selectionne au moins un inventory pour afficher les produits, les modeles
+      et les elements saisis.
     </p>
   } @else {
     @if (isEmbeddedMode) {
       <div class="space-y-3">
-        <app-segmented-toggle [value]="activeEmbeddedSection"
+        <app-segmented-toggle
+          [value]="activeEmbeddedSection"
           [options]="embeddedSectionOptions"
           (valueChange)="onActiveEmbeddedSectionChange($event)"
           ariaLabel="Selection de la vue input day active"
           data-testid="input-day-section-toggle"
           name="input-day-section"
-          maxWidth="28rem" />
+          maxWidth="28rem"
+        />
       </div>
     }
     @if (isStandaloneMode || isStockSectionActive) {
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-header>
-          <mat-card-title>{{ isEditingItem ? 'Modifier une entree' : 'Ajouter des entrees' }}</mat-card-title>
+          <mat-card-title>{{
+            isEditingItem ? "Modifier une entree" : "Ajouter des entrees"
+          }}</mat-card-title>
           <mat-card-subtitle>
             {{
-            isEditingItem
-            ? 'Edition complete via PATCH /items/:itemId'
-            : 'Selectionne un inventory, choisis les produits puis renseigne les details communs.'
+              isEditingItem
+                ? "Edition complete via PATCH /items/:itemId"
+                : "Selectionne un inventory, choisis les produits puis renseigne les details communs."
             }}
           </mat-card-subtitle>
         </mat-card-header>
         <mat-card-content class="space-y-4 pt-2">
           @if (productsError) {
-            <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p
+              class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
               Impossible de charger les produits.
             </p>
           }
           @if (inventoriesError) {
-            <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p
+              class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
               Impossible de charger les inventories.
             </p>
           }
           @if (inventoryProductsError) {
-            <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p
+              class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
               Impossible de charger les produits de l'inventory selectionne.
             </p>
           }
           @if (isEditingItem) {
-            <div [formGroup]="itemEditorForm" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div
+              [formGroup]="itemEditorForm"
+              class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+            >
               <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Date metier</mat-label>
                 <input matInput type="date" formControlName="dateLocal" />
               </mat-form-field>
               <mat-form-field appearance="fill" class="w-full">
                 <mat-label>occurredAt</mat-label>
-                <input matInput type="datetime-local" formControlName="occurredAt" />
+                <input
+                  matInput
+                  type="datetime-local"
+                  formControlName="occurredAt"
+                />
               </mat-form-field>
-              <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Inventory actif</p>
-                <p class="mt-1 text-sm text-slate-900">{{ selectedInventoriesLabel }}</p>
+              <div
+                class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3"
+              >
+                <p
+                  class="text-xs font-semibold uppercase tracking-wide text-slate-500"
+                >
+                  Inventory actif
+                </p>
+                <p class="mt-1 text-sm text-slate-900">
+                  {{ selectedInventoriesLabel }}
+                </p>
                 <p class="mt-1 text-xs text-slate-500">
                   La selection d'inventories se fait dans Contexte du jour.
                 </p>
@@ -239,13 +303,20 @@
                 </mat-select>
                 @if (!hasSelectedInventories) {
                   <mat-hint>
-                    Choisis d'abord au moins un inventory dans le contexte du jour.
+                    Choisis d'abord au moins un inventory dans le contexte du
+                    jour.
                   </mat-hint>
                 }
               </mat-form-field>
               <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Quantite</mat-label>
-                <input matInput type="number" min="0.01" step="0.01" formControlName="qty" />
+                <input
+                  matInput
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  formControlName="qty"
+                />
               </mat-form-field>
               <mat-form-field appearance="fill" class="w-full">
                 <mat-label>Unite</mat-label>
@@ -262,11 +333,14 @@
                 <mat-label>Slot explicite</mat-label>
                 <mat-select
                   formControlName="slotId"
-                  (selectionChange)="onItemEditorSlotIdChange($event.value)">
+                  (selectionChange)="onItemEditorSlotIdChange($event.value)"
+                >
                   <mat-option [value]="null">Sans slot</mat-option>
                   @for (slot of availableSlots; track slot) {
                     <mat-option [value]="slot.slotId">
-                      {{ slot.sortOrder }}. {{ slot.title }} ({{ slot.slotKey }})
+                      {{ slot.sortOrder }}. {{ slot.title }} ({{
+                        slot.slotKey
+                      }})
                     </mat-option>
                   }
                 </mat-select>
@@ -278,16 +352,23 @@
                   type="text"
                   formControlName="slotKey"
                   [readonly]="itemEditorSelectedSlotId !== null"
-                  placeholder="ex: breakfast" />
+                  placeholder="ex: breakfast"
+                />
               </mat-form-field>
             </div>
             @if (itemEditorError) {
-              <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p
+                class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              >
                 {{ itemEditorError }}
               </p>
             }
             <div class="flex flex-wrap justify-end gap-2">
-              <button mat-stroked-button type="button" (click)="resetItemEditor()">
+              <button
+                mat-stroked-button
+                type="button"
+                (click)="resetItemEditor()"
+              >
                 Annuler edition
               </button>
               <button
@@ -296,7 +377,8 @@
                 type="button"
                 data-testid="input-day-delete-item"
                 (click)="removeItem()"
-                [disabled]="loading">
+                [disabled]="loading"
+              >
                 Supprimer
               </button>
               <button
@@ -305,7 +387,8 @@
                 type="button"
                 data-testid="input-day-submit-item"
                 (click)="submitItemEditor()"
-                [disabled]="!canSubmitItemEditor">
+                [disabled]="!canSubmitItemEditor"
+              >
                 Enregistrer l entree
               </button>
             </div>
@@ -316,25 +399,41 @@
                   Chargement des produits des inventories...
                 </p>
               }
-              <app-product-list [mode]="'select-multi'"
+              <app-product-list
+                [mode]="'select-multi'"
                 [products]="selectableProductListItems"
                 [selectedIds]="selectedProductIds"
                 [compact]="true"
                 [showAvailableQty]="true"
-                (selectedMany)="onProductsSelected($event)" />
+                (selectedMany)="onProductsSelected($event)"
+              />
               @if (selectedProductRows.length > 0) {
-                <div [formGroup]="itemEditorForm" class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div
+                  [formGroup]="itemEditorForm"
+                  class="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                >
                   <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p class="text-sm font-semibold text-slate-900">Details communs</p>
+                      <p class="text-sm font-semibold text-slate-900">
+                        Details communs
+                      </p>
                       <p class="text-sm text-slate-600">
                         {{ selectedProductRows.length }}
-                        {{ selectedProductRows.length > 1 ? 'produits selectionnes' : 'produit selectionne' }}
+                        {{
+                          selectedProductRows.length > 1
+                            ? "produits selectionnes"
+                            : "produit selectionne"
+                        }}
                         depuis {{ selectedInventoriesLabel }}.
                       </p>
                     </div>
-                    <div class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
-                      <span class="font-medium text-slate-900">Slot batch:</span> {{ selectedBatchSlotLabel }}
+                    <div
+                      class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+                    >
+                      <span class="font-medium text-slate-900"
+                        >Slot batch:</span
+                      >
+                      {{ selectedBatchSlotLabel }}
                     </div>
                   </div>
                   <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -344,7 +443,11 @@
                     </mat-form-field>
                     <mat-form-field appearance="fill" class="w-full">
                       <mat-label>occurredAt commun</mat-label>
-                      <input matInput type="datetime-local" formControlName="occurredAt" />
+                      <input
+                        matInput
+                        type="datetime-local"
+                        formControlName="occurredAt"
+                      />
                     </mat-form-field>
                     <mat-form-field appearance="fill" class="w-full">
                       <mat-label>slotKey libre</mat-label>
@@ -353,10 +456,12 @@
                         type="text"
                         formControlName="slotKey"
                         [readonly]="selectedSlotId !== null"
-                        placeholder="ex: breakfast" />
+                        placeholder="ex: breakfast"
+                      />
                       @if (selectedSlotId !== null) {
                         <mat-hint>
-                          Le slot choisi dans le contexte du jour sera applique a tous les produits.
+                          Le slot choisi dans le contexte du jour sera applique
+                          a tous les produits.
                         </mat-hint>
                       }
                     </mat-form-field>
@@ -373,11 +478,19 @@
                       </tr>
                     </thead>
                     <tbody>
-                      @for (row of selectedProductRows; track trackBySelectedProductRow($index, row)) {
+                      @for (
+                        row of selectedProductRows;
+                        track trackBySelectedProductRow($index, row)
+                      ) {
                         <tr
-                          [attr.data-testid]="'input-day-selected-product-' + row.productId"
-                          class="border-t border-slate-100 align-top">
-                          <td class="px-3 py-2 font-medium text-slate-900">{{ row.productName }}</td>
+                          [attr.data-testid]="
+                            'input-day-selected-product-' + row.productId
+                          "
+                          class="border-t border-slate-100 align-top"
+                        >
+                          <td class="px-3 py-2 font-medium text-slate-900">
+                            {{ row.productName }}
+                          </td>
                           <td class="px-3 py-2">
                             <mat-form-field appearance="fill" class="w-full">
                               <mat-label>Quantite</mat-label>
@@ -387,7 +500,8 @@
                                 min="0.01"
                                 step="0.01"
                                 [(ngModel)]="row.qty"
-                                [ngModelOptions]="{ standalone: true }" />
+                                [ngModelOptions]="{ standalone: true }"
+                              />
                             </mat-form-field>
                           </td>
                           <td class="px-3 py-2">
@@ -395,7 +509,8 @@
                               <mat-label>Unite</mat-label>
                               <mat-select
                                 [(ngModel)]="row.qtyUnit"
-                                [ngModelOptions]="{ standalone: true }">
+                                [ngModelOptions]="{ standalone: true }"
+                              >
                                 <mat-option [value]="null">Auto</mat-option>
                                 @for (unit of qtyUnitOptions; track unit) {
                                   <mat-option [value]="unit">
@@ -410,7 +525,8 @@
                               mat-stroked-button
                               color="warn"
                               type="button"
-                              (click)="removeSelectedProduct(row.productId)">
+                              (click)="removeSelectedProduct(row.productId)"
+                            >
                               Retirer
                             </button>
                           </td>
@@ -420,7 +536,9 @@
                   </table>
                 </div>
                 @if (itemsFormError) {
-                  <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  <p
+                    class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                  >
                     {{ itemsFormError }}
                   </p>
                 }
@@ -429,7 +547,8 @@
                     mat-stroked-button
                     type="button"
                     data-testid="input-day-reset-create"
-                    (click)="resetCreateComposer()">
+                    (click)="resetCreateComposer()"
+                  >
                     Reinitialiser
                   </button>
                   <button
@@ -438,18 +557,25 @@
                     type="button"
                     data-testid="input-day-create-items"
                     (click)="createSelectedItems()"
-                    [disabled]="!canCreateSelectedItems">
+                    [disabled]="!canCreateSelectedItems"
+                  >
                     {{ createSelectedItemsLabel }}
                   </button>
                 </div>
               } @else {
-                <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                  Selectionne un ou plusieurs produits pour afficher les champs de saisie et preparer l'ajout.
+                <p
+                  class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+                >
+                  Selectionne un ou plusieurs produits pour afficher les champs
+                  de saisie et preparer l'ajout.
                 </p>
               }
             } @else {
-              <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                Selectionne au moins un inventory dans le contexte du jour pour afficher ses produits.
+              <p
+                class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+              >
+                Selectionne au moins un inventory dans le contexte du jour pour
+                afficher ses produits.
               </p>
             }
           }
@@ -459,31 +585,42 @@
     @if (inputDayResponse; as response) {
       <div class="space-y-3">
         @if (isStandaloneMode) {
-          <h3 class="text-base font-semibold text-slate-900">Resume de la journee</h3>
+          <h3 class="text-base font-semibold text-slate-900">
+            Resume de la journee
+          </h3>
         }
         @if (isStandaloneMode) {
           <mat-card appearance="outlined" class="rounded-xl">
             <mat-card-content class="space-y-3 p-4">
               <div class="grid gap-3 sm:grid-cols-2">
                 <p class="text-sm text-slate-700">
-                  <span class="font-semibold text-slate-900">Date:</span> {{ response.dateLocal }}
+                  <span class="font-semibold text-slate-900">Date:</span>
+                  {{ response.dateLocal }}
                 </p>
                 <p class="text-sm text-slate-700">
-                  <span class="font-semibold text-slate-900">Timezone:</span> {{ response.timezone }}
+                  <span class="font-semibold text-slate-900">Timezone:</span>
+                  {{ response.timezone }}
                 </p>
               </div>
               @if (response.assignment; as assignment) {
                 <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p class="text-sm font-semibold text-slate-900">Cycle actif</p>
-                  <p class="text-sm text-slate-700">
-                    Cycle #{{ assignment.cycleId }} - {{ assignment.cycleTitle }}
+                  <p class="text-sm font-semibold text-slate-900">
+                    Cycle actif
                   </p>
                   <p class="text-sm text-slate-700">
-                    Du {{ assignment.startDateLocal }} au {{ assignment.endDateLocal }} (jour {{ assignment.dayIndex }})
+                    Cycle #{{ assignment.cycleId }} -
+                    {{ assignment.cycleTitle }}
+                  </p>
+                  <p class="text-sm text-slate-700">
+                    Du {{ assignment.startDateLocal }} au
+                    {{ assignment.endDateLocal }} (jour
+                    {{ assignment.dayIndex }})
                   </p>
                 </div>
               } @else {
-                <p class="text-sm text-slate-600">Aucune assignation pour cette date.</p>
+                <p class="text-sm text-slate-600">
+                  Aucune assignation pour cette date.
+                </p>
               }
             </mat-card-content>
           </mat-card>
@@ -498,17 +635,26 @@
                   </p>
                   @if (hasEntries(daySet.nutritionValue)) {
                     <div class="flex flex-wrap gap-2">
-                      @for (target of daySet.nutritionValue | keyvalue; track target) {
+                      @for (
+                        target of daySet.nutritionValue | keyvalue;
+                        track target
+                      ) {
                         <span
-                          class="rounded-full bg-indigo-50 px-2 py-1 text-xs text-indigo-700">
-                          {{ target.key }}: {{ formatNutritionAmount(target.value) }}
+                          class="rounded-full bg-indigo-50 px-2 py-1 text-xs text-indigo-700"
+                        >
+                          {{ target.key }}:
+                          {{ formatNutritionAmount(target.value) }}
                         </span>
                       }
                     </div>
                   } @else {
-                    <p class="text-xs text-slate-500">Aucune cible nutritionnelle definie pour ce daySet.</p>
+                    <p class="text-xs text-slate-500">
+                      Aucune cible nutritionnelle definie pour ce daySet.
+                    </p>
                   }
-                  <div class="overflow-x-auto rounded-lg border border-slate-200">
+                  <div
+                    class="overflow-x-auto rounded-lg border border-slate-200"
+                  >
                     <table class="min-w-full text-sm">
                       <thead class="bg-slate-50 text-left text-slate-700">
                         <tr>
@@ -521,16 +667,27 @@
                         @for (slot of daySet.slots; track slot) {
                           <tr class="border-t border-slate-100">
                             <td class="px-3 py-2">
-                              {{ slot.sortOrder }}. {{ slot.title }} <span class="text-slate-500">({{ slot.slotKey }})</span>
+                              {{ slot.sortOrder }}. {{ slot.title }}
+                              <span class="text-slate-500"
+                                >({{ slot.slotKey }})</span
+                              >
                             </td>
-                            <td class="px-3 py-2">{{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}</td>
+                            <td class="px-3 py-2">
+                              {{ formatTime(slot.startTime) }} -
+                              {{ formatTime(slot.endTime) }}
+                            </td>
                             <td class="px-3 py-2">
                               @if (hasEntries(slot.nutritionValue)) {
                                 <div class="flex flex-wrap gap-1">
-                                  @for (target of slot.nutritionValue | keyvalue; track target) {
+                                  @for (
+                                    target of slot.nutritionValue | keyvalue;
+                                    track target
+                                  ) {
                                     <span
-                                      class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
-                                      {{ target.key }}: {{ formatNutritionAmount(target.value) }}
+                                      class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700"
+                                    >
+                                      {{ target.key }}:
+                                      {{ formatNutritionAmount(target.value) }}
                                     </span>
                                   }
                                 </div>
@@ -545,10 +702,10 @@
                   </div>
                 </div>
               } @else {
-                @if (response.totalsMacros?.targetSource === 'cycle') {
-                  <p
-                    class="text-sm text-slate-600">
-                    Aucun daySet actif pour cette journee. Les cibles quotidiennes proviennent du cycle.
+                @if (response.totalsMacros?.targetSource === "cycle") {
+                  <p class="text-sm text-slate-600">
+                    Aucun daySet actif pour cette journee. Les cibles
+                    quotidiennes proviennent du cycle.
                   </p>
                 } @else {
                   <p class="text-sm text-slate-600">Aucun daySet retourne.</p>
@@ -562,17 +719,25 @@
             <mat-card-content class="space-y-4 p-4">
               <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p class="text-sm font-semibold text-slate-900">Template associe</p>
-                  <p class="text-sm text-slate-600">{{ activeTemplateLabel }}</p>
+                  <p class="text-sm font-semibold text-slate-900">
+                    Template associe
+                  </p>
+                  <p class="text-sm text-slate-600">
+                    {{ activeTemplateLabel }}
+                  </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                  <mat-form-field appearance="fill" class="w-full min-w-[16rem] sm:w-72">
+                  <mat-form-field
+                    appearance="fill"
+                    class="w-full min-w-[16rem] sm:w-72"
+                  >
                     <mat-label>Remplacement template</mat-label>
                     <mat-select
                       data-testid="input-day-template-select"
                       [ngModel]="manualTemplateSelectionId"
                       [ngModelOptions]="{ standalone: true }"
-                      (ngModelChange)="onManualTemplateSelectionChange($event)">
+                      (ngModelChange)="onManualTemplateSelectionChange($event)"
+                    >
                       <mat-option [value]="null">Aucun override</mat-option>
                       @for (template of templates; track template) {
                         <mat-option [value]="template.id">
@@ -586,19 +751,24 @@
                       mat-stroked-button
                       type="button"
                       data-testid="input-day-template-clear"
-                      (click)="clearManualTemplateOverride()">
+                      (click)="clearManualTemplateOverride()"
+                    >
                       Retirer le remplacement
                     </button>
                   }
                 </div>
               </div>
               @if (templateError) {
-                <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p
+                  class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                >
                   {{ templateError }}
                 </p>
               }
               @if (templateActionError) {
-                <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p
+                  class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                >
                   {{ templateActionError }}
                 </p>
               }
@@ -618,72 +788,153 @@
                       </tr>
                     </thead>
                     <tbody>
-                      @for (item of templateItems; track trackByTemplateItem($index, item)) {
-                        <tr [attr.data-testid]="'input-day-template-item-' + item.id" class="border-t border-slate-100 align-top">
+                      @for (
+                        item of templateItems;
+                        track trackByTemplateItem($index, item)
+                      ) {
+                        <tr
+                          [attr.data-testid]="
+                            'input-day-template-item-' + item.id
+                          "
+                          class="border-t border-slate-100 align-top"
+                        >
                           <td class="px-3 py-2">
-                            <p class="font-medium text-slate-900">{{ item.productName }}</p>
-                            <p class="text-xs text-slate-500">#{{ item.productId }}</p>
+                            <p class="font-medium text-slate-900">
+                              {{ item.productName }}
+                            </p>
+                            <p class="text-xs text-slate-500">
+                              #{{ item.productId }}
+                            </p>
                           </td>
                           <td class="px-3 py-2">
                             {{ formatNutritionAmount(item.qty) }}
-                            <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
+                            <span class="text-slate-500">{{
+                              item.qtyUnit ?? "-"
+                            }}</span>
                           </td>
                           <td class="px-3 py-2">
                             {{ resolveTemplateItemSlotTitle(item) }}
-                            <span class="text-xs text-slate-500">({{ resolveTemplateItemSlotKey(item) }})</span>
+                            <span class="text-xs text-slate-500"
+                              >({{ resolveTemplateItemSlotKey(item) }})</span
+                            >
                           </td>
                           <td class="px-3 py-2">
                             <span
                               class="rounded-full px-2 py-1 text-xs font-medium"
                               [class.bg-sky-100]="item.status === 'pending'"
                               [class.text-sky-700]="item.status === 'pending'"
-                              [class.bg-emerald-100]="item.status === 'converted'"
-                              [class.text-emerald-700]="item.status === 'converted'">
-                              {{ item.status === 'converted' ? 'Converti' : 'Previsionnel' }}
+                              [class.bg-emerald-100]="
+                                item.status === 'converted'
+                              "
+                              [class.text-emerald-700]="
+                                item.status === 'converted'
+                              "
+                            >
+                              {{
+                                item.status === "converted"
+                                  ? "Converti"
+                                  : "Previsionnel"
+                              }}
                             </span>
                           </td>
                           <td class="px-3 py-2">
                             <span
                               class="rounded-full px-2 py-1 text-xs font-medium"
-                              [class.bg-emerald-100]="item.stockAvailability.enoughStock"
-                              [class.text-emerald-700]="item.stockAvailability.enoughStock"
-                              [class.bg-red-100]="!item.stockAvailability.enoughStock"
-                              [class.text-red-700]="!item.stockAvailability.enoughStock">
-                              {{ item.stockAvailability.enoughStock ? 'Stock OK' : 'Stock insuffisant' }}
+                              [class.bg-emerald-100]="
+                                item.stockAvailability.enoughStock
+                              "
+                              [class.text-emerald-700]="
+                                item.stockAvailability.enoughStock
+                              "
+                              [class.bg-red-100]="
+                                !item.stockAvailability.enoughStock
+                              "
+                              [class.text-red-700]="
+                                !item.stockAvailability.enoughStock
+                              "
+                            >
+                              {{
+                                item.stockAvailability.enoughStock
+                                  ? "Stock OK"
+                                  : "Stock insuffisant"
+                              }}
                             </span>
                             <p class="mt-2 text-xs text-slate-600">
-                              {{ formatNutritionAmount(item.stockAvailability.totalAvailableNormalized) }} dispo /
-                              {{ formatNutritionAmount(item.stockAvailability.requestedQtyNormalized) }} demande
+                              {{
+                                formatNutritionAmount(
+                                  item.stockAvailability
+                                    .totalAvailableNormalized
+                                )
+                              }}
+                              dispo /
+                              {{
+                                formatNutritionAmount(
+                                  item.stockAvailability.requestedQtyNormalized
+                                )
+                              }}
+                              demande
                             </p>
                           </td>
                           <td class="px-3 py-2">
-                            @if (getSelectedInventoriesTemplateStock(item); as inventoryStock) {
+                            @if (
+                              getSelectedInventoriesTemplateStock(item);
+                              as inventoryStock
+                            ) {
                               <p class="text-sm text-slate-700">
-                                {{ formatNutritionAmount(inventoryStock.qtyAvailableNormalized) }}
+                                {{
+                                  formatNutritionAmount(
+                                    inventoryStock.qtyAvailableNormalized
+                                  )
+                                }}
                               </p>
                               <p
                                 class="text-xs font-medium"
-                                [class.text-emerald-700]="inventoryStock.enoughStock"
-                                [class.text-red-700]="!inventoryStock.enoughStock">
-                                {{ inventoryStock.enoughStock ? 'OK pour conversion' : 'KO pour conversion' }}
+                                [class.text-emerald-700]="
+                                  inventoryStock.enoughStock
+                                "
+                                [class.text-red-700]="
+                                  !inventoryStock.enoughStock
+                                "
+                              >
+                                {{
+                                  inventoryStock.enoughStock
+                                    ? "OK pour conversion"
+                                    : "KO pour conversion"
+                                }}
                               </p>
                             } @else {
-                              <p class="text-xs text-slate-500">Selectionne au moins un inventory.</p>
+                              <p class="text-xs text-slate-500">
+                                Selectionne au moins un inventory.
+                              </p>
                             }
                           </td>
                           <td class="px-3 py-2">
                             <details>
-                              <summary class="cursor-pointer text-xs font-medium text-slate-700">Voir</summary>
+                              <summary
+                                class="cursor-pointer text-xs font-medium text-slate-700"
+                              >
+                                Voir
+                              </summary>
                               <div class="mt-2 space-y-1">
-                                @for (stock of item.stockByInventory; track stock) {
+                                @for (
+                                  stock of item.stockByInventory;
+                                  track stock
+                                ) {
                                   <p class="text-xs text-slate-600">
                                     {{ stock.inventoryName }}:
-                                    {{ formatNutritionAmount(stock.qtyAvailableNormalized) }}
+                                    {{
+                                      formatNutritionAmount(
+                                        stock.qtyAvailableNormalized
+                                      )
+                                    }}
                                     <span
                                       class="font-medium"
-                                      [class.text-emerald-700]="stock.enoughStock"
-                                      [class.text-red-700]="!stock.enoughStock">
-                                      ({{ stock.enoughStock ? 'OK' : 'KO' }})
+                                      [class.text-emerald-700]="
+                                        stock.enoughStock
+                                      "
+                                      [class.text-red-700]="!stock.enoughStock"
+                                    >
+                                      ({{ stock.enoughStock ? "OK" : "KO" }})
                                     </span>
                                   </p>
                                 }
@@ -695,10 +946,19 @@
                               mat-raised-button
                               color="primary"
                               type="button"
-                              [attr.data-testid]="'input-day-convert-template-' + item.id"
+                              [attr.data-testid]="
+                                'input-day-convert-template-' + item.id
+                              "
                               (click)="convertTemplateItem(item)"
-                              [disabled]="!canConvertTemplateItem(item)">
-                              {{ item.status === 'converted' ? 'Deja converti' : 'Convertir' }}
+                              [disabled]="!canConvertTemplateItem(item)"
+                            >
+                              {{
+                                item.status === "converted"
+                                  ? "Deja converti"
+                                  : isConvertingTemplateItem(item)
+                                    ? "Conversion..."
+                                    : "Convertir"
+                              }}
                             </button>
                           </td>
                         </tr>
@@ -707,7 +967,9 @@
                   </table>
                 </div>
               } @else {
-                <p class="text-sm text-slate-600">Aucune ligne template pour cette journee.</p>
+                <p class="text-sm text-slate-600">
+                  Aucune ligne template pour cette journee.
+                </p>
               }
             </mat-card-content>
           </mat-card>
@@ -732,34 +994,59 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (item of response.items; track trackByInputDayItem($index, item)) {
-                      <tr [attr.data-testid]="'input-day-item-' + item.id" class="border-t border-slate-100 align-top">
+                    @for (
+                      item of response.items;
+                      track trackByInputDayItem($index, item)
+                    ) {
+                      <tr
+                        [attr.data-testid]="'input-day-item-' + item.id"
+                        class="border-t border-slate-100 align-top"
+                      >
                         <td class="px-3 py-2">
                           <p class="font-medium text-slate-900">
                             {{ item.productName }}
-                            <span class="text-slate-500">(#{{ item.productId }})</span>
+                            <span class="text-slate-500"
+                              >(#{{ item.productId }})</span
+                            >
                           </p>
                           @if (item.templateItemId) {
                             <span
-                              class="mt-1 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                              class="mt-1 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                            >
                               Effective depuis template
                             </span>
                           }
                         </td>
-                        <td class="px-3 py-2">{{ item.inventoryId ?? '-' }}</td>
+                        <td class="px-3 py-2">{{ item.inventoryId ?? "-" }}</td>
                         <td class="px-3 py-2">
-                          {{ formatNutritionAmount(item.qty) }} <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
+                          {{ formatNutritionAmount(item.qty) }}
+                          <span class="text-slate-500">{{
+                            item.qtyUnit ?? "-"
+                          }}</span>
                         </td>
-                        <td class="px-3 py-2">{{ formatDateTime(item.occurredAt) }}</td>
-                        <td class="px-3 py-2">{{ formatDateTime(item.insertedAt) }}</td>
-                        <td class="px-3 py-2">{{ resolveItemSlotTitle(item) }}</td>
-                        <td class="px-3 py-2">{{ resolveItemSlotKey(item) }}</td>
+                        <td class="px-3 py-2">
+                          {{ formatDateTime(item.occurredAt) }}
+                        </td>
+                        <td class="px-3 py-2">
+                          {{ formatDateTime(item.insertedAt) }}
+                        </td>
+                        <td class="px-3 py-2">
+                          {{ resolveItemSlotTitle(item) }}
+                        </td>
+                        <td class="px-3 py-2">
+                          {{ resolveItemSlotKey(item) }}
+                        </td>
                         <td class="px-3 py-2">
                           <div class="flex flex-wrap gap-1">
-                            @for (nutrition of item.nutritionValue | keyvalue; track nutrition) {
+                            @for (
+                              nutrition of item.nutritionValue | keyvalue;
+                              track nutrition
+                            ) {
                               <span
-                                class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
-                                {{ nutrition.key }}: {{ formatNutritionAmount(nutrition.value) }}
+                                class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700"
+                              >
+                                {{ nutrition.key }}:
+                                {{ formatNutritionAmount(nutrition.value) }}
                               </span>
                             }
                           </div>
@@ -770,7 +1057,8 @@
                               mat-stroked-button
                               type="button"
                               class="input-day-edit-item"
-                              (click)="startEditingItem(item.id)">
+                              (click)="startEditingItem(item.id)"
+                            >
                               Modifier
                             </button>
                             <button
@@ -778,7 +1066,8 @@
                               color="warn"
                               type="button"
                               class="input-day-delete-item"
-                              (click)="removeItem(item.id)">
+                              (click)="removeItem(item.id)"
+                            >
                               Supprimer
                             </button>
                           </div>
@@ -789,7 +1078,9 @@
                 </table>
               </div>
             } @else {
-              <p class="text-sm text-slate-600">Aucun item saisi pour cette journee.</p>
+              <p class="text-sm text-slate-600">
+                Aucun item saisi pour cette journee.
+              </p>
             }
           </mat-card-content>
         </mat-card>
@@ -798,29 +1089,49 @@
             @if (response.totalsMacros; as totals) {
               <mat-card appearance="outlined" class="rounded-xl">
                 <mat-card-content class="space-y-3 p-4">
-                  <p class="text-sm font-semibold text-slate-900">Effectif / day-set</p>
+                  <p class="text-sm font-semibold text-slate-900">
+                    Effectif / day-set
+                  </p>
                   <p class="text-xs text-slate-500">
                     {{ getTargetSourceText(totals.targetSource) }}
                   </p>
                   <div class="grid gap-3 md:grid-cols-3">
                     <div class="rounded-lg border border-slate-200 p-3">
-                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Total jour</p>
+                      <p
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                      >
+                        Total jour
+                      </p>
                       <div class="space-y-1 text-sm text-slate-700">
-                        @for (entry of totals.dayTotal | keyvalue; track entry) {
+                        @for (
+                          entry of totals.dayTotal | keyvalue;
+                          track entry
+                        ) {
                           <p>
-                            <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                            <span class="font-medium text-slate-900"
+                              >{{ entry.key }}:</span
+                            >
                             {{ formatMacroValue(entry.value) }}
                           </p>
                         }
                       </div>
                     </div>
                     <div class="rounded-lg border border-slate-200 p-3">
-                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Cibles</p>
+                      <p
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                      >
+                        Cibles
+                      </p>
                       @if (hasEntries(totals.targets)) {
                         <div class="space-y-1 text-sm text-slate-700">
-                          @for (entry of totals.targets | keyvalue; track entry) {
+                          @for (
+                            entry of totals.targets | keyvalue;
+                            track entry
+                          ) {
                             <p>
-                              <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                              <span class="font-medium text-slate-900"
+                                >{{ entry.key }}:</span
+                              >
                               {{ formatNutritionAmount(entry.value) }}
                             </p>
                           }
@@ -830,12 +1141,21 @@
                       }
                     </div>
                     <div class="rounded-lg border border-slate-200 p-3">
-                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ecart aux cibles</p>
+                      <p
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                      >
+                        Ecart aux cibles
+                      </p>
                       @if (hasEntries(totals.deltaToTargets)) {
                         <div class="space-y-1 text-sm text-slate-700">
-                          @for (entry of totals.deltaToTargets | keyvalue; track entry) {
+                          @for (
+                            entry of totals.deltaToTargets | keyvalue;
+                            track entry
+                          ) {
                             <p>
-                              <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                              <span class="font-medium text-slate-900"
+                                >{{ entry.key }}:</span
+                              >
                               {{ formatMacroValue(entry.value) }}
                             </p>
                           }
@@ -851,29 +1171,49 @@
             @if (response.projectedTotalsMacros; as projectedTotals) {
               <mat-card appearance="outlined" class="rounded-xl">
                 <mat-card-content class="space-y-3 p-4">
-                  <p class="text-sm font-semibold text-slate-900">Effectif + template / day-set</p>
+                  <p class="text-sm font-semibold text-slate-900">
+                    Effectif + template / day-set
+                  </p>
                   <p class="text-xs text-slate-500">
                     {{ getTemplateTargetSourceText(projectedTotals) }}
                   </p>
                   <div class="grid gap-3 md:grid-cols-3">
                     <div class="rounded-lg border border-slate-200 p-3">
-                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Total jour</p>
+                      <p
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                      >
+                        Total jour
+                      </p>
                       <div class="space-y-1 text-sm text-slate-700">
-                        @for (entry of projectedTotals.dayTotal | keyvalue; track entry) {
+                        @for (
+                          entry of projectedTotals.dayTotal | keyvalue;
+                          track entry
+                        ) {
                           <p>
-                            <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                            <span class="font-medium text-slate-900"
+                              >{{ entry.key }}:</span
+                            >
                             {{ formatMacroValue(entry.value) }}
                           </p>
                         }
                       </div>
                     </div>
                     <div class="rounded-lg border border-slate-200 p-3">
-                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Cibles</p>
+                      <p
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                      >
+                        Cibles
+                      </p>
                       @if (hasEntries(projectedTotals.targets)) {
                         <div class="space-y-1 text-sm text-slate-700">
-                          @for (entry of projectedTotals.targets | keyvalue; track entry) {
+                          @for (
+                            entry of projectedTotals.targets | keyvalue;
+                            track entry
+                          ) {
                             <p>
-                              <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                              <span class="font-medium text-slate-900"
+                                >{{ entry.key }}:</span
+                              >
                               {{ formatNutritionAmount(entry.value) }}
                             </p>
                           }
@@ -883,12 +1223,21 @@
                       }
                     </div>
                     <div class="rounded-lg border border-slate-200 p-3">
-                      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Ecart aux cibles</p>
+                      <p
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                      >
+                        Ecart aux cibles
+                      </p>
                       @if (hasEntries(projectedTotals.deltaToTargets)) {
                         <div class="space-y-1 text-sm text-slate-700">
-                          @for (entry of projectedTotals.deltaToTargets | keyvalue; track entry) {
+                          @for (
+                            entry of projectedTotals.deltaToTargets | keyvalue;
+                            track entry
+                          ) {
                             <p>
-                              <span class="font-medium text-slate-900">{{ entry.key }}:</span>
+                              <span class="font-medium text-slate-900"
+                                >{{ entry.key }}:</span
+                              >
                               {{ formatMacroValue(entry.value) }}
                             </p>
                           }
@@ -909,11 +1258,12 @@
       <div class="space-y-3">
         <mat-divider />
         <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
-        <pre class="app-code-panel input-day-response max-h-[65vh] p-3 text-[11px] sm:p-4 sm:text-xs">
+        <pre
+          class="app-code-panel input-day-response max-h-[65vh] p-3 text-[11px] sm:p-4 sm:text-xs"
+        >
           {{ lastResponse | json }}
         </pre>
       </div>
     }
   }
-
 </ng-template>

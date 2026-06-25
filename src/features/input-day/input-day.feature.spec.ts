@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DateTime } from 'luxon';
-import { of } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 
 import { InputDayFeature } from './input-day.feature';
 import { InputDayResponse } from '../../interfaces/input-day.interface';
@@ -58,79 +58,91 @@ describe('InputDayFeature', () => {
   const inputDayServiceMock = {
     baseUrl: 'http://localhost:3000',
     setBaseUrl: jasmine.createSpy('setBaseUrl'),
-    getInputDay: jasmine.createSpy('getInputDay').and.returnValue(of(dayResponse)),
+    getInputDay: jasmine
+      .createSpy('getInputDay')
+      .and.returnValue(of(dayResponse)),
     createItem: jasmine.createSpy('createItem').and.returnValue(of({})),
     createItems: jasmine.createSpy('createItems').and.returnValue(of([])),
     updateItem: jasmine.createSpy('updateItem').and.returnValue(of(null)),
     removeItem: jasmine.createSpy('removeItem').and.returnValue(of(void 0)),
-    setTemplate: jasmine.createSpy('setTemplate').and.returnValue(of(dayResponse)),
-    convertTemplateItem: jasmine.createSpy('convertTemplateItem').and.returnValue(of(dayResponse)),
+    setTemplate: jasmine
+      .createSpy('setTemplate')
+      .and.returnValue(of(dayResponse)),
+    convertTemplateItem: jasmine
+      .createSpy('convertTemplateItem')
+      .and.returnValue(of(dayResponse)),
   };
 
   const productServiceMock = {
     baseUrl: 'http://localhost:3000',
     setBaseUrl: jasmine.createSpy('setBaseUrl'),
-    findAll: jasmine.createSpy('findAll').and.returnValue(of([
-      {
-        id: 1,
-        name: 'Chicken',
-        unitType: 'Paquet',
-        quantityPerUnit: 1,
-        quantityUnit: 'unit',
-        nutritionValues: [],
-      },
-      {
-        id: 2,
-        name: 'Rice',
-        unitType: 'Paquet',
-        quantityPerUnit: 500,
-        quantityUnit: 'g',
-        nutritionValues: [],
-      },
-    ])),
+    findAll: jasmine.createSpy('findAll').and.returnValue(
+      of([
+        {
+          id: 1,
+          name: 'Chicken',
+          unitType: 'Paquet',
+          quantityPerUnit: 1,
+          quantityUnit: 'unit',
+          nutritionValues: [],
+        },
+        {
+          id: 2,
+          name: 'Rice',
+          unitType: 'Paquet',
+          quantityPerUnit: 500,
+          quantityUnit: 'g',
+          nutritionValues: [],
+        },
+      ]),
+    ),
   };
 
   const inventoryServiceMock = {
     baseUrl: 'http://localhost:3000',
     setBaseUrl: jasmine.createSpy('setBaseUrl'),
-    findAll: jasmine.createSpy('findAll').and.returnValue(of([
-      { id: 4, name: 'Stock principal' },
-      { id: 5, name: 'Stock secondaire' },
-    ])),
-    findProducts: jasmine.createSpy('findProducts').and.callFake((inventoryId: number) => {
-      if (inventoryId === 4) {
-        return of([
-          {
-            id: 41,
-            inventoryId: 4,
-            productId: 1,
-            qtyOnHandInUnits: 2,
-            qtyOnHandNormalized: 2,
-          },
-          {
-            id: 42,
-            inventoryId: 4,
-            productId: 2,
-            qtyOnHandInUnits: 1,
-            qtyOnHandNormalized: 500,
-          },
-        ]);
-      }
+    findAll: jasmine.createSpy('findAll').and.returnValue(
+      of([
+        { id: 4, name: 'Stock principal' },
+        { id: 5, name: 'Stock secondaire' },
+      ]),
+    ),
+    findProducts: jasmine
+      .createSpy('findProducts')
+      .and.callFake((inventoryId: number) => {
+        if (inventoryId === 4) {
+          return of([
+            {
+              id: 41,
+              inventoryId: 4,
+              productId: 1,
+              qtyOnHandInUnits: 2,
+              qtyOnHandNormalized: 2,
+            },
+            {
+              id: 42,
+              inventoryId: 4,
+              productId: 2,
+              qtyOnHandInUnits: 1,
+              qtyOnHandNormalized: 500,
+            },
+          ]);
+        }
 
-      if (inventoryId === 5) {
-        return of([
-          {
-            id: 51,
-            inventoryId: 5,
-            productId: 2,
-            qtyOnHandInUnits: 1,
-            qtyOnHandNormalized: 500,
-          },
-        ]);
-      }
+        if (inventoryId === 5) {
+          return of([
+            {
+              id: 51,
+              inventoryId: 5,
+              productId: 2,
+              qtyOnHandInUnits: 1,
+              qtyOnHandNormalized: 500,
+            },
+          ]);
+        }
 
-      return of([]);
-    }),
+        return of([]);
+      }),
   };
 
   const templateServiceMock = {
@@ -164,7 +176,10 @@ describe('InputDayFeature', () => {
     fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
     fixture.detectChanges();
 
-    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith('2026-02-16', fallbackTimezone);
+    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith(
+      '2026-02-16',
+      fallbackTimezone,
+    );
   });
 
   it('should defer full product loading on embedded open until an inventory is selected', () => {
@@ -179,7 +194,10 @@ describe('InputDayFeature', () => {
 
     expect(productServiceMock.findAll).not.toHaveBeenCalled();
     expect(inventoryServiceMock.findAll).toHaveBeenCalled();
-    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith('2026-02-16', fallbackTimezone);
+    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith(
+      '2026-02-16',
+      fallbackTimezone,
+    );
 
     embeddedFixture.componentInstance.onSelectedInventoryChange([4]);
 
@@ -200,7 +218,9 @@ describe('InputDayFeature', () => {
     fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.input-day-response')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.input-day-response'),
+    ).toBeNull();
   });
 
   it('should keep a single refresh button and hide timezone input in embedded mode', () => {
@@ -208,9 +228,17 @@ describe('InputDayFeature', () => {
     fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('[data-testid="input-day-refresh"]').length).toBe(1);
-    expect(fixture.nativeElement.querySelector('[data-testid="input-day-load"]')).toBeNull();
-    expect(fixture.nativeElement.querySelector('input[formcontrolname="timezone"]')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelectorAll(
+        '[data-testid="input-day-refresh"]',
+      ).length,
+    ).toBe(1);
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="input-day-load"]'),
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('input[formcontrolname="timezone"]'),
+    ).toBeNull();
   });
 
   it('should show only the inventory guide in embedded mode until inventories are selected', async () => {
@@ -221,15 +249,25 @@ describe('InputDayFeature', () => {
     expect(fixture.nativeElement.textContent).toContain(
       'Selectionne au moins un inventory pour afficher les produits, les modeles et les elements saisis.',
     );
-    expect(fixture.nativeElement.querySelector('[data-testid="input-day-section-toggle"]')).toBeNull();
-    expect(fixture.nativeElement.querySelector('[data-testid="input-day-item-31"]')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="input-day-section-toggle"]',
+      ),
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="input-day-item-31"]'),
+    ).toBeNull();
 
     component.onSelectedInventoryChange([4]);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('[data-testid="input-day-section-toggle"]')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="input-day-section-toggle"]',
+      ),
+    ).not.toBeNull();
   });
 
   it('should build one row per selected product and remove deselected rows', () => {
@@ -287,7 +325,9 @@ describe('InputDayFeature', () => {
     component.onSelectedInventoryChange([5]);
 
     expect(inventoryServiceMock.findProducts).toHaveBeenCalledWith(5);
-    expect(component.selectableProductListItems.map((item) => item.id)).toEqual(['2']);
+    expect(component.selectableProductListItems.map((item) => item.id)).toEqual(
+      ['2'],
+    );
   });
 
   it('should keep editor product options empty until an inventory is selected', () => {
@@ -296,7 +336,10 @@ describe('InputDayFeature', () => {
 
     component.onSelectedInventoryChange([4]);
 
-    expect(component.editorProductOptions.map((item) => item.id)).toEqual(['1', '2']);
+    expect(component.editorProductOptions.map((item) => item.id)).toEqual([
+      '1',
+      '2',
+    ]);
   });
 
   it('should aggregate products and available quantities across selected inventories', () => {
@@ -304,8 +347,13 @@ describe('InputDayFeature', () => {
 
     expect(inventoryServiceMock.findProducts).toHaveBeenCalledWith(4);
     expect(inventoryServiceMock.findProducts).toHaveBeenCalledWith(5);
-    expect(component.selectableProductListItems.map((item) => item.id)).toEqual(['1', '2']);
-    expect(component.selectableProductListItems.find((item) => item.id === '2')?.availableQuantity).toBe(1000);
+    expect(component.selectableProductListItems.map((item) => item.id)).toEqual(
+      ['1', '2'],
+    );
+    expect(
+      component.selectableProductListItems.find((item) => item.id === '2')
+        ?.availableQuantity,
+    ).toBe(1000);
   });
 
   it('should create selected items with shared metadata and per-product qty', () => {
@@ -369,7 +417,9 @@ describe('InputDayFeature', () => {
       occurredAt: '',
       slotKey: 'snack',
     });
-    component.onProductsSelected(component.selectableProductListItems.slice(0, 1));
+    component.onProductsSelected(
+      component.selectableProductListItems.slice(0, 1),
+    );
     component.selectedProductRows[0].qty = 120;
     component.selectedProductRows[0].qtyUnit = 'g';
 
@@ -466,16 +516,20 @@ describe('InputDayFeature', () => {
 
     component.submitItemEditor();
 
-    expect(inputDayServiceMock.updateItem).toHaveBeenCalledWith('2026-02-16', 31, {
-      dateLocal: '2026-02-17',
-      productId: 2,
-      inventoryId: 4,
-      qty: 200,
-      occurredAt: '2026-02-17T09:30:00Z',
-      qtyUnit: 'g',
-      slotId: null,
-      slotKey: 'snack',
-    });
+    expect(inputDayServiceMock.updateItem).toHaveBeenCalledWith(
+      '2026-02-16',
+      31,
+      {
+        dateLocal: '2026-02-17',
+        productId: 2,
+        inventoryId: 4,
+        qty: 200,
+        occurredAt: '2026-02-17T09:30:00Z',
+        qtyUnit: 'g',
+        slotId: null,
+        slotKey: 'snack',
+      },
+    );
   });
 
   it('should preserve the current inventory selection when editing an item', () => {
@@ -507,8 +561,15 @@ describe('InputDayFeature', () => {
     component.onManualTemplateSelectionChange(9);
     fixture.detectChanges();
 
-    expect(inputDayServiceMock.setTemplate).toHaveBeenCalledWith('2026-02-16', 9);
-    expect(fixture.nativeElement.querySelector('[data-testid="input-day-template-apply"]')).toBeNull();
+    expect(inputDayServiceMock.setTemplate).toHaveBeenCalledWith(
+      '2026-02-16',
+      9,
+    );
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="input-day-template-apply"]',
+      ),
+    ).toBeNull();
   });
 
   it('should switch embedded sections with the segmented toggle state', async () => {
@@ -539,8 +600,18 @@ describe('InputDayFeature', () => {
             requestedQtyNormalized: 80,
           },
           stockByInventory: [
-            { inventoryId: 4, inventoryName: 'Stock principal', qtyAvailableNormalized: 500, enoughStock: true },
-            { inventoryId: 5, inventoryName: 'Stock secondaire', qtyAvailableNormalized: 500, enoughStock: true },
+            {
+              inventoryId: 4,
+              inventoryName: 'Stock principal',
+              qtyAvailableNormalized: 500,
+              enoughStock: true,
+            },
+            {
+              inventoryId: 5,
+              inventoryName: 'Stock secondaire',
+              qtyAvailableNormalized: 500,
+              enoughStock: true,
+            },
           ],
           nutritionValue: {},
         },
@@ -563,6 +634,127 @@ describe('InputDayFeature', () => {
 
     expect(component.activeEmbeddedSection).toBe('templates');
     expect(fixture.nativeElement.textContent).toContain('Template associe');
-    expect(fixture.nativeElement.querySelector('[data-testid="input-day-item-31"]')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="input-day-item-31"]'),
+    ).not.toBeNull();
+  });
+
+  it('should keep conversion state scoped to the clicked template item', () => {
+    const conversionResponse = new Subject<InputDayResponse>();
+    inputDayServiceMock.convertTemplateItem.and.returnValue(conversionResponse);
+    const pendingItems = [
+      {
+        id: 18,
+        productId: 2,
+        productName: 'Rice',
+        qty: 80,
+        qtyUnit: 'g' as const,
+        qtyNormalized: 80,
+        slotId: 1,
+        slotKey: 'breakfast',
+        status: 'pending' as const,
+        convertedItemId: null,
+        stockAvailability: {
+          enoughStock: true,
+          totalAvailableNormalized: 1000,
+          requestedQtyNormalized: 80,
+        },
+        stockByInventory: [
+          {
+            inventoryId: 4,
+            inventoryName: 'Stock principal',
+            qtyAvailableNormalized: 500,
+            enoughStock: true,
+          },
+        ],
+        nutritionValue: {},
+      },
+      {
+        id: 19,
+        productId: 1,
+        productName: 'Chicken',
+        qty: 120,
+        qtyUnit: 'g' as const,
+        qtyNormalized: 120,
+        slotId: 1,
+        slotKey: 'breakfast',
+        status: 'pending' as const,
+        convertedItemId: null,
+        stockAvailability: {
+          enoughStock: true,
+          totalAvailableNormalized: 500,
+          requestedQtyNormalized: 120,
+        },
+        stockByInventory: [
+          {
+            inventoryId: 4,
+            inventoryName: 'Stock principal',
+            qtyAvailableNormalized: 500,
+            enoughStock: true,
+          },
+        ],
+        nutritionValue: {},
+      },
+    ];
+
+    component.form.patchValue({ dateLocal: '2026-02-16' });
+    component.inputDayResponse = {
+      ...dayResponse,
+      templateItems: pendingItems,
+    };
+    component.onSelectedInventoryChange([4]);
+
+    component.convertTemplateItem(pendingItems[0]);
+
+    expect(component.isConvertingTemplateItem(pendingItems[0])).toBeTrue();
+    expect(component.isConvertingTemplateItem(pendingItems[1])).toBeFalse();
+    expect(component.canConvertTemplateItem(pendingItems[1])).toBeTrue();
+  });
+
+  it('should expose the API detail when a template conversion fails', () => {
+    const pendingItem = {
+      id: 18,
+      productId: 2,
+      productName: 'Rice',
+      qty: 80,
+      qtyUnit: 'g' as const,
+      qtyNormalized: 80,
+      slotId: 1,
+      slotKey: 'breakfast',
+      status: 'pending' as const,
+      convertedItemId: null,
+      stockAvailability: {
+        enoughStock: true,
+        totalAvailableNormalized: 1000,
+        requestedQtyNormalized: 80,
+      },
+      stockByInventory: [
+        {
+          inventoryId: 4,
+          inventoryName: 'Stock principal',
+          qtyAvailableNormalized: 500,
+          enoughStock: true,
+        },
+      ],
+      nutritionValue: {},
+    };
+    inputDayServiceMock.convertTemplateItem.and.returnValue(
+      throwError(() => ({
+        error: { message: 'slotId 1 does not belong to the active DaySet' },
+      })),
+    );
+    component.form.patchValue({ dateLocal: '2026-02-16' });
+    component.inputDayResponse = {
+      ...dayResponse,
+      templateItems: [pendingItem],
+    };
+    component.onSelectedInventoryChange([4]);
+
+    component.convertTemplateItem(pendingItem);
+
+    expect(component.templateActionError).toContain(
+      'slotId 1 does not belong to the active DaySet',
+    );
+    expect(component.isConvertingTemplateItem(pendingItem)).toBeFalse();
   });
 });

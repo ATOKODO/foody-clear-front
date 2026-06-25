@@ -1,5 +1,14 @@
 import { JsonPipe, NgTemplateOutlet, KeyValuePipe } from '@angular/common';
-import { Component, OnChanges, OnInit, SimpleChanges, input, output, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+  input,
+  output,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -22,7 +31,10 @@ import {
   ProductList,
   ProductListItem,
 } from '../../components/product/product-list/product-list';
-import { Inventory, InventoryProduct } from '../../interfaces/inventory.interface';
+import {
+  Inventory,
+  InventoryProduct,
+} from '../../interfaces/inventory.interface';
 import {
   CreateInputDayItemsDto,
   InputDayItemCommand,
@@ -124,8 +136,8 @@ const INPUT_DAY_EMBEDDED_SECTION_OPTIONS: readonly SegmentedToggleOption<InputDa
     ProductList,
     SegmentedToggle,
     KeyValuePipe,
-    NgTemplateOutlet
-],
+    NgTemplateOutlet,
+  ],
   templateUrl: './input-day.feature.html',
   styleUrl: './input-day.feature.scss',
 })
@@ -145,7 +157,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   readonly itemsChanged = output<{
     dateLocal: string;
-}>();
+  }>();
 
   readonly qtyUnitOptions: ProductQuantityInputUnit[] = [
     'mg',
@@ -180,7 +192,8 @@ export class InputDayFeature implements OnInit, OnChanges {
   availableSlotsCache: InputDayAvailableSlot[] = [];
   private readonly selectedProductIdsState = signal<string[]>([]);
   private readonly selectedInventoryIdsState = signal<number[]>([]);
-  private readonly activeEmbeddedSectionState = signal<InputDayEmbeddedSection>('stock');
+  private readonly activeEmbeddedSectionState =
+    signal<InputDayEmbeddedSection>('stock');
 
   selectedProducts: ProductListItem[] = [];
   selectedProductRows: InputDaySelectedProductRow[] = [];
@@ -199,15 +212,21 @@ export class InputDayFeature implements OnInit, OnChanges {
   templateError: string | null = null;
   templateActionError: string | null = null;
   manualTemplateSelectionId: number | null = null;
+  convertingTemplateItemIds = new Set<number>();
 
   private initialized = false;
   private _inputDayResponse: InputDayResponse | null = null;
   private pendingInitialOccurredAt: string | null = null;
   private pendingInitialEditingItemId: number | null = null;
   private readonly emptyProductListItems: ProductListItem[] = [];
-  private readonly qtyUnitSet = new Set<ProductQuantityInputUnit>(this.qtyUnitOptions);
+  private readonly qtyUnitSet = new Set<ProductQuantityInputUnit>(
+    this.qtyUnitOptions,
+  );
   private readonly fallbackTimezone = DateTime.local().zoneName || 'UTC';
-  private readonly inventoryProductsByInventoryId = new Map<number, InventoryProduct[]>();
+  private readonly inventoryProductsByInventoryId = new Map<
+    number,
+    InventoryProduct[]
+  >();
   private readonly slotTotalsMetaKeys = new Set([
     'slot',
     'targets',
@@ -220,7 +239,9 @@ export class InputDayFeature implements OnInit, OnChanges {
       dateLocal: this.fb.control<Date | string | null>(null, {
         validators: [Validators.required],
       }),
-      timezone: this.fb.control<string>(this.fallbackTimezone, { nonNullable: true }),
+      timezone: this.fb.control<string>(this.fallbackTimezone, {
+        nonNullable: true,
+      }),
     });
 
     this.itemEditorForm = this.fb.group({
@@ -278,7 +299,11 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     if (changes['initialOccurredAt'] || changes['initialEditingItemId']) {
-      if (this.shouldEagerLoadProducts() && this.products.length === 0 && !this.loadingProducts) {
+      if (
+        this.shouldEagerLoadProducts() &&
+        this.products.length === 0 &&
+        !this.loadingProducts
+      ) {
         this.loadProducts();
       }
 
@@ -290,8 +315,16 @@ export class InputDayFeature implements OnInit, OnChanges {
       }
     }
 
-    if (changes['initialDateLocal'] || changes['displayMode'] || changes['lockDate']) {
-      if (this.shouldEagerLoadProducts() && this.products.length === 0 && !this.loadingProducts) {
+    if (
+      changes['initialDateLocal'] ||
+      changes['displayMode'] ||
+      changes['lockDate']
+    ) {
+      if (
+        this.shouldEagerLoadProducts() &&
+        this.products.length === 0 &&
+        !this.loadingProducts
+      ) {
         this.loadProducts();
       }
 
@@ -389,12 +422,13 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   get editorProductOptions(): ProductListItem[] {
-    const baseOptions =
-      this.hasSelectedInventories
-        ? this.selectableProductListItems
-        : this.emptyProductListItems;
+    const baseOptions = this.hasSelectedInventories
+      ? this.selectableProductListItems
+      : this.emptyProductListItems;
 
-    const selectedProductId = this.normalizePositiveInteger(this.itemEditorForm.value.productId);
+    const selectedProductId = this.normalizePositiveInteger(
+      this.itemEditorForm.value.productId,
+    );
     if (selectedProductId === null) {
       return baseOptions;
     }
@@ -403,7 +437,9 @@ export class InputDayFeature implements OnInit, OnChanges {
       return baseOptions;
     }
 
-    const fallback = this.productListItems.find((item) => Number(item.id) === selectedProductId);
+    const fallback = this.productListItems.find(
+      (item) => Number(item.id) === selectedProductId,
+    );
     return fallback ? [fallback, ...baseOptions] : baseOptions;
   }
 
@@ -422,7 +458,9 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     const sourceLabel =
-      templateAssociation.source === 'manual' ? 'override manuel' : 'heritage day-set';
+      templateAssociation.source === 'manual'
+        ? 'override manuel'
+        : 'heritage day-set';
     return `${templateAssociation.template.title} (${sourceLabel})`;
   }
 
@@ -437,8 +475,11 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     return this.selectedInventoryIds
       .map((inventoryId) => {
-        const inventory = this.inventories.find((item) => item.id === inventoryId) ?? null;
-        return inventory ? `${inventory.name} (#${inventory.id})` : `Inventory #${inventoryId}`;
+        const inventory =
+          this.inventories.find((item) => item.id === inventoryId) ?? null;
+        return inventory
+          ? `${inventory.name} (#${inventory.id})`
+          : `Inventory #${inventoryId}`;
       })
       .join(', ');
   }
@@ -448,7 +489,9 @@ export class InputDayFeature implements OnInit, OnChanges {
       return 'Sans slot batch';
     }
 
-    const slot = this.availableSlots.find((item) => item.slotId === this.selectedSlotId) ?? null;
+    const slot =
+      this.availableSlots.find((item) => item.slotId === this.selectedSlotId) ??
+      null;
     if (!slot) {
       return `Slot #${this.selectedSlotId}`;
     }
@@ -457,11 +500,15 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   get isEditingItem(): boolean {
-    return this.normalizePositiveInteger(this.itemEditorForm.value.itemId) !== null;
+    return (
+      this.normalizePositiveInteger(this.itemEditorForm.value.itemId) !== null
+    );
   }
 
   get itemEditorSelectedSlotId(): number | null {
-    return this.normalizeNullablePositiveInteger(this.itemEditorForm.value.slotId);
+    return this.normalizeNullablePositiveInteger(
+      this.itemEditorForm.value.slotId,
+    );
   }
 
   get createSelectedItemsLabel(): string {
@@ -486,18 +533,25 @@ export class InputDayFeature implements OnInit, OnChanges {
       return false;
     }
 
-    if (
-      !this.hasSelectedInventories
-    ) {
+    if (!this.hasSelectedInventories) {
       return false;
     }
 
     const dateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
-    const productId = this.normalizePositiveInteger(this.itemEditorForm.value.productId);
+    const productId = this.normalizePositiveInteger(
+      this.itemEditorForm.value.productId,
+    );
     const qty = this.itemEditorForm.value.qty ?? null;
-    const occurredAtRaw = String(this.itemEditorForm.value.occurredAt ?? '').trim();
+    const occurredAtRaw = String(
+      this.itemEditorForm.value.occurredAt ?? '',
+    ).trim();
 
-    if (!this.isDateLocal(dateLocal) || productId === null || qty == null || qty <= 0) {
+    if (
+      !this.isDateLocal(dateLocal) ||
+      productId === null ||
+      qty == null ||
+      qty <= 0
+    ) {
       return false;
     }
 
@@ -522,23 +576,30 @@ export class InputDayFeature implements OnInit, OnChanges {
       return false;
     }
 
-    if (this.productsError || this.inventoriesError || this.inventoryProductsError) {
-      return false;
-    }
-
     if (
-      !this.hasSelectedInventories
+      this.productsError ||
+      this.inventoriesError ||
+      this.inventoryProductsError
     ) {
       return false;
     }
 
+    if (!this.hasSelectedInventories) {
+      return false;
+    }
+
     const dateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
-    const occurredAtRaw = String(this.itemEditorForm.value.occurredAt ?? '').trim();
+    const occurredAtRaw = String(
+      this.itemEditorForm.value.occurredAt ?? '',
+    ).trim();
     if (!this.isDateLocal(dateLocal)) {
       return false;
     }
 
-    if (occurredAtRaw !== '' && this.buildOccurredAtIso(occurredAtRaw) === null) {
+    if (
+      occurredAtRaw !== '' &&
+      this.buildOccurredAtIso(occurredAtRaw) === null
+    ) {
       return false;
     }
 
@@ -547,7 +608,8 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     return this.selectedProductRows.every(
-      (row) => typeof row.qty === 'number' && Number.isFinite(row.qty) && row.qty > 0,
+      (row) =>
+        typeof row.qty === 'number' && Number.isFinite(row.qty) && row.qty > 0,
     );
   }
 
@@ -602,22 +664,24 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.loading = true;
     this.itemsFormError = null;
 
-    this.inputDaySrv.createItems(request.requestDateLocal, request.payload).subscribe({
-      next: (response) => {
-        this.lastResponse = response;
-        this.lastError = null;
-        this.clearSelectedProducts();
-        this.prefillItemEditorForCreate(null);
-        this.loading = false;
-        this.itemsChanged.emit({ dateLocal: request.requestDateLocal });
-        this.loadDay();
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.itemsFormError = 'Impossible d\'ajouter les items selectionnes.';
-        this.loading = false;
-      },
-    });
+    this.inputDaySrv
+      .createItems(request.requestDateLocal, request.payload)
+      .subscribe({
+        next: (response) => {
+          this.lastResponse = response;
+          this.lastError = null;
+          this.clearSelectedProducts();
+          this.prefillItemEditorForCreate(null);
+          this.loading = false;
+          this.itemsChanged.emit({ dateLocal: request.requestDateLocal });
+          this.loadDay();
+        },
+        error: (error) => {
+          this.lastError = error;
+          this.itemsFormError = "Impossible d'ajouter les items selectionnes.";
+          this.loading = false;
+        },
+      });
   }
 
   submitItemEditor(): void {
@@ -630,39 +694,47 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.itemEditorError = null;
 
     if (request.itemId === null) {
-      this.inputDaySrv.createItem(request.requestDateLocal, request.payload).subscribe({
+      this.inputDaySrv
+        .createItem(request.requestDateLocal, request.payload)
+        .subscribe({
+          next: (response) => {
+            this.lastResponse = response;
+            this.lastError = null;
+            this.loading = false;
+            this.itemsChanged.emit({
+              dateLocal: this.requireDate() ?? request.requestDateLocal,
+            });
+            this.prefillItemEditorForCreate(null);
+            this.loadDay();
+          },
+          error: (error) => {
+            this.lastError = error;
+            this.itemEditorError = "Impossible de creer l'entree.";
+            this.loading = false;
+          },
+        });
+      return;
+    }
+
+    this.inputDaySrv
+      .updateItem(request.requestDateLocal, request.itemId, request.payload)
+      .subscribe({
         next: (response) => {
           this.lastResponse = response;
           this.lastError = null;
           this.loading = false;
-          this.itemsChanged.emit({ dateLocal: this.requireDate() ?? request.requestDateLocal });
+          this.itemsChanged.emit({
+            dateLocal: this.requireDate() ?? request.requestDateLocal,
+          });
           this.prefillItemEditorForCreate(null);
           this.loadDay();
         },
         error: (error) => {
           this.lastError = error;
-          this.itemEditorError = 'Impossible de creer l\'entree.';
+          this.itemEditorError = "Impossible de modifier l'entree.";
           this.loading = false;
         },
       });
-      return;
-    }
-
-    this.inputDaySrv.updateItem(request.requestDateLocal, request.itemId, request.payload).subscribe({
-      next: (response) => {
-        this.lastResponse = response;
-        this.lastError = null;
-        this.loading = false;
-        this.itemsChanged.emit({ dateLocal: this.requireDate() ?? request.requestDateLocal });
-        this.prefillItemEditorForCreate(null);
-        this.loadDay();
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.itemEditorError = 'Impossible de modifier l\'entree.';
-        this.loading = false;
-      },
-    });
   }
 
   startEditingItem(itemId: number): void {
@@ -672,7 +744,8 @@ export class InputDayFeature implements OnInit, OnChanges {
       return;
     }
 
-    const sourceDateLocal = this.inputDayResponse?.dateLocal ?? this.resolveEditorDefaultDateLocal();
+    const sourceDateLocal =
+      this.inputDayResponse?.dateLocal ?? this.resolveEditorDefaultDateLocal();
     this.editingSourceDateLocal = sourceDateLocal;
 
     if (!this.hasSelectedInventories && item.inventoryId !== null) {
@@ -684,7 +757,9 @@ export class InputDayFeature implements OnInit, OnChanges {
       {
         itemId: item.id,
         dateLocal: sourceDateLocal,
-        occurredAt: this.toDateTimeLocalInput(item.occurredAt ?? item.insertedAt),
+        occurredAt: this.toDateTimeLocalInput(
+          item.occurredAt ?? item.insertedAt,
+        ),
         productId: item.productId,
         qty: item.qty,
         qtyUnit: item.qtyUnit,
@@ -716,9 +791,10 @@ export class InputDayFeature implements OnInit, OnChanges {
       return;
     }
 
-    const dateLocal = this.isEditingItem && itemId == null
-      ? (this.editingSourceDateLocal ?? this.requireDate())
-      : (this.inputDayResponse?.dateLocal ?? this.requireDate());
+    const dateLocal =
+      this.isEditingItem && itemId == null
+        ? (this.editingSourceDateLocal ?? this.requireDate())
+        : (this.inputDayResponse?.dateLocal ?? this.requireDate());
 
     if (!dateLocal) {
       return;
@@ -729,10 +805,17 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     this.inputDaySrv.removeItem(dateLocal, resolvedItemId).subscribe({
       next: () => {
-        this.lastResponse = { deleted: true, itemId: resolvedItemId, dateLocal };
+        this.lastResponse = {
+          deleted: true,
+          itemId: resolvedItemId,
+          dateLocal,
+        };
         this.lastError = null;
         this.loading = false;
-        if (this.normalizePositiveInteger(this.itemEditorForm.value.itemId) === resolvedItemId) {
+        if (
+          this.normalizePositiveInteger(this.itemEditorForm.value.itemId) ===
+          resolvedItemId
+        ) {
           this.prefillItemEditorForCreate(null);
         }
         this.itemsChanged.emit({ dateLocal: this.requireDate() ?? dateLocal });
@@ -740,7 +823,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       },
       error: (error) => {
         this.lastError = error;
-        this.itemEditorError = 'Impossible de supprimer l\'entree.';
+        this.itemEditorError = "Impossible de supprimer l'entree.";
         this.loading = false;
       },
     });
@@ -756,12 +839,14 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     this.selectedProductRows = items.map((item) => {
       const productId = Number(item.id);
-      return rowsByProductId.get(productId) ?? {
-        productId,
-        productName: item.name,
-        qty: null,
-        qtyUnit: null,
-      };
+      return (
+        rowsByProductId.get(productId) ?? {
+          productId,
+          productName: item.name,
+          qty: null,
+          qtyUnit: null,
+        }
+      );
     });
 
     this.itemsFormError = null;
@@ -774,12 +859,18 @@ export class InputDayFeature implements OnInit, OnChanges {
   onSelectedInventoryChange(value: number | number[] | null): void {
     const nextInventoryIds = this.normalizeInventoryIds(value);
 
-    if (this.areNumberArraysEqual(this.selectedInventoryIds, nextInventoryIds)) {
+    if (
+      this.areNumberArraysEqual(this.selectedInventoryIds, nextInventoryIds)
+    ) {
       return;
     }
 
     this.selectedInventoryIds = nextInventoryIds;
-    if (nextInventoryIds.length > 0 && this.products.length === 0 && !this.loadingProducts) {
+    if (
+      nextInventoryIds.length > 0 &&
+      this.products.length === 0 &&
+      !this.loadingProducts
+    ) {
       this.loadProducts();
     }
     this.refreshSelectedInventoryProducts();
@@ -787,10 +878,12 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   onItemEditorSlotIdChange(value: number | null): void {
     const slotId =
-      typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null;
+      typeof value === 'number' && Number.isInteger(value) && value > 0
+        ? value
+        : null;
     this.itemEditorForm.patchValue({
       slotId,
-      slotKey: slotId === null ? this.itemEditorForm.value.slotKey ?? '' : '',
+      slotKey: slotId === null ? (this.itemEditorForm.value.slotKey ?? '') : '',
     });
   }
 
@@ -820,20 +913,23 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.loading = true;
     this.templateActionError = null;
 
-    this.inputDaySrv.setTemplate(dateLocal, this.manualTemplateSelectionId).subscribe({
-      next: (response) => {
-        this.lastResponse = response;
-        this.lastError = null;
-        this.inputDayResponse = response;
-        this.loading = false;
-        this.itemsChanged.emit({ dateLocal });
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.templateActionError = 'Impossible de mettre a jour le template actif.';
-        this.loading = false;
-      },
-    });
+    this.inputDaySrv
+      .setTemplate(dateLocal, this.manualTemplateSelectionId)
+      .subscribe({
+        next: (response) => {
+          this.lastResponse = response;
+          this.lastError = null;
+          this.inputDayResponse = response;
+          this.loading = false;
+          this.itemsChanged.emit({ dateLocal });
+        },
+        error: (error) => {
+          this.lastError = error;
+          this.templateActionError =
+            'Impossible de mettre a jour le template actif.';
+          this.loading = false;
+        },
+      });
   }
 
   clearManualTemplateOverride(): void {
@@ -842,32 +938,40 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   convertTemplateItem(item: InputDayTemplateItemSummary): void {
     const dateLocal = this.requireDate();
-    if (!dateLocal) {
+    if (!dateLocal || this.isConvertingTemplateItem(item)) {
       return;
     }
 
     if (!this.hasSelectedInventories) {
-      this.templateActionError = 'Selectionne au moins un inventory avant de convertir une ligne template.';
+      this.templateActionError =
+        'Selectionne au moins un inventory avant de convertir une ligne template.';
       return;
     }
 
-    this.loading = true;
+    this.convertingTemplateItemIds = new Set(
+      this.convertingTemplateItemIds,
+    ).add(item.id);
     this.templateActionError = null;
 
-    this.inputDaySrv.convertTemplateItem(dateLocal, item.id, this.selectedInventoryIds).subscribe({
-      next: (response) => {
-        this.lastResponse = response;
-        this.lastError = null;
-        this.inputDayResponse = response;
-        this.loading = false;
-        this.itemsChanged.emit({ dateLocal });
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.templateActionError = 'Impossible de convertir cette ligne template.';
-        this.loading = false;
-      },
-    });
+    this.inputDaySrv
+      .convertTemplateItem(dateLocal, item.id, this.selectedInventoryIds)
+      .subscribe({
+        next: (response) => {
+          this.lastResponse = response;
+          this.lastError = null;
+          this.inputDayResponse = response;
+          this.finishTemplateItemConversion(item.id);
+          this.itemsChanged.emit({ dateLocal });
+        },
+        error: (error) => {
+          this.lastError = error;
+          this.templateActionError = this.resolveApiErrorMessage(
+            error,
+            'Impossible de convertir cette ligne template.',
+          );
+          this.finishTemplateItemConversion(item.id);
+        },
+      });
   }
 
   fillDemo(): void {
@@ -975,7 +1079,8 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   resolveTemplateItemSlotTitle(item: InputDayTemplateItemSummary): string {
     if (item.slotId !== null) {
-      const matchedSlot = this.availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
+      const matchedSlot =
+        this.availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
       if (matchedSlot) {
         return matchedSlot.title;
       }
@@ -986,7 +1091,8 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   resolveTemplateItemSlotKey(item: InputDayTemplateItemSummary): string {
     if (item.slotId !== null) {
-      const matchedSlot = this.availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
+      const matchedSlot =
+        this.availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
       if (matchedSlot) {
         return matchedSlot.slotKey;
       }
@@ -1012,22 +1118,38 @@ export class InputDayFeature implements OnInit, OnChanges {
     return {
       enoughStock: selectedStocks.some((entry) => entry.enoughStock),
       qtyAvailableNormalized: this.roundQuantity(
-        selectedStocks.reduce((sum, entry) => sum + entry.qtyAvailableNormalized, 0),
+        selectedStocks.reduce(
+          (sum, entry) => sum + entry.qtyAvailableNormalized,
+          0,
+        ),
       ),
     };
   }
 
+  isConvertingTemplateItem(item: InputDayTemplateItemSummary): boolean {
+    return this.convertingTemplateItemIds.has(item.id);
+  }
+
   canConvertTemplateItem(item: InputDayTemplateItemSummary): boolean {
-    if (item.status === 'converted' || this.loading || !this.hasSelectedInventories) {
+    if (
+      item.status === 'converted' ||
+      this.loading ||
+      this.isConvertingTemplateItem(item) ||
+      !this.hasSelectedInventories
+    ) {
       return false;
     }
 
     return item.stockByInventory.some(
-      (entry) => this.selectedInventoryIds.includes(entry.inventoryId) && entry.enoughStock,
+      (entry) =>
+        this.selectedInventoryIds.includes(entry.inventoryId) &&
+        entry.enoughStock,
     );
   }
 
-  getTemplateTargetSourceText(totals: InputDayTotalsMacrosSummary | null | undefined): string {
+  getTemplateTargetSourceText(
+    totals: InputDayTotalsMacrosSummary | null | undefined,
+  ): string {
     return this.getTargetSourceText(totals?.targetSource ?? 'none');
   }
 
@@ -1062,7 +1184,10 @@ export class InputDayFeature implements OnInit, OnChanges {
       }));
   }
 
-  trackBySelectedProductRow(_: number, row: InputDaySelectedProductRow): number {
+  trackBySelectedProductRow(
+    _: number,
+    row: InputDaySelectedProductRow,
+  ): number {
     return row.productId;
   }
 
@@ -1155,7 +1280,10 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private shouldEagerLoadProducts(): boolean {
-    return this.isStandaloneMode || this.normalizePositiveInteger(this.initialEditingItemId()) !== null;
+    return (
+      this.isStandaloneMode ||
+      this.normalizePositiveInteger(this.initialEditingItemId()) !== null
+    );
   }
 
   private applyServicesBaseUrl(): void {
@@ -1166,8 +1294,12 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private syncPendingEditorContextFromInputs(): void {
-    this.pendingInitialOccurredAt = this.normalizeIsoString(this.initialOccurredAt());
-    this.pendingInitialEditingItemId = this.normalizePositiveInteger(this.initialEditingItemId());
+    this.pendingInitialOccurredAt = this.normalizeIsoString(
+      this.initialOccurredAt(),
+    );
+    this.pendingInitialEditingItemId = this.normalizePositiveInteger(
+      this.initialEditingItemId(),
+    );
   }
 
   private applyInitialDateInput(): void {
@@ -1207,7 +1339,10 @@ export class InputDayFeature implements OnInit, OnChanges {
       return;
     }
 
-    if (!this.isEditingItem && String(this.itemEditorForm.value.dateLocal ?? '').trim() === '') {
+    if (
+      !this.isEditingItem &&
+      String(this.itemEditorForm.value.dateLocal ?? '').trim() === ''
+    ) {
       this.prefillItemEditorForCreate(null);
     }
   }
@@ -1234,22 +1369,30 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   private buildItemEditorRequest():
     | { itemId: null; requestDateLocal: string; payload: InputDayItemCommand }
-    | { itemId: number; requestDateLocal: string; payload: UpdateInputDayItemDto }
+    | {
+        itemId: number;
+        requestDateLocal: string;
+        payload: UpdateInputDayItemDto;
+      }
     | null {
     const dateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
     if (!this.isDateLocal(dateLocal)) {
-      this.itemEditorError = 'La date de l\'entree doit etre au format YYYY-MM-DD.';
+      this.itemEditorError =
+        "La date de l'entree doit etre au format YYYY-MM-DD.";
       return null;
     }
 
     if (!this.hasSelectedInventories) {
-      this.itemEditorError = 'Selectionne au moins un inventory avant d\'enregistrer l\'entree.';
+      this.itemEditorError =
+        "Selectionne au moins un inventory avant d'enregistrer l'entree.";
       return null;
     }
 
     const inventoryId = this.selectedInventoryIds[0];
 
-    const productId = this.normalizePositiveInteger(this.itemEditorForm.value.productId);
+    const productId = this.normalizePositiveInteger(
+      this.itemEditorForm.value.productId,
+    );
     if (productId === null) {
       this.itemEditorError = 'Selectionne un produit.';
       return null;
@@ -1265,22 +1408,32 @@ export class InputDayFeature implements OnInit, OnChanges {
     try {
       qtyUnit = this.normalizeQtyUnit(this.itemEditorForm.value.qtyUnit);
     } catch (error) {
-      this.itemEditorError = error instanceof Error ? error.message : 'qtyUnit invalide.';
+      this.itemEditorError =
+        error instanceof Error ? error.message : 'qtyUnit invalide.';
       return null;
     }
 
-    const occurredAtRaw = String(this.itemEditorForm.value.occurredAt ?? '').trim();
-    const occurredAt = occurredAtRaw === '' ? null : this.buildOccurredAtIso(occurredAtRaw);
+    const occurredAtRaw = String(
+      this.itemEditorForm.value.occurredAt ?? '',
+    ).trim();
+    const occurredAt =
+      occurredAtRaw === '' ? null : this.buildOccurredAtIso(occurredAtRaw);
     if (occurredAtRaw !== '' && occurredAt === null) {
       this.itemEditorError = 'occurredAt doit etre une date/heure valide.';
       return null;
     }
 
-    const slotId = this.normalizeNullablePositiveInteger(this.itemEditorForm.value.slotId);
+    const slotId = this.normalizeNullablePositiveInteger(
+      this.itemEditorForm.value.slotId,
+    );
     const slotKey =
-      slotId === null ? String(this.itemEditorForm.value.slotKey ?? '').trim() : '';
+      slotId === null
+        ? String(this.itemEditorForm.value.slotKey ?? '').trim()
+        : '';
 
-    const itemId = this.normalizePositiveInteger(this.itemEditorForm.value.itemId);
+    const itemId = this.normalizePositiveInteger(
+      this.itemEditorForm.value.itemId,
+    );
     this.itemEditorError = null;
 
     if (itemId === null) {
@@ -1324,21 +1477,29 @@ export class InputDayFeature implements OnInit, OnChanges {
     };
   }
 
-  private buildSelectedItemsRequest():
-    | { requestDateLocal: string; payload: CreateInputDayItemsDto }
-    | null {
+  private buildSelectedItemsRequest(): {
+    requestDateLocal: string;
+    payload: CreateInputDayItemsDto;
+  } | null {
     const validationError = this.validateSelectedItemsPayload();
     if (validationError) {
       this.itemsFormError = validationError;
       return null;
     }
 
-    const requestDateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
+    const requestDateLocal = String(
+      this.itemEditorForm.value.dateLocal ?? '',
+    ).trim();
     const inventoryId = this.selectedInventoryIds[0];
-    const occurredAtRaw = String(this.itemEditorForm.value.occurredAt ?? '').trim();
-    const occurredAt = occurredAtRaw === '' ? null : this.buildOccurredAtIso(occurredAtRaw);
+    const occurredAtRaw = String(
+      this.itemEditorForm.value.occurredAt ?? '',
+    ).trim();
+    const occurredAt =
+      occurredAtRaw === '' ? null : this.buildOccurredAtIso(occurredAtRaw);
     const slotKey =
-      this.selectedSlotId === null ? String(this.itemEditorForm.value.slotKey ?? '').trim() : '';
+      this.selectedSlotId === null
+        ? String(this.itemEditorForm.value.slotKey ?? '').trim()
+        : '';
 
     try {
       const payload: CreateInputDayItemsDto = {
@@ -1350,8 +1511,12 @@ export class InputDayFeature implements OnInit, OnChanges {
             qty: row.qty as number,
             ...(occurredAt ? { occurredAt } : {}),
             ...(qtyUnit ? { qtyUnit } : {}),
-            ...(this.selectedSlotId != null ? { slotId: this.selectedSlotId } : {}),
-            ...(this.selectedSlotId == null && slotKey !== '' ? { slotKey } : {}),
+            ...(this.selectedSlotId != null
+              ? { slotId: this.selectedSlotId }
+              : {}),
+            ...(this.selectedSlotId == null && slotKey !== ''
+              ? { slotKey }
+              : {}),
           };
         }),
       };
@@ -1362,7 +1527,8 @@ export class InputDayFeature implements OnInit, OnChanges {
         payload,
       };
     } catch (error) {
-      this.itemsFormError = error instanceof Error ? error.message : 'qtyUnit invalide.';
+      this.itemsFormError =
+        error instanceof Error ? error.message : 'qtyUnit invalide.';
       return null;
     }
   }
@@ -1401,20 +1567,27 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     if (!this.hasSelectedInventories) {
-      return 'Selectionne au moins un inventory avant d\'ajouter des items.';
+      return "Selectionne au moins un inventory avant d'ajouter des items.";
     }
 
     if (this.selectedProductRows.length === 0) {
       return 'Selectionne au moins un produit.';
     }
 
-    const requestDateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
+    const requestDateLocal = String(
+      this.itemEditorForm.value.dateLocal ?? '',
+    ).trim();
     if (!this.isDateLocal(requestDateLocal)) {
       return 'La date metier doit etre au format YYYY-MM-DD.';
     }
 
-    const occurredAtRaw = String(this.itemEditorForm.value.occurredAt ?? '').trim();
-    if (occurredAtRaw !== '' && this.buildOccurredAtIso(occurredAtRaw) === null) {
+    const occurredAtRaw = String(
+      this.itemEditorForm.value.occurredAt ?? '',
+    ).trim();
+    if (
+      occurredAtRaw !== '' &&
+      this.buildOccurredAtIso(occurredAtRaw) === null
+    ) {
       return 'occurredAt doit etre une date/heure valide.';
     }
 
@@ -1427,6 +1600,39 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     return null;
+  }
+
+  private finishTemplateItemConversion(templateItemId: number): void {
+    const nextIds = new Set(this.convertingTemplateItemIds);
+    nextIds.delete(templateItemId);
+    this.convertingTemplateItemIds = nextIds;
+  }
+
+  private resolveApiErrorMessage(error: unknown, fallback: string): string {
+    if (!error || typeof error !== 'object') {
+      return fallback;
+    }
+
+    const responseError = (error as { error?: unknown }).error;
+    if (!responseError || typeof responseError !== 'object') {
+      return fallback;
+    }
+
+    const message = (responseError as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim() !== '') {
+      return `${fallback} ${message.trim()}`;
+    }
+
+    if (Array.isArray(message)) {
+      const details = message.filter(
+        (value): value is string => typeof value === 'string',
+      );
+      if (details.length > 0) {
+        return `${fallback} ${details.join(' ')}`;
+      }
+    }
+
+    return fallback;
   }
 
   private normalizeQtyUnit(value: unknown): ProductQuantityInputUnit | null {
@@ -1470,7 +1676,9 @@ export class InputDayFeature implements OnInit, OnChanges {
       return '';
     }
 
-    return parsed.setZone(this.resolveTimezone()).toFormat("yyyy-LL-dd'T'HH:mm");
+    return parsed
+      .setZone(this.resolveTimezone())
+      .toFormat("yyyy-LL-dd'T'HH:mm");
   }
 
   private parseDateInput(value: unknown): Date | null {
@@ -1516,11 +1724,15 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private resolveTimezone(): string {
-    const timezone = String(this.form.value.timezone ?? this.fallbackTimezone).trim();
+    const timezone = String(
+      this.form.value.timezone ?? this.fallbackTimezone,
+    ).trim();
     return timezone !== '' ? timezone : this.fallbackTimezone;
   }
 
-  private normalizeInventoryIds(value: number | number[] | null | undefined): number[] {
+  private normalizeInventoryIds(
+    value: number | number[] | null | undefined,
+  ): number[] {
     const values = Array.isArray(value) ? value : value == null ? [] : [value];
     return Array.from(
       new Set(
@@ -1535,7 +1747,10 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private areNumberArraysEqual(left: number[], right: number[]): boolean {
-    return left.length === right.length && left.every((value, index) => value === right[index]);
+    return (
+      left.length === right.length &&
+      left.every((value, index) => value === right[index])
+    );
   }
 
   private normalizePositiveInteger(value: unknown): number | null {
@@ -1560,7 +1775,9 @@ export class InputDayFeature implements OnInit, OnChanges {
       return '0';
     }
 
-    return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
+    return Number.isInteger(value)
+      ? String(value)
+      : String(Math.round(value * 100) / 100);
   }
 
   private roundQuantity(value: number): number {
@@ -1605,11 +1822,14 @@ export class InputDayFeature implements OnInit, OnChanges {
     const missingInventoryIds: number[] = [];
 
     for (const inventoryId of nextInventoryIds) {
-      const inventory = this.inventories.find((item) => item.id === inventoryId) ?? null;
+      const inventory =
+        this.inventories.find((item) => item.id === inventoryId) ?? null;
       if (inventory && Array.isArray(inventory.inventoryProducts)) {
         this.inventoryProductsByInventoryId.set(
           inventoryId,
-          this.extractInventoryProductsFromResponse(inventory.inventoryProducts),
+          this.extractInventoryProductsFromResponse(
+            inventory.inventoryProducts,
+          ),
         );
         continue;
       }
@@ -1628,10 +1848,17 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.inventoryProductsError = null;
 
     forkJoin(
-      missingInventoryIds.map((inventoryId) => this.inventorySrv.findProducts(inventoryId)),
+      missingInventoryIds.map((inventoryId) =>
+        this.inventorySrv.findProducts(inventoryId),
+      ),
     ).subscribe({
       next: (responses) => {
-        if (!this.areNumberArraysEqual(this.selectedInventoryIds, nextInventoryIds)) {
+        if (
+          !this.areNumberArraysEqual(
+            this.selectedInventoryIds,
+            nextInventoryIds,
+          )
+        ) {
           return;
         }
 
@@ -1644,7 +1871,12 @@ export class InputDayFeature implements OnInit, OnChanges {
         this.applySelectedInventoryProductsFromCache(nextInventoryIds);
       },
       error: (error) => {
-        if (!this.areNumberArraysEqual(this.selectedInventoryIds, nextInventoryIds)) {
+        if (
+          !this.areNumberArraysEqual(
+            this.selectedInventoryIds,
+            nextInventoryIds,
+          )
+        ) {
           return;
         }
 
@@ -1663,7 +1895,8 @@ export class InputDayFeature implements OnInit, OnChanges {
     const aggregatedProducts = new Map<number, InventoryProduct>();
 
     for (const inventoryId of inventoryIds) {
-      const inventoryProducts = this.inventoryProductsByInventoryId.get(inventoryId) ?? [];
+      const inventoryProducts =
+        this.inventoryProductsByInventoryId.get(inventoryId) ?? [];
       for (const inventoryProduct of inventoryProducts) {
         const existing = aggregatedProducts.get(inventoryProduct.productId);
         if (!existing) {
@@ -1676,17 +1909,19 @@ export class InputDayFeature implements OnInit, OnChanges {
         }
 
         existing.qtyOnHandInUnits = this.roundQuantity(
-          (existing.qtyOnHandInUnits ?? 0) + (inventoryProduct.qtyOnHandInUnits ?? 0),
+          (existing.qtyOnHandInUnits ?? 0) +
+            (inventoryProduct.qtyOnHandInUnits ?? 0),
         );
         existing.qtyOnHandNormalized = this.roundQuantity(
-          (existing.qtyOnHandNormalized ?? 0) + (inventoryProduct.qtyOnHandNormalized ?? 0),
+          (existing.qtyOnHandNormalized ?? 0) +
+            (inventoryProduct.qtyOnHandNormalized ?? 0),
         );
       }
     }
 
-    this.selectedInventoryProducts = Array.from(aggregatedProducts.values()).sort(
-      (left, right) => left.productId - right.productId,
-    );
+    this.selectedInventoryProducts = Array.from(
+      aggregatedProducts.values(),
+    ).sort((left, right) => left.productId - right.productId);
     this.refreshSelectableProductListItems();
     this.loadingInventoryProducts = false;
     this.inventoryProductsError = null;
@@ -1696,9 +1931,11 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private ensureSelectedInventoriesStillValid(): void {
-    const validInventoryIds = new Set(this.inventories.map((inventory) => inventory.id));
-    this.selectedInventoryIds = this.selectedInventoryIds.filter((inventoryId) =>
-      validInventoryIds.has(inventoryId),
+    const validInventoryIds = new Set(
+      this.inventories.map((inventory) => inventory.id),
+    );
+    this.selectedInventoryIds = this.selectedInventoryIds.filter(
+      (inventoryId) => validInventoryIds.has(inventoryId),
     );
   }
 
@@ -1712,7 +1949,9 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private findItemById(itemId: number): InputDayItemSummary | null {
-    return this.inputDayResponse?.items.find((item) => item.id === itemId) ?? null;
+    return (
+      this.inputDayResponse?.items.find((item) => item.id === itemId) ?? null
+    );
   }
 
   private findSlotForItem(item: InputDayItemSummary): {
@@ -1724,11 +1963,16 @@ export class InputDayFeature implements OnInit, OnChanges {
     endTime: string | null;
   } | null {
     if (item.slotId !== null) {
-      return this.availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
+      return (
+        this.availableSlots.find((slot) => slot.slotId === item.slotId) ?? null
+      );
     }
 
     if (item.slotKey) {
-      return this.availableSlots.find((slot) => slot.slotKey === item.slotKey) ?? null;
+      return (
+        this.availableSlots.find((slot) => slot.slotKey === item.slotKey) ??
+        null
+      );
     }
 
     return null;
@@ -1736,7 +1980,10 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   private refreshAvailableSlots(): void {
     this.availableSlotsCache = (this.inputDayResponse?.daySet?.slots ?? [])
-      .filter((slot): slot is typeof slot & { slotId: number } => slot.slotId !== null)
+      .filter(
+        (slot): slot is typeof slot & { slotId: number } =>
+          slot.slotId !== null,
+      )
       .map((slot) => ({
         slotId: slot.slotId,
         title: slot.title,
@@ -1748,14 +1995,19 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private syncManualTemplateSelectionFromResponse(): void {
-    const templateAssociation = this.inputDayResponse?.templateAssociation ?? null;
+    const templateAssociation =
+      this.inputDayResponse?.templateAssociation ?? null;
     this.manualTemplateSelectionId =
-      templateAssociation?.source === 'manual' ? templateAssociation.template.id : null;
+      templateAssociation?.source === 'manual'
+        ? templateAssociation.template.id
+        : null;
   }
 
   private extractProductsFromResponse(value: unknown): ProductApiModel[] {
     if (Array.isArray(value)) {
-      return value.filter((item): item is ProductApiModel => this.isProductLike(item));
+      return value.filter((item): item is ProductApiModel =>
+        this.isProductLike(item),
+      );
     }
 
     if (this.isProductLike(value)) {
@@ -1767,11 +2019,19 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     const raw = value as Record<string, unknown>;
-    const nestedCandidates = ['data', 'items', 'products', 'results', 'payload'];
+    const nestedCandidates = [
+      'data',
+      'items',
+      'products',
+      'results',
+      'payload',
+    ];
     for (const key of nestedCandidates) {
       const nested = raw[key];
       if (Array.isArray(nested)) {
-        const products = nested.filter((item): item is ProductApiModel => this.isProductLike(item));
+        const products = nested.filter((item): item is ProductApiModel =>
+          this.isProductLike(item),
+        );
         if (products.length > 0) {
           return products;
         }
@@ -1783,7 +2043,9 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   private extractInventoriesFromResponse(value: unknown): Inventory[] {
     if (Array.isArray(value)) {
-      return value.filter((item): item is Inventory => this.isInventoryLike(item));
+      return value.filter((item): item is Inventory =>
+        this.isInventoryLike(item),
+      );
     }
 
     if (this.isInventoryLike(value)) {
@@ -1795,11 +2057,19 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     const raw = value as Record<string, unknown>;
-    const nestedCandidates = ['data', 'items', 'inventories', 'results', 'payload'];
+    const nestedCandidates = [
+      'data',
+      'items',
+      'inventories',
+      'results',
+      'payload',
+    ];
     for (const key of nestedCandidates) {
       const nested = raw[key];
       if (Array.isArray(nested)) {
-        const inventories = nested.filter((item): item is Inventory => this.isInventoryLike(item));
+        const inventories = nested.filter((item): item is Inventory =>
+          this.isInventoryLike(item),
+        );
         if (inventories.length > 0) {
           return inventories;
         }
@@ -1809,9 +2079,13 @@ export class InputDayFeature implements OnInit, OnChanges {
     return [];
   }
 
-  private extractInventoryProductsFromResponse(value: unknown): InventoryProduct[] {
+  private extractInventoryProductsFromResponse(
+    value: unknown,
+  ): InventoryProduct[] {
     if (Array.isArray(value)) {
-      return value.filter((item): item is InventoryProduct => this.isInventoryProductLike(item));
+      return value.filter((item): item is InventoryProduct =>
+        this.isInventoryProductLike(item),
+      );
     }
 
     if (this.isInventoryProductLike(value)) {
@@ -1834,8 +2108,8 @@ export class InputDayFeature implements OnInit, OnChanges {
     for (const key of nestedCandidates) {
       const nested = raw[key];
       if (Array.isArray(nested)) {
-        const products = nested.filter(
-          (item): item is InventoryProduct => this.isInventoryProductLike(item),
+        const products = nested.filter((item): item is InventoryProduct =>
+          this.isInventoryProductLike(item),
         );
         if (products.length > 0) {
           return products;
@@ -1861,7 +2135,9 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     const inventory = value as Partial<Inventory>;
-    return typeof inventory.id === 'number' && typeof inventory.name === 'string';
+    return (
+      typeof inventory.id === 'number' && typeof inventory.name === 'string'
+    );
   }
 
   private isInventoryProductLike(value: unknown): value is InventoryProduct {
@@ -1933,12 +2209,15 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private refreshProductListItems(): void {
-    this.productListItemsCache = this.products.map((product) => this.mapProductToListItem(product));
+    this.productListItemsCache = this.products.map((product) =>
+      this.mapProductToListItem(product),
+    );
     this.refreshSelectableProductListItems();
   }
 
   private refreshSelectableProductListItems(): void {
-    this.selectableProductListItemsCache = this.buildSelectableProductListItems();
+    this.selectableProductListItemsCache =
+      this.buildSelectableProductListItems();
   }
 
   private buildSelectableProductListItems(): ProductListItem[] {
@@ -1954,18 +2233,25 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     for (const inventoryProduct of this.selectedInventoryProducts) {
       const productId = inventoryProduct.productId;
-      if (!Number.isInteger(productId) || productId < 1 || resolvedIds.has(productId)) {
+      if (
+        !Number.isInteger(productId) ||
+        productId < 1 ||
+        resolvedIds.has(productId)
+      ) {
         continue;
       }
 
-      const fallbackItem = this.resolveInventoryLinkedProductListItem(inventoryProduct);
+      const fallbackItem =
+        this.resolveInventoryLinkedProductListItem(inventoryProduct);
       const resolvedItem = productsById.get(productId) ?? fallbackItem;
       if (!resolvedItem) {
         continue;
       }
 
       resolvedIds.add(productId);
-      resolvedItems.push(this.withAvailableQuantity(resolvedItem, inventoryProduct));
+      resolvedItems.push(
+        this.withAvailableQuantity(resolvedItem, inventoryProduct),
+      );
     }
 
     return resolvedItems;
