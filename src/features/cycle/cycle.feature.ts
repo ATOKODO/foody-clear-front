@@ -39,6 +39,7 @@ import {
   resolveCycleDurationDays,
 } from '../../components/cycle/list-cycle/cycle-list-item.mapper';
 import { DaySetListItem } from '../../components/day-set/day-set-list/day-set-list';
+import { SlotListItem } from '../../components/slot/slot-list/slot-list';
 import {
   CreateCycleDto,
   CycleAssignmentGapMode,
@@ -162,6 +163,17 @@ export class CycleFeature implements OnInit {
       id: String(daySet.id),
       title: daySet.title,
       nutritionValues: daySet.nutritionValues ?? [],
+    })),
+  );
+  private readonly slotListItemsState = computed<SlotListItem[]>(() =>
+    this.slotsState().map((slot) => ({
+      id: String(slot.id),
+      key: slot.key,
+      title: slot.title,
+      sortOrder: slot.sortOrder,
+      startTime: slot.startTime ?? null,
+      endTime: slot.endTime ?? null,
+      nutritionValues: slot.nutritionValues ?? [],
     })),
   );
 
@@ -302,6 +314,10 @@ export class CycleFeature implements OnInit {
     return this.daySetListItemsState();
   }
 
+  get slotListItems(): SlotListItem[] {
+    return this.slotListItemsState();
+  }
+
   get formDialogTitle(): string {
     return this.formMode === 'edit' ? 'Modifier un cycle' : 'Ajouter un cycle';
   }
@@ -416,6 +432,7 @@ export class CycleFeature implements OnInit {
       nombre: durationPresentation.durationCount,
       typeDuree: durationPresentation.durationType,
       durationDays: durationPresentation.durationDays,
+      slotIds: (cycle.slots ?? []).map((slot) => slot.id),
       daySetIds: resolveCycleDaySetIds(cycle),
       daySetOrder: resolveCycleDaySetTimeline(cycle),
     };
@@ -700,6 +717,7 @@ export class CycleFeature implements OnInit {
       durationDays: durationPresentation.durationDays,
       durationCount: durationPresentation.durationCount,
       durationType: durationPresentation.durationType,
+      slotIds: value.slotIds,
       daySetIds: this.normalizeDaySetIds(value.daySetOrder),
       daySetOrder: this.normalizeDaySetTimeline(value.daySetOrder),
     };
@@ -756,7 +774,7 @@ export class CycleFeature implements OnInit {
     lipids: number,
   ): CycleNutritionValue[] {
     const [energyKey] = resolveDefaultNutritionKeys(this.nutritionKeys);
-    const energyKcal = this.roundNumber((proteins * 4) + (carbs * 4) + (lipids * 9));
+    const energyKcal = this.roundNumber(proteins * 4 + carbs * 4 + lipids * 9);
 
     return [
       this.buildNutritionValue(energyKey, energyKcal),

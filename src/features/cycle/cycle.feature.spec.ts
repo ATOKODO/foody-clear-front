@@ -339,6 +339,7 @@ describe('CycleFeature', () => {
           nombre: number;
           typeDuree: 'jour' | 'semaine' | 'mois';
           durationDays: number;
+          slotIds: number[];
           daySetIds: number[];
           daySetOrder: number[];
         }) => unknown;
@@ -350,6 +351,7 @@ describe('CycleFeature', () => {
       nombre: 12,
       typeDuree: 'jour',
       durationDays: 12,
+      slotIds: [21, 22],
       daySetIds: [3, 1],
       daySetOrder: [0, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
     });
@@ -361,6 +363,7 @@ describe('CycleFeature', () => {
       durationDays: 12,
       durationCount: 12,
       durationType: 'jour',
+      slotIds: [21, 22],
       daySetIds: [3, 1],
       daySetOrder: [0, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
     });
@@ -407,6 +410,7 @@ describe('CycleFeature', () => {
       nombre: 10,
       typeDuree: 'jour',
       durationDays: 10,
+      slotIds: [],
       daySetIds: [5, 2],
       daySetOrder: [0, 5, 0, 2, 0, 0, 0, 0, 0, 0],
     });
@@ -453,6 +457,7 @@ describe('CycleFeature', () => {
       nombre: 2,
       typeDuree: 'semaine',
       durationDays: 14,
+      slotIds: [],
       daySetIds: [],
       daySetOrder: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     });
@@ -546,6 +551,7 @@ describe('CycleFeature', () => {
         nombre: 10,
         typeDuree: 'jour',
         durationDays: 10,
+        slotIds: [],
         daySetIds: [],
         daySetOrder: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       },
@@ -572,6 +578,7 @@ describe('CycleFeature', () => {
       durationDays: 10,
       durationCount: 10,
       durationType: 'jour',
+      slotIds: [],
       daySetIds: [],
       daySetOrder: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       assignmentRescheduleScope: 'future',

@@ -29,11 +29,22 @@ describe('FormCycle', () => {
       durationDays: 1,
     });
     expect(component.nutritionValues).toEqual([
-      { nutritionKey: 'ENERGY', amount: 0, unit: 'KCAL', reference: 'PER_100G' },
+      {
+        nutritionKey: 'ENERGY',
+        amount: 0,
+        unit: 'KCAL',
+        reference: 'PER_100G',
+      },
       { nutritionKey: 'PROTEIN', amount: 0, unit: 'G', reference: 'PER_100G' },
-      { nutritionKey: 'CARBOHYDRATE', amount: 0, unit: 'G', reference: 'PER_100G' },
+      {
+        nutritionKey: 'CARBOHYDRATE',
+        amount: 0,
+        unit: 'G',
+        reference: 'PER_100G',
+      },
       { nutritionKey: 'FAT', amount: 0, unit: 'G', reference: 'PER_100G' },
     ]);
+    expect(component.selectedSlotIds).toEqual([]);
     expect(component.daySetTimeline).toEqual([0]);
   });
 
@@ -43,11 +54,17 @@ describe('FormCycle', () => {
       titre: 'Seche',
       couleur: 'green',
       nutritionValues: [
-        { nutritionKey: 'PROTEIN', amount: 180, unit: 'G', reference: 'PER_100G' },
+        {
+          nutritionKey: 'PROTEIN',
+          amount: 180,
+          unit: 'G',
+          reference: 'PER_100G',
+        },
       ],
       nombre: 4,
       typeDuree: 'jour',
       durationDays: 4,
+      slotIds: [11, 12],
       daySetOrder: [3, 0, 1, 0],
     });
     fixture.detectChanges();
@@ -60,8 +77,14 @@ describe('FormCycle', () => {
       durationDays: 4,
     });
     expect(component.nutritionValues).toEqual([
-      { nutritionKey: 'PROTEIN', amount: 180, unit: 'G', reference: 'PER_100G' },
+      {
+        nutritionKey: 'PROTEIN',
+        amount: 180,
+        unit: 'G',
+        reference: 'PER_100G',
+      },
     ]);
+    expect(component.selectedSlotIds).toEqual([11, 12]);
     expect(component.daySetTimeline).toEqual([3, 0, 1, 0]);
   });
 
@@ -76,10 +99,21 @@ describe('FormCycle', () => {
       typeDuree: 'jour',
       durationDays: 6,
     });
+    component.selectedSlotIds = [11, 12];
     component.daySetTimeline = [0, 4, 0, 2, 0, 0];
     component.nutritionValues = [
-      { nutritionKey: 'PROTEIN', amount: 200, unit: 'G', reference: 'PER_100G' },
-      { nutritionKey: 'CARBOHYDRATE', amount: 300, unit: 'G', reference: 'PER_100G' },
+      {
+        nutritionKey: 'PROTEIN',
+        amount: 200,
+        unit: 'G',
+        reference: 'PER_100G',
+      },
+      {
+        nutritionKey: 'CARBOHYDRATE',
+        amount: 300,
+        unit: 'G',
+        reference: 'PER_100G',
+      },
       { nutritionKey: 'FAT', amount: 70, unit: 'G', reference: 'PER_100G' },
     ];
 
@@ -92,18 +126,45 @@ describe('FormCycle', () => {
           titre: 'Prise de masse',
           couleur: 'orange',
           nutritionValues: [
-            { nutritionKey: 'PROTEIN', amount: 200, unit: 'G', reference: 'PER_100G' },
-            { nutritionKey: 'CARBOHYDRATE', amount: 300, unit: 'G', reference: 'PER_100G' },
-            { nutritionKey: 'FAT', amount: 70, unit: 'G', reference: 'PER_100G' },
+            {
+              nutritionKey: 'PROTEIN',
+              amount: 200,
+              unit: 'G',
+              reference: 'PER_100G',
+            },
+            {
+              nutritionKey: 'CARBOHYDRATE',
+              amount: 300,
+              unit: 'G',
+              reference: 'PER_100G',
+            },
+            {
+              nutritionKey: 'FAT',
+              amount: 70,
+              unit: 'G',
+              reference: 'PER_100G',
+            },
           ],
           nombre: 6,
           typeDuree: 'jour',
           durationDays: 6,
+          slotIds: [11, 12],
           daySetIds: [4, 2],
           daySetOrder: [0, 4, 0, 2, 0, 0],
         },
       },
     ]);
+  });
+
+  it('should update selected default cycle slots', () => {
+    component.onSlotsSelected([
+      { id: '12', title: 'Dejeuner' },
+      { id: '11', title: 'Petit dejeuner' },
+      { id: '12', title: 'Dejeuner' },
+    ]);
+
+    expect(component.selectedSlotIds).toEqual([12, 11]);
+    expect(component.selectedSlotIdsAsString).toEqual(['12', '11']);
   });
 
   it('should block submit when assigned day sets remain beyond durationDays', () => {

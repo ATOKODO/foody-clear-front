@@ -3,7 +3,8 @@
   [class.px-4]="!inDialog()"
   [class.py-10]="!inDialog()"
   [class.px-3]="inDialog()"
-  [class.py-5]="inDialog()">
+  [class.py-5]="inDialog()"
+>
   @if (showHeading()) {
     <h2 class="mb-6 text-xl font-medium">{{ heading }}</h2>
   }
@@ -22,7 +23,8 @@
             <span
               class="inline-flex h-4 w-24 rounded-full align-middle"
               [style.backgroundColor]="couleurSelectionnee"
-            aria-hidden="true"></span>
+              aria-hidden="true"
+            ></span>
           </mat-select-trigger>
 
           @for (option of colorOptions; track option) {
@@ -31,7 +33,8 @@
                 <span
                   class="inline-flex h-3 w-8 rounded-full"
                   [style.backgroundColor]="option.value"
-                aria-hidden="true"></span>
+                  aria-hidden="true"
+                ></span>
                 <span>{{ option.label }}</span>
               </span>
             </mat-option>
@@ -49,19 +52,20 @@
             type="number"
             min="1"
             formControlName="durationDays"
-            (input)="onDurationDaysInput()" />
+            (input)="onDurationDaysInput()"
+          />
           @if (form.controls.durationDays.invalid) {
-            <mat-error>
-              Le cycle doit durer au moins 1 jour.
-            </mat-error>
+            <mat-error> Le cycle doit durer au moins 1 jour. </mat-error>
           }
         </mat-form-field>
 
         <div class="md:col-span-8">
-          <p class="text-sm font-semibold text-slate-900">Raccourcis de duree</p>
+          <p class="text-sm font-semibold text-slate-900">
+            Raccourcis de duree
+          </p>
           <p class="mt-1 text-sm text-slate-600">
-            Ces boutons pre-remplissent le nombre de jours. Tu peux ensuite ajuster la valeur
-            manuellement.
+            Ces boutons pre-remplissent le nombre de jours. Tu peux ensuite
+            ajuster la valeur manuellement.
           </p>
 
           <div class="mt-3 flex flex-wrap gap-2">
@@ -69,7 +73,8 @@
               <button
                 mat-stroked-button
                 type="button"
-                (click)="applyDurationPreset(preset)">
+                (click)="applyDurationPreset(preset)"
+              >
                 {{ preset.label }}
               </button>
             }
@@ -88,7 +93,8 @@
 
       @if (nutritionKeys().length === 0) {
         <p class="text-sm text-slate-600">
-          Les cles nutritionnelles meta ne sont pas chargees, saisie libre active.
+          Les cles nutritionnelles meta ne sont pas chargees, saisie libre
+          active.
         </p>
       }
 
@@ -99,7 +105,8 @@
             <mat-select
               [(ngModel)]="value.nutritionKey"
               [ngModelOptions]="{ standalone: true }"
-              (selectionChange)="onNutritionKeyChange(i)">
+              (selectionChange)="onNutritionKeyChange(i)"
+            >
               @for (item of nutritionKeys(); track item) {
                 <mat-option [value]="item.value">
                   {{ item.label }}
@@ -107,9 +114,7 @@
               }
             </mat-select>
             @if (nutritionKeys().length === 0) {
-              <mat-hint>
-                Aucune cle meta disponible
-              </mat-hint>
+              <mat-hint> Aucune cle meta disponible </mat-hint>
             }
           </mat-form-field>
           <mat-form-field appearance="fill" class="fc-field md:col-span-3">
@@ -119,13 +124,15 @@
               type="number"
               min="0"
               [(ngModel)]="value.amount"
-              [ngModelOptions]="{ standalone: true }" />
+              [ngModelOptions]="{ standalone: true }"
+            />
           </mat-form-field>
           <mat-form-field appearance="fill" class="fc-field md:col-span-3">
             <mat-label>Unite</mat-label>
             <mat-select
               [(ngModel)]="value.unit"
-              [ngModelOptions]="{ standalone: true }">
+              [ngModelOptions]="{ standalone: true }"
+            >
               @for (unit of getUnitsForKey(value.nutritionKey); track unit) {
                 <mat-option [value]="unit">
                   {{ unit }}
@@ -134,7 +141,12 @@
             </mat-select>
           </mat-form-field>
           <div class="md:col-span-1 md:pt-2">
-            <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
+            <button
+              mat-stroked-button
+              color="warn"
+              type="button"
+              (click)="removeNutritionValue(i)"
+            >
               Retirer
             </button>
           </div>
@@ -142,43 +154,82 @@
       }
     </div>
 
+    <div class="space-y-3" data-testid="cycle-default-slots">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="text-base font-semibold text-slate-900">
+            Slots par defaut du cycle
+          </h3>
+          <p class="text-sm text-slate-600">
+            Ces slots sont appliques a toutes les journees du cycle qui
+            n'utilisent pas de DaySet.
+          </p>
+        </div>
+        <p class="text-sm text-slate-500">
+          Selectionnes : {{ selectedSlotIds.length }}
+        </p>
+      </div>
+
+      <app-slot-list
+        mode="select-multi"
+        [slots]="slots()"
+        [selectedIds]="selectedSlotIdsAsString"
+        [embedded]="true"
+        (selectedMany)="onSlotsSelected($event)"
+      />
+    </div>
+
     <div class="space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 class="text-base font-semibold text-slate-900">Day sets du cycle</h3>
-          <p class="text-sm text-slate-600">Selectionnes: {{ selectedDaySetIds.length }} / {{ maxSelectableDaySets }}</p>
+          <h3 class="text-base font-semibold text-slate-900">
+            Day sets du cycle
+          </h3>
+          <p class="text-sm text-slate-600">
+            Selectionnes: {{ selectedDaySetIds.length }} /
+            {{ maxSelectableDaySets }}
+          </p>
         </div>
 
         <p class="text-sm text-slate-500">
-          Les day sets coches remplacent le premier jour encore base sur le cycle.
+          Les day sets coches remplacent le premier jour encore base sur le
+          cycle.
         </p>
       </div>
 
       @if (showSelectionError && hasSelectedDaySetOverflow) {
-        <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          Certains day sets sont places au-dela de la duree du cycle. Deplace-les dans la zone valide
-          ou retire-les avant d'enregistrer.
+        <p
+          class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
+          Certains day sets sont places au-dela de la duree du cycle.
+          Deplace-les dans la zone valide ou retire-les avant d'enregistrer.
         </p>
       }
 
-      <app-day-set-list mode="select-multi"
+      <app-day-set-list
+        mode="select-multi"
         [daySets]="daySets()"
         [selectedIds]="selectedDaySetIdsAsString"
         [maxSelections]="maxSelectableDaySets"
-        (selectedMany)="onDaySetsSelected($event)" />
+        (selectedMany)="onDaySetsSelected($event)"
+      />
     </div>
 
     <div class="space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <h3 class="text-base font-semibold text-slate-900">Ordre du cycle</h3>
-        <p class="text-sm text-slate-500">Glisse-depose les jours pour placer les day sets au milieu des jours par defaut.</p>
+        <p class="text-sm text-slate-500">
+          Glisse-depose les jours pour placer les day sets au milieu des jours
+          par defaut.
+        </p>
       </div>
 
       <div
         cdkDropList
         class="fc-order-list"
         [cdkDropListData]="timelineSlots"
-        (cdkDropListDropped)="onDaySetOrderDropped($event)">
+        (cdkDropListDropped)="onDaySetOrderDropped($event)"
+      >
         @for (slot of timelineSlots; track trackByTimelineSlot($index, slot)) {
           <div
             cdkDrag
@@ -186,14 +237,16 @@
             [class.border-red-300]="slot.isOverflow"
             [class.bg-red-50]="slot.isOverflow"
             [class.border-slate-200]="!slot.isOverflow"
-            [class.bg-white]="!slot.isOverflow">
+            [class.bg-white]="!slot.isOverflow"
+          >
             <div class="flex items-center justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
                 <button
                   cdkDragHandle
                   mat-stroked-button
                   type="button"
-                  class="fc-drag-handle">
+                  class="fc-drag-handle"
+                >
                   Deplacer
                 </button>
                 <div class="min-w-0">
@@ -205,9 +258,14 @@
                       Jour base sur l'objectif du cycle.
                     </p>
                   } @else {
-                    <p class="text-xs" [class.text-red-700]="slot.isOverflow" [class.text-slate-500]="!slot.isOverflow">
+                    <p
+                      class="text-xs"
+                      [class.text-red-700]="slot.isOverflow"
+                      [class.text-slate-500]="!slot.isOverflow"
+                    >
                       @if (slot.isOverflow) {
-                        Position hors duree du cycle. Deplace ce day set avant d'enregistrer.
+                        Position hors duree du cycle. Deplace ce day set avant
+                        d'enregistrer.
                       } @else {
                         Day set #{{ slot.daySetId }}
                       }
@@ -220,7 +278,8 @@
                   mat-stroked-button
                   color="warn"
                   type="button"
-                  (click)="removeDaySetFromOrder(slot.daySetId)">
+                  (click)="removeDaySetFromOrder(slot.daySetId)"
+                >
                   Retirer
                 </button>
               }
@@ -229,7 +288,9 @@
         }
 
         @if (timelineSlots.length === 0) {
-          <p class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500">
+          <p
+            class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500"
+          >
             Aucun jour configure.
           </p>
         }
@@ -242,7 +303,8 @@
         color="primary"
         type="submit"
         class="rounded-full px-8"
-        [disabled]="!canSubmit">
+        [disabled]="!canSubmit"
+      >
         Valider
       </button>
     </div>

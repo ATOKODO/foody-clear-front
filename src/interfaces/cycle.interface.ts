@@ -23,6 +23,15 @@ export interface Cycle {
   durationDays: number;
   durationCount: number;
   durationType: CycleDurationType;
+  slotIds?: number[];
+  slots?: Array<{
+    id: number;
+    key: string;
+    title: string;
+    sortOrder: number;
+    startTime?: string | null;
+    endTime?: string | null;
+  }>;
   daySetOrder?: number[];
   daySets?: unknown[];
 }
@@ -34,6 +43,7 @@ export interface CreateCycleDto {
   durationDays: number;
   durationCount: number;
   durationType: CycleDurationType;
+  slotIds?: number[];
   daySetIds?: number[];
   daySetOrder?: number[];
 }

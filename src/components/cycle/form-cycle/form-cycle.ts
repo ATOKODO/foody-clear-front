@@ -1,4 +1,3 @@
-
 import {
   CdkDragDrop,
   DragDropModule,
@@ -12,9 +11,14 @@ import {
   inject,
   ChangeDetectionStrategy,
   input,
-  output
+  output,
 } from '@angular/core';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -25,6 +29,7 @@ import {
   DaySetList,
   DaySetListItem,
 } from '../../day-set/day-set-list/day-set-list';
+import { SlotList, SlotListItem } from '../../slot/slot-list/slot-list';
 import {
   getFallbackUnitsForNutritionKey,
   resolveDefaultNutritionKeys,
@@ -40,6 +45,7 @@ export interface CycleFormValue {
   nombre: number;
   typeDuree: TypeDuree;
   durationDays: number;
+  slotIds: number[];
   daySetIds: number[];
   daySetOrder: number[];
 }
@@ -70,8 +76,9 @@ type DurationPreset = {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    DaySetList
-],
+    DaySetList,
+    SlotList,
+  ],
   templateUrl: './form-cycle.html',
   styleUrl: './form-cycle.scss',
 })
@@ -83,15 +90,17 @@ export class FormCycle implements OnInit, OnChanges {
   readonly cycle = input<Partial<CycleFormValue> | null>(null);
   readonly nutritionKeys = input<NutritionKeyMeta[]>([]);
   readonly daySets = input<DaySetListItem[]>([]);
+  readonly slots = input<SlotListItem[]>([]);
   readonly showHeading = input(true);
   readonly inDialog = input(false);
 
   readonly submitted = output<{
     mode: CycleFormMode;
     value: CycleFormValue;
-}>();
+  }>();
 
   nutritionValues: CycleNutritionValue[] = [];
+  selectedSlotIds: number[] = [];
   daySetTimeline: number[] = [];
   showSelectionError = false;
 
@@ -145,7 +154,10 @@ export class FormCycle implements OnInit, OnChanges {
   }
 
   get durationDays(): number {
-    return this.normalizePositiveInteger(this.form.controls.durationDays.value, 0);
+    return this.normalizePositiveInteger(
+      this.form.controls.durationDays.value,
+      0,
+    );
   }
 
   get maxSelectableDaySets(): number {
@@ -166,7 +178,9 @@ export class FormCycle implements OnInit, OnChanges {
       dayNumber: index + 1,
       daySetId,
       title:
-        daySetId > this.defaultDaySetId ? this.getDaySetTitle(daySetId) : 'Objectif du cycle',
+        daySetId > this.defaultDaySetId
+          ? this.getDaySetTitle(daySetId)
+          : 'Objectif du cycle',
       isDefault: daySetId === this.defaultDaySetId,
       isOverflow: index >= this.maxSelectableDaySets,
     }));
@@ -174,7 +188,8 @@ export class FormCycle implements OnInit, OnChanges {
 
   get hasSelectedDaySetOverflow(): boolean {
     return this.daySetTimeline.some(
-      (daySetId, index) => index >= this.maxSelectableDaySets && daySetId > this.defaultDaySetId,
+      (daySetId, index) =>
+        index >= this.maxSelectableDaySets && daySetId > this.defaultDaySetId,
     );
   }
 
@@ -192,7 +207,10 @@ export class FormCycle implements OnInit, OnChanges {
     const nutritionValues = this.nutritionValues
       .map((value) => this.normalizeNutritionValue(value))
       .filter((value) => value.nutritionKey !== '');
-    const durationDays = this.normalizePositiveInteger(this.form.controls.durationDays.value, 1);
+    const durationDays = this.normalizePositiveInteger(
+      this.form.controls.durationDays.value,
+      1,
+    );
     const daySetOrder = this.serializeDaySetTimeline(durationDays);
 
     this.submitted.emit({
@@ -201,6 +219,7 @@ export class FormCycle implements OnInit, OnChanges {
         ...this.form.getRawValue(),
         nutritionValues,
         durationDays,
+        slotIds: [...this.selectedSlotIds],
         daySetIds: this.extractAssignedDaySetIds(daySetOrder),
         daySetOrder,
       },
@@ -228,7 +247,8 @@ export class FormCycle implements OnInit, OnChanges {
 
       const nextDefaultIndex = nextTimeline.findIndex(
         (slotDaySetId, index) =>
-          index < this.maxSelectableDaySets && slotDaySetId === this.defaultDaySetId,
+          index < this.maxSelectableDaySets &&
+          slotDaySetId === this.defaultDaySetId,
       );
       if (nextDefaultIndex === -1) {
         return;
@@ -242,8 +262,21 @@ export class FormCycle implements OnInit, OnChanges {
     this.showSelectionError = this.hasSelectedDaySetOverflow;
   }
 
+  onSlotsSelected(slots: SlotListItem[]): void {
+    this.selectedSlotIds = this.normalizeSlotIds(
+      slots.map((slot) => Number(slot.id)),
+    );
+  }
+
+  get selectedSlotIdsAsString(): string[] {
+    return this.selectedSlotIds.map(String);
+  }
+
   onDurationDaysInput(): void {
-    const durationDays = this.normalizePositiveInteger(this.form.controls.durationDays.value, 0);
+    const durationDays = this.normalizePositiveInteger(
+      this.form.controls.durationDays.value,
+      0,
+    );
     this.form.patchValue(
       {
         nombre: Math.max(1, durationDays),
@@ -288,7 +321,10 @@ export class FormCycle implements OnInit, OnChanges {
   }
 
   addNutritionValue(): void {
-    this.nutritionValues = [...this.nutritionValues, this.buildDefaultNutritionValue()];
+    this.nutritionValues = [
+      ...this.nutritionValues,
+      this.buildDefaultNutritionValue(),
+    ];
   }
 
   removeNutritionValue(index: number): void {
@@ -314,7 +350,9 @@ export class FormCycle implements OnInit, OnChanges {
 
   getUnitsForKey(nutritionKey: string): string[] {
     const allowedUnits = this.getAllowedUnits(nutritionKey);
-    return allowedUnits.length > 0 ? allowedUnits : this.getFallbackUnits(nutritionKey);
+    return allowedUnits.length > 0
+      ? allowedUnits
+      : this.getFallbackUnits(nutritionKey);
   }
 
   trackByTimelineSlot(_: number, slot: CycleTimelineSlot): string {
@@ -329,6 +367,7 @@ export class FormCycle implements OnInit, OnChanges {
       nombre: 1,
       typeDuree: 'jour',
       durationDays: 1,
+      slotIds: [],
       daySetIds: [],
       daySetOrder: [this.defaultDaySetId],
     };
@@ -347,11 +386,17 @@ export class FormCycle implements OnInit, OnChanges {
       this.form.reset({
         titre: cycle.titre ?? defaults.titre,
         couleur: cycle.couleur ?? defaults.couleur,
-        nombre: this.normalizePositiveInteger(cycle.nombre ?? durationDays, durationDays),
+        nombre: this.normalizePositiveInteger(
+          cycle.nombre ?? durationDays,
+          durationDays,
+        ),
         typeDuree: cycle.typeDuree ?? defaults.typeDuree,
         durationDays,
       });
       this.daySetTimeline = this.reconcileDaySetTimeline(daySetOrder);
+      this.selectedSlotIds = this.normalizeSlotIds(
+        cycle.slotIds ?? defaults.slotIds,
+      );
       this.nutritionValues =
         cycle.nutritionValues && cycle.nutritionValues.length > 0
           ? this.cloneNutritionValues(cycle.nutritionValues)
@@ -368,13 +413,14 @@ export class FormCycle implements OnInit, OnChanges {
       durationDays: defaults.durationDays,
     });
     this.daySetTimeline = this.reconcileDaySetTimeline(defaults.daySetOrder);
+    this.selectedSlotIds = [];
     this.nutritionValues = this.cloneNutritionValues(defaults.nutritionValues);
     this.showSelectionError = false;
   }
 
   private getDefaultNutritionValues(): CycleNutritionValue[] {
-    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys()).map((key) =>
-      this.buildDefaultNutritionValue(key),
+    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys()).map(
+      (key) => this.buildDefaultNutritionValue(key),
     );
     return this.cloneNutritionValues(defaults);
   }
@@ -389,15 +435,22 @@ export class FormCycle implements OnInit, OnChanges {
     };
   }
 
-  private cloneNutritionValues(values: CycleNutritionValue[]): CycleNutritionValue[] {
+  private cloneNutritionValues(
+    values: CycleNutritionValue[],
+  ): CycleNutritionValue[] {
     return values.map((value) => this.normalizeNutritionValue(value));
   }
 
-  private normalizeNutritionValue(value: CycleNutritionValue): CycleNutritionValue {
+  private normalizeNutritionValue(
+    value: CycleNutritionValue,
+  ): CycleNutritionValue {
     const nutritionKey = (value.nutritionKey ?? '').trim();
-    const amount = Number.isFinite(value.amount) ? Math.max(0, value.amount) : 0;
+    const amount = Number.isFinite(value.amount)
+      ? Math.max(0, value.amount)
+      : 0;
     const unit = this.pickDefaultUnit(nutritionKey, value.unit);
-    const reference = value.reference === 'PER_100ML' ? 'PER_100ML' : 'PER_100G';
+    const reference =
+      value.reference === 'PER_100ML' ? 'PER_100ML' : 'PER_100G';
 
     return {
       nutritionKey,
@@ -445,11 +498,22 @@ export class FormCycle implements OnInit, OnChanges {
     return getFallbackUnitsForNutritionKey(nutritionKey);
   }
 
-  private normalizeDaySetIds(daySetIds: number[]): number[] {
-    return Array.from(new Set(daySetIds.filter((id) => Number.isInteger(id) && id > 0)));
+  private normalizeSlotIds(slotIds: number[]): number[] {
+    return Array.from(
+      new Set(slotIds.filter((id) => Number.isInteger(id) && id > 0)),
+    );
   }
 
-  private normalizeDaySetTimeline(daySetIds: number[] | null | undefined, durationDays: number): number[] {
+  private normalizeDaySetIds(daySetIds: number[]): number[] {
+    return Array.from(
+      new Set(daySetIds.filter((id) => Number.isInteger(id) && id > 0)),
+    );
+  }
+
+  private normalizeDaySetTimeline(
+    daySetIds: number[] | null | undefined,
+    durationDays: number,
+  ): number[] {
     const timeline = (daySetIds ?? [])
       .map((id) => Math.trunc(Number(id)))
       .filter((id) => Number.isInteger(id) && id >= this.defaultDaySetId);
@@ -486,20 +550,26 @@ export class FormCycle implements OnInit, OnChanges {
     }
 
     return timeline.map((id) =>
-      Number.isInteger(id) && id > this.defaultDaySetId ? id : this.defaultDaySetId,
+      Number.isInteger(id) && id > this.defaultDaySetId
+        ? id
+        : this.defaultDaySetId,
     );
   }
 
   private extractAssignedDaySetIds(daySetTimeline: number[]): number[] {
     return Array.from(
       new Set(
-        daySetTimeline.filter((daySetId) => Number.isInteger(daySetId) && daySetId > 0),
+        daySetTimeline.filter(
+          (daySetId) => Number.isInteger(daySetId) && daySetId > 0,
+        ),
       ),
     );
   }
 
   private getDaySetTitle(daySetId: number): string {
-    const matchingDaySet = this.daySets().find((daySet) => Number(daySet.id) === daySetId);
+    const matchingDaySet = this.daySets().find(
+      (daySet) => Number(daySet.id) === daySetId,
+    );
     return matchingDaySet?.title ?? `Day Set ${daySetId}`;
   }
 
