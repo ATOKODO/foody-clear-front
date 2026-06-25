@@ -142,6 +142,12 @@ interface CalendarDayEntryRow {
   item: CalendarInsertedProduct;
 }
 
+interface CalendarDayTimelineItemBucket {
+  key: string;
+  gridRowStart: number;
+  items: CalendarInsertedProduct[];
+}
+
 interface CalendarMacroComparison {
   key: string;
   label: string;
@@ -1092,7 +1098,46 @@ export class Calendar implements OnInit, OnChanges {
     const insertedProducts = this.resolveCurrentDayInsertedProducts(dateLocal, slots);
     const plannedItems = this.resolvePendingTemplateItems(response, slots);
 
-    return this.buildWeekTimelineBlocks(dateLocal, slots, insertedProducts, plannedItems);
+    return this.buildWeekTimelineBlocks(dateLocal, slots, insertedProducts, plannedItems).filter(
+      (block) => block.kind === 'slot',
+    );
+  }
+
+  getDayTimelineItemBuckets(): CalendarDayTimelineItemBucket[] {
+    const response = this.inputDayResponse();
+    const dateLocal = response?.dateLocal ?? this.currentDate.toISODate() ?? '';
+    if (dateLocal.trim() === '') {
+      return [];
+    }
+
+    const insertedProducts = this.resolveCurrentDayInsertedProducts(dateLocal, this.resolveDaySlots());
+    if (insertedProducts.length === 0) {
+      return [];
+    }
+
+    const buckets = new Map<number, CalendarInsertedProduct[]>();
+
+    insertedProducts.forEach((item) => {
+      const minute = this.resolveCalendarInsertedProductMinute(item);
+      if (minute === null) {
+        return;
+      }
+
+      const hour = Math.floor(minute / 60);
+      const halfHourMinute: 0 | 30 = minute % 60 >= 30 ? 30 : 0;
+      const gridRowStart = this.getDayHalfHourGridRowStart(hour, halfHourMinute);
+      const bucketItems = buckets.get(gridRowStart) ?? [];
+      bucketItems.push(item);
+      buckets.set(gridRowStart, bucketItems);
+    });
+
+    return Array.from(buckets.entries())
+      .sort(([leftRowStart], [rightRowStart]) => leftRowStart - rightRowStart)
+      .map(([gridRowStart, items]) => ({
+        key: `${dateLocal}:${gridRowStart}`,
+        gridRowStart,
+        items,
+      }));
   }
 
   private buildViewChangeEvent(): CalendarViewChangeEvent {
@@ -1229,6 +1274,10 @@ export class Calendar implements OnInit, OnChanges {
 
   trackByWeekTimelineBlock(_: number, block: CalendarWeekTimelineBlock): string {
     return block.id;
+  }
+
+  trackByDayTimelineItemBucket(_: number, bucket: CalendarDayTimelineItemBucket): string {
+    return bucket.key;
   }
 
   trackByMonth(_: number, month: MonthSummary): string {
