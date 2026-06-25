@@ -1,4 +1,3 @@
-
 import {
   Component,
   OnChanges,
@@ -6,7 +5,7 @@ import {
   SimpleChanges,
   input,
   output,
-  signal
+  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -33,6 +32,7 @@ export interface TemplateItemDraft {
   qtyUnit: ProductQuantityInputUnit | null;
   slotId: number | null;
   slotKey: string;
+  preferredTime: string;
 }
 
 export interface TemplateFormSubmittedEvent {
@@ -49,8 +49,8 @@ export interface TemplateFormSubmittedEvent {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    ProductList
-],
+    ProductList,
+  ],
   templateUrl: './template-form.html',
   styleUrl: './template-form.scss',
 })
@@ -69,7 +69,9 @@ export class TemplateForm implements OnInit, OnChanges {
   readonly itemSubmitted = output<TemplateItemDraft>();
   readonly itemDeleted = output<number>();
 
-  private readonly itemDraftState = signal<TemplateItemDraft>(this.buildEmptyItemDraft());
+  private readonly itemDraftState = signal<TemplateItemDraft>(
+    this.buildEmptyItemDraft(),
+  );
 
   draftTitle = '';
 
@@ -106,11 +108,15 @@ export class TemplateForm implements OnInit, OnChanges {
   }
 
   get productListItems(): ProductListItem[] {
-    return this.products().map((product) => mapProductToProductListItem(product));
+    return this.products().map((product) =>
+      mapProductToProductListItem(product),
+    );
   }
 
   get selectedProductIds(): string[] {
-    return this.itemDraft.productId !== null ? [String(this.itemDraft.productId)] : [];
+    return this.itemDraft.productId !== null
+      ? [String(this.itemDraft.productId)]
+      : [];
   }
 
   get sortedSlots(): Slot[] {
@@ -150,6 +156,7 @@ export class TemplateForm implements OnInit, OnChanges {
       qtyUnit: item.qtyUnit,
       slotId: item.slotId,
       slotKey: item.slotKey ?? '',
+      preferredTime: this.formatPreferredTime(item.preferredTime),
     };
   }
 
@@ -182,6 +189,7 @@ export class TemplateForm implements OnInit, OnChanges {
       qtyUnit: itemDraft.qtyUnit,
       slotId: itemDraft.slotId,
       slotKey: itemDraft.slotKey,
+      preferredTime: itemDraft.preferredTime,
     });
   }
 
@@ -195,13 +203,20 @@ export class TemplateForm implements OnInit, OnChanges {
 
   resolveTemplateItemSlotLabel(item: TemplateItem): string {
     if (item.slotId !== null) {
-      const slot = this.sortedSlots.find((candidate) => candidate.id === item.slotId) ?? null;
+      const slot =
+        this.sortedSlots.find((candidate) => candidate.id === item.slotId) ??
+        null;
       if (slot) {
         return `${slot.sortOrder}. ${slot.title}`;
       }
     }
 
     return item.slotKey?.trim() || 'Sans slot';
+  }
+
+  formatPreferredTime(value: string | null | undefined): string {
+    const preferredTime = value?.trim() || '06:00';
+    return preferredTime.slice(0, 5);
   }
 
   formatNutritionAmount(value: number): string {
@@ -232,6 +247,7 @@ export class TemplateForm implements OnInit, OnChanges {
       qtyUnit: null,
       slotId: null,
       slotKey: '',
+      preferredTime: '06:00',
     };
   }
 }

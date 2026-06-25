@@ -6,7 +6,7 @@ import {
   OnInit,
   SimpleChanges,
   input,
-  output
+  output,
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -190,6 +190,7 @@ interface CalendarPlannedTemplateItem {
   productName: string;
   qtyLabel: string;
   slotKey: string;
+  preferredMinute: number;
   stockAvailable: boolean;
   stockLabel: string;
   inventoryId: number | null;
@@ -223,15 +224,21 @@ export class Calendar implements OnInit, OnChanges {
   readonly hourClick = output<CalendarHourClickEvent>();
   readonly monthClick = output<CalendarMonthClickEvent>();
   readonly manageItems = output<CalendarManageItemsEvent>();
-  readonly manageAssignmentRequested = output<CalendarManageAssignmentEvent>({ alias: 'manageAssignment' });
+  readonly manageAssignmentRequested = output<CalendarManageAssignmentEvent>({
+    alias: 'manageAssignment',
+  });
   readonly itemClick = output<CalendarItemClickEvent>();
-  readonly convertTemplateItemRequested = output<CalendarConvertTemplateItemEvent>({
-    alias: 'convertTemplateItem',
+  readonly convertTemplateItemRequested =
+    output<CalendarConvertTemplateItemEvent>({
+      alias: 'convertTemplateItem',
+    });
+  readonly revertTemplateItemRequested =
+    output<CalendarRevertTemplateItemEvent>({
+      alias: 'revertTemplateItem',
+    });
+  readonly openDayViewRequested = output<CalendarOpenDayViewEvent>({
+    alias: 'openDayView',
   });
-  readonly revertTemplateItemRequested = output<CalendarRevertTemplateItemEvent>({
-    alias: 'revertTemplateItem',
-  });
-  readonly openDayViewRequested = output<CalendarOpenDayViewEvent>({ alias: 'openDayView' });
   readonly viewChanged = output<CalendarViewChangeEvent>();
 
   readonly VIEWS: CalendarView[] = ['year', 'month', 'week', 'day'];
@@ -252,10 +259,18 @@ export class Calendar implements OnInit, OnChanges {
   private assignmentById = new Map<string, CycleAssignment>();
   private visibleDayResponseByDate = new Map<string, InputDayResponse>();
   private visibleDaySlotsByDate = new Map<string, CalendarDaySlot[]>();
-  private visibleTimelineBlocksByDate = new Map<string, CalendarWeekTimelineBlock[]>();
+  private visibleTimelineBlocksByDate = new Map<
+    string,
+    CalendarWeekTimelineBlock[]
+  >();
   private readonly emptySlots: CalendarDaySlot[] = [];
   private readonly emptyWeekTimelineBlocks: CalendarWeekTimelineBlock[] = [];
-  private readonly weekMacroOrder = ['energyKcal', 'proteins', 'carbs', 'lipids'];
+  private readonly weekMacroOrder = [
+    'energyKcal',
+    'proteins',
+    'carbs',
+    'lipids',
+  ];
   private readonly monthMacroAlertLabels: Record<string, string> = {
     energyKcal: 'Kcal',
     proteins: 'P',
@@ -271,7 +286,12 @@ export class Calendar implements OnInit, OnChanges {
       tone: CalendarWeekMacroHighlight['tone'];
     }
   > = {
-    energyKcal: { label: 'Energie', abbr: 'kcal', unit: 'kcal', tone: 'energy' },
+    energyKcal: {
+      label: 'Energie',
+      abbr: 'kcal',
+      unit: 'kcal',
+      tone: 'energy',
+    },
     proteins: { label: 'Proteines', abbr: 'P', unit: 'g', tone: 'proteins' },
     carbs: { label: 'Glucides', abbr: 'G', unit: 'g', tone: 'carbs' },
     lipids: { label: 'Lipides', abbr: 'L', unit: 'g', tone: 'lipids' },
@@ -304,7 +324,10 @@ export class Calendar implements OnInit, OnChanges {
 
     switch (this.currentView) {
       case 'month':
-        this.monthDays = generateMonthDays(this.currentDate.month, this.currentDate.year);
+        this.monthDays = generateMonthDays(
+          this.currentDate.month,
+          this.currentDate.year,
+        );
         break;
       case 'week':
         this.weekDays = generateWeekDays(this.currentDate);
@@ -367,7 +390,9 @@ export class Calendar implements OnInit, OnChanges {
         month.days.forEach((day) => {
           day.assignment = this.buildCalendarAssignmentForDate(day.date);
         });
-        month.hasAssignments = month.days.some((day) => day.assignment !== undefined);
+        month.hasAssignments = month.days.some(
+          (day) => day.assignment !== undefined,
+        );
       });
     }
   }
@@ -449,7 +474,9 @@ export class Calendar implements OnInit, OnChanges {
   onHourClick(hour: HourSlot, dateLocal?: string, minute = 0): void {
     const resolvedDateLocal = dateLocal ?? this.currentDate.toISODate() ?? '';
     const assignmentFromDate =
-      resolvedDateLocal === '' ? null : (this.findAssignmentForDate(resolvedDateLocal) ?? null);
+      resolvedDateLocal === ''
+        ? null
+        : (this.findAssignmentForDate(resolvedDateLocal) ?? null);
     const assignmentFromHour =
       hour.assignment && hour.assignment.id
         ? (this.assignmentById.get(hour.assignment.id) ?? null)
@@ -460,7 +487,11 @@ export class Calendar implements OnInit, OnChanges {
       view: this.currentView,
       currentDateIso: this.currentDate.toISO() ?? '',
       dateLocal: resolvedDateLocal,
-      occurredAt: this.buildOccurredAtForTime(resolvedDateLocal, hour.hour, minute),
+      occurredAt: this.buildOccurredAtForTime(
+        resolvedDateLocal,
+        hour.hour,
+        minute,
+      ),
       hour,
       sourceAssignment,
     });
@@ -490,7 +521,9 @@ export class Calendar implements OnInit, OnChanges {
 
   onManageItems(dateLocal: string): void {
     const sourceAssignment =
-      dateLocal.trim() === '' ? null : (this.findAssignmentForDate(dateLocal) ?? null);
+      dateLocal.trim() === ''
+        ? null
+        : (this.findAssignmentForDate(dateLocal) ?? null);
 
     this.manageItems.emit({
       view: this.currentView,
@@ -502,7 +535,9 @@ export class Calendar implements OnInit, OnChanges {
 
   onManageAssignment(dateLocal: string): void {
     const sourceAssignment =
-      dateLocal.trim() === '' ? null : (this.findAssignmentForDate(dateLocal) ?? null);
+      dateLocal.trim() === ''
+        ? null
+        : (this.findAssignmentForDate(dateLocal) ?? null);
 
     this.manageAssignmentRequested.emit({
       view: this.currentView,
@@ -551,7 +586,11 @@ export class Calendar implements OnInit, OnChanges {
     });
   }
 
-  onItemClick(item: CalendarInsertedProduct, dateLocal: string, event: Event): void {
+  onItemClick(
+    item: CalendarInsertedProduct,
+    dateLocal: string,
+    event: Event,
+  ): void {
     event.stopPropagation();
 
     this.itemClick.emit({
@@ -562,13 +601,17 @@ export class Calendar implements OnInit, OnChanges {
     });
   }
 
-  onDayTemplateItemConvert(item: CalendarPlannedTemplateItem, event: Event): void {
+  onDayTemplateItemConvert(
+    item: CalendarPlannedTemplateItem,
+    event: Event,
+  ): void {
     event.stopPropagation();
     if (item.inventoryId === null || !item.stockAvailable) {
       return;
     }
 
-    const dateLocal = this.inputDayResponse()?.dateLocal ?? this.currentDate.toISODate() ?? '';
+    const dateLocal =
+      this.inputDayResponse()?.dateLocal ?? this.currentDate.toISODate() ?? '';
     if (dateLocal.trim() === '') {
       return;
     }
@@ -633,7 +676,9 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   formatItemTime(occurredAt: string | null, insertedAt: string): string {
-    const parsed = DateTime.fromISO(occurredAt?.trim() || insertedAt, { setZone: true });
+    const parsed = DateTime.fromISO(occurredAt?.trim() || insertedAt, {
+      setZone: true,
+    });
     if (!parsed.isValid) {
       return occurredAt?.trim() || insertedAt;
     }
@@ -688,7 +733,11 @@ export class Calendar implements OnInit, OnChanges {
   hasWeekDaySummaryData(day: CalendarDay): boolean {
     const response = this.getWeekDayResponse(day.date);
 
-    return Boolean(day.assignment || response?.assignment || this.hasWeekDayInsights(day.date));
+    return Boolean(
+      day.assignment ||
+      response?.assignment ||
+      this.hasWeekDayInsights(day.date),
+    );
   }
 
   hasWeekDayInsights(dateLocal: string): boolean {
@@ -706,7 +755,8 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getWeekSummaryDayCount(): number {
-    return this.weekDays.filter((day) => this.hasWeekDaySummaryData(day)).length;
+    return this.weekDays.filter((day) => this.hasWeekDaySummaryData(day))
+      .length;
   }
 
   getWeekSummaryItemCount(): number {
@@ -717,16 +767,19 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getWeekSummaryTemplateDayCount(): number {
-    return Array.from(this.visibleDayResponseByDate.values()).filter((response) =>
-      this.hasTemplateData(response),
+    return Array.from(this.visibleDayResponseByDate.values()).filter(
+      (response) => this.hasTemplateData(response),
     ).length;
   }
 
   getWeekSummaryEnergyTotal(): string {
-    const total = Array.from(this.visibleDayResponseByDate.values()).reduce((sum, response) => {
-      const energy = response.totalsMacros?.dayTotal['energyKcal'];
-      return typeof energy === 'number' ? sum + energy : sum;
-    }, 0);
+    const total = Array.from(this.visibleDayResponseByDate.values()).reduce(
+      (sum, response) => {
+        const energy = response.totalsMacros?.dayTotal['energyKcal'];
+        return typeof energy === 'number' ? sum + energy : sum;
+      },
+      0,
+    );
 
     return this.formatCompactNumber(total, 0);
   }
@@ -760,27 +813,43 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getWeekDayMacroComparisons(dateLocal: string): CalendarMacroComparison[] {
-    return this.buildMacroComparisons(this.visibleDayResponseByDate.get(dateLocal) ?? null);
+    return this.buildMacroComparisons(
+      this.visibleDayResponseByDate.get(dateLocal) ?? null,
+    );
   }
 
-  getWeekDayProjectedMacroComparisons(dateLocal: string): CalendarMacroComparison[] {
-    return this.buildProjectedMacroComparisons(this.visibleDayResponseByDate.get(dateLocal) ?? null);
+  getWeekDayProjectedMacroComparisons(
+    dateLocal: string,
+  ): CalendarMacroComparison[] {
+    return this.buildProjectedMacroComparisons(
+      this.visibleDayResponseByDate.get(dateLocal) ?? null,
+    );
   }
 
   getMonthDayMacroComparisons(dateLocal: string): CalendarMacroComparison[] {
-    return this.buildMacroComparisons(this.visibleDayResponseByDate.get(dateLocal) ?? null);
+    return this.buildMacroComparisons(
+      this.visibleDayResponseByDate.get(dateLocal) ?? null,
+    );
   }
 
-  getMonthDayProjectedMacroComparisons(dateLocal: string): CalendarMacroComparison[] {
-    return this.buildProjectedMacroComparisons(this.visibleDayResponseByDate.get(dateLocal) ?? null);
+  getMonthDayProjectedMacroComparisons(
+    dateLocal: string,
+  ): CalendarMacroComparison[] {
+    return this.buildProjectedMacroComparisons(
+      this.visibleDayResponseByDate.get(dateLocal) ?? null,
+    );
   }
 
   getDayMacroHighlights(): CalendarWeekMacroHighlight[] {
-    return this.buildMacroHighlights(this.inputDayResponse()?.totalsMacros?.dayTotal ?? null);
+    return this.buildMacroHighlights(
+      this.inputDayResponse()?.totalsMacros?.dayTotal ?? null,
+    );
   }
 
   getDayProjectedMacroHighlights(): CalendarWeekMacroHighlight[] {
-    return this.buildMacroHighlights(this.inputDayResponse()?.projectedTotalsMacros?.dayTotal ?? null);
+    return this.buildMacroHighlights(
+      this.inputDayResponse()?.projectedTotalsMacros?.dayTotal ?? null,
+    );
   }
 
   getDayAssignmentHighlight(): CalendarDayAssignmentHighlight | null {
@@ -821,12 +890,16 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayEnergyTotal(): string {
-    const energy = this.inputDayResponse()?.totalsMacros?.dayTotal['energyKcal'];
-    return typeof energy === 'number' ? this.formatCompactNumber(energy, 0) : '0';
+    const energy =
+      this.inputDayResponse()?.totalsMacros?.dayTotal['energyKcal'];
+    return typeof energy === 'number'
+      ? this.formatCompactNumber(energy, 0)
+      : '0';
   }
 
   getDayTargetHeadline(): string {
-    const targetSource = this.inputDayResponse()?.totalsMacros?.targetSource ?? 'none';
+    const targetSource =
+      this.inputDayResponse()?.totalsMacros?.targetSource ?? 'none';
 
     if (targetSource === 'cycle') {
       return 'Cible du jour issue du cycle assigne';
@@ -840,9 +913,12 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayTargetSupportingText(): string {
-    const targetSource = this.inputDayResponse()?.totalsMacros?.targetSource ?? 'none';
+    const targetSource =
+      this.inputDayResponse()?.totalsMacros?.targetSource ?? 'none';
     const assignmentTitle =
-      this.getDayAssignmentHighlight()?.title ?? this.inputDayResponse()?.assignment?.cycleTitle ?? null;
+      this.getDayAssignmentHighlight()?.title ??
+      this.inputDayResponse()?.assignment?.cycleTitle ??
+      null;
     const daySetTitle = this.inputDayResponse()?.daySet?.title?.trim() ?? null;
 
     if (targetSource === 'cycle') {
@@ -875,7 +951,11 @@ export class Calendar implements OnInit, OnChanges {
   getDayMacroCards(): CalendarDayMacroCard[] {
     const totals = this.inputDayResponse()?.totalsMacros ?? null;
     return totals
-      ? this.buildDayMacroCards(totals.dayTotal, totals.targets, totals.deltaToTargets)
+      ? this.buildDayMacroCards(
+          totals.dayTotal,
+          totals.targets,
+          totals.deltaToTargets,
+        )
       : [];
   }
 
@@ -889,22 +969,25 @@ export class Calendar implements OnInit, OnChanges {
           left.slot.title.localeCompare(right.slot.title, 'fr'),
       )
       .map((entry) => {
-        const consumed = this.weekMacroOrder.reduce<Record<string, InputDayMacroValue>>(
-          (values, key) => {
-            const value = entry[key];
-            if (typeof value === 'number' || typeof value === 'string') {
-              values[key] = value;
-            }
-            return values;
-          },
-          {},
-        );
+        const consumed = this.weekMacroOrder.reduce<
+          Record<string, InputDayMacroValue>
+        >((values, key) => {
+          const value = entry[key];
+          if (typeof value === 'number' || typeof value === 'string') {
+            values[key] = value;
+          }
+          return values;
+        }, {});
 
         return {
           key: `${entry.slot.slotId ?? entry.slot.slotKey}`,
           title: entry.slot.title,
           rangeLabel: this.formatSlotRange(entry.slot),
-          cards: this.buildDayMacroCards(consumed, entry.targets, entry.deltaToTargets),
+          cards: this.buildDayMacroCards(
+            consumed,
+            entry.targets,
+            entry.deltaToTargets,
+          ),
         };
       })
       .filter((group) => group.cards.length > 0);
@@ -915,7 +998,8 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayEntryRows(): CalendarDayEntryRow[] {
-    const dateLocal = this.inputDayResponse()?.dateLocal ?? this.currentDate.toISODate() ?? '';
+    const dateLocal =
+      this.inputDayResponse()?.dateLocal ?? this.currentDate.toISODate() ?? '';
     if (dateLocal.trim() === '') {
       return [];
     }
@@ -937,8 +1021,11 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getProjectedDayEnergyTotal(): string {
-    const energy = this.inputDayResponse()?.projectedTotalsMacros?.dayTotal['energyKcal'];
-    return typeof energy === 'number' ? this.formatCompactNumber(energy, 0) : '0';
+    const energy =
+      this.inputDayResponse()?.projectedTotalsMacros?.dayTotal['energyKcal'];
+    return typeof energy === 'number'
+      ? this.formatCompactNumber(energy, 0)
+      : '0';
   }
 
   getYearMonthCount(): number {
@@ -957,7 +1044,8 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getYearMonthAssignedDayCount(month: MonthSummary): number {
-    return month.days.filter((day) => day.isCurrentMonth && day.assignment).length;
+    return month.days.filter((day) => day.isCurrentMonth && day.assignment)
+      .length;
   }
 
   getYearMonthCycleCount(month: MonthSummary): number {
@@ -974,7 +1062,8 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getMonthAssignedDayCount(): number {
-    return this.monthDays.filter((day) => day.isCurrentMonth && day.assignment).length;
+    return this.monthDays.filter((day) => day.isCurrentMonth && day.assignment)
+      .length;
   }
 
   getMonthCycleCount(): number {
@@ -987,8 +1076,8 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getMonthTemplateDayCount(): number {
-    return Array.from(this.visibleDayResponseByDate.values()).filter((response) =>
-      this.hasTemplateData(response),
+    return Array.from(this.visibleDayResponseByDate.values()).filter(
+      (response) => this.hasTemplateData(response),
     ).length;
   }
 
@@ -1011,7 +1100,9 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getPendingTemplateItemCount(response: InputDayResponse | null): number {
-    return (response?.templateItems ?? []).filter((item) => item.status === 'pending').length;
+    return (response?.templateItems ?? []).filter(
+      (item) => item.status === 'pending',
+    ).length;
   }
 
   getDayTemplateItemCount(): number {
@@ -1050,34 +1141,43 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     const actualComparisons = new Map(
-      this.buildMacroComparisons(response).map((comparison) => [comparison.key, comparison]),
+      this.buildMacroComparisons(response).map((comparison) => [
+        comparison.key,
+        comparison,
+      ]),
     );
     const projectedComparisons = new Map(
-      this.buildProjectedMacroComparisons(response).map((comparison) => [comparison.key, comparison]),
+      this.buildProjectedMacroComparisons(response).map((comparison) => [
+        comparison.key,
+        comparison,
+      ]),
     );
-    const badges = this.weekMacroOrder.reduce<CalendarMonthAlertBadge[]>((accumulator, key) => {
-      const macroLabel = this.monthMacroAlertLabels[key] ?? key;
-      const actualComparison = actualComparisons.get(key);
-      if (actualComparison?.status === 'over') {
-        accumulator.push({
-          key: `${key}-actual`,
-          text: `${macroLabel} depasse`,
-          tone: 'over',
-        });
+    const badges = this.weekMacroOrder.reduce<CalendarMonthAlertBadge[]>(
+      (accumulator, key) => {
+        const macroLabel = this.monthMacroAlertLabels[key] ?? key;
+        const actualComparison = actualComparisons.get(key);
+        if (actualComparison?.status === 'over') {
+          accumulator.push({
+            key: `${key}-actual`,
+            text: `${macroLabel} depasse`,
+            tone: 'over',
+          });
+          return accumulator;
+        }
+
+        const projectedComparison = projectedComparisons.get(key);
+        if (projectedComparison?.status === 'over') {
+          accumulator.push({
+            key: `${key}-projected`,
+            text: `${macroLabel} projete depasse`,
+            tone: 'projected',
+          });
+        }
+
         return accumulator;
-      }
-
-      const projectedComparison = projectedComparisons.get(key);
-      if (projectedComparison?.status === 'over') {
-        accumulator.push({
-          key: `${key}-projected`,
-          text: `${macroLabel} projete depasse`,
-          tone: 'projected',
-        });
-      }
-
-      return accumulator;
-    }, []);
+      },
+      [],
+    );
 
     const pendingTemplateItems = this.getPendingTemplateItemCount(response);
     if (pendingTemplateItems > 0) {
@@ -1142,9 +1242,7 @@ export class Calendar implements OnInit, OnChanges {
     const slots = this.resolveTemplateSlotsForResponse(response);
     const plannedItems = this.resolvePendingTemplateItems(response, slots);
 
-    return this.buildWeekTimelineBlocks(dateLocal, slots, [], plannedItems).filter(
-      (block) => block.kind === 'slot',
-    );
+    return this.buildWeekTimelineBlocks(dateLocal, slots, [], plannedItems);
   }
 
   getDaySetTimelineBlocks(): CalendarWeekTimelineBlock[] {
@@ -1155,7 +1253,10 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     const slots = this.resolveDaySetSlotsForResponse(response);
-    const insertedProducts = this.resolveCurrentDayInsertedProducts(dateLocal, slots);
+    const insertedProducts = this.resolveCurrentDayInsertedProducts(
+      dateLocal,
+      slots,
+    );
 
     return this.buildWeekTimelineBlocks(dateLocal, slots, insertedProducts);
   }
@@ -1191,13 +1292,17 @@ export class Calendar implements OnInit, OnChanges {
     };
   }
 
-  private buildCalendarAssignmentForDate(dateIso: string): CalendarAssignment | undefined {
+  private buildCalendarAssignmentForDate(
+    dateIso: string,
+  ): CalendarAssignment | undefined {
     const assignment = this.findAssignmentForDate(dateIso);
     if (!assignment) {
       return undefined;
     }
 
-    const startDate = DateTime.fromISO(assignment.startDateLocal).startOf('day');
+    const startDate = DateTime.fromISO(assignment.startDateLocal).startOf(
+      'day',
+    );
     const endDate = DateTime.fromISO(assignment.endDateLocal).startOf('day');
     const currentDate = DateTime.fromISO(dateIso).startOf('day');
 
@@ -1227,7 +1332,10 @@ export class Calendar implements OnInit, OnChanges {
     const entries = this.resolveItemsBySlotEntries();
     const slots = this.resolveDaySlots();
     this.applyDaySlots(slots);
-    this.applyDayInsertedProducts(entries, this.inputDayResponse()?.items ?? []);
+    this.applyDayInsertedProducts(
+      entries,
+      this.inputDayResponse()?.items ?? [],
+    );
   }
 
   getWeekDayResponse(dateLocal: string): InputDayResponse | null {
@@ -1239,7 +1347,10 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getWeekTimelineBlocks(dateLocal: string): CalendarWeekTimelineBlock[] {
-    return this.visibleTimelineBlocksByDate.get(dateLocal) ?? this.emptyWeekTimelineBlocks;
+    return (
+      this.visibleTimelineBlocksByDate.get(dateLocal) ??
+      this.emptyWeekTimelineBlocks
+    );
   }
 
   getWeekHourGridRowStart(hour: number): number {
@@ -1296,7 +1407,10 @@ export class Calendar implements OnInit, OnChanges {
     return card.key;
   }
 
-  trackByDaySlotMacroGroup(_: number, group: CalendarDaySlotMacroGroup): string {
+  trackByDaySlotMacroGroup(
+    _: number,
+    group: CalendarDaySlotMacroGroup,
+  ): string {
     return group.key;
   }
 
@@ -1304,7 +1418,10 @@ export class Calendar implements OnInit, OnChanges {
     return entry.id;
   }
 
-  trackByWeekTimelineBlock(_: number, block: CalendarWeekTimelineBlock): string {
+  trackByWeekTimelineBlock(
+    _: number,
+    block: CalendarWeekTimelineBlock,
+  ): string {
     return block.id;
   }
 
@@ -1330,10 +1447,14 @@ export class Calendar implements OnInit, OnChanges {
     );
   }
 
-  onDayTimelineBlockClick(block: CalendarWeekTimelineBlock, event: Event): void {
+  onDayTimelineBlockClick(
+    block: CalendarWeekTimelineBlock,
+    event: Event,
+  ): void {
     event.stopPropagation();
 
-    const dateLocal = this.inputDayResponse()?.dateLocal ?? this.currentDate.toISODate() ?? '';
+    const dateLocal =
+      this.inputDayResponse()?.dateLocal ?? this.currentDate.toISODate() ?? '';
     if (dateLocal.trim() === '') {
       return;
     }
@@ -1387,7 +1508,11 @@ export class Calendar implements OnInit, OnChanges {
 
       this.visibleTimelineBlocksByDate.set(
         response.dateLocal,
-        this.buildWeekTimelineBlocks(response.dateLocal, slots, insertedProducts),
+        this.buildWeekTimelineBlocks(
+          response.dateLocal,
+          slots,
+          insertedProducts,
+        ),
       );
     });
   }
@@ -1438,9 +1563,12 @@ export class Calendar implements OnInit, OnChanges {
     return this.resolveDaySlotsForResponse(this.inputDayResponse());
   }
 
-  private resolveDaySetSlotsForResponse(response: InputDayResponse | null): CalendarDaySlot[] {
+  private resolveDaySetSlotsForResponse(
+    response: InputDayResponse | null,
+  ): CalendarDaySlot[] {
     const daySetSlots = response?.daySet?.slots ?? [];
-    const totalsSlots = response?.totalsMacros?.bySlot.map((entry) => entry.slot) ?? [];
+    const totalsSlots =
+      response?.totalsMacros?.bySlot.map((entry) => entry.slot) ?? [];
 
     return this.mergeSlots(daySetSlots, totalsSlots).map((slot) => ({
       slotId: slot.slotId,
@@ -1452,7 +1580,9 @@ export class Calendar implements OnInit, OnChanges {
     }));
   }
 
-  private resolveTemplateSlotsForResponse(response: InputDayResponse | null): CalendarDaySlot[] {
+  private resolveTemplateSlotsForResponse(
+    response: InputDayResponse | null,
+  ): CalendarDaySlot[] {
     const templateSlots = this.resolveTemplateCatalogSlots(response);
 
     return templateSlots.map((slot) => ({
@@ -1465,13 +1595,21 @@ export class Calendar implements OnInit, OnChanges {
     }));
   }
 
-  private resolveDaySlotsForResponse(response: InputDayResponse | null): CalendarDaySlot[] {
+  private resolveDaySlotsForResponse(
+    response: InputDayResponse | null,
+  ): CalendarDaySlot[] {
     const daySetSlots = response?.daySet?.slots ?? [];
-    const totalsSlots = response?.totalsMacros?.bySlot.map((entry) => entry.slot) ?? [];
+    const totalsSlots =
+      response?.totalsMacros?.bySlot.map((entry) => entry.slot) ?? [];
     const legacySlots = response?.slots ?? [];
     const templateSlots = this.resolveTemplateCatalogSlots(response);
 
-    const ordered = this.mergeSlots(daySetSlots, totalsSlots, legacySlots, templateSlots);
+    const ordered = this.mergeSlots(
+      daySetSlots,
+      totalsSlots,
+      legacySlots,
+      templateSlots,
+    );
     return ordered.map((slot) => ({
       slotId: slot.slotId,
       slotKey: slot.slotKey,
@@ -1488,7 +1626,10 @@ export class Calendar implements OnInit, OnChanges {
     const referencedSlotIds = new Set(
       (response?.templateItems ?? [])
         .map((item) => item.slotId)
-        .filter((slotId): slotId is number => typeof slotId === 'number' && slotId > 0),
+        .filter(
+          (slotId): slotId is number =>
+            typeof slotId === 'number' && slotId > 0,
+        ),
     );
     const referencedSlotKeys = new Set(
       (response?.templateItems ?? [])
@@ -1497,7 +1638,10 @@ export class Calendar implements OnInit, OnChanges {
     );
 
     return this.slotCatalog()
-      .filter((slot) => referencedSlotIds.has(slot.id) || referencedSlotKeys.has(slot.key))
+      .filter(
+        (slot) =>
+          referencedSlotIds.has(slot.id) || referencedSlotKeys.has(slot.key),
+      )
       .map((slot) => ({
         slotId: slot.id,
         slotKey: slot.key,
@@ -1516,14 +1660,17 @@ export class Calendar implements OnInit, OnChanges {
 
     sources.forEach((slots) => {
       slots.forEach((slot) => {
-        const key = slot.slotId !== null ? `id:${slot.slotId}` : `key:${slot.slotKey}`;
+        const key =
+          slot.slotId !== null ? `id:${slot.slotId}` : `key:${slot.slotKey}`;
         if (!unique.has(key)) {
           unique.set(key, slot);
         }
       });
     });
 
-    return Array.from(unique.values()).sort((a, b) => a.sortOrder - b.sortOrder);
+    return Array.from(unique.values()).sort(
+      (a, b) => a.sortOrder - b.sortOrder,
+    );
   }
 
   private buildItemsBySlotEntriesFromResponse(
@@ -1542,7 +1689,9 @@ export class Calendar implements OnInit, OnChanges {
       slot: this.toSlotSummary(slot),
       items: [],
     }));
-    const entryByKey = new Map(entries.map((entry) => [entry.slot.slotKey, entry]));
+    const entryByKey = new Map(
+      entries.map((entry) => [entry.slot.slotKey, entry]),
+    );
 
     response.items.forEach((item) => {
       const matchedSlot = this.resolveSlotForItem(item, slots);
@@ -1580,7 +1729,9 @@ export class Calendar implements OnInit, OnChanges {
 
     const trimmedSlotKey = item.slotKey?.trim() ?? '';
     if (trimmedSlotKey !== '') {
-      const matchedByKey = slots.find((slot) => slot.slotKey === trimmedSlotKey);
+      const matchedByKey = slots.find(
+        (slot) => slot.slotKey === trimmedSlotKey,
+      );
       if (matchedByKey) {
         return matchedByKey;
       }
@@ -1637,10 +1788,14 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     if (startSeconds < endSeconds) {
-      return secondsFromMidnight >= startSeconds && secondsFromMidnight < endSeconds;
+      return (
+        secondsFromMidnight >= startSeconds && secondsFromMidnight < endSeconds
+      );
     }
 
-    return secondsFromMidnight >= startSeconds || secondsFromMidnight < endSeconds;
+    return (
+      secondsFromMidnight >= startSeconds || secondsFromMidnight < endSeconds
+    );
   }
 
   private parseTimeToSeconds(value: string): number | null {
@@ -1774,14 +1929,18 @@ export class Calendar implements OnInit, OnChanges {
     });
   }
 
-  private buildMacroComparisons(response: InputDayResponse | null): CalendarMacroComparison[] {
+  private buildMacroComparisons(
+    response: InputDayResponse | null,
+  ): CalendarMacroComparison[] {
     return this.buildMacroComparisonsFromTotals(response?.totalsMacros ?? null);
   }
 
   private buildProjectedMacroComparisons(
     response: InputDayResponse | null,
   ): CalendarMacroComparison[] {
-    return this.buildMacroComparisonsFromTotals(response?.projectedTotalsMacros ?? null);
+    return this.buildMacroComparisonsFromTotals(
+      response?.projectedTotalsMacros ?? null,
+    );
   }
 
   private buildMacroComparisonsFromTotals(
@@ -1797,7 +1956,11 @@ export class Calendar implements OnInit, OnChanges {
       const definition = this.weekMacroDefinitions[key];
       const value = dayTotal[key];
       const target = targets[key];
-      if (!definition || typeof value !== 'number' || typeof target !== 'number') {
+      if (
+        !definition ||
+        typeof value !== 'number' ||
+        typeof target !== 'number'
+      ) {
         return [];
       }
 
@@ -1805,7 +1968,9 @@ export class Calendar implements OnInit, OnChanges {
       const normalizedTarget = this.roundComparisonNumber(target);
       const percentage =
         normalizedTarget > 0
-          ? this.roundComparisonNumber((normalizedValue / normalizedTarget) * 100)
+          ? this.roundComparisonNumber(
+              (normalizedValue / normalizedTarget) * 100,
+            )
           : null;
 
       return [
@@ -1816,7 +1981,10 @@ export class Calendar implements OnInit, OnChanges {
           value: this.formatMetricValue(normalizedValue),
           target: this.formatMetricValue(normalizedTarget),
           percentage: this.formatComparisonPercentage(percentage),
-          status: this.resolveMacroComparisonStatus(normalizedValue, normalizedTarget),
+          status: this.resolveMacroComparisonStatus(
+            normalizedValue,
+            normalizedTarget,
+          ),
           unit: definition.unit,
           tone: definition.tone,
         },
@@ -1977,11 +2145,16 @@ export class Calendar implements OnInit, OnChanges {
     );
   }
 
-  private formatCompactNumber(value: number, maximumFractionDigits: number): string {
+  private formatCompactNumber(
+    value: number,
+    maximumFractionDigits: number,
+  ): string {
     const hasFraction = Math.abs(value % 1) > Number.EPSILON;
 
     return new Intl.NumberFormat('fr-FR', {
-      minimumFractionDigits: hasFraction ? Math.min(1, maximumFractionDigits) : 0,
+      minimumFractionDigits: hasFraction
+        ? Math.min(1, maximumFractionDigits)
+        : 0,
       maximumFractionDigits,
     }).format(value);
   }
@@ -2012,7 +2185,12 @@ export class Calendar implements OnInit, OnChanges {
     dateLocal: string,
     slots: CalendarDaySlot[],
   ): Map<number, CalendarInsertedProduct[]> {
-    const items = this.buildCalendarInsertedProducts(entries, responseItems, dateLocal, slots);
+    const items = this.buildCalendarInsertedProducts(
+      entries,
+      responseItems,
+      dateLocal,
+      slots,
+    );
     const byHour = new Map<number, CalendarInsertedProduct[]>();
 
     items.forEach((item) => {
@@ -2036,10 +2214,14 @@ export class Calendar implements OnInit, OnChanges {
     dateLocal: string,
     slots: CalendarDaySlot[],
   ): CalendarInsertedProduct[] {
-    const items = responseItems.length > 0
-      ? responseItems
-      : entries.flatMap((entry) => entry.items);
-    const slotByItemId = new Map<number, { slotTitle: string; slotKey: string }>();
+    const items =
+      responseItems.length > 0
+        ? responseItems
+        : entries.flatMap((entry) => entry.items);
+    const slotByItemId = new Map<
+      number,
+      { slotTitle: string; slotKey: string }
+    >();
 
     entries.forEach((entry) => {
       entry.items.forEach((item) => {
@@ -2063,7 +2245,10 @@ export class Calendar implements OnInit, OnChanges {
 
       const slot =
         slotByItemId.get(item.id) ??
-        this.resolveCalendarSlotInfo(this.resolveSlotForItem(item, slots), item);
+        this.resolveCalendarSlotInfo(
+          this.resolveSlotForItem(item, slots),
+          item,
+        );
 
       return [
         {
@@ -2085,7 +2270,11 @@ export class Calendar implements OnInit, OnChanges {
     insertedProducts.sort((left, right) => {
       const leftMinute = this.resolveCalendarInsertedProductMinute(left);
       const rightMinute = this.resolveCalendarInsertedProductMinute(right);
-      if (leftMinute !== null && rightMinute !== null && leftMinute !== rightMinute) {
+      if (
+        leftMinute !== null &&
+        rightMinute !== null &&
+        leftMinute !== rightMinute
+      ) {
         return leftMinute - rightMinute;
       }
 
@@ -2104,7 +2293,10 @@ export class Calendar implements OnInit, OnChanges {
     const blocks: CalendarWeekTimelineBlock[] = [];
     const slotKeys = new Set(slots.map((slot) => slot.slotKey));
     const productsBySlotKey = new Map<string, CalendarInsertedProduct[]>();
-    const plannedItemsBySlotKey = new Map<string, CalendarPlannedTemplateItem[]>();
+    const plannedItemsBySlotKey = new Map<
+      string,
+      CalendarPlannedTemplateItem[]
+    >();
 
     insertedProducts.forEach((product) => {
       if (!slotKeys.has(product.slotKey)) {
@@ -2141,8 +2333,17 @@ export class Calendar implements OnInit, OnChanges {
       }
     });
 
-    const orphanProducts = insertedProducts.filter((product) => !slotKeys.has(product.slotKey));
+    const orphanProducts = insertedProducts.filter(
+      (product) => !slotKeys.has(product.slotKey),
+    );
+    const orphanPlannedItems = plannedItems.filter(
+      (item) => !slotKeys.has(item.slotKey),
+    );
     const orphanProductsByHour = new Map<number, CalendarInsertedProduct[]>();
+    const orphanPlannedItemsByHour = new Map<
+      number,
+      CalendarPlannedTemplateItem[]
+    >();
     orphanProducts.forEach((product) => {
       const minute = this.resolveCalendarInsertedProductMinute(product);
       const startMinute = minute === null ? 0 : Math.floor(minute / 60) * 60;
@@ -2150,13 +2351,30 @@ export class Calendar implements OnInit, OnChanges {
       products.push(product);
       orphanProductsByHour.set(startMinute, products);
     });
+    orphanPlannedItems.forEach((item) => {
+      const startMinute = Math.floor(item.preferredMinute / 60) * 60;
+      const items = orphanPlannedItemsByHour.get(startMinute) ?? [];
+      items.push(item);
+      orphanPlannedItemsByHour.set(startMinute, items);
+    });
 
-    orphanProductsByHour.forEach((products, startMinute) => {
+    const orphanStartMinutes = new Set([
+      ...orphanProductsByHour.keys(),
+      ...orphanPlannedItemsByHour.keys(),
+    ]);
+    orphanStartMinutes.forEach((startMinute) => {
+      const products = orphanProductsByHour.get(startMinute) ?? [];
+      const preferredItems = orphanPlannedItemsByHour.get(startMinute) ?? [];
       const endMinute = this.normalizeTimelineEndMinute(
         startMinute,
         Math.max(
           startMinute + 60,
-          ...products.map((product) => (this.resolveCalendarInsertedProductMinute(product) ?? startMinute) + 30),
+          ...products.map(
+            (product) =>
+              (this.resolveCalendarInsertedProductMinute(product) ??
+                startMinute) + 30,
+          ),
+          ...preferredItems.map((item) => item.preferredMinute + 30),
         ),
       );
 
@@ -2169,7 +2387,7 @@ export class Calendar implements OnInit, OnChanges {
         startMinute,
         endMinute,
         items: products,
-        plannedItems: [],
+        plannedItems: preferredItems,
         tone: 4,
       });
     });
@@ -2190,11 +2408,19 @@ export class Calendar implements OnInit, OnChanges {
     index: number,
     slotCount: number,
   ): CalendarWeekTimelineBlock | null {
-    const { startMinute: slotStart, endMinute: slotEnd, estimated } =
-      this.resolveTimelineSlotWindow(slot, index, slotCount);
-    const firstItemMinute = items.length > 0 ? this.resolveCalendarInsertedProductMinute(items[0]) : null;
+    const {
+      startMinute: slotStart,
+      endMinute: slotEnd,
+      estimated,
+    } = this.resolveTimelineSlotWindow(slot, index, slotCount);
+    const firstItemMinute =
+      items.length > 0
+        ? this.resolveCalendarInsertedProductMinute(items[0])
+        : null;
     const lastItemMinute =
-      items.length > 0 ? this.resolveCalendarInsertedProductMinute(items[items.length - 1]) : null;
+      items.length > 0
+        ? this.resolveCalendarInsertedProductMinute(items[items.length - 1])
+        : null;
 
     const startMinute = slotStart ?? firstItemMinute;
     if (startMinute === null) {
@@ -2203,7 +2429,8 @@ export class Calendar implements OnInit, OnChanges {
 
     const endMinute = this.normalizeTimelineEndMinute(
       startMinute,
-      slotEnd ?? (lastItemMinute !== null ? lastItemMinute + 30 : startMinute + 60),
+      slotEnd ??
+        (lastItemMinute !== null ? lastItemMinute + 30 : startMinute + 60),
     );
 
     return {
@@ -2228,7 +2455,11 @@ export class Calendar implements OnInit, OnChanges {
     const configuredStart = this.toMinutes(slot.startTime);
     const configuredEnd = this.toMinutes(slot.endTime);
 
-    if (configuredStart !== null && configuredEnd !== null && configuredEnd > configuredStart) {
+    if (
+      configuredStart !== null &&
+      configuredEnd !== null &&
+      configuredEnd > configuredStart
+    ) {
       return {
         startMinute: configuredStart,
         endMinute: configuredEnd,
@@ -2254,10 +2485,12 @@ export class Calendar implements OnInit, OnChanges {
 
     const firstFallbackMinute = 8 * 60;
     const lastFallbackMinute = 20 * 60;
-    const rawFallbackStart = slotCount <= 1
-      ? 12 * 60
-      : firstFallbackMinute +
-        (index * (lastFallbackMinute - firstFallbackMinute)) / (slotCount - 1);
+    const rawFallbackStart =
+      slotCount <= 1
+        ? 12 * 60
+        : firstFallbackMinute +
+          (index * (lastFallbackMinute - firstFallbackMinute)) /
+            (slotCount - 1);
     const fallbackStart = Math.round(rawFallbackStart / 30) * 30;
 
     return {
@@ -2272,7 +2505,10 @@ export class Calendar implements OnInit, OnChanges {
     endMinute: number,
     estimated: boolean,
   ): string {
-    const range = this.formatMinutesClock(startMinute) + '-' + this.formatMinutesClock(endMinute);
+    const range =
+      this.formatMinutesClock(startMinute) +
+      '-' +
+      this.formatMinutesClock(endMinute);
     return estimated ? range + ' · estimé' : range;
   }
 
@@ -2280,15 +2516,16 @@ export class Calendar implements OnInit, OnChanges {
     response: InputDayResponse | null,
     slots: CalendarDaySlot[],
   ): CalendarPlannedTemplateItem[] {
-    if (!response || slots.length === 0) {
+    if (!response) {
       return [];
     }
 
     const enteredTemplateItemIds = new Set(
       response.items
         .map((item) => item.templateItemId)
-        .filter((templateItemId): templateItemId is number =>
-          typeof templateItemId === 'number' && templateItemId > 0,
+        .filter(
+          (templateItemId): templateItemId is number =>
+            typeof templateItemId === 'number' && templateItemId > 0,
         ),
     );
 
@@ -2302,24 +2539,35 @@ export class Calendar implements OnInit, OnChanges {
       }
 
       const slot = this.resolveSlotForTemplateItem(item, slots);
-      if (!slot) {
-        return [];
-      }
+      const preferredMinute = this.resolveTemplatePreferredMinute(
+        item.preferredTime,
+      );
 
       const unitLabel = item.qtyUnit ? ' ' + item.qtyUnit : '';
-      const availableStock = item.stockByInventory.find((stock) => stock.enoughStock) ?? null;
-      return [{
-        id: item.id,
-        productName: item.productName,
-        qtyLabel: this.formatCompactNumber(item.qty, 2) + unitLabel,
-        slotKey: slot.slotKey,
-        stockAvailable: availableStock !== null,
-        stockLabel: availableStock
-          ? `Disponible dans ${availableStock.inventoryName}`
-          : 'Stock insuffisant',
-        inventoryId: availableStock?.inventoryId ?? null,
-      }];
+      const availableStock =
+        item.stockByInventory.find((stock) => stock.enoughStock) ?? null;
+      return [
+        {
+          id: item.id,
+          productName: item.productName,
+          qtyLabel: this.formatCompactNumber(item.qty, 2) + unitLabel,
+          slotKey: slot?.slotKey ?? '',
+          preferredMinute,
+          stockAvailable: availableStock !== null,
+          stockLabel: availableStock
+            ? `Disponible dans ${availableStock.inventoryName}`
+            : 'Stock insuffisant',
+          inventoryId: availableStock?.inventoryId ?? null,
+        },
+      ];
     });
+  }
+
+  private resolveTemplatePreferredMinute(
+    value: string | null | undefined,
+  ): number {
+    const preferredMinute = this.toMinutes(value?.trim() || '06:00:00');
+    return preferredMinute ?? 6 * 60;
   }
 
   private resolveSlotForTemplateItem(
@@ -2334,7 +2582,9 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     const slotKey = item.slotKey?.trim();
-    return slotKey ? slots.find((slot) => slot.slotKey === slotKey) ?? null : null;
+    return slotKey
+      ? (slots.find((slot) => slot.slotKey === slotKey) ?? null)
+      : null;
   }
 
   getDayTemplateBlockEmptyText(block: CalendarWeekTimelineBlock): string {
@@ -2344,7 +2594,9 @@ export class Calendar implements OnInit, OnChanges {
 
     if (
       blockItems.length > 0 &&
-      blockItems.every((item) => item.status === 'converted' || item.convertedItemId !== null)
+      blockItems.every(
+        (item) => item.status === 'converted' || item.convertedItemId !== null,
+      )
     ) {
       return 'Toutes les entrees ont ete converties.';
     }
@@ -2352,7 +2604,10 @@ export class Calendar implements OnInit, OnChanges {
     return 'Aucun template prevu sur cette plage.';
   }
 
-  private normalizeTimelineEndMinute(startMinute: number, endMinute: number): number {
+  private normalizeTimelineEndMinute(
+    startMinute: number,
+    endMinute: number,
+  ): number {
     return Math.max(startMinute + 30, Math.min(24 * 60, endMinute));
   }
 
@@ -2363,8 +2618,13 @@ export class Calendar implements OnInit, OnChanges {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }
 
-  private resolveCalendarInsertedProductMinute(product: CalendarInsertedProduct): number | null {
-    const parsed = DateTime.fromISO(product.occurredAt?.trim() || product.insertedAt, { setZone: true });
+  private resolveCalendarInsertedProductMinute(
+    product: CalendarInsertedProduct,
+  ): number | null {
+    const parsed = DateTime.fromISO(
+      product.occurredAt?.trim() || product.insertedAt,
+      { setZone: true },
+    );
     if (!parsed.isValid) {
       return null;
     }
@@ -2421,7 +2681,9 @@ export class Calendar implements OnInit, OnChanges {
       return null;
     }
 
-    const parsed = DateTime.fromISO(dateLocal, { zone: this.normalizeTimezone() }).set({
+    const parsed = DateTime.fromISO(dateLocal, {
+      zone: this.normalizeTimezone(),
+    }).set({
       hour,
       minute,
       second: 0,
@@ -2437,7 +2699,11 @@ export class Calendar implements OnInit, OnChanges {
 
   private findAssignmentForDate(dateIso: string): CycleAssignment | undefined {
     return this.cycleAssignments().find((assignment) =>
-      this.isDateInRange(dateIso, assignment.startDateLocal, assignment.endDateLocal),
+      this.isDateInRange(
+        dateIso,
+        assignment.startDateLocal,
+        assignment.endDateLocal,
+      ),
     );
   }
 
@@ -2447,7 +2713,11 @@ export class Calendar implements OnInit, OnChanges {
     });
   }
 
-  private isDateInRange(dateIso: string, startDateLocal: string, endDateLocal: string): boolean {
+  private isDateInRange(
+    dateIso: string,
+    startDateLocal: string,
+    endDateLocal: string,
+  ): boolean {
     const currentDate = DateTime.fromISO(dateIso).startOf('day');
     const startDate = DateTime.fromISO(startDateLocal).startOf('day');
     const endDate = DateTime.fromISO(endDateLocal).startOf('day');
@@ -2465,7 +2735,9 @@ export class Calendar implements OnInit, OnChanges {
   ): boolean {
     const monthStart = this.resolveMonthStartDateTime(month).startOf('day');
     const monthEnd = monthStart.endOf('month').startOf('day');
-    const startDate = DateTime.fromISO(assignment.startDateLocal).startOf('day');
+    const startDate = DateTime.fromISO(assignment.startDateLocal).startOf(
+      'day',
+    );
     const endDate = DateTime.fromISO(assignment.endDateLocal).startOf('day');
 
     if (!startDate.isValid || !endDate.isValid) {

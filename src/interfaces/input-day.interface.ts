@@ -94,6 +94,7 @@ export interface InputDayTemplateItemSummary {
   qtyNormalized: number;
   slotId: number | null;
   slotKey: string | null;
+  preferredTime?: string;
   status: 'pending' | 'converted';
   convertedItemId: number | null;
   stockAvailability: {

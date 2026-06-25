@@ -24,7 +24,9 @@ describe('Calendar', () => {
     view: 'year' | 'month' | 'week' | 'day',
     anchorDateLocal: string,
   ): void {
-    component.currentDate = DateTime.fromISO(anchorDateLocal) as typeof component.currentDate;
+    component.currentDate = DateTime.fromISO(
+      anchorDateLocal,
+    ) as typeof component.currentDate;
     fixture.componentRef.changeDetectorRef.markForCheck();
     component.switchView(view);
     fixture.componentRef.changeDetectorRef.markForCheck();
@@ -42,7 +44,9 @@ describe('Calendar', () => {
     renderView('day', '2026-03-25');
     component.onManageItems(component.currentDate.toISODate() ?? '');
 
-    expect((emitted[0] as { dateLocal: string }).dateLocal).toBe(component.currentDate.toISODate());
+    expect((emitted[0] as { dateLocal: string }).dateLocal).toBe(
+      component.currentDate.toISODate(),
+    );
   });
 
   it('should emit manageItems from week view', () => {
@@ -52,7 +56,9 @@ describe('Calendar', () => {
     renderView('week', '2026-02-18');
     component.onManageItems(component.weekDays[0].date);
 
-    expect((emitted[0] as { dateLocal: string }).dateLocal).toBe(component.weekDays[0].date);
+    expect((emitted[0] as { dateLocal: string }).dateLocal).toBe(
+      component.weekDays[0].date,
+    );
   });
 
   it('should merge week summary details into the detailed day cards', () => {
@@ -165,9 +171,16 @@ describe('Calendar', () => {
       '.calendar-week-grid .calendar-month-day__alert-badge',
     );
 
-    expect(fixture.nativeElement.querySelectorAll('.calendar-week-card').length).toBe(0);
-    expect(fixture.nativeElement.querySelectorAll('.calendar-week-macro').length).toBe(0);
-    expect(fixture.nativeElement.querySelectorAll('.calendar-week-day-details__meta').length).toBe(0);
+    expect(
+      fixture.nativeElement.querySelectorAll('.calendar-week-card').length,
+    ).toBe(0);
+    expect(
+      fixture.nativeElement.querySelectorAll('.calendar-week-macro').length,
+    ).toBe(0);
+    expect(
+      fixture.nativeElement.querySelectorAll('.calendar-week-day-details__meta')
+        .length,
+    ).toBe(0);
     expect(mobileAlerts.length).toBe(1);
     expect(desktopAlerts.length).toBe(1);
     expect(textContent).toContain('Base');
@@ -204,7 +217,9 @@ describe('Calendar', () => {
 
     expect(root.querySelector('.calendar-year-panel')).toBeTruthy();
     expect(root.querySelector('.calendar-year-card--active')).toBeTruthy();
-    expect(root.querySelector('.calendar-year-mini-day--assigned')).toBeTruthy();
+    expect(
+      root.querySelector('.calendar-year-mini-day--assigned'),
+    ).toBeTruthy();
     expect(textContent).toContain('Vue annee');
     expect(textContent).toContain('mois couverts');
     expect(textContent).toContain('jours planifies');
@@ -269,10 +284,26 @@ describe('Calendar', () => {
 
     expect(root.querySelector('.calendar-month-panel')).toBeTruthy();
     expect(root.querySelector('.calendar-month-day__assignment')).toBeTruthy();
-    expect(root.querySelector(`[data-testid="calendar-month-open-day-${currentDateLocal}"]`)).toBeTruthy();
-    expect(root.querySelector(`[data-testid="calendar-month-manage-cycle-${currentDateLocal}"]`)).toBeTruthy();
-    expect(root.querySelector(`[data-testid="calendar-month-manage-items-${currentDateLocal}"]`)).toBeTruthy();
-    expect(root.querySelector(`[data-testid="calendar-month-add-${currentDateLocal}"]`)).toBeNull();
+    expect(
+      root.querySelector(
+        `[data-testid="calendar-month-open-day-${currentDateLocal}"]`,
+      ),
+    ).toBeTruthy();
+    expect(
+      root.querySelector(
+        `[data-testid="calendar-month-manage-cycle-${currentDateLocal}"]`,
+      ),
+    ).toBeTruthy();
+    expect(
+      root.querySelector(
+        `[data-testid="calendar-month-manage-items-${currentDateLocal}"]`,
+      ),
+    ).toBeTruthy();
+    expect(
+      root.querySelector(
+        `[data-testid="calendar-month-add-${currentDateLocal}"]`,
+      ),
+    ).toBeNull();
     expect(textContent).toContain('Vue mois');
     expect(textContent).toContain('Prise de Masse');
     expect(textContent).toContain('jours planifies');
@@ -285,8 +316,12 @@ describe('Calendar', () => {
     fixture.detectChanges();
 
     const root = fixture.nativeElement;
-    const monthDay = root.querySelector(`[data-testid="calendar-month-day-${currentDateLocal}"]`) as HTMLButtonElement | null;
-    const dayButton = root.querySelector(`[data-testid="calendar-month-open-day-${currentDateLocal}"]`) as HTMLButtonElement | null;
+    const monthDay = root.querySelector(
+      `[data-testid="calendar-month-day-${currentDateLocal}"]`,
+    ) as HTMLButtonElement | null;
+    const dayButton = root.querySelector(
+      `[data-testid="calendar-month-open-day-${currentDateLocal}"]`,
+    ) as HTMLButtonElement | null;
 
     expect(monthDay).toBeTruthy();
     expect(dayButton).toBeTruthy();
@@ -303,7 +338,9 @@ describe('Calendar', () => {
   it('should emit manageAssignment with the source assignment from the month cycle button', () => {
     const currentDateLocal = component.currentDate.toISODate() ?? '2026-03-13';
     const emitted: Array<unknown> = [];
-    component.manageAssignmentRequested.subscribe((event) => emitted.push(event));
+    component.manageAssignmentRequested.subscribe((event) =>
+      emitted.push(event),
+    );
     fixture.componentRef.setInput('cycleAssignments', [
       {
         id: 11,
@@ -359,7 +396,11 @@ describe('Calendar', () => {
   });
 
   it('should render compact month alert badges instead of macro cards', () => {
-    component.currentDate = component.currentDate.set({ year: 2026, month: 2, day: 14 });
+    component.currentDate = component.currentDate.set({
+      year: 2026,
+      month: 2,
+      day: 14,
+    });
     component.loadView();
     fixture.componentRef.setInput('inputMonthResponse', {
       startDateLocal: '2026-02-01',
@@ -492,8 +533,13 @@ describe('Calendar', () => {
     const root = fixture.nativeElement;
     const textContent = root.textContent;
 
-    expect(root.querySelectorAll('.calendar-month-day__assignment-macro-card').length).toBe(0);
-    expect(root.querySelectorAll('.calendar-month-day__alert-badge').length).toBe(5);
+    expect(
+      root.querySelectorAll('.calendar-month-day__assignment-macro-card')
+        .length,
+    ).toBe(0);
+    expect(
+      root.querySelectorAll('.calendar-month-day__alert-badge').length,
+    ).toBe(5);
     expect(textContent).toContain('Training');
     expect(textContent).toContain('Kcal depasse');
     expect(textContent).toContain('G depasse');
@@ -629,14 +675,24 @@ describe('Calendar', () => {
     const textContent = root.textContent;
 
     expect(root.querySelector('.calendar-day-panel')).toBeTruthy();
-    expect(root.querySelector('.calendar-day-summary__assignment')).toBeTruthy();
-    expect(root.querySelector('.calendar-day-summary__panel--pilot')).toBeTruthy();
-    expect(root.querySelector('[data-testid="calendar-day-manage-cycle"]')).toBeTruthy();
-    expect(root.querySelector('[data-testid="calendar-day-manage-items"]')).toBeTruthy();
+    expect(
+      root.querySelector('.calendar-day-summary__assignment'),
+    ).toBeTruthy();
+    expect(
+      root.querySelector('.calendar-day-summary__panel--pilot'),
+    ).toBeTruthy();
+    expect(
+      root.querySelector('[data-testid="calendar-day-manage-cycle"]'),
+    ).toBeTruthy();
+    expect(
+      root.querySelector('[data-testid="calendar-day-manage-items"]'),
+    ).toBeTruthy();
     expect(root.querySelector('.calendar-day-grid__timeline')).toBeTruthy();
     expect(root.querySelectorAll('.calendar-day-entry').length).toBe(1);
     expect(root.querySelectorAll('.calendar-day-grid__block').length).toBe(1);
-    expect(root.querySelectorAll('.calendar-day-grid__half-hour-cell').length).toBe(48);
+    expect(
+      root.querySelectorAll('.calendar-day-grid__half-hour-cell').length,
+    ).toBe(48);
     expect(textContent).toContain('Vue jour');
     expect(textContent).toContain('Pilotage du jour');
     expect(textContent).toContain('Cible du jour issue du day set');
@@ -658,12 +714,16 @@ describe('Calendar', () => {
     ) as HTMLButtonElement;
     expect(slotToggle).toBeTruthy();
     expect(slotToggle.textContent).toContain('Afficher les slots');
-    expect(root.querySelector('[data-testid="calendar-day-slot-stats"]')).toBeNull();
+    expect(
+      root.querySelector('[data-testid="calendar-day-slot-stats"]'),
+    ).toBeNull();
 
     slotToggle.click();
     fixture.detectChanges();
 
-    const slotStats = root.querySelector('[data-testid="calendar-day-slot-stats"]');
+    const slotStats = root.querySelector(
+      '[data-testid="calendar-day-slot-stats"]',
+    );
     expect(slotStats).toBeTruthy();
     expect(slotStats.textContent).toContain('Petit dejeuner');
     expect(slotStats.textContent).toContain('08:00-09:00');
@@ -672,14 +732,16 @@ describe('Calendar', () => {
   });
 
   it('should render pending day-set template items as muted planned entries in day slots', () => {
-    fixture.componentRef.setInput('slotCatalog', [{
-      id: 11,
-      key: 'breakfast',
-      title: 'Petit dejeuner',
-      sortOrder: 0,
-      startTime: null,
-      endTime: null,
-    }]);
+    fixture.componentRef.setInput('slotCatalog', [
+      {
+        id: 11,
+        key: 'breakfast',
+        title: 'Petit dejeuner',
+        sortOrder: 0,
+        startTime: null,
+        endTime: null,
+      },
+    ]);
     fixture.componentRef.setInput('inputDayResponse', {
       dateLocal: '2026-02-17',
       timezone: 'UTC',
@@ -741,21 +803,23 @@ describe('Calendar', () => {
           nutritionValue: {},
         },
       ],
-      items: [{
-        id: 44,
-        productId: 9,
-        productName: 'Avoine',
-        inventoryId: 4,
-        qty: 80,
-        qtyUnit: 'g',
-        qtyNormalized: 80,
-        insertedAt: '2026-02-17T08:25:00Z',
-        occurredAt: '2026-02-17T08:15:00Z',
-        slotId: 11,
-        slotKey: 'breakfast',
-        templateItemId: 92,
-        nutritionValue: {},
-      }],
+      items: [
+        {
+          id: 44,
+          productId: 9,
+          productName: 'Avoine',
+          inventoryId: 4,
+          qty: 80,
+          qtyUnit: 'g',
+          qtyNormalized: 80,
+          insertedAt: '2026-02-17T08:25:00Z',
+          occurredAt: '2026-02-17T08:15:00Z',
+          slotId: 11,
+          slotKey: 'breakfast',
+          templateItemId: 92,
+          nutritionValue: {},
+        },
+      ],
       totalsMacros: null,
       itemsBySlot: [],
       slots: [],
@@ -768,14 +832,20 @@ describe('Calendar', () => {
     );
 
     expect(pendingItem).toBeTruthy();
-    expect(pendingItem.classList).toContain('calendar-week-block__item--planned');
+    expect(pendingItem.classList).toContain(
+      'calendar-week-block__item--planned',
+    );
     expect(pendingItem.textContent).toContain('Skyr');
     expect(pendingItem.textContent).toContain('Prévu · à saisir');
     expect(pendingItem.textContent).toContain('1 portion');
     expect(
-      root.querySelector('[data-testid="calendar-day-planned-template-item-92"]'),
+      root.querySelector(
+        '[data-testid="calendar-day-planned-template-item-92"]',
+      ),
     ).toBeNull();
-    expect(root.querySelector('[data-testid="calendar-day-item-44"]')).toBeTruthy();
+    expect(
+      root.querySelector('[data-testid="calendar-day-item-44"]'),
+    ).toBeTruthy();
   });
 
   it('should render template slots and DaySet slots independently in day view', () => {
@@ -876,12 +946,18 @@ describe('Calendar', () => {
     expect(templateBlock.textContent).toContain('Skyr');
     expect(daySetBlock).toBeTruthy();
     expect(daySetBlock.textContent).toContain('Poulet');
-    expect(daySetBlock.querySelector('[data-testid="calendar-day-item-44"]')).toBeTruthy();
     expect(
-      root.querySelector('[data-testid="calendar-day-template-block-Dejeuner DaySet"]'),
+      daySetBlock.querySelector('[data-testid="calendar-day-item-44"]'),
+    ).toBeTruthy();
+    expect(
+      root.querySelector(
+        '[data-testid="calendar-day-template-block-Dejeuner DaySet"]',
+      ),
     ).toBeNull();
     expect(
-      root.querySelector('[data-testid="calendar-day-dayset-block-Petit dejeuner template"]'),
+      root.querySelector(
+        '[data-testid="calendar-day-dayset-block-Petit dejeuner template"]',
+      ),
     ).toBeNull();
   });
 
@@ -954,7 +1030,9 @@ describe('Calendar', () => {
       slots: [],
     });
     const convertEvents: Array<unknown> = [];
-    component.convertTemplateItemRequested.subscribe((event) => convertEvents.push(event));
+    component.convertTemplateItemRequested.subscribe((event) =>
+      convertEvents.push(event),
+    );
     renderView('day', '2026-02-17');
 
     const convertButton = fixture.nativeElement.querySelector(
@@ -1003,13 +1081,86 @@ describe('Calendar', () => {
       'Toutes les entrees ont ete converties.',
     );
     const revertEvents: Array<unknown> = [];
-    component.revertTemplateItemRequested.subscribe((event) => revertEvents.push(event));
+    component.revertTemplateItemRequested.subscribe((event) =>
+      revertEvents.push(event),
+    );
     const revertButton = fixture.nativeElement.querySelector(
       '[data-testid="calendar-day-revert-template-44"]',
     ) as HTMLButtonElement;
     expect(revertButton).toBeTruthy();
     revertButton.click();
     expect(revertEvents).toEqual([{ dateLocal: '2026-02-17', itemId: 44 }]);
+  });
+
+  it('should display a slotless template item at its preferred time and allow conversion', () => {
+    fixture.componentRef.setInput('inputDayResponse', {
+      dateLocal: '2026-02-17',
+      timezone: 'UTC',
+      assignment: null,
+      daySet: {
+        id: 1,
+        title: 'Jour sans matin',
+        nutritionValue: null,
+        slots: [],
+      },
+      templateAssociation: {
+        source: 'daySet',
+        template: { id: 13, title: 'Plan libre' },
+      },
+      templateItems: [
+        {
+          id: 92,
+          productId: 8,
+          productName: 'Skyr libre',
+          qty: 1,
+          qtyUnit: 'portion',
+          qtyNormalized: 150,
+          slotId: null,
+          slotKey: null,
+          preferredTime: '06:30:00',
+          status: 'pending',
+          convertedItemId: null,
+          stockAvailability: {
+            enoughStock: true,
+            totalAvailableNormalized: 300,
+            requestedQtyNormalized: 150,
+          },
+          stockByInventory: [
+            {
+              inventoryId: 4,
+              inventoryName: 'Stock principal',
+              qtyAvailableNormalized: 300,
+              enoughStock: true,
+            },
+          ],
+          nutritionValue: {},
+        },
+      ],
+      items: [],
+      totalsMacros: null,
+      itemsBySlot: [],
+      slots: [],
+    });
+    const events: Array<unknown> = [];
+    component.convertTemplateItemRequested.subscribe((event) =>
+      events.push(event),
+    );
+    renderView('day', '2026-02-17');
+
+    const block = fixture.nativeElement.querySelector(
+      '[data-testid="calendar-day-template-block-Sans slot"]',
+    ) as HTMLElement;
+    const button = fixture.nativeElement.querySelector(
+      '[data-testid="calendar-day-convert-template-92"]',
+    ) as HTMLButtonElement;
+
+    expect(block).toBeTruthy();
+    expect(block.textContent).toContain('06:00-07:00');
+    expect(block.textContent).toContain('Skyr libre');
+    button.click();
+    expect(events).toEqual([
+      { dateLocal: '2026-02-17', templateItemId: 92, inventoryId: 4 },
+    ]);
   });
 
   it('should keep template-only slots out of week timelines', () => {
@@ -1032,7 +1183,12 @@ describe('Calendar', () => {
           dateLocal: '2026-02-16',
           timezone: 'UTC',
           assignment: null,
-          daySet: { id: 1, title: 'Sans slots', nutritionValue: null, slots: [] },
+          daySet: {
+            id: 1,
+            title: 'Sans slots',
+            nutritionValue: null,
+            slots: [],
+          },
           templateAssociation: {
             source: 'manual',
             template: { id: 13, title: 'Template matin' },
@@ -1067,7 +1223,9 @@ describe('Calendar', () => {
     });
     renderView('week', '2026-02-18');
 
-    expect(fixture.nativeElement.textContent).not.toContain('Slot template seulement');
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Slot template seulement',
+    );
     expect(
       fixture.nativeElement.querySelector(
         '[data-testid="calendar-week-block-2026-02-16-Slot template seulement"]',
@@ -1078,7 +1236,9 @@ describe('Calendar', () => {
   it('should emit manageAssignment and manageItems from day summary actions', () => {
     const assignmentEvents: Array<unknown> = [];
     const itemEvents: Array<unknown> = [];
-    component.manageAssignmentRequested.subscribe((event) => assignmentEvents.push(event));
+    component.manageAssignmentRequested.subscribe((event) =>
+      assignmentEvents.push(event),
+    );
     component.manageItems.subscribe((event) => itemEvents.push(event));
 
     fixture.componentRef.setInput('inputDayResponse', {
@@ -1227,7 +1387,9 @@ describe('Calendar', () => {
     const textContent = fixture.nativeElement.textContent;
 
     expect(textContent).toContain('Cible du jour issue du cycle assigne');
-    expect(textContent).toContain('Les entrees saisies sont comparees a la cible du cycle Seche.');
+    expect(textContent).toContain(
+      'Les entrees saisies sont comparees a la cible du cycle Seche.',
+    );
     expect(textContent).toContain('Cible cycle assigne');
     expect(textContent).toContain('150');
   });

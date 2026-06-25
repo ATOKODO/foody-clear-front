@@ -110,8 +110,7 @@ describe('TemplateFeature', () => {
         { provide: SlotService, useValue: slotServiceMock },
         provideNoopAnimations(),
       ],
-    })
-    .compileComponents();
+    }).compileComponents();
 
     templateServiceMock.setBaseUrl.calls.reset();
     templateServiceMock.findAll.calls.reset();
@@ -158,12 +157,17 @@ describe('TemplateFeature', () => {
   it('should render the simplified template header actions', () => {
     const nativeElement = fixture.nativeElement as HTMLElement;
 
-    expect(nativeElement.querySelector('[data-testid="template-panel-title"]')?.textContent)
-      .toContain('Modeles');
-    expect(nativeElement.querySelector('[data-testid="template-refresh-action"]')?.textContent)
-      .toContain('Rafraichir');
-    expect(nativeElement.querySelector('[data-testid="template-add"]')?.textContent)
-      .toContain('Nouveau modele');
+    expect(
+      nativeElement.querySelector('[data-testid="template-panel-title"]')
+        ?.textContent,
+    ).toContain('Modeles');
+    expect(
+      nativeElement.querySelector('[data-testid="template-refresh-action"]')
+        ?.textContent,
+    ).toContain('Rafraichir');
+    expect(
+      nativeElement.querySelector('[data-testid="template-add"]')?.textContent,
+    ).toContain('Nouveau modele');
   });
 
   it('should enable the header actions after initial loading completes', async () => {
@@ -192,7 +196,9 @@ describe('TemplateFeature', () => {
     await fixture.whenStable();
 
     const overlay = overlayContainer.getContainerElement();
-    expect(overlay.querySelector('[data-testid="template-dialog"]')).not.toBeNull();
+    expect(
+      overlay.querySelector('[data-testid="template-dialog"]'),
+    ).not.toBeNull();
     expect(overlay.textContent).toContain('Nouveau template');
   });
 
@@ -221,13 +227,16 @@ describe('TemplateFeature', () => {
     await fixture.whenStable();
 
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('[data-testid="template-select-77"]')).not.toBeNull();
+    expect(
+      element.querySelector('[data-testid="template-select-77"]'),
+    ).not.toBeNull();
     expect(element.textContent).toContain('Modele async');
   });
 
   it('should refresh all template dependencies and preserve the current selection', () => {
     component.selectedTemplateId = 2;
-    component.selectedTemplate = templates[1] as (typeof component.selectedTemplate);
+    component.selectedTemplate =
+      templates[1] as typeof component.selectedTemplate;
     component.compareDaySetId = 9;
     templateServiceMock.findOne.and.returnValue(
       of({
@@ -250,7 +259,8 @@ describe('TemplateFeature', () => {
 
   it('should remove the selected template via the list action and keep no fallback selection', () => {
     component.selectedTemplateId = 1;
-    component.selectedTemplate = templates[0] as (typeof component.selectedTemplate);
+    component.selectedTemplate =
+      templates[0] as typeof component.selectedTemplate;
     templateServiceMock.findAll.and.returnValue(of([templates[1]]));
 
     component.onTemplateDeleteRequested(1);
@@ -270,6 +280,7 @@ describe('TemplateFeature', () => {
       qtyUnit: 'portion',
       slotId: 5,
       slotKey: 'snack',
+      preferredTime: '06:00',
     };
 
     component.onItemSubmitted(draft);
@@ -294,6 +305,7 @@ describe('TemplateFeature', () => {
       qtyUnit: 'g',
       slotId: null,
       slotKey: '',
+      preferredTime: '07:30',
     };
 
     component.onItemSubmitted(draft);
@@ -303,6 +315,8 @@ describe('TemplateFeature', () => {
       productId: 8,
       qty: 3,
       qtyUnit: 'g',
+      slotId: null,
+      preferredTime: '07:30',
     });
   });
 });

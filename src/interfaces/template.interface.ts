@@ -32,6 +32,7 @@ export interface TemplateItem {
   qtyNormalized: number;
   slotId: number | null;
   slotKey: string | null;
+  preferredTime?: string;
   nutritionValue: InputDayNutritionValue;
   stockAvailability: TemplateStockAvailability;
   stockByInventory: TemplateStockByInventory[];
@@ -64,8 +65,9 @@ export interface CreateTemplateItemDto {
   productId: number;
   qty: number;
   qtyUnit?: ProductQuantityInputUnit;
-  slotId?: number;
+  slotId?: number | null;
   slotKey?: string;
+  preferredTime?: string;
 }
 
 export type UpdateTemplateItemDto = Partial<CreateTemplateItemDto>;

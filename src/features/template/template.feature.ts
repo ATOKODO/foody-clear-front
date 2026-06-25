@@ -1,8 +1,19 @@
-
-import { Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  TemplateRef,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { DaySet } from '../../interfaces/day-set.interface';
 import { ProductQuantityInputUnit } from '../../interfaces/input-day.interface';
@@ -36,8 +47,8 @@ import { TemplateService } from '../../services/template-service';
     MatProgressBarModule,
     UiErrorPanel,
     TemplateForm,
-    TemplateList
-],
+    TemplateList,
+  ],
   templateUrl: './template.feature.html',
   styleUrl: './template.feature.scss',
 })
@@ -47,7 +58,9 @@ export class TemplateFeature implements OnInit {
   private readonly daySetSrv = inject(DaySetService);
   private readonly slotSrv = inject(SlotService);
 
-  private readonly templateEditorDialog = viewChild<TemplateRef<unknown>>('templateEditorDialog');
+  private readonly templateEditorDialog = viewChild<TemplateRef<unknown>>(
+    'templateEditorDialog',
+  );
 
   private readonly dialog = inject(MatDialog);
 
@@ -249,11 +262,15 @@ export class TemplateFeature implements OnInit {
       return null;
     }
 
-    return this.selectedTemplate?.id === this.editingTemplateId ? this.selectedTemplate : null;
+    return this.selectedTemplate?.id === this.editingTemplateId
+      ? this.selectedTemplate
+      : null;
   }
 
   get formDialogTitle(): string {
-    return this.formMode === 'edit' ? 'Modifier le template' : 'Nouveau template';
+    return this.formMode === 'edit'
+      ? 'Modifier le template'
+      : 'Nouveau template';
   }
 
   get formDialogSubtitle(): string {
@@ -448,8 +465,13 @@ export class TemplateFeature implements OnInit {
       productId: itemDraft.productId as number,
       qty: itemDraft.qty as number,
       ...(itemDraft.qtyUnit ? { qtyUnit: itemDraft.qtyUnit } : {}),
-      ...(itemDraft.slotId ? { slotId: itemDraft.slotId } : {}),
-      ...(itemDraft.slotKey.trim() !== '' ? { slotKey: itemDraft.slotKey.trim() } : {}),
+      slotId: itemDraft.slotId,
+      ...(itemDraft.slotKey.trim() !== ''
+        ? { slotKey: itemDraft.slotKey.trim() }
+        : {}),
+      ...(itemDraft.slotId === null
+        ? { preferredTime: itemDraft.preferredTime || '06:00' }
+        : {}),
     };
 
     this.savingItem = true;
@@ -458,7 +480,11 @@ export class TemplateFeature implements OnInit {
     const request =
       itemDraft.id === null
         ? this.templateSrv.createItem(this.editingTemplateId, payload)
-        : this.templateSrv.updateItem(this.editingTemplateId, itemDraft.id, payload);
+        : this.templateSrv.updateItem(
+            this.editingTemplateId,
+            itemDraft.id,
+            payload,
+          );
 
     request.subscribe({
       next: (response) => {
@@ -563,17 +589,19 @@ export class TemplateFeature implements OnInit {
     }
 
     this.loadingTemplates = true;
-    this.templateSrv.findOne(this.selectedTemplateId, this.compareDaySetId).subscribe({
-      next: (response) => {
-        this.selectedTemplate = response;
-        this.syncTemplateInCollection(response);
-        this.loadingTemplates = false;
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.loadingTemplates = false;
-      },
-    });
+    this.templateSrv
+      .findOne(this.selectedTemplateId, this.compareDaySetId)
+      .subscribe({
+        next: (response) => {
+          this.selectedTemplate = response;
+          this.syncTemplateInCollection(response);
+          this.loadingTemplates = false;
+        },
+        error: (error) => {
+          this.lastError = error;
+          this.loadingTemplates = false;
+        },
+      });
   }
 
   private loadProducts(): void {
@@ -656,7 +684,9 @@ export class TemplateFeature implements OnInit {
 
   private syncTemplateInCollection(template: Template): void {
     const nextTemplates = [...this.templates];
-    const index = nextTemplates.findIndex((candidate) => candidate.id === template.id);
+    const index = nextTemplates.findIndex(
+      (candidate) => candidate.id === template.id,
+    );
     if (index === -1) {
       nextTemplates.push(template);
     } else {

@@ -12,8 +12,8 @@
       data-testid="template-save"
       (click)="onTemplateSave()"
       [disabled]="!canSaveTemplate"
-      >
-      {{ mode() === 'edit' ? 'Sauvegarder' : 'Creer' }}
+    >
+      {{ mode() === "edit" ? "Sauvegarder" : "Creer" }}
     </button>
 
     @if (template()) {
@@ -24,22 +24,24 @@
         data-testid="template-delete"
         (click)="onTemplateDelete()"
         [disabled]="savingTemplate() || savingItem()"
-        >
+      >
         Supprimer
       </button>
     }
   </div>
 
   <p class="text-sm text-slate-600">
-    Le template reste neutre vis-a-vis du stock. Les quantites restent previsionnelles tant qu'elles
-    ne sont pas converties dans un input day.
+    Le template reste neutre vis-a-vis du stock. Les quantites restent
+    previsionnelles tant qu'elles ne sont pas converties dans un input day.
   </p>
 
   @if (template(); as template) {
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
         <mat-card-title>
-          {{ itemDraft.id !== null ? 'Modifier une ligne' : 'Ajouter une ligne' }}
+          {{
+            itemDraft.id !== null ? "Modifier une ligne" : "Ajouter une ligne"
+          }}
         </mat-card-title>
         <mat-card-subtitle>{{ template.title }}</mat-card-subtitle>
       </mat-card-header>
@@ -49,28 +51,43 @@
             <div>
               <h4 class="text-sm font-semibold text-slate-900">Produit</h4>
               <p class="text-sm text-slate-600">
-                Choisis le produit avec la meme liste visuelle que dans l'inventaire.
+                Choisis le produit avec la meme liste visuelle que dans
+                l'inventaire.
               </p>
             </div>
-            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+            <span
+              class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
+            >
               {{ selectedProductIds.length }} selectionne(s)
             </span>
           </div>
-          <app-product-list [mode]="'select-single'"
+          <app-product-list
+            [mode]="'select-single'"
             [products]="productListItems"
             [selectedIds]="selectedProductIds"
             [compact]="true"
             [embedded]="true"
-            (selected)="onProductSelected($event)" />
+            (selected)="onProductSelected($event)"
+          />
         </section>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Quantite</mat-label>
-            <input matInput type="number" min="0.01" step="0.01" [ngModel]="itemDraft.qty" (ngModelChange)="updateItemDraft({ qty: $event })" />
+            <input
+              matInput
+              type="number"
+              min="0.01"
+              step="0.01"
+              [ngModel]="itemDraft.qty"
+              (ngModelChange)="updateItemDraft({ qty: $event })"
+            />
           </mat-form-field>
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Unite</mat-label>
-            <mat-select [ngModel]="itemDraft.qtyUnit" (ngModelChange)="updateItemDraft({ qtyUnit: $event })">
+            <mat-select
+              [ngModel]="itemDraft.qtyUnit"
+              (ngModelChange)="updateItemDraft({ qtyUnit: $event })"
+            >
               <mat-option [value]="null">Auto</mat-option>
               @for (unit of qtyUnitOptions(); track unit) {
                 <mat-option [value]="unit">
@@ -81,7 +98,10 @@
           </mat-form-field>
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Slot explicite</mat-label>
-            <mat-select [ngModel]="itemDraft.slotId" (ngModelChange)="updateItemDraft({ slotId: $event })">
+            <mat-select
+              [ngModel]="itemDraft.slotId"
+              (ngModelChange)="updateItemDraft({ slotId: $event })"
+            >
               <mat-option [value]="null">Sans slot</mat-option>
               @for (slot of sortedSlots; track slot) {
                 <mat-option [value]="slot.id">
@@ -92,13 +112,33 @@
           </mat-form-field>
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>slotKey libre</mat-label>
-            <input matInput [ngModel]="itemDraft.slotKey" (ngModelChange)="updateItemDraft({ slotKey: $event })" placeholder="ex: snack" />
+            <input
+              matInput
+              [ngModel]="itemDraft.slotKey"
+              (ngModelChange)="updateItemDraft({ slotKey: $event })"
+              placeholder="ex: snack"
+            />
           </mat-form-field>
+          @if (itemDraft.slotId === null) {
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Heure de preference</mat-label>
+              <input
+                matInput
+                type="time"
+                [ngModel]="itemDraft.preferredTime"
+                (ngModelChange)="updateItemDraft({ preferredTime: $event })"
+              />
+              <mat-hint
+                >Utilisee dans le planning lorsque l'element est sans
+                slot.</mat-hint
+              >
+            </mat-form-field>
+          }
         </div>
         @if (itemError(); as itemError) {
           <p
             class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-            >
+          >
             {{ itemError }}
           </p>
         }
@@ -108,7 +148,7 @@
             type="button"
             (click)="resetItemDraft()"
             [disabled]="savingTemplate() || savingItem()"
-            >
+          >
             Reinitialiser
           </button>
           <button
@@ -118,8 +158,8 @@
             data-testid="template-item-save"
             (click)="onItemSave()"
             [disabled]="!canSaveItem"
-            >
-            {{ itemDraft.id !== null ? 'Mettre a jour' : 'Ajouter' }}
+          >
+            {{ itemDraft.id !== null ? "Mettre a jour" : "Ajouter" }}
           </button>
         </div>
       </mat-card-content>
@@ -131,9 +171,7 @@
       </mat-card-header>
       <mat-card-content class="pt-2">
         @if (template.items.length > 0) {
-          <div
-            class="overflow-x-auto rounded-xl border border-slate-200"
-            >
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
             <table class="min-w-full text-sm">
               <thead class="bg-slate-50 text-left text-slate-700">
                 <tr>
@@ -146,25 +184,51 @@
               </thead>
               <tbody>
                 @for (item of template.items; track item) {
-                  <tr [attr.data-testid]="'template-item-edit-row-' + item.id" class="border-t border-slate-100 align-top">
+                  <tr
+                    [attr.data-testid]="'template-item-edit-row-' + item.id"
+                    class="border-t border-slate-100 align-top"
+                  >
                     <td class="px-3 py-2">
-                      <p class="font-medium text-slate-900">{{ item.productName }}</p>
-                      <p class="text-xs text-slate-500">#{{ item.productId }}</p>
+                      <p class="font-medium text-slate-900">
+                        {{ item.productName }}
+                      </p>
+                      <p class="text-xs text-slate-500">
+                        #{{ item.productId }}
+                      </p>
                     </td>
                     <td class="px-3 py-2">
                       {{ formatNutritionAmount(item.qty) }}
-                      <span class="text-slate-500">{{ item.qtyUnit ?? '-' }}</span>
+                      <span class="text-slate-500">{{
+                        item.qtyUnit ?? "-"
+                      }}</span>
                     </td>
-                    <td class="px-3 py-2">{{ resolveTemplateItemSlotLabel(item) }}</td>
+                    <td class="px-3 py-2">
+                      {{ resolveTemplateItemSlotLabel(item) }}
+                      @if (item.slotId === null) {
+                        <p class="text-xs text-slate-500">
+                          Heure : {{ formatPreferredTime(item.preferredTime) }}
+                        </p>
+                      }
+                    </td>
                     <td class="px-3 py-2">
                       <span
                         class="rounded-full px-2 py-1 text-xs font-medium"
-                        [class.bg-emerald-100]="item.stockAvailability.enoughStock"
-                        [class.text-emerald-700]="item.stockAvailability.enoughStock"
+                        [class.bg-emerald-100]="
+                          item.stockAvailability.enoughStock
+                        "
+                        [class.text-emerald-700]="
+                          item.stockAvailability.enoughStock
+                        "
                         [class.bg-red-100]="!item.stockAvailability.enoughStock"
-                        [class.text-red-700]="!item.stockAvailability.enoughStock"
-                        >
-                        {{ item.stockAvailability.enoughStock ? 'Stock OK' : 'Stock insuffisant' }}
+                        [class.text-red-700]="
+                          !item.stockAvailability.enoughStock
+                        "
+                      >
+                        {{
+                          item.stockAvailability.enoughStock
+                            ? "Stock OK"
+                            : "Stock insuffisant"
+                        }}
                       </span>
                     </td>
                     <td class="px-3 py-2">
@@ -175,7 +239,7 @@
                           [attr.data-testid]="'template-item-edit-' + item.id"
                           (click)="editItem(item)"
                           [disabled]="savingTemplate() || savingItem()"
-                          >
+                        >
                           Modifier
                         </button>
                         <button
@@ -185,7 +249,7 @@
                           [attr.data-testid]="'template-item-delete-' + item.id"
                           (click)="onItemDelete(item.id)"
                           [disabled]="savingTemplate() || savingItem()"
-                          >
+                        >
                           Retirer
                         </button>
                       </div>
@@ -196,7 +260,9 @@
             </table>
           </div>
         } @else {
-          <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+          <p
+            class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+          >
             Aucune ligne dans ce template.
           </p>
         }
@@ -205,10 +271,8 @@
   } @else {
     <div
       class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-600"
-      >
+    >
       Commence par creer le template pour pouvoir ajouter ses lignes.
     </div>
   }
 </div>
-
-

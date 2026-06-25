@@ -42,6 +42,7 @@ describe('TemplateForm', () => {
         qtyNormalized: 1,
         slotId: null,
         slotKey: 'breakfast',
+        preferredTime: '07:30:00',
         nutritionValue: null,
         stockAvailability: {
           enoughStock: true,
@@ -57,8 +58,7 @@ describe('TemplateForm', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TemplateForm],
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TemplateForm);
     component = fixture.componentInstance;
@@ -76,7 +76,9 @@ describe('TemplateForm', () => {
 
     const nativeElement = fixture.nativeElement as HTMLElement;
 
-    expect(nativeElement.querySelector('[data-testid="product-list-embedded"]')).not.toBeNull();
+    expect(
+      nativeElement.querySelector('[data-testid="product-list-embedded"]'),
+    ).not.toBeNull();
   });
 
   it('should update the selected product when a row is picked', () => {
@@ -100,10 +102,30 @@ describe('TemplateForm', () => {
     fixture.detectChanges();
 
     const nativeElement = fixture.nativeElement as HTMLElement;
-    const selectedRow = nativeElement.querySelector('[data-testid="product-row-7"]');
+    const selectedRow = nativeElement.querySelector(
+      '[data-testid="product-row-7"]',
+    );
 
     expect(component.selectedProductIds).toEqual(['7']);
     expect(selectedRow?.classList.contains('pl-active')).toBeTrue();
+  });
+
+  it('should default slotless items to 06:00 and restore their preferred time when editing', async () => {
+    fixture.componentRef.setInput('template', template);
+    fixture.detectChanges();
+
+    expect(component.itemDraft.preferredTime).toBe('06:00');
+
+    component.editItem(template.items[0]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.itemDraft.preferredTime).toBe('07:30');
+    const input = fixture.nativeElement.querySelector(
+      'input[type="time"]',
+    ) as HTMLInputElement;
+    expect(input.value).toBe('07:30');
   });
 
   it('should keep the item save button disabled until product and qty are valid', async () => {
@@ -112,7 +134,9 @@ describe('TemplateForm', () => {
     fixture.detectChanges();
 
     const nativeElement = fixture.nativeElement as HTMLElement;
-    const saveButton = nativeElement.querySelector('[data-testid="template-item-save"]') as HTMLButtonElement;
+    const saveButton = nativeElement.querySelector(
+      '[data-testid="template-item-save"]',
+    ) as HTMLButtonElement;
 
     expect(saveButton.disabled).toBeTrue();
 
@@ -125,7 +149,9 @@ describe('TemplateForm', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const updatedSaveButton = nativeElement.querySelector('[data-testid="template-item-save"]') as HTMLButtonElement;
+    const updatedSaveButton = nativeElement.querySelector(
+      '[data-testid="template-item-save"]',
+    ) as HTMLButtonElement;
     expect(updatedSaveButton.disabled).toBeFalse();
   });
 });
