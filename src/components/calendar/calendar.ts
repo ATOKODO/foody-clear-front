@@ -132,6 +132,13 @@ interface CalendarDayMacroCard {
   status: 'under' | 'exact' | 'over' | 'neutral';
 }
 
+interface CalendarDaySlotMacroGroup {
+  key: string;
+  title: string;
+  rangeLabel: string;
+  cards: CalendarDayMacroCard[];
+}
+
 interface CalendarDayEntryRow {
   id: number;
   dateLocal: string;
@@ -219,6 +226,7 @@ export class Calendar implements OnInit, OnChanges {
   currentView: CalendarView = 'month';
   currentDate = DateTime.now();
   loading = false;
+  showDaySlotStats = false;
 
   monthDays: CalendarDay[] = [];
   weekDays: CalendarDay[] = [];
@@ -821,52 +829,44 @@ export class Calendar implements OnInit, OnChanges {
 
   getDayMacroCards(): CalendarDayMacroCard[] {
     const totals = this.inputDayResponse()?.totalsMacros ?? null;
-    if (!totals) {
-      return [];
-    }
+    return totals
+      ? this.buildDayMacroCards(totals.dayTotal, totals.targets, totals.deltaToTargets)
+      : [];
+  }
 
-    const keys = new Set<string>([
-      ...Object.keys(totals.dayTotal ?? {}),
-      ...Object.keys(totals.targets ?? {}),
-      ...Object.keys(totals.deltaToTargets ?? {}),
-    ]);
+  getDaySlotMacroGroups(): CalendarDaySlotMacroGroup[] {
+    const bySlot = this.inputDayResponse()?.totalsMacros?.bySlot ?? [];
 
-    return Array.from(keys)
-      .sort((leftKey, rightKey) => {
-        const leftIndex = this.weekMacroOrder.indexOf(leftKey);
-        const rightIndex = this.weekMacroOrder.indexOf(rightKey);
-
-        if (leftIndex === -1 && rightIndex === -1) {
-          return leftKey.localeCompare(rightKey, 'fr');
-        }
-
-        if (leftIndex === -1) {
-          return 1;
-        }
-
-        if (rightIndex === -1) {
-          return -1;
-        }
-
-        return leftIndex - rightIndex;
-      })
-      .map((key) => {
-        const definition = this.weekMacroDefinitions[key];
-        const consumed = totals.dayTotal?.[key];
-        const target = totals.targets?.[key];
-        const delta = totals.deltaToTargets?.[key];
+    return [...bySlot]
+      .sort(
+        (left, right) =>
+          left.slot.sortOrder - right.slot.sortOrder ||
+          left.slot.title.localeCompare(right.slot.title, 'fr'),
+      )
+      .map((entry) => {
+        const consumed = this.weekMacroOrder.reduce<Record<string, InputDayMacroValue>>(
+          (values, key) => {
+            const value = entry[key];
+            if (typeof value === 'number' || typeof value === 'string') {
+              values[key] = value;
+            }
+            return values;
+          },
+          {},
+        );
 
         return {
-          key,
-          label: definition?.label ?? key,
-          consumed: this.formatMetricValue(consumed ?? null),
-          target: this.formatMetricValue(target ?? null),
-          delta: this.formatSignedMetricValue(delta ?? null),
-          unit: definition?.unit ?? '',
-          tone: definition?.tone ?? 'energy',
-          status: this.resolveDayMacroCardStatus(consumed, target, delta),
+          key: `${entry.slot.slotId ?? entry.slot.slotKey}`,
+          title: entry.slot.title,
+          rangeLabel: this.formatSlotRange(entry.slot),
+          cards: this.buildDayMacroCards(consumed, entry.targets, entry.deltaToTargets),
         };
-      });
+      })
+      .filter((group) => group.cards.length > 0);
+  }
+
+  toggleDaySlotStats(): void {
+    this.showDaySlotStats = !this.showDaySlotStats;
   }
 
   getDayEntryRows(): CalendarDayEntryRow[] {
@@ -1266,6 +1266,10 @@ export class Calendar implements OnInit, OnChanges {
 
   trackByDayMacroCard(_: number, card: CalendarDayMacroCard): string {
     return card.key;
+  }
+
+  trackByDaySlotMacroGroup(_: number, group: CalendarDaySlotMacroGroup): string {
+    return group.key;
   }
 
   trackByDayEntryRow(_: number, entry: CalendarDayEntryRow): number {
@@ -1842,6 +1846,52 @@ export class Calendar implements OnInit, OnChanges {
 
   private formatQuantityLabel(value: number): string {
     return this.formatCompactNumber(value, Math.abs(value) >= 100 ? 0 : 2);
+  }
+
+  private buildDayMacroCards(
+    consumedValues: Record<string, InputDayMacroValue> | null | undefined,
+    targets: Record<string, number> | null | undefined,
+    deltas: Record<string, InputDayMacroValue> | null | undefined,
+  ): CalendarDayMacroCard[] {
+    const keys = new Set<string>([
+      ...Object.keys(consumedValues ?? {}),
+      ...Object.keys(targets ?? {}),
+      ...Object.keys(deltas ?? {}),
+    ]);
+
+    return Array.from(keys)
+      .sort((leftKey, rightKey) => {
+        const leftIndex = this.weekMacroOrder.indexOf(leftKey);
+        const rightIndex = this.weekMacroOrder.indexOf(rightKey);
+
+        if (leftIndex === -1 && rightIndex === -1) {
+          return leftKey.localeCompare(rightKey, 'fr');
+        }
+        if (leftIndex === -1) {
+          return 1;
+        }
+        if (rightIndex === -1) {
+          return -1;
+        }
+        return leftIndex - rightIndex;
+      })
+      .map((key) => {
+        const definition = this.weekMacroDefinitions[key];
+        const consumed = consumedValues?.[key];
+        const target = targets?.[key];
+        const delta = deltas?.[key];
+
+        return {
+          key,
+          label: definition?.label ?? key,
+          consumed: this.formatMetricValue(consumed ?? null),
+          target: this.formatMetricValue(target ?? null),
+          delta: this.formatSignedMetricValue(delta ?? null),
+          unit: definition?.unit ?? '',
+          tone: definition?.tone ?? 'energy',
+          status: this.resolveDayMacroCardStatus(consumed, target, delta),
+        };
+      });
   }
 
   private resolveDayMacroCardStatus(

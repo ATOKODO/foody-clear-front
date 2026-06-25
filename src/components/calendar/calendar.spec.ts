@@ -557,7 +557,36 @@ describe('Calendar', () => {
         },
       ],
       totalsMacros: {
-        bySlot: [],
+        bySlot: [
+          {
+            slot: {
+              slotId: 11,
+              slotKey: 'breakfast',
+              title: 'Petit dejeuner',
+              sortOrder: 1,
+              startTime: '08:00:00',
+              endTime: '09:00:00',
+              nutritionValue: null,
+            },
+            energyKcal: 220,
+            proteins: 20,
+            carbs: 12,
+            lipids: 6,
+            targets: {
+              energyKcal: 300,
+              proteins: 25,
+              carbs: 20,
+              lipids: 8,
+            },
+            deltaToTargets: {
+              energyKcal: -80,
+              proteins: -5,
+              carbs: -8,
+              lipids: -2,
+            },
+            incompleteNutritionKeys: [],
+          },
+        ],
         dayTotal: {
           energyKcal: 420,
           proteins: 30,
@@ -623,6 +652,23 @@ describe('Calendar', () => {
     expect(textContent).not.toContain('Effectif + template / day-set');
     expect(textContent).not.toContain('Template manuel');
     expect(textContent).not.toContain('Plan proteine');
+
+    const slotToggle = root.querySelector(
+      '[data-testid="calendar-day-toggle-slot-stats"]',
+    ) as HTMLButtonElement;
+    expect(slotToggle).toBeTruthy();
+    expect(slotToggle.textContent).toContain('Afficher les slots');
+    expect(root.querySelector('[data-testid="calendar-day-slot-stats"]')).toBeNull();
+
+    slotToggle.click();
+    fixture.detectChanges();
+
+    const slotStats = root.querySelector('[data-testid="calendar-day-slot-stats"]');
+    expect(slotStats).toBeTruthy();
+    expect(slotStats.textContent).toContain('Petit dejeuner');
+    expect(slotStats.textContent).toContain('08:00-09:00');
+    expect(slotStats.textContent).toContain('Proteines');
+    expect(slotStats.textContent).toContain('-5');
   });
 
   it('should render pending day-set template items as muted planned entries in day slots', () => {
