@@ -516,7 +516,7 @@
                           <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
                         </div>
                         <span class="calendar-week-block__count">
-                          {{ block.plannedItems.length }} prevu{{ block.plannedItems.length > 1 ? 's' : '' }}
+                          {{ block.items.length }} entree{{ block.items.length > 1 ? 's' : '' }}
                         </span>
                       </div>
                       @if (block.items.length > 0) {
@@ -943,13 +943,14 @@
                       <p class="calendar-day-grid__title">Clic a la demi-heure</p>
                     </div>
                     <div class="calendar-day-grid__header-meta">
-                      <span class="calendar-week-meta-pill">{{ getDaySlotCount() }} plages</span>
+                      <span class="calendar-week-meta-pill">{{ getDayTemplateSlotCount() }} template(s)</span>
+                      <span class="calendar-week-meta-pill">{{ getDaySetSlotCount() }} slot(s) DaySet</span>
                     </div>
                   </div>
                   <div class="calendar-day-grid__lanes" aria-hidden="true">
-                    <span class="calendar-day-grid__lane-label">Templates &amp; slots</span>
+                    <span class="calendar-day-grid__lane-label">Templates &amp; slots template</span>
                     <span class="calendar-day-grid__lane-label calendar-day-grid__lane-label--entries">
-                      Entrees effectuees
+                      Entrees effectuees &amp; slots DaySet
                     </span>
                   </div>
                 </div>
@@ -981,11 +982,58 @@
                     (click)="onDayHalfHourClick(hour, 30)">
                   </button>
                 }
-                @if (getDayTimelineBlocks(); as dayBlocks) {
-                  @for (block of dayBlocks; track trackByWeekTimelineBlock($index, block)) {
+                @if (getDayTemplateTimelineBlocks(); as templateBlocks) {
+                  @for (block of templateBlocks; track trackByWeekTimelineBlock($index, block)) {
                     <div
-                      [attr.data-testid]="'calendar-day-block-' + block.title"
+                      [attr.data-testid]="'calendar-day-template-block-' + block.title"
                       class="calendar-week-block calendar-day-grid__block"
+                      [attr.data-tone]="block.tone"
+                      [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
+                      [style.grid-row-end]="getWeekTimelineBlockGridRowEnd(block)"
+                      (click)="onDayTimelineBlockClick(block, $event)">
+                      <div class="calendar-week-block__header">
+                        <div class="calendar-week-block__heading">
+                          <span class="calendar-week-block__title">{{ block.title }}</span>
+                          <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
+                        </div>
+                        <span class="calendar-week-block__count">
+                          {{ block.plannedItems.length }} prevu{{ block.plannedItems.length > 1 ? 's' : '' }}
+                        </span>
+                      </div>
+                      @if (block.plannedItems.length > 0) {
+                        <div class="calendar-week-block__items">
+                          @for (plannedItem of block.plannedItems; track plannedItem.id) {
+                            <div
+                              [attr.data-testid]="'calendar-day-planned-template-item-' + plannedItem.id"
+                              class="calendar-week-block__item calendar-week-block__item--planned">
+                              <div class="calendar-week-block__item-top">
+                                <span class="calendar-week-block__item-name">{{ plannedItem.productName }}</span>
+                                <button
+                                  type="button"
+                                  class="rounded-full border border-sky-300 bg-sky-50 px-2 py-1 text-[0.64rem] font-bold text-sky-700 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                                  [attr.data-testid]="'calendar-day-convert-template-' + plannedItem.id"
+                                  [disabled]="!plannedItem.stockAvailable || loadingDayItems()"
+                                  (click)="onDayTemplateItemConvert(plannedItem, $event)">
+                                  Prévu · à saisir
+                                </button>
+                              </div>
+                              <div class="calendar-week-block__item-meta">
+                                qte: {{ plannedItem.qtyLabel }} · {{ plannedItem.stockLabel }}
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      } @else {
+                        <p class="calendar-week-block__empty">{{ getDayTemplateBlockEmptyText(block) }}</p>
+                      }
+                    </div>
+                  }
+                }
+                @if (getDaySetTimelineBlocks(); as daySetBlocks) {
+                  @for (block of daySetBlocks; track trackByWeekTimelineBlock($index, block)) {
+                    <div
+                      [attr.data-testid]="'calendar-day-dayset-block-' + block.title"
+                      class="calendar-week-block calendar-day-grid__block calendar-day-grid__block--entries"
                       [class.calendar-week-block--orphan]="block.kind === 'orphan'"
                       [attr.data-tone]="block.tone"
                       [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
@@ -997,54 +1045,40 @@
                           <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
                         </div>
                         <span class="calendar-week-block__count">
-                          {{ block.items.length }} item{{ block.items.length > 1 ? 's' : '' }}
+                          {{ block.items.length }} entree{{ block.items.length > 1 ? 's' : '' }}
                         </span>
                       </div>
-                      @if (block.plannedItems.length > 0) {
+                      @if (block.items.length > 0) {
                         <div class="calendar-week-block__items">
-                          @for (plannedItem of block.plannedItems; track plannedItem.id) {
+                          @for (product of block.items; track trackByInsertedProduct($index, product)) {
                             <div
-                              [attr.data-testid]="'calendar-day-planned-template-item-' + plannedItem.id"
-                              class="calendar-week-block__item calendar-week-block__item--planned">
+                              [attr.data-testid]="'calendar-day-item-' + product.id"
+                              class="calendar-week-block__item calendar-day-grid__completed-item"
+                              (click)="onItemClick(product, product.dateLocal, $event)">
                               <div class="calendar-week-block__item-top">
-                                <span class="calendar-week-block__item-name">{{ plannedItem.productName }}</span>
-                                <span class="calendar-week-block__item-time">Prévu · à saisir</span>
+                                <span class="calendar-week-block__item-name">{{ product.productName }}</span>
+                                <span class="calendar-week-block__item-time">
+                                  {{ formatItemTime(product.occurredAt, product.insertedAt) }}
+                                </span>
                               </div>
                               <div class="calendar-week-block__item-meta">
-                                qte: {{ plannedItem.qtyLabel }}
+                                qte: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
                               </div>
+                              @if (product.templateItemId !== null) {
+                                <button
+                                  type="button"
+                                  class="mt-2 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-[0.64rem] font-bold text-amber-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                  [attr.data-testid]="'calendar-day-revert-template-' + product.id"
+                                  [disabled]="loadingDayItems()"
+                                  (click)="onDayTemplateItemRevert(product, $event)">
+                                  Remettre cote template
+                                </button>
+                              }
                             </div>
                           }
                         </div>
-                      }
-                      @if (block.plannedItems.length === 0) {
-                        <p class="calendar-week-block__empty">Aucun template prevu sur cette plage.</p>
-                      }
-                    </div>
-                  }
-                }
-                @if (getDayTimelineItemBuckets(); as dayItemBuckets) {
-                  @for (bucket of dayItemBuckets; track trackByDayTimelineItemBucket($index, bucket)) {
-                    <div
-                      class="calendar-day-grid__entry-stack"
-                      [style.grid-row-start]="bucket.gridRowStart"
-                      [style.grid-row-end]="bucket.gridRowStart + 1">
-                      @for (product of bucket.items; track trackByInsertedProduct($index, product)) {
-                        <button
-                          type="button"
-                          class="calendar-day-grid__entry-card"
-                          [attr.data-testid]="'calendar-day-item-' + product.id"
-                          (click)="onItemClick(product, product.dateLocal, $event)">
-                          <div class="calendar-day-grid__entry-card-top">
-                            <span class="calendar-day-grid__entry-card-name">{{ product.productName }}</span>
-                            <span class="calendar-day-grid__entry-card-time">
-                              {{ formatItemTime(product.occurredAt, product.insertedAt) }}
-                            </span>
-                          </div>
-                          <div class="calendar-day-grid__entry-card-meta">
-                            qte: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
-                          </div>
-                        </button>
+                      } @else {
+                        <p class="calendar-week-block__empty">Aucune entree saisie dans ce slot.</p>
                       }
                     </div>
                   }

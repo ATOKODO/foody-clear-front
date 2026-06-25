@@ -100,6 +100,17 @@ export interface CalendarOpenDayViewEvent {
   dateLocal: string;
 }
 
+export interface CalendarConvertTemplateItemEvent {
+  dateLocal: string;
+  templateItemId: number;
+  inventoryId: number;
+}
+
+export interface CalendarRevertTemplateItemEvent {
+  dateLocal: string;
+  itemId: number;
+}
+
 interface CalendarWeekMacroHighlight {
   key: string;
   label: string;
@@ -149,12 +160,6 @@ interface CalendarDayEntryRow {
   item: CalendarInsertedProduct;
 }
 
-interface CalendarDayTimelineItemBucket {
-  key: string;
-  gridRowStart: number;
-  items: CalendarInsertedProduct[];
-}
-
 interface CalendarMacroComparison {
   key: string;
   label: string;
@@ -171,6 +176,7 @@ interface CalendarWeekTimelineBlock {
   id: string;
   kind: 'slot' | 'orphan';
   title: string;
+  slotKey: string | null;
   rangeLabel: string;
   startMinute: number;
   endMinute: number;
@@ -184,6 +190,9 @@ interface CalendarPlannedTemplateItem {
   productName: string;
   qtyLabel: string;
   slotKey: string;
+  stockAvailable: boolean;
+  stockLabel: string;
+  inventoryId: number | null;
 }
 
 interface CalendarMonthAlertBadge {
@@ -216,6 +225,12 @@ export class Calendar implements OnInit, OnChanges {
   readonly manageItems = output<CalendarManageItemsEvent>();
   readonly manageAssignmentRequested = output<CalendarManageAssignmentEvent>({ alias: 'manageAssignment' });
   readonly itemClick = output<CalendarItemClickEvent>();
+  readonly convertTemplateItemRequested = output<CalendarConvertTemplateItemEvent>({
+    alias: 'convertTemplateItem',
+  });
+  readonly revertTemplateItemRequested = output<CalendarRevertTemplateItemEvent>({
+    alias: 'revertTemplateItem',
+  });
   readonly openDayViewRequested = output<CalendarOpenDayViewEvent>({ alias: 'openDayView' });
   readonly viewChanged = output<CalendarViewChangeEvent>();
 
@@ -544,6 +559,36 @@ export class Calendar implements OnInit, OnChanges {
       currentDateIso: this.currentDate.toISO() ?? '',
       dateLocal,
       item,
+    });
+  }
+
+  onDayTemplateItemConvert(item: CalendarPlannedTemplateItem, event: Event): void {
+    event.stopPropagation();
+    if (item.inventoryId === null || !item.stockAvailable) {
+      return;
+    }
+
+    const dateLocal = this.inputDayResponse()?.dateLocal ?? this.currentDate.toISODate() ?? '';
+    if (dateLocal.trim() === '') {
+      return;
+    }
+
+    this.convertTemplateItemRequested.emit({
+      dateLocal,
+      templateItemId: item.id,
+      inventoryId: item.inventoryId,
+    });
+  }
+
+  onDayTemplateItemRevert(item: CalendarInsertedProduct, event: Event): void {
+    event.stopPropagation();
+    if (item.templateItemId === null) {
+      return;
+    }
+
+    this.revertTemplateItemRequested.emit({
+      dateLocal: item.dateLocal,
+      itemId: item.id,
     });
   }
 
@@ -1087,57 +1132,40 @@ export class Calendar implements OnInit, OnChanges {
     });
   }
 
-  getDayTimelineBlocks(): CalendarWeekTimelineBlock[] {
+  getDayTemplateTimelineBlocks(): CalendarWeekTimelineBlock[] {
     const response = this.inputDayResponse();
     const dateLocal = response?.dateLocal ?? this.currentDate.toISODate() ?? '';
     if (dateLocal.trim() === '') {
       return this.emptyWeekTimelineBlocks;
     }
 
-    const slots = this.resolveDaySlots();
-    const insertedProducts = this.resolveCurrentDayInsertedProducts(dateLocal, slots);
+    const slots = this.resolveTemplateSlotsForResponse(response);
     const plannedItems = this.resolvePendingTemplateItems(response, slots);
 
-    return this.buildWeekTimelineBlocks(dateLocal, slots, insertedProducts, plannedItems).filter(
+    return this.buildWeekTimelineBlocks(dateLocal, slots, [], plannedItems).filter(
       (block) => block.kind === 'slot',
     );
   }
 
-  getDayTimelineItemBuckets(): CalendarDayTimelineItemBucket[] {
+  getDaySetTimelineBlocks(): CalendarWeekTimelineBlock[] {
     const response = this.inputDayResponse();
     const dateLocal = response?.dateLocal ?? this.currentDate.toISODate() ?? '';
     if (dateLocal.trim() === '') {
-      return [];
+      return this.emptyWeekTimelineBlocks;
     }
 
-    const insertedProducts = this.resolveCurrentDayInsertedProducts(dateLocal, this.resolveDaySlots());
-    if (insertedProducts.length === 0) {
-      return [];
-    }
+    const slots = this.resolveDaySetSlotsForResponse(response);
+    const insertedProducts = this.resolveCurrentDayInsertedProducts(dateLocal, slots);
 
-    const buckets = new Map<number, CalendarInsertedProduct[]>();
+    return this.buildWeekTimelineBlocks(dateLocal, slots, insertedProducts);
+  }
 
-    insertedProducts.forEach((item) => {
-      const minute = this.resolveCalendarInsertedProductMinute(item);
-      if (minute === null) {
-        return;
-      }
+  getDayTemplateSlotCount(): number {
+    return this.resolveTemplateSlotsForResponse(this.inputDayResponse()).length;
+  }
 
-      const hour = Math.floor(minute / 60);
-      const halfHourMinute: 0 | 30 = minute % 60 >= 30 ? 30 : 0;
-      const gridRowStart = this.getDayHalfHourGridRowStart(hour, halfHourMinute);
-      const bucketItems = buckets.get(gridRowStart) ?? [];
-      bucketItems.push(item);
-      buckets.set(gridRowStart, bucketItems);
-    });
-
-    return Array.from(buckets.entries())
-      .sort(([leftRowStart], [rightRowStart]) => leftRowStart - rightRowStart)
-      .map(([gridRowStart, items]) => ({
-        key: `${dateLocal}:${gridRowStart}`,
-        gridRowStart,
-        items,
-      }));
+  getDaySetSlotCount(): number {
+    return this.resolveDaySetSlotsForResponse(this.inputDayResponse()).length;
   }
 
   private buildViewChangeEvent(): CalendarViewChangeEvent {
@@ -1280,10 +1308,6 @@ export class Calendar implements OnInit, OnChanges {
     return block.id;
   }
 
-  trackByDayTimelineItemBucket(_: number, bucket: CalendarDayTimelineItemBucket): string {
-    return bucket.key;
-  }
-
   trackByMonth(_: number, month: MonthSummary): string {
     return `${month.year}-${month.month}`;
   }
@@ -1350,7 +1374,7 @@ export class Calendar implements OnInit, OnChanges {
 
       this.visibleDayResponseByDate.set(response.dateLocal, response);
 
-      const slots = this.resolveDaySlotsForResponse(response);
+      const slots = this.resolveDaySetSlotsForResponse(response);
       this.visibleDaySlotsByDate.set(response.dateLocal, slots);
 
       const entries = this.resolveItemsBySlotEntriesForResponse(response);
@@ -1412,6 +1436,33 @@ export class Calendar implements OnInit, OnChanges {
 
   private resolveDaySlots(): CalendarDaySlot[] {
     return this.resolveDaySlotsForResponse(this.inputDayResponse());
+  }
+
+  private resolveDaySetSlotsForResponse(response: InputDayResponse | null): CalendarDaySlot[] {
+    const daySetSlots = response?.daySet?.slots ?? [];
+    const totalsSlots = response?.totalsMacros?.bySlot.map((entry) => entry.slot) ?? [];
+
+    return this.mergeSlots(daySetSlots, totalsSlots).map((slot) => ({
+      slotId: slot.slotId,
+      slotKey: slot.slotKey,
+      title: slot.title,
+      sortOrder: slot.sortOrder,
+      startTime: slot.startTime ?? null,
+      endTime: slot.endTime ?? null,
+    }));
+  }
+
+  private resolveTemplateSlotsForResponse(response: InputDayResponse | null): CalendarDaySlot[] {
+    const templateSlots = this.resolveTemplateCatalogSlots(response);
+
+    return templateSlots.map((slot) => ({
+      slotId: slot.slotId,
+      slotKey: slot.slotKey,
+      title: slot.title,
+      sortOrder: slot.sortOrder,
+      startTime: slot.startTime ?? null,
+      endTime: slot.endTime ?? null,
+    }));
   }
 
   private resolveDaySlotsForResponse(response: InputDayResponse | null): CalendarDaySlot[] {
@@ -2026,6 +2077,7 @@ export class Calendar implements OnInit, OnChanges {
           slotId: item.slotId,
           slotTitle: slot?.slotTitle ?? 'Sans slot',
           slotKey: slot?.slotKey ?? item.slotKey?.trim() ?? '-',
+          templateItemId: item.templateItemId ?? null,
         },
       ];
     });
@@ -2112,6 +2164,7 @@ export class Calendar implements OnInit, OnChanges {
         id: `orphan:${dateLocal}:${startMinute}`,
         kind: 'orphan',
         title: 'Sans slot',
+        slotKey: null,
         rangeLabel: `${this.formatMinutesClock(startMinute)}-${this.formatMinutesClock(endMinute)}`,
         startMinute,
         endMinute,
@@ -2157,6 +2210,7 @@ export class Calendar implements OnInit, OnChanges {
       id: `slot:${dateLocal}:${slot.slotId ?? slot.slotKey}`,
       kind: 'slot',
       title: slot.title,
+      slotKey: slot.slotKey,
       rangeLabel: this.formatTimelineSlotRange(slotStart, slotEnd, estimated),
       startMinute,
       endMinute,
@@ -2226,12 +2280,7 @@ export class Calendar implements OnInit, OnChanges {
     response: InputDayResponse | null,
     slots: CalendarDaySlot[],
   ): CalendarPlannedTemplateItem[] {
-    if (
-      !response?.assignment ||
-      !response.daySet ||
-      response.templateAssociation?.source !== 'daySet' ||
-      slots.length === 0
-    ) {
+    if (!response || slots.length === 0) {
       return [];
     }
 
@@ -2258,11 +2307,17 @@ export class Calendar implements OnInit, OnChanges {
       }
 
       const unitLabel = item.qtyUnit ? ' ' + item.qtyUnit : '';
+      const availableStock = item.stockByInventory.find((stock) => stock.enoughStock) ?? null;
       return [{
         id: item.id,
         productName: item.productName,
         qtyLabel: this.formatCompactNumber(item.qty, 2) + unitLabel,
         slotKey: slot.slotKey,
+        stockAvailable: availableStock !== null,
+        stockLabel: availableStock
+          ? `Disponible dans ${availableStock.inventoryName}`
+          : 'Stock insuffisant',
+        inventoryId: availableStock?.inventoryId ?? null,
       }];
     });
   }
@@ -2280,6 +2335,21 @@ export class Calendar implements OnInit, OnChanges {
 
     const slotKey = item.slotKey?.trim();
     return slotKey ? slots.find((slot) => slot.slotKey === slotKey) ?? null : null;
+  }
+
+  getDayTemplateBlockEmptyText(block: CalendarWeekTimelineBlock): string {
+    const blockItems = (this.inputDayResponse()?.templateItems ?? []).filter(
+      (item) => item.slotKey?.trim() === block.slotKey,
+    );
+
+    if (
+      blockItems.length > 0 &&
+      blockItems.every((item) => item.status === 'converted' || item.convertedItemId !== null)
+    ) {
+      return 'Toutes les entrees ont ete converties.';
+    }
+
+    return 'Aucun template prevu sur cette plage.';
   }
 
   private normalizeTimelineEndMinute(startMinute: number, endMinute: number): number {

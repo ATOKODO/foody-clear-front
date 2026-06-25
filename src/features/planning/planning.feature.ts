@@ -17,9 +17,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { DateTime } from 'luxon';
 import {
   Calendar,
+  CalendarConvertTemplateItemEvent,
   CalendarDayClickEvent,
   CalendarHourClickEvent,
   CalendarItemClickEvent,
+  CalendarRevertTemplateItemEvent,
   CalendarManageAssignmentEvent,
   CalendarManageItemsEvent,
   CalendarMonthClickEvent,
@@ -311,6 +313,47 @@ export class PlanningFeature implements OnInit, AfterViewInit {
 
   onCalendarItemClick(event: CalendarItemClickEvent): void {
     this.openItemsModal(event.dateLocal, null, event.item.id);
+  }
+
+  onCalendarConvertTemplateItem(event: CalendarConvertTemplateItemEvent): void {
+    this.loadingDayItems = true;
+    this.dayItemsError = null;
+
+    this.inputDayService
+      .convertTemplateItem(event.dateLocal, event.templateItemId, [event.inventoryId])
+      .subscribe({
+        next: (response) => {
+          this.setLastResponse(response);
+          this.setLastError(null);
+          this.inputDayResponse = response;
+          this.loadingDayItems = false;
+          this.reloadInputDataForCurrentView();
+        },
+        error: (error) => {
+          this.dayItemsError = error;
+          this.setLastError(error);
+          this.loadingDayItems = false;
+        },
+      });
+  }
+
+  onCalendarRevertTemplateItem(event: CalendarRevertTemplateItemEvent): void {
+    this.loadingDayItems = true;
+    this.dayItemsError = null;
+
+    this.inputDayService.removeItem(event.dateLocal, event.itemId).subscribe({
+      next: () => {
+        this.setLastResponse({ reverted: true, itemId: event.itemId });
+        this.setLastError(null);
+        this.loadingDayItems = false;
+        this.reloadInputDataForCurrentView();
+      },
+      error: (error) => {
+        this.dayItemsError = error;
+        this.setLastError(error);
+        this.loadingDayItems = false;
+      },
+    });
   }
 
   onModalCycleSelected(item: CycleListItem): void {

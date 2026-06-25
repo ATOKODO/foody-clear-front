@@ -778,6 +778,303 @@ describe('Calendar', () => {
     expect(root.querySelector('[data-testid="calendar-day-item-44"]')).toBeTruthy();
   });
 
+  it('should render template slots and DaySet slots independently in day view', () => {
+    fixture.componentRef.setInput('slotCatalog', [
+      {
+        id: 11,
+        key: 'breakfast',
+        title: 'Petit dejeuner template',
+        sortOrder: 0,
+        startTime: '08:00:00',
+        endTime: '09:00:00',
+      },
+      {
+        id: 22,
+        key: 'lunch',
+        title: 'Dejeuner DaySet',
+        sortOrder: 1,
+        startTime: '12:00:00',
+        endTime: '14:00:00',
+      },
+    ]);
+    fixture.componentRef.setInput('inputDayResponse', {
+      dateLocal: '2026-02-17',
+      timezone: 'UTC',
+      assignment: null,
+      daySet: {
+        id: 1,
+        title: 'Jour distinct',
+        nutritionValue: null,
+        slots: [
+          {
+            slotId: 22,
+            slotKey: 'lunch',
+            title: 'Dejeuner DaySet',
+            sortOrder: 1,
+            startTime: '12:00:00',
+            endTime: '14:00:00',
+            nutritionValue: null,
+          },
+        ],
+      },
+      templateAssociation: {
+        source: 'manual',
+        template: { id: 13, title: 'Template matin' },
+      },
+      templateItems: [
+        {
+          id: 91,
+          productId: 8,
+          productName: 'Skyr',
+          qty: 1,
+          qtyUnit: 'portion',
+          qtyNormalized: 150,
+          slotId: 11,
+          slotKey: 'breakfast',
+          status: 'pending',
+          convertedItemId: null,
+          stockAvailability: {
+            enoughStock: true,
+            totalAvailableNormalized: 300,
+            requestedQtyNormalized: 150,
+          },
+          stockByInventory: [],
+          nutritionValue: {},
+        },
+      ],
+      items: [
+        {
+          id: 44,
+          productId: 9,
+          productName: 'Poulet',
+          inventoryId: 4,
+          qty: 120,
+          qtyUnit: 'g',
+          qtyNormalized: 120,
+          insertedAt: '2026-02-17T12:30:00Z',
+          occurredAt: '2026-02-17T12:15:00Z',
+          slotId: 22,
+          slotKey: 'lunch',
+          nutritionValue: {},
+        },
+      ],
+      totalsMacros: null,
+      itemsBySlot: [],
+      slots: [],
+    });
+    renderView('day', '2026-02-17');
+
+    const root = fixture.nativeElement;
+    const templateBlock = root.querySelector(
+      '[data-testid="calendar-day-template-block-Petit dejeuner template"]',
+    );
+    const daySetBlock = root.querySelector(
+      '[data-testid="calendar-day-dayset-block-Dejeuner DaySet"]',
+    );
+
+    expect(templateBlock).toBeTruthy();
+    expect(templateBlock.textContent).toContain('Skyr');
+    expect(daySetBlock).toBeTruthy();
+    expect(daySetBlock.textContent).toContain('Poulet');
+    expect(daySetBlock.querySelector('[data-testid="calendar-day-item-44"]')).toBeTruthy();
+    expect(
+      root.querySelector('[data-testid="calendar-day-template-block-Dejeuner DaySet"]'),
+    ).toBeNull();
+    expect(
+      root.querySelector('[data-testid="calendar-day-dayset-block-Petit dejeuner template"]'),
+    ).toBeNull();
+  });
+
+  it('should convert and revert template items from the day columns', () => {
+    fixture.componentRef.setInput('slotCatalog', [
+      {
+        id: 11,
+        key: 'breakfast',
+        title: 'Petit dejeuner',
+        sortOrder: 0,
+        startTime: '08:00:00',
+        endTime: '09:00:00',
+      },
+    ]);
+    fixture.componentRef.setInput('inputDayResponse', {
+      dateLocal: '2026-02-17',
+      timezone: 'UTC',
+      assignment: null,
+      daySet: {
+        id: 1,
+        title: 'Jour standard',
+        nutritionValue: null,
+        slots: [
+          {
+            slotId: 11,
+            slotKey: 'breakfast',
+            title: 'Petit dejeuner',
+            sortOrder: 0,
+            startTime: '08:00:00',
+            endTime: '09:00:00',
+            nutritionValue: null,
+          },
+        ],
+      },
+      templateAssociation: {
+        source: 'daySet',
+        template: { id: 13, title: 'Plan matin' },
+      },
+      templateItems: [
+        {
+          id: 91,
+          productId: 8,
+          productName: 'Skyr',
+          qty: 1,
+          qtyUnit: 'portion',
+          qtyNormalized: 150,
+          slotId: 11,
+          slotKey: 'breakfast',
+          status: 'pending',
+          convertedItemId: null,
+          stockAvailability: {
+            enoughStock: true,
+            totalAvailableNormalized: 300,
+            requestedQtyNormalized: 150,
+          },
+          stockByInventory: [
+            {
+              inventoryId: 4,
+              inventoryName: 'Stock principal',
+              qtyAvailableNormalized: 300,
+              enoughStock: true,
+            },
+          ],
+          nutritionValue: {},
+        },
+      ],
+      items: [],
+      totalsMacros: null,
+      itemsBySlot: [],
+      slots: [],
+    });
+    const convertEvents: Array<unknown> = [];
+    component.convertTemplateItemRequested.subscribe((event) => convertEvents.push(event));
+    renderView('day', '2026-02-17');
+
+    const convertButton = fixture.nativeElement.querySelector(
+      '[data-testid="calendar-day-convert-template-91"]',
+    ) as HTMLButtonElement;
+    expect(convertButton.disabled).toBeFalse();
+    expect(convertButton.parentElement?.parentElement?.textContent).toContain(
+      'Disponible dans Stock principal',
+    );
+
+    convertButton.click();
+    expect(convertEvents).toEqual([
+      { dateLocal: '2026-02-17', templateItemId: 91, inventoryId: 4 },
+    ]);
+
+    fixture.componentRef.setInput('inputDayResponse', {
+      ...component.inputDayResponse()!,
+      templateItems: [
+        {
+          ...component.inputDayResponse()!.templateItems![0],
+          status: 'converted',
+          convertedItemId: 44,
+        },
+      ],
+      items: [
+        {
+          id: 44,
+          productId: 8,
+          productName: 'Skyr',
+          inventoryId: 4,
+          qty: 1,
+          qtyUnit: 'portion',
+          qtyNormalized: 150,
+          insertedAt: '2026-02-17T08:20:00Z',
+          occurredAt: '2026-02-17T08:15:00Z',
+          slotId: 11,
+          slotKey: 'breakfast',
+          templateItemId: 91,
+          nutritionValue: {},
+        },
+      ],
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Toutes les entrees ont ete converties.',
+    );
+    const revertEvents: Array<unknown> = [];
+    component.revertTemplateItemRequested.subscribe((event) => revertEvents.push(event));
+    const revertButton = fixture.nativeElement.querySelector(
+      '[data-testid="calendar-day-revert-template-44"]',
+    ) as HTMLButtonElement;
+    expect(revertButton).toBeTruthy();
+    revertButton.click();
+    expect(revertEvents).toEqual([{ dateLocal: '2026-02-17', itemId: 44 }]);
+  });
+
+  it('should keep template-only slots out of week timelines', () => {
+    fixture.componentRef.setInput('slotCatalog', [
+      {
+        id: 11,
+        key: 'breakfast',
+        title: 'Slot template seulement',
+        sortOrder: 0,
+        startTime: '08:00:00',
+        endTime: '09:00:00',
+      },
+    ]);
+    fixture.componentRef.setInput('inputWeekResponse', {
+      startDateLocal: '2026-02-16',
+      endDateLocal: '2026-02-22',
+      timezone: 'UTC',
+      days: [
+        {
+          dateLocal: '2026-02-16',
+          timezone: 'UTC',
+          assignment: null,
+          daySet: { id: 1, title: 'Sans slots', nutritionValue: null, slots: [] },
+          templateAssociation: {
+            source: 'manual',
+            template: { id: 13, title: 'Template matin' },
+          },
+          templateItems: [
+            {
+              id: 91,
+              productId: 8,
+              productName: 'Skyr',
+              qty: 1,
+              qtyUnit: 'portion',
+              qtyNormalized: 150,
+              slotId: 11,
+              slotKey: 'breakfast',
+              status: 'pending',
+              convertedItemId: null,
+              stockAvailability: {
+                enoughStock: true,
+                totalAvailableNormalized: 300,
+                requestedQtyNormalized: 150,
+              },
+              stockByInventory: [],
+              nutritionValue: {},
+            },
+          ],
+          items: [],
+          totalsMacros: null,
+          itemsBySlot: [],
+          slots: [],
+        },
+      ],
+    });
+    renderView('week', '2026-02-18');
+
+    expect(fixture.nativeElement.textContent).not.toContain('Slot template seulement');
+    expect(
+      fixture.nativeElement.querySelector(
+        '[data-testid="calendar-week-block-2026-02-16-Slot template seulement"]',
+      ),
+    ).toBeNull();
+  });
+
   it('should emit manageAssignment and manageItems from day summary actions', () => {
     const assignmentEvents: Array<unknown> = [];
     const itemEvents: Array<unknown> = [];

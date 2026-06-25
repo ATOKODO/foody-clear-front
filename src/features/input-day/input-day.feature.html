@@ -223,7 +223,7 @@
         />
       </div>
     }
-    @if (isStandaloneMode || isStockSectionActive) {
+    @if ((isStandaloneMode || isStockSectionActive) && !isEditingItem) {
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-header>
           <mat-card-title>{{
@@ -1084,6 +1084,148 @@
             }
           </mat-card-content>
         </mat-card>
+        @if (isEditingItem) {
+          <mat-card appearance="outlined" class="rounded-xl" data-testid="input-day-edit-item-card">
+            <mat-card-header>
+              <mat-card-title>Modifier une entree</mat-card-title>
+              <mat-card-subtitle>Edition complete via PATCH /items/:itemId</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content class="space-y-4 pt-2">
+            <div
+              [formGroup]="itemEditorForm"
+              class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+            >
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Date metier</mat-label>
+                <input matInput type="date" formControlName="dateLocal" />
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>occurredAt</mat-label>
+                <input
+                  matInput
+                  type="datetime-local"
+                  formControlName="occurredAt"
+                />
+              </mat-form-field>
+              <div
+                class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3"
+              >
+                <p
+                  class="text-xs font-semibold uppercase tracking-wide text-slate-500"
+                >
+                  Inventory actif
+                </p>
+                <p class="mt-1 text-sm text-slate-900">
+                  {{ selectedInventoriesLabel }}
+                </p>
+                <p class="mt-1 text-xs text-slate-500">
+                  La selection d'inventories se fait dans Contexte du jour.
+                </p>
+              </div>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Produit</mat-label>
+                <mat-select formControlName="productId">
+                  <mat-option [value]="null">Selectionner</mat-option>
+                  @for (product of editorProductOptions; track product) {
+                    <mat-option [value]="+product.id">
+                      {{ product.name }} (#{{ product.id }})
+                    </mat-option>
+                  }
+                </mat-select>
+                @if (!hasSelectedInventories) {
+                  <mat-hint>
+                    Choisis d'abord au moins un inventory dans le contexte du
+                    jour.
+                  </mat-hint>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Quantite</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  formControlName="qty"
+                />
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Unite</mat-label>
+                <mat-select formControlName="qtyUnit">
+                  <mat-option [value]="null">Auto</mat-option>
+                  @for (unit of qtyUnitOptions; track unit) {
+                    <mat-option [value]="unit">
+                      {{ unit }}
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Slot explicite</mat-label>
+                <mat-select
+                  formControlName="slotId"
+                  (selectionChange)="onItemEditorSlotIdChange($event.value)"
+                >
+                  <mat-option [value]="null">Sans slot</mat-option>
+                  @for (slot of availableSlots; track slot) {
+                    <mat-option [value]="slot.slotId">
+                      {{ slot.sortOrder }}. {{ slot.title }} ({{
+                        slot.slotKey
+                      }})
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>slotKey libre</mat-label>
+                <input
+                  matInput
+                  type="text"
+                  formControlName="slotKey"
+                  [readonly]="itemEditorSelectedSlotId !== null"
+                  placeholder="ex: breakfast"
+                />
+              </mat-form-field>
+            </div>
+            @if (itemEditorError) {
+              <p
+                class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              >
+                {{ itemEditorError }}
+              </p>
+            }
+            <div class="flex flex-wrap justify-end gap-2">
+              <button
+                mat-stroked-button
+                type="button"
+                (click)="resetItemEditor()"
+              >
+                Annuler edition
+              </button>
+              <button
+                mat-stroked-button
+                color="warn"
+                type="button"
+                data-testid="input-day-delete-item"
+                (click)="removeItem()"
+                [disabled]="loading"
+              >
+                Supprimer
+              </button>
+              <button
+                mat-raised-button
+                color="primary"
+                type="button"
+                data-testid="input-day-submit-item"
+                (click)="submitItemEditor()"
+                [disabled]="!canSubmitItemEditor"
+              >
+                Enregistrer l entree
+              </button>
+            </div>
+            </mat-card-content>
+          </mat-card>
+        }
         @if (isStandaloneMode) {
           <div class="grid gap-4 xl:grid-cols-2">
             @if (response.totalsMacros; as totals) {

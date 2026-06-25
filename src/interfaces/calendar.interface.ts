@@ -44,6 +44,7 @@ export interface CalendarInsertedProduct {
   slotId: number | null;
   slotTitle: string;
   slotKey: string;
+  templateItemId: number | null;
 }
 
 export interface CalendarDaySlot {

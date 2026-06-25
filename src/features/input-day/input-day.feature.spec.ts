@@ -711,6 +711,38 @@ describe('InputDayFeature', () => {
     expect(component.canConvertTemplateItem(pendingItems[1])).toBeTrue();
   });
 
+  it('should show the item editor after Elements saisis in either embedded section', async () => {
+    fixture.componentRef.setInput('displayMode', 'embedded');
+    fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    component.inputDayResponse = dayResponse;
+    component.onActiveEmbeddedSectionChange('templates');
+    component.startEditingItem(31);
+    fixture.detectChanges();
+
+    const itemRow = fixture.nativeElement.querySelector(
+      '[data-testid="input-day-item-31"]',
+    ) as HTMLElement;
+    const editorCard = fixture.nativeElement.querySelector(
+      '[data-testid="input-day-edit-item-card"]',
+    ) as HTMLElement;
+
+    expect(component.isTemplatesSectionActive).toBeTrue();
+    expect(editorCard).toBeTruthy();
+    expect(editorCard.textContent).toContain('Modifier une entree');
+    expect(
+      itemRow.compareDocumentPosition(editorCard) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    component.onActiveEmbeddedSectionChange('stock');
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="input-day-edit-item-card"]'),
+    ).toBeTruthy();
+  });
+
   it('should expose the API detail when a template conversion fails', () => {
     const pendingItem = {
       id: 18,

@@ -258,6 +258,35 @@ describe('PlanningFeature', () => {
     expect(component.selectedModalDateLocal).toBe('2026-02-16');
   });
 
+  it('should convert a template item requested from the day calendar', () => {
+    inputDayServiceMock.convertTemplateItem.calls.reset();
+
+    component.onCalendarConvertTemplateItem({
+      dateLocal: '2026-02-16',
+      templateItemId: 91,
+      inventoryId: 4,
+    });
+
+    expect(inputDayServiceMock.convertTemplateItem).toHaveBeenCalledWith(
+      '2026-02-16',
+      91,
+      [4],
+    );
+    expect(component.loadingDayItems).toBeFalse();
+  });
+
+  it('should remove a converted item when the calendar requests a revert', () => {
+    inputDayServiceMock.removeItem.calls.reset();
+
+    component.onCalendarRevertTemplateItem({
+      dateLocal: '2026-02-16',
+      itemId: 44,
+    });
+
+    expect(inputDayServiceMock.removeItem).toHaveBeenCalledWith('2026-02-16', 44);
+    expect(component.loadingDayItems).toBeFalse();
+  });
+
   it('should open input-day modal directly from day hour click and pass embedded inputs', () => {
     component.onCalendarHourClick({
       view: 'day',
@@ -335,6 +364,7 @@ describe('PlanningFeature', () => {
         slotId: 11,
         slotTitle: 'Petit dejeuner',
         slotKey: 'breakfast',
+        templateItemId: null,
       },
     });
     fixture.detectChanges();

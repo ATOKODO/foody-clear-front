@@ -1974,45 +1974,12 @@
   margin: 0.1rem 0.18rem;
 }
 
-.calendar-day-grid__entry-stack {
+.calendar-day-grid__block--entries {
   grid-column: 3 / 4;
-  z-index: 4;
-  display: flex;
-  flex-direction: column;
-  margin: 0.12rem 0.3rem;
 }
 
-.calendar-day-grid__entry-card {
-  display: grid;
-  gap: 0.14rem;
-  border: 1px solid #fff;
-  border-radius: 0.75rem;
-  padding: 0.38rem 0.5rem;
-  background: rgba(15, 23, 42, 0.92);
-  color: #f8fafc;
-  text-align: left;
-}
-
-.calendar-day-grid__entry-card-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.4rem;
-}
-
-.calendar-day-grid__entry-card-name {
-  font-size: 0.72rem;
-  font-weight: 700;
-  overflow-wrap: anywhere;
-}
-
-.calendar-day-grid__entry-card-time,
-.calendar-day-grid__entry-card-meta {
-  font-size: 0.64rem;
-  color: rgba(241, 245, 249, 0.84);
-}
-
-.calendar-day-grid__entry-card-time {
-  flex-shrink: 0;
+.calendar-day-grid__completed-item {
+  cursor: pointer;
 }
 
 .calendar-day-entries__list {
