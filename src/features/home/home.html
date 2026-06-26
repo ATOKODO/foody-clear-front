@@ -1,64 +1,203 @@
-<section class="app-page app-page--wide home-dashboard">
+<section class="app-page app-page--wide home-dashboard" data-testid="home-dashboard">
   <header class="home-dashboard__hero">
     <div class="home-dashboard__hero-copy">
       <p class="home-dashboard__eyebrow">Foody Clear</p>
       <h1 class="home-dashboard__title">Tableau de bord</h1>
       <p class="home-dashboard__description">
-        Retrouve les parcours les plus utiles pour piloter le catalogue,
-        l'execution quotidienne, le planning et le suivi.
+        {{ todayLabel }} · vue jour, objectifs et depenses consolides.
       </p>
     </div>
 
     <div class="home-dashboard__hero-actions">
+      <button
+        type="button"
+        class="home-dashboard__hero-link home-dashboard__hero-link--ghost"
+        data-testid="home-dashboard-refresh"
+        [disabled]="loading"
+        (click)="refreshDashboard()"
+      >
+        Actualiser
+      </button>
       <a routerLink="/product" class="home-dashboard__hero-link">
         Ouvrir le catalogue
       </a>
       <a
         routerLink="/planning"
         class="home-dashboard__hero-link home-dashboard__hero-link--secondary"
-        >
+      >
         Voir le planning
       </a>
     </div>
   </header>
 
-  <section class="home-dashboard__spotlight">
-    @for (entry of featuredEntries; track entry) {
-      <article class="home-dashboard__spotlight-card">
-        <p class="home-dashboard__spotlight-group">{{ entry.groupLabel }}</p>
-        <h2 class="home-dashboard__spotlight-title">{{ entry.label }}</h2>
-        <p class="home-dashboard__spotlight-description">{{ entry.description }}</p>
-        <a [routerLink]="entry.path" class="home-dashboard__spotlight-link">
-          Ouvrir le module
-        </a>
-      </article>
-    }
+  @if (loading) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (dayError || timelineError) {
+    <app-ui-error-panel [error]="dayError || timelineError" />
+  }
+
+  <section class="home-dashboard__overview" aria-label="Synthese du jour">
+    <article class="home-dashboard__kpi home-dashboard__kpi--wide">
+      <span class="home-dashboard__kpi-label">Cycle</span>
+      <strong>{{ activeCycleLabel }}</strong>
+      <small>{{ activeDaySetLabel }}</small>
+    </article>
+    <article class="home-dashboard__kpi">
+      <span class="home-dashboard__kpi-label">Elements saisis</span>
+      <strong>{{ enteredItemCount }}</strong>
+      <small>{{ convertedTemplateItems.length }} depuis template</small>
+    </article>
+    <article class="home-dashboard__kpi">
+      <span class="home-dashboard__kpi-label">A convertir</span>
+      <strong>{{ pendingTemplateItems.length }}</strong>
+      <small>lignes previsionnelles</small>
+    </article>
+    <article class="home-dashboard__kpi">
+      <span class="home-dashboard__kpi-label">Depenses</span>
+      <strong>{{ todayExpenseTotal }}</strong>
+      <small>{{ purchaseCount }} achat(s), {{ incompletePurchaseCount }} incomplet(s)</small>
+    </article>
+    <article class="home-dashboard__kpi">
+      <span class="home-dashboard__kpi-label">Source objectifs</span>
+      <strong>{{ targetSourceLabel }}</strong>
+      <small>{{ todayDateLocal }} · {{ timezone }}</small>
+    </article>
   </section>
 
-  <section class="home-dashboard__groups">
-    @for (group of dashboardGroups; track group) {
-      <article class="home-dashboard__group">
-        <div class="home-dashboard__group-header">
+  <section class="home-dashboard__main-grid">
+    <article class="home-panel home-panel--schedule">
+      <div class="home-panel__header">
+        <div>
+          <p class="home-panel__eyebrow">Planning jour</p>
+          <h2>Ce qui est prevu aujourd'hui</h2>
+        </div>
+        <a routerLink="/planning" class="home-panel__link">Ouvrir</a>
+      </div>
+
+      @if (scheduleRows.length > 0) {
+        <div class="home-schedule">
+          @for (row of scheduleRows; track row.key) {
+            <article class="home-schedule__row">
+              <div class="home-schedule__time">
+                <strong>{{ row.rangeLabel }}</strong>
+                <span>{{ row.title }}</span>
+              </div>
+              <div class="home-schedule__content">
+                @if (row.plannedItems.length > 0) {
+                  <div class="home-schedule__group">
+                    <span class="home-schedule__group-label">Prevu</span>
+                    @for (item of row.plannedItems; track item.id) {
+                      <div class="home-schedule__item home-schedule__item--planned">
+                        <span>
+                          {{ item.productName }} · {{ formatItemQty(item) }}
+                        </span>
+                        <small
+                          [class.is-ok]="item.stockAvailability.enoughStock"
+                          [class.is-warning]="!item.stockAvailability.enoughStock"
+                        >
+                          {{ item.status === "converted" ? "Converti" : getTemplateStockLabel(item) }}
+                        </small>
+                      </div>
+                    }
+                  </div>
+                }
+                @if (row.items.length > 0) {
+                  <div class="home-schedule__group">
+                    <span class="home-schedule__group-label">Saisi</span>
+                    @for (item of row.items; track item.id) {
+                      <div class="home-schedule__item">
+                        <span>
+                          {{ formatDateTime(item.occurredAt || item.insertedAt) }} ·
+                          {{ item.productName }} · {{ formatItemQty(item) }}
+                        </span>
+                        <small>#{{ item.inventoryId ?? "-" }}</small>
+                      </div>
+                    }
+                  </div>
+                }
+                @if (row.plannedItems.length === 0 && row.items.length === 0) {
+                  <p class="home-schedule__empty">Rien de prevu sur ce slot.</p>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <p class="home-panel__empty">Aucun planning retourne pour aujourd'hui.</p>
+      }
+    </article>
+
+    <aside class="home-dashboard__side-stack">
+      <article class="home-panel">
+        <div class="home-panel__header">
           <div>
-            <p class="home-dashboard__group-label">{{ group.label }}</p>
-            <h2 class="home-dashboard__group-title">{{ group.description }}</h2>
+            <p class="home-panel__eyebrow">Objectifs</p>
+            <h2>Progression du jour</h2>
           </div>
         </div>
-        <div class="home-dashboard__group-grid">
-          @for (entry of group.entries; track entry) {
-            <a
-              [routerLink]="entry.path"
-              class="home-dashboard__entry"
-              >
-              <span class="home-dashboard__entry-badge">{{ entry.shortLabel }}</span>
-              <span class="home-dashboard__entry-copy">
-                <span class="home-dashboard__entry-title">{{ entry.label }}</span>
-                <span class="home-dashboard__entry-description">{{ entry.description }}</span>
-              </span>
-            </a>
+        <div class="home-macro-grid">
+          @for (macro of macroCards; track macro.key) {
+            <article class="home-macro" [ngClass]="'home-macro--' + macro.status">
+              <div class="home-macro__top">
+                <span>{{ macro.label }}</span>
+                <strong>{{ macro.actual }}</strong>
+              </div>
+              <div class="home-macro__rail" aria-hidden="true">
+                <span class="home-macro__fill" [style.width.%]="macro.progress"></span>
+              </div>
+              <div class="home-macro__meta">
+                <span>Cible {{ macro.target }}</span>
+                <span>Delta {{ macro.delta }}</span>
+              </div>
+            </article>
           }
         </div>
       </article>
-    }
+
+      <article class="home-panel">
+        <div class="home-panel__header">
+          <div>
+            <p class="home-panel__eyebrow">Achats</p>
+            <h2>Depenses du jour</h2>
+          </div>
+          <a routerLink="/statistic" class="home-panel__link">Details</a>
+        </div>
+        @if (recentPurchaseEvents.length > 0) {
+          <div class="home-expense-list">
+            @for (event of recentPurchaseEvents; track event.id) {
+              <article class="home-expense">
+                <div>
+                  <strong>{{ event.productName }}</strong>
+                  <span>
+                    {{ formatDateTime(event.occurredAt) }} · {{ event.qty }} {{ event.qtyUnit }}
+                  </span>
+                </div>
+                <small>{{ getPurchaseEventLabel(event) }}</small>
+              </article>
+            }
+          </div>
+        } @else {
+          <p class="home-panel__empty">Aucun achat rattache a aujourd'hui.</p>
+        }
+      </article>
+    </aside>
+  </section>
+
+  <section class="home-panel home-panel--editor">
+    <div class="home-panel__header">
+      <div>
+        <p class="home-panel__eyebrow">Saisie rapide</p>
+        <h2>Remplir la journee</h2>
+      </div>
+    </div>
+    <app-input-day
+      [displayMode]="'embedded'"
+      [apiBaseUrl]="baseUrl"
+      [initialDateLocal]="todayDateLocal"
+      [lockDate]="true"
+      (itemsChanged)="onInputDayItemsChanged()"
+    />
   </section>
 </section>
