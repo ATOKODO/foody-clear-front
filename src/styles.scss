@@ -31,8 +31,17 @@ html {
   --app-surface-soft: #f6f9fc;
   --app-surface-muted: #eef3f8;
   --app-surface-strong: #dfe8f1;
-  --app-panel-hero: linear-gradient(135deg, #091221 0%, #0f172a 56%, #1f2b43 100%);
-  --app-overlay: linear-gradient(145deg, rgb(15 23 42 / 0.52), rgb(2 6 23 / 0.72));
+  --app-panel-hero: linear-gradient(
+    135deg,
+    #091221 0%,
+    #0f172a 56%,
+    #1f2b43 100%
+  );
+  --app-overlay: linear-gradient(
+    145deg,
+    rgb(15 23 42 / 0.52),
+    rgb(2 6 23 / 0.72)
+  );
   --app-border-soft: rgb(148 163 184 / 0.16);
   --app-border: rgb(148 163 184 / 0.24);
   --app-border-strong: rgb(100 116 139 / 0.4);
@@ -90,7 +99,12 @@ html.dark {
   --app-surface-soft: #111c2f;
   --app-surface-muted: #182336;
   --app-surface-strong: #22304a;
-  --app-panel-hero: linear-gradient(135deg, #08101b 0%, #0d1728 52%, #1c2b47 100%);
+  --app-panel-hero: linear-gradient(
+    135deg,
+    #08101b 0%,
+    #0d1728 52%,
+    #1c2b47 100%
+  );
   --app-overlay: linear-gradient(145deg, rgb(2 6 23 / 0.74), rgb(2 6 23 / 0.9));
   --app-border-soft: rgb(148 163 184 / 0.12);
   --app-border: rgb(148 163 184 / 0.2);
@@ -374,8 +388,12 @@ a {
   --mat-form-field-filled-container-color: var(--app-form-field-bg);
   --mat-form-field-filled-label-text-color: var(--app-form-field-label);
   --mat-form-field-filled-input-text-color: var(--app-form-field-input);
-  --mat-form-field-filled-active-indicator-color: var(--app-form-field-indicator);
-  --mat-form-field-filled-focus-active-indicator-color: var(--app-form-field-focus);
+  --mat-form-field-filled-active-indicator-color: var(
+    --app-form-field-indicator
+  );
+  --mat-form-field-filled-focus-active-indicator-color: var(
+    --app-form-field-focus
+  );
   --mat-form-field-filled-container-shape: 14px;
 }
 
@@ -385,7 +403,11 @@ a {
   display: flex;
   max-height: min(90vh, 980px);
   flex-direction: column;
-  background: linear-gradient(180deg, var(--app-surface-soft) 0%, var(--app-surface) 18%);
+  background: linear-gradient(
+    180deg,
+    var(--app-surface-soft) 0%,
+    var(--app-surface) 18%
+  );
 }
 
 .product-form-dialog__header,
@@ -571,4 +593,39 @@ body .shadow-sm {
   .template-form-dialog__header {
     flex-direction: column;
   }
+}
+
+/* Calendar dark utility overrides kept global to stay under the component style budget. */
+html.dark app-calendar :is(.bg-white, .bg-slate-50, .bg-slate-100, .bg-sky-50) {
+  background-color: var(--app-surface-muted) !important;
+}
+
+:host-context(.dark)
+  :is(.border-slate-200, .border-slate-300, .border-sky-300) {
+  border-color: var(--app-border-strong) !important;
+}
+
+:host-context(.dark)
+  :is(
+    .text-slate-400,
+    .text-slate-500,
+    .text-slate-600,
+    .text-slate-700,
+    .text-sky-700
+  ) {
+  color: var(--app-text-muted) !important;
+}
+
+html.dark app-calendar :is(.text-slate-800, .text-slate-900) {
+  color: var(--app-text-strong) !important;
+}
+
+:host-context(.dark)
+  :is(
+    .calendar-week-mobile__actions button,
+    .calendar-week-grid__day-actions button,
+    .calendar-day-grid__block button
+  ) {
+  background-color: var(--app-surface-muted) !important;
+  color: var(--app-text-strong) !important;
 }

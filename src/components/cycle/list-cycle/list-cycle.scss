@@ -80,7 +80,11 @@
 .lc-summary-panel {
   align-self: start;
   border: 1px solid var(--app-border);
-  background: linear-gradient(180deg, var(--app-surface) 0%, var(--app-surface-soft) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--app-surface) 0%,
+    var(--app-surface-soft) 100%
+  );
 }
 
 .lc-subsection {
@@ -121,7 +125,11 @@
 
 .lc-macro-card {
   border: 1px solid var(--app-border);
-  background: linear-gradient(180deg, var(--app-surface-soft) 0%, var(--app-surface-muted) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--app-surface-soft) 0%,
+    var(--app-surface-muted) 100%
+  );
 }
 
 .lc-stat-card {
@@ -540,7 +548,10 @@
   padding-top: 1.25rem;
 }
 
-:host ::ng-deep .lc-shell--select-single .lc-toggle-btn.mat-mdc-outlined-button {
+:host
+  ::ng-deep
+  .lc-shell--select-single
+  .lc-toggle-btn.mat-mdc-outlined-button {
   border-color: #10b981;
   border-radius: 9999px;
   background: #f0fdf4;
@@ -568,7 +579,11 @@
   color: #0c5249;
 }
 
-:host ::ng-deep .lc-footer-action:not(.lc-footer-action--detail):not(.lc-footer-action--danger).mat-mdc-outlined-button {
+:host
+  ::ng-deep
+  .lc-footer-action:not(.lc-footer-action--detail):not(
+    .lc-footer-action--danger
+  ).mat-mdc-outlined-button {
   border-color: #cfd6bc;
   background: #fffef8;
   color: #315026;
@@ -619,4 +634,105 @@
   .lc-shell--select-single .lc-macro-grid--select-single {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+:host-context(.dark)
+  :is(
+    .lc-shell__title,
+    .lc-cycle-title,
+    .lc-breakdown-card__value,
+    .lc-macro-card__value,
+    .lc-dayset-title,
+    .lc-slot-title,
+    .text-slate-900
+  ) {
+  color: var(--app-text-strong) !important;
+}
+
+:host-context(.dark) :is(.text-slate-500, .text-slate-600, .text-slate-700) {
+  color: var(--app-text-muted) !important;
+}
+
+:host-context(.dark)
+  :is(
+    .bg-white,
+    .bg-slate-50,
+    .lc-card--embedded,
+    .lc-card--select-single,
+    .lc-embedded-summary,
+    .lc-shell--select-single .lc-meta-chip,
+    .lc-shell--select-single .lc-macro-card,
+    .lc-detail-panel .rounded-2xl,
+    .lc-detail-panel .rounded-xl
+  ) {
+  border-color: var(--app-border) !important;
+  background: var(--app-surface) !important;
+  color: var(--app-text) !important;
+}
+
+:host-context(.dark)
+  :is(
+    .lc-breakdown-card,
+    .lc-breakdown-card.lc-status-under,
+    .lc-breakdown-card.lc-status-exact,
+    .lc-breakdown-card.lc-status-over,
+    .lc-breakdown-card.lc-status-missing,
+    .lc-shell--select-single .lc-breakdown-card.lc-status-under,
+    .lc-shell--select-single .lc-breakdown-card.lc-status-exact,
+    .lc-shell--select-single .lc-breakdown-card.lc-status-over,
+    .lc-shell--select-single .lc-breakdown-card.lc-status-missing
+  ) {
+  background: var(--app-surface-muted) !important;
+  border-color: var(--app-border-strong) !important;
+}
+
+:host-context(.dark)
+  :is(
+    .lc-status-badge.lc-status-under,
+    .lc-status-badge.lc-status-exact,
+    .lc-status-badge.lc-status-over,
+    .lc-status-badge.lc-status-missing,
+    .lc-shell--select-single .lc-status-badge.lc-status-under,
+    .lc-shell--select-single .lc-status-badge.lc-status-exact,
+    .lc-shell--select-single .lc-status-badge.lc-status-over,
+    .lc-shell--select-single .lc-status-badge.lc-status-missing
+  ) {
+  background: var(--app-surface-strong) !important;
+  border-color: var(--app-border-strong) !important;
+}
+
+:host-context(.dark)
+  :is(
+    .lc-status-text.lc-status-under,
+    .lc-shell--select-single .lc-status-text.lc-status-under
+  ) {
+  color: var(--app-info-text) !important;
+}
+
+:host-context(.dark)
+  :is(
+    .lc-status-text.lc-status-exact,
+    .lc-shell--select-single .lc-status-text.lc-status-exact
+  ) {
+  color: var(--app-success-text) !important;
+}
+
+:host-context(.dark)
+  :is(
+    .lc-status-text.lc-status-over,
+    .lc-shell--select-single .lc-status-text.lc-status-over
+  ) {
+  color: var(--app-danger-text) !important;
+}
+
+:host-context(.dark)
+  :is(
+    .lc-status-text.lc-status-missing,
+    .lc-shell--select-single .lc-status-text.lc-status-missing
+  ) {
+  color: var(--app-warning-text) !important;
+}
+
+:host-context(.dark) :is(.border-slate-200, .border-slate-300) {
+  border-color: var(--app-border) !important;
 }
