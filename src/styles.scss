@@ -629,3 +629,37 @@ html.dark app-calendar :is(.text-slate-800, .text-slate-900) {
   background-color: var(--app-surface-muted) !important;
   color: var(--app-text-strong) !important;
 }
+
+/* Planning dark view fixes. */
+html.dark app-calendar .calendar-day-body {
+  background: var(--app-surface-soft);
+}
+
+html.dark app-calendar .calendar-day-body__section--primary,
+html.dark app-calendar .calendar-day-body__section--secondary {
+  border-color: var(--app-border-strong);
+  background: var(--app-surface-muted);
+  box-shadow: var(--app-shadow-sm);
+}
+
+html.dark app-calendar .calendar-week-grid__hour-label,
+html.dark app-calendar .calendar-week-grid__hour-cell {
+  border-color: var(--app-border);
+  background: var(--app-surface-soft);
+}
+
+html.dark app-calendar .calendar-week-grid__hour-label {
+  color: transparent;
+}
+
+:host-context(.dark)
+  .calendar-week-grid__timeline:hover
+  .calendar-week-grid__hour-label {
+  color: var(--app-text-muted);
+}
+
+html.dark app-calendar .calendar-month-grid__weekday {
+  border-color: var(--app-border);
+  background: var(--app-surface-strong);
+  color: var(--app-text-strong);
+}
