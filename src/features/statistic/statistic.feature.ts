@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -43,13 +43,14 @@ type StatisticMetricKey = 'energyKcal' | 'proteins' | 'carbs' | 'lipids';
 export class StatisticFeature implements OnInit {
   private readonly statisticService = inject(StatisticService);
   private readonly productService = inject(ProductService);
+  private readonly changeDetectorRef = inject(ChangeDetectorRef);
 
   baseUrl = '';
   timezone = DateTime.local().zoneName || 'UTC';
   fromDateLocal = DateTime.local().minus({ days: 29 }).toFormat('yyyy-LL-dd');
   toDateLocal = DateTime.local().toFormat('yyyy-LL-dd');
 
-  activeView: StatisticView = 'expenses';
+  activeView: StatisticView = 'targets';
   activeMetric: StatisticMetricKey = 'energyKcal';
 
   loadingTimeline = false;
@@ -74,10 +75,11 @@ export class StatisticFeature implements OnInit {
   priceCorrectionFromDateLocal = this.fromDateLocal;
   priceCorrectionToDateLocal = '';
   priceCorrectionRecalculatePurchases = true;
+  private activeTimelineRequestKey: string | null = null;
 
   readonly views: Array<{ value: StatisticView; label: string }> = [
-    { value: 'expenses', label: 'Depenses' },
     { value: 'targets', label: 'Objectifs' },
+    { value: 'expenses', label: 'Depenses' },
     { value: 'prices', label: 'Prix produit' },
   ];
   readonly priceUnitOptions: ProductPriceUnit[] = [
@@ -186,10 +188,12 @@ export class StatisticFeature implements OnInit {
           if (this.priceCorrectionRecalculatePurchases) {
             this.loadTimeline();
           }
+          this.changeDetectorRef.detectChanges();
         },
         error: (error) => {
           this.priceCorrectionError = error;
           this.correctingPrice = false;
+          this.changeDetectorRef.detectChanges();
         },
       });
   }
@@ -370,16 +374,13 @@ export class StatisticFeature implements OnInit {
           this.timelineResponse = response;
           this.savingPurchaseEventId = null;
           this.selectedTimelineDateLocal =
-            this.selectedTimelineDateLocal &&
-            response.days.some(
-              (day) => day.dateLocal === this.selectedTimelineDateLocal,
-            )
-              ? this.selectedTimelineDateLocal
-              : (response.days[0]?.dateLocal ?? '');
+            this.resolveSelectedTimelineDate(response);
+          this.changeDetectorRef.detectChanges();
         },
         error: (error) => {
           this.purchaseEventActionError = error;
           this.savingPurchaseEventId = null;
+          this.changeDetectorRef.detectChanges();
         },
       });
   }
@@ -402,6 +403,12 @@ export class StatisticFeature implements OnInit {
       return;
     }
 
+    const requestKey = this.buildTimelineRequestKey();
+    if (this.loadingTimeline && this.activeTimelineRequestKey === requestKey) {
+      return;
+    }
+
+    this.activeTimelineRequestKey = requestKey;
     this.loadingTimeline = true;
     this.timelineError = null;
     this.statisticService
@@ -410,18 +417,17 @@ export class StatisticFeature implements OnInit {
         next: (response) => {
           this.timelineResponse = response;
           this.loadingTimeline = false;
+          this.activeTimelineRequestKey = null;
           this.selectedTimelineDateLocal =
-            this.selectedTimelineDateLocal &&
-            response.days.some(
-              (day) => day.dateLocal === this.selectedTimelineDateLocal,
-            )
-              ? this.selectedTimelineDateLocal
-              : (response.days[0]?.dateLocal ?? '');
+            this.resolveSelectedTimelineDate(response);
+          this.changeDetectorRef.detectChanges();
         },
         error: (error) => {
           this.timelineError = error;
           this.timelineResponse = null;
           this.loadingTimeline = false;
+          this.activeTimelineRequestKey = null;
+          this.changeDetectorRef.detectChanges();
         },
       });
   }
@@ -438,11 +444,13 @@ export class StatisticFeature implements OnInit {
         }
         this.loadingProducts = false;
         this.loadPriceHistory();
+        this.changeDetectorRef.detectChanges();
       },
       error: (error) => {
         this.products = [];
         this.productError = error;
         this.loadingProducts = false;
+        this.changeDetectorRef.detectChanges();
       },
     });
   }
@@ -466,13 +474,30 @@ export class StatisticFeature implements OnInit {
         next: (response) => {
           this.priceHistoryResponse = response;
           this.loadingPriceHistory = false;
+          this.changeDetectorRef.detectChanges();
         },
         error: (error) => {
           this.priceHistoryError = error;
           this.priceHistoryResponse = null;
           this.loadingPriceHistory = false;
+          this.changeDetectorRef.detectChanges();
         },
       });
+  }
+
+  private buildTimelineRequestKey(): string {
+    return `${this.fromDateLocal}|${this.toDateLocal}|${this.timezone}`;
+  }
+
+  private resolveSelectedTimelineDate(
+    response: StatisticsTimelineResponse,
+  ): string {
+    return this.selectedTimelineDateLocal &&
+      response.days.some(
+        (day) => day.dateLocal === this.selectedTimelineDateLocal,
+      )
+      ? this.selectedTimelineDateLocal
+      : (response.days[0]?.dateLocal ?? '');
   }
 
   private isDateRangeValid(): boolean {

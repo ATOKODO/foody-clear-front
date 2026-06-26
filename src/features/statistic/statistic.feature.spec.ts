@@ -158,6 +158,15 @@ describe('StatisticFeature', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should show targets as the default first statistics view', () => {
+    expect(component.activeView).toBe('targets');
+    expect(component.views.map((view) => view.value)).toEqual([
+      'targets',
+      'expenses',
+      'prices',
+    ]);
+  });
+
   it('should exclude a refunded purchase event from statistics', () => {
     const event = component.timelineResponse!.days[0].expenses.events[0];
 

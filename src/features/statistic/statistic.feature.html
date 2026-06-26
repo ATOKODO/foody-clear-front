@@ -39,6 +39,7 @@
         color="primary"
         type="button"
         data-testid="stat-refresh"
+        [disabled]="loadingTimeline"
         (click)="refresh()"
       >
         Actualiser
@@ -73,6 +74,7 @@
         color="primary"
         type="button"
         data-testid="stat-load"
+        [disabled]="loadingTimeline"
         (click)="refresh()"
       >
         Charger
