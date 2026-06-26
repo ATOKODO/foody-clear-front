@@ -73,6 +73,9 @@ const PLANNING_CALENDAR_VIEW_OPTIONS: readonly SegmentedToggleOption<CalendarVie
     { value: 'year', label: 'Année', testId: 'planning-view-year' },
   ];
 
+const AUTO_REFRESH_THROTTLE_MS = 30_000;
+const PLANNING_DATA_CACHE_MS = 60_000;
+
 @Component({
   selector: 'app-planning',
   imports: [
@@ -149,6 +152,17 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   lastResponseText = 'null';
   lastErrorText = '';
   private inputDayRequestId = 0;
+  private lastAutomaticRefreshAt = 0;
+  private cyclesRequestInFlight = false;
+  private lastCyclesLoadedAt = 0;
+  private slotsRequestInFlight = false;
+  private lastSlotsLoadedAt = 0;
+  private assignmentsRequestKey: string | null = null;
+  private lastAssignmentsLoadedKey: string | null = null;
+  private lastAssignmentsLoadedAt = 0;
+  private inputDataRequestKey: string | null = null;
+  private lastInputDataLoadedKey: string | null = null;
+  private lastInputDataLoadedAt = 0;
 
   get loadingCycles(): boolean {
     return this.loadingCyclesState();
@@ -195,7 +209,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.cycleService.setBaseUrl(this.baseUrl);
     this.inputDayService.setBaseUrl(this.baseUrl);
     this.slotService.setBaseUrl(this.baseUrl);
-    this.refreshPlanningData();
+    this.refreshPlanningData(true);
   }
 
   ngAfterViewInit(): void {
@@ -208,7 +222,8 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.cycleAssignmentService.setBaseUrl(this.baseUrl);
     this.inputDayService.setBaseUrl(this.baseUrl);
     this.slotService.setBaseUrl(this.baseUrl);
-    this.refreshPlanningData();
+    this.invalidatePlanningDataCache();
+    this.refreshPlanningData(true);
   }
 
   onWindowFocus(): void {
@@ -471,40 +486,69 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   onEmbeddedItemsChanged(_: { dateLocal: string }): void {
-    this.reloadInputDataForCurrentView();
+    this.reloadInputDataForCurrentView(true);
   }
 
-  refreshPlanningData(): void {
-    this.loadCycles();
-    this.loadSlots();
-    this.reloadAssignmentsForCurrentRange();
-    this.reloadInputDataForCurrentView();
+  refreshPlanningData(force = false): void {
+    if (!force && this.shouldThrottleAutomaticRefresh()) {
+      return;
+    }
+
+    this.loadCycles(force);
+    this.loadSlots(force);
+    this.reloadAssignmentsForCurrentRange(force);
+    this.reloadInputDataForCurrentView(force);
   }
 
-  private loadSlots(): void {
+  private loadSlots(force = false): void {
+    if (!force && this.shouldUseRecentData(this.lastSlotsLoadedAt)) {
+      return;
+    }
+
+    if (this.slotsRequestInFlight) {
+      return;
+    }
+
+    this.slotsRequestInFlight = true;
+
     this.slotService.findAll().subscribe({
       next: (response) => {
         this.slots = response;
+        this.lastSlotsLoadedAt = Date.now();
+        this.slotsRequestInFlight = false;
       },
       error: (error) => {
         this.slots = [];
         this.setLastError(error);
+        this.slotsRequestInFlight = false;
       },
     });
   }
 
-  private loadCycles(): void {
+  private loadCycles(force = false): void {
+    if (!force && this.shouldUseRecentData(this.lastCyclesLoadedAt)) {
+      return;
+    }
+
+    if (this.cyclesRequestInFlight) {
+      return;
+    }
+
     this.loadingCycles = true;
+    this.cyclesRequestInFlight = true;
 
     this.cycleService.findAll().subscribe({
       next: (response) => {
         this.cycles = response;
+        this.lastCyclesLoadedAt = Date.now();
         this.loadingCycles = false;
+        this.cyclesRequestInFlight = false;
         this.setLastError(null);
       },
       error: (error) => {
         this.setLastError(error);
         this.loadingCycles = false;
+        this.cyclesRequestInFlight = false;
       },
     });
   }
@@ -512,30 +556,49 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   private loadAssignmentsInRange(
     fromDateLocal: string,
     toDateLocal: string,
+    force = false,
   ): void {
     if (!this.isDateLocal(fromDateLocal) || !this.isDateLocal(toDateLocal)) {
       return;
     }
 
+    const requestKey = `${fromDateLocal}:${toDateLocal}`;
+    if (this.assignmentsRequestKey === requestKey) {
+      return;
+    }
+
+    if (
+      !force &&
+      this.lastAssignmentsLoadedKey === requestKey &&
+      this.shouldUseRecentData(this.lastAssignmentsLoadedAt)
+    ) {
+      return;
+    }
+
     this.loadingAssignments = true;
+    this.assignmentsRequestKey = requestKey;
 
     this.cycleAssignmentService
       .findInRange(fromDateLocal, toDateLocal)
       .subscribe({
         next: (response) => {
           this.cycleAssignments = response;
+          this.lastAssignmentsLoadedKey = requestKey;
+          this.lastAssignmentsLoadedAt = Date.now();
           this.setLastResponse(response);
           this.setLastError(null);
           this.loadingAssignments = false;
+          this.assignmentsRequestKey = null;
         },
         error: (error) => {
           this.setLastError(error);
           this.loadingAssignments = false;
+          this.assignmentsRequestKey = null;
         },
       });
   }
 
-  private reloadAssignmentsForCurrentRange(): void {
+  private reloadAssignmentsForCurrentRange(force = false): void {
     if (!this.currentRangeFromLocal || !this.currentRangeToLocal) {
       return;
     }
@@ -543,26 +606,27 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.loadAssignmentsInRange(
       this.currentRangeFromLocal,
       this.currentRangeToLocal,
+      force,
     );
   }
 
-  private reloadInputDataForCurrentView(): void {
+  private reloadInputDataForCurrentView(force = false): void {
     if (!this.currentAnchorDateLocal) {
       return;
     }
 
     if (this.currentCalendarView === 'day') {
-      this.loadInputDay(this.currentAnchorDateLocal);
+      this.loadInputDay(this.currentAnchorDateLocal, force);
       return;
     }
 
     if (this.currentCalendarView === 'month' && this.currentRangeFromLocal) {
-      this.loadInputMonth(this.currentRangeFromLocal);
+      this.loadInputMonth(this.currentRangeFromLocal, force);
       return;
     }
 
     if (this.currentCalendarView === 'week' && this.currentRangeFromLocal) {
-      this.loadInputWeek(this.currentRangeFromLocal);
+      this.loadInputWeek(this.currentRangeFromLocal, force);
       return;
     }
 
@@ -588,14 +652,21 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.clearInputDayState();
   }
 
-  private loadInputDay(dateLocal: string): void {
+  private loadInputDay(dateLocal: string, force = false): void {
     if (!this.isDateLocal(dateLocal)) {
       this.clearInputDayState();
       return;
     }
 
+    const timezone = this.resolveTimezone();
+    const requestKey = `day:${dateLocal}:${timezone}`;
+    if (this.shouldSkipInputDataRequest(requestKey, force)) {
+      return;
+    }
+
     const requestId = ++this.inputDayRequestId;
     this.loadingDayItems = true;
+    this.inputDataRequestKey = requestKey;
     this.dayItemsError = null;
     this.inputDayResponse = null;
     this.inputMonthResponse = null;
@@ -603,7 +674,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.inputDayItemsBySlot = [];
 
     this.inputDayService
-      .getInputDay(dateLocal, this.resolveTimezone())
+      .getInputDay(dateLocal, timezone)
       .subscribe({
         next: (response) => {
           if (requestId !== this.inputDayRequestId) {
@@ -611,9 +682,11 @@ export class PlanningFeature implements OnInit, AfterViewInit {
           }
           this.inputDayResponse = response;
           this.inputDayTimezone =
-            response.timezone?.trim() || this.resolveTimezone();
+            response.timezone?.trim() || timezone;
           this.inputDayItemsBySlot = response.itemsBySlot ?? [];
+          this.markInputDataLoaded(requestKey);
           this.loadingDayItems = false;
+          this.inputDataRequestKey = null;
         },
         error: (error) => {
           if (requestId !== this.inputDayRequestId) {
@@ -624,18 +697,26 @@ export class PlanningFeature implements OnInit, AfterViewInit {
           this.inputDayItemsBySlot = [];
           this.dayItemsError = error;
           this.loadingDayItems = false;
+          this.inputDataRequestKey = null;
         },
       });
   }
 
-  private loadInputMonth(dateLocal: string): void {
+  private loadInputMonth(dateLocal: string, force = false): void {
     if (!this.isDateLocal(dateLocal)) {
       this.clearInputDayState();
       return;
     }
 
+    const timezone = this.resolveTimezone();
+    const requestKey = `month:${dateLocal}:${timezone}`;
+    if (this.shouldSkipInputDataRequest(requestKey, force)) {
+      return;
+    }
+
     const requestId = ++this.inputDayRequestId;
     this.loadingDayItems = true;
+    this.inputDataRequestKey = requestKey;
     this.dayItemsError = null;
     this.inputDayResponse = null;
     this.inputMonthResponse = null;
@@ -643,7 +724,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.inputDayItemsBySlot = [];
 
     this.inputDayService
-      .getInputMonth(dateLocal, this.resolveTimezone())
+      .getInputMonth(dateLocal, timezone)
       .subscribe({
         next: (response) => {
           if (requestId !== this.inputDayRequestId) {
@@ -652,8 +733,10 @@ export class PlanningFeature implements OnInit, AfterViewInit {
 
           this.inputMonthResponse = response;
           this.inputDayTimezone =
-            response.timezone?.trim() || this.resolveTimezone();
+            response.timezone?.trim() || timezone;
+          this.markInputDataLoaded(requestKey);
           this.loadingDayItems = false;
+          this.inputDataRequestKey = null;
         },
         error: (error) => {
           if (requestId !== this.inputDayRequestId) {
@@ -664,18 +747,26 @@ export class PlanningFeature implements OnInit, AfterViewInit {
           this.inputDayItemsBySlot = [];
           this.dayItemsError = error;
           this.loadingDayItems = false;
+          this.inputDataRequestKey = null;
         },
       });
   }
 
-  private loadInputWeek(startDateLocal: string): void {
+  private loadInputWeek(startDateLocal: string, force = false): void {
     if (!this.isDateLocal(startDateLocal)) {
       this.clearInputDayState();
       return;
     }
 
+    const timezone = this.resolveTimezone();
+    const requestKey = `week:${startDateLocal}:${timezone}`;
+    if (this.shouldSkipInputDataRequest(requestKey, force)) {
+      return;
+    }
+
     const requestId = ++this.inputDayRequestId;
     this.loadingDayItems = true;
+    this.inputDataRequestKey = requestKey;
     this.dayItemsError = null;
     this.inputMonthResponse = null;
     this.inputDayResponse = null;
@@ -683,7 +774,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.inputDayItemsBySlot = [];
 
     this.inputDayService
-      .getInputWeek(startDateLocal, this.resolveTimezone())
+      .getInputWeek(startDateLocal, timezone)
       .subscribe({
         next: (response) => {
           if (requestId !== this.inputDayRequestId) {
@@ -692,8 +783,10 @@ export class PlanningFeature implements OnInit, AfterViewInit {
 
           this.inputWeekResponse = response;
           this.inputDayTimezone =
-            response.timezone?.trim() || this.resolveTimezone();
+            response.timezone?.trim() || timezone;
+          this.markInputDataLoaded(requestKey);
           this.loadingDayItems = false;
+          this.inputDataRequestKey = null;
         },
         error: (error) => {
           if (requestId !== this.inputDayRequestId) {
@@ -704,12 +797,14 @@ export class PlanningFeature implements OnInit, AfterViewInit {
           this.inputDayItemsBySlot = [];
           this.dayItemsError = error;
           this.loadingDayItems = false;
+          this.inputDataRequestKey = null;
         },
       });
   }
 
   private clearInputDayState(): void {
     this.inputDayRequestId++;
+    this.inputDataRequestKey = null;
     this.inputDayResponse = null;
     this.inputWeekResponse = null;
     this.inputMonthResponse = null;
@@ -783,8 +878,8 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.setLastError(null);
     this.savingAssignment = false;
     this.resetModalState();
-    this.reloadAssignmentsForCurrentRange();
-    this.reloadInputDataForCurrentView();
+    this.reloadAssignmentsForCurrentRange(true);
+    this.reloadInputDataForCurrentView(true);
   }
 
   private onMutationError(error: unknown): void {
@@ -795,6 +890,51 @@ export class PlanningFeature implements OnInit, AfterViewInit {
 
   private resolveTimezone(): string {
     return DateTime.local().zoneName || 'UTC';
+  }
+
+  private shouldThrottleAutomaticRefresh(): boolean {
+    const now = Date.now();
+    if (now - this.lastAutomaticRefreshAt < AUTO_REFRESH_THROTTLE_MS) {
+      return true;
+    }
+
+    this.lastAutomaticRefreshAt = now;
+    return false;
+  }
+
+  private shouldUseRecentData(lastLoadedAt: number): boolean {
+    return (
+      lastLoadedAt > 0 && Date.now() - lastLoadedAt < PLANNING_DATA_CACHE_MS
+    );
+  }
+
+  private shouldSkipInputDataRequest(
+    requestKey: string,
+    force: boolean,
+  ): boolean {
+    if (this.inputDataRequestKey === requestKey) {
+      return true;
+    }
+
+    return (
+      !force &&
+      this.lastInputDataLoadedKey === requestKey &&
+      this.shouldUseRecentData(this.lastInputDataLoadedAt)
+    );
+  }
+
+  private markInputDataLoaded(requestKey: string): void {
+    this.lastInputDataLoadedKey = requestKey;
+    this.lastInputDataLoadedAt = Date.now();
+  }
+
+  private invalidatePlanningDataCache(): void {
+    this.lastCyclesLoadedAt = 0;
+    this.lastSlotsLoadedAt = 0;
+    this.lastAssignmentsLoadedAt = 0;
+    this.lastAssignmentsLoadedKey = null;
+    this.lastInputDataLoadedAt = 0;
+    this.lastInputDataLoadedKey = null;
   }
 
   private resetAssignmentModalState(): void {

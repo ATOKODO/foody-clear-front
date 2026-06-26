@@ -41,7 +41,7 @@
         type="button"
         data-testid="planning-refresh"
         class="planning-feature__refresh-button"
-        (click)="refreshPlanningData()"
+        (click)="refreshPlanningData(true)"
         [disabled]="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment">
         Rafraichir
       </button>

@@ -11,7 +11,7 @@ import { ProductService } from '../../services/product-service';
 import { InventoryService } from '../../services/inventory-service';
 import { TemplateService } from '../../services/template-service';
 import { SlotService } from '../../services/slot-service';
-import { InputDayResponse } from '../../interfaces/input-day.interface';
+import { InputDayResponse, InputMonthResponse } from '../../interfaces/input-day.interface';
 import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
 import { InputDayFeature } from '../input-day/input-day.feature';
 import { Calendar } from '../../components/calendar/calendar';
@@ -482,7 +482,7 @@ describe('PlanningFeature', () => {
     );
   });
 
-  it('should refresh cycles, assignments and input data when planning is refreshed', () => {
+  it('should refresh cycles, assignments and input data when planning is manually refreshed', () => {
     component.currentCalendarView = 'day';
     component.currentAnchorDateLocal = '2026-02-18';
     component.currentRangeFromLocal = '2026-02-16';
@@ -492,7 +492,7 @@ describe('PlanningFeature', () => {
     cycleAssignmentServiceMock.findInRange.calls.reset();
     inputDayServiceMock.getInputDay.calls.reset();
 
-    component.refreshPlanningData();
+    component.refreshPlanningData(true);
 
     expect(cycleServiceMock.findAll).toHaveBeenCalled();
     expect(cycleAssignmentServiceMock.findInRange).toHaveBeenCalledWith(
@@ -505,7 +505,7 @@ describe('PlanningFeature', () => {
     );
   });
 
-  it('should refresh month input data when planning is refreshed in month view', () => {
+  it('should refresh month input data when planning is manually refreshed in month view', () => {
     component.currentCalendarView = 'month';
     component.currentAnchorDateLocal = '2026-02-18';
     component.currentRangeFromLocal = '2026-02-01';
@@ -515,7 +515,7 @@ describe('PlanningFeature', () => {
     cycleAssignmentServiceMock.findInRange.calls.reset();
     inputDayServiceMock.getInputMonth.calls.reset();
 
-    component.refreshPlanningData();
+    component.refreshPlanningData(true);
 
     expect(cycleServiceMock.findAll).toHaveBeenCalled();
     expect(cycleAssignmentServiceMock.findInRange).toHaveBeenCalledWith(
@@ -525,6 +525,52 @@ describe('PlanningFeature', () => {
     expect(inputDayServiceMock.getInputMonth).toHaveBeenCalledWith(
       '2026-02-01',
       jasmine.any(String),
+    );
+  });
+
+  it('should not start a second cycles request while the first one is still loading', () => {
+    const cyclesResponse$ = new Subject<[]>();
+    cycleServiceMock.findAll.and.returnValue(cyclesResponse$);
+    cycleServiceMock.findAll.calls.reset();
+
+    component.refreshPlanningData(true);
+    component.refreshPlanningData(true);
+
+    expect(cycleServiceMock.findAll).toHaveBeenCalledTimes(1);
+
+    cyclesResponse$.next([]);
+    cyclesResponse$.complete();
+    cycleServiceMock.findAll.and.returnValue(of([]));
+  });
+
+  it('should not start a second month input request while the first one is still loading', () => {
+    const monthResponse$ = new Subject<InputMonthResponse>();
+    inputDayServiceMock.getInputMonth.and.returnValue(monthResponse$);
+    inputDayServiceMock.getInputMonth.calls.reset();
+    component.currentCalendarView = 'month';
+    component.currentAnchorDateLocal = '2026-02-18';
+    component.currentRangeFromLocal = '2026-02-01';
+    component.currentRangeToLocal = '2026-02-28';
+
+    component.refreshPlanningData(true);
+    component.refreshPlanningData(true);
+
+    expect(inputDayServiceMock.getInputMonth).toHaveBeenCalledTimes(1);
+
+    monthResponse$.next({
+      startDateLocal: '2026-02-01',
+      endDateLocal: '2026-02-28',
+      timezone: 'UTC',
+      days: [dayResponse],
+    });
+    monthResponse$.complete();
+    inputDayServiceMock.getInputMonth.and.returnValue(
+      of({
+        startDateLocal: '2026-02-01',
+        endDateLocal: '2026-02-28',
+        timezone: 'UTC',
+        days: [dayResponse],
+      }),
     );
   });
 
