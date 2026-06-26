@@ -576,6 +576,7 @@ describe('PlanningFeature', () => {
 
   it('should load month input data when the calendar switches to month view', () => {
     inputDayServiceMock.getInputMonth.calls.reset();
+    (component as any).hasHandledInitialCalendarData = true;
 
     component.onCalendarViewChanged({
       view: 'month',

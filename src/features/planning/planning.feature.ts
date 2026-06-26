@@ -163,6 +163,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   private inputDataRequestKey: string | null = null;
   private lastInputDataLoadedKey: string | null = null;
   private lastInputDataLoadedAt = 0;
+  private hasHandledInitialCalendarData = false;
 
   get loadingCycles(): boolean {
     return this.loadingCyclesState();
@@ -209,7 +210,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.cycleService.setBaseUrl(this.baseUrl);
     this.inputDayService.setBaseUrl(this.baseUrl);
     this.slotService.setBaseUrl(this.baseUrl);
-    this.refreshPlanningData(true);
+    this.refreshPlanningData(true, { includeCycles: false });
   }
 
   ngAfterViewInit(): void {
@@ -223,7 +224,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.inputDayService.setBaseUrl(this.baseUrl);
     this.slotService.setBaseUrl(this.baseUrl);
     this.invalidatePlanningDataCache();
-    this.refreshPlanningData(true);
+    this.refreshPlanningData(true, { includeCycles: false });
   }
 
   onWindowFocus(): void {
@@ -244,12 +245,21 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   onCalendarViewChanged(event: CalendarViewChangeEvent): void {
+    const isInitialCalendarEvent = !this.hasHandledInitialCalendarData;
+
     this.currentCalendarView = event.view;
     this.currentAnchorDateLocal = event.anchorDateLocal;
     this.currentRangeFromLocal = event.fromDateLocal;
     this.currentRangeToLocal = event.toDateLocal;
+    this.hasHandledInitialCalendarData = true;
     this.syncCalendarHeaderState();
     this.loadAssignmentsInRange(event.fromDateLocal, event.toDateLocal);
+
+    if (isInitialCalendarEvent && event.view === 'month') {
+      this.deferInitialInputDataForView(event);
+      return;
+    }
+
     this.loadInputDataForView(event);
   }
 
@@ -489,12 +499,17 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.reloadInputDataForCurrentView(true);
   }
 
-  refreshPlanningData(force = false): void {
+  refreshPlanningData(
+    force = false,
+    options: { includeCycles?: boolean } = {},
+  ): void {
     if (!force && this.shouldThrottleAutomaticRefresh()) {
       return;
     }
 
-    this.loadCycles(force);
+    if (options.includeCycles ?? true) {
+      this.loadCycles(force);
+    }
     this.loadSlots(force);
     this.reloadAssignmentsForCurrentRange(force);
     this.reloadInputDataForCurrentView(force);
@@ -631,6 +646,41 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     }
 
     this.clearInputDayState();
+  }
+
+  private deferInitialInputDataForView(event: CalendarViewChangeEvent): void {
+    const scheduledEvent = { ...event };
+    const load = () => {
+      if (
+        this.currentCalendarView !== scheduledEvent.view ||
+        this.currentAnchorDateLocal !== scheduledEvent.anchorDateLocal ||
+        this.currentRangeFromLocal !== scheduledEvent.fromDateLocal ||
+        this.currentRangeToLocal !== scheduledEvent.toDateLocal
+      ) {
+        return;
+      }
+
+      this.loadInputDataForView(scheduledEvent);
+    };
+
+    if (typeof window === 'undefined') {
+      load();
+      return;
+    }
+
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (
+        callback: () => void,
+        options?: { timeout: number },
+      ) => number;
+    };
+
+    if (idleWindow.requestIdleCallback) {
+      idleWindow.requestIdleCallback(load, { timeout: 1500 });
+      return;
+    }
+
+    window.setTimeout(load, 250);
   }
 
   private loadInputDataForView(event: CalendarViewChangeEvent): void {
@@ -840,6 +890,9 @@ export class PlanningFeature implements OnInit, AfterViewInit {
       return;
     }
 
+    if (this.cycles.length === 0) {
+      this.loadCycles();
+    }
     this.activeModal = 'assignment';
     this.clickedDateLocal = dateLocal;
     this.selectedModalDateLocal = dateLocal;

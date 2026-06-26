@@ -207,6 +207,7 @@ interface CalendarMonthAlertBadge {
   imports: [MatButtonModule, MatButtonToggleModule, DecimalPipe],
   templateUrl: './calendar.html',
   styleUrl: './calendar.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Calendar implements OnInit, OnChanges {
   readonly cycleAssignments = input<CycleAssignment[]>([]);
