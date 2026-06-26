@@ -26,6 +26,7 @@ import {
   InventoryProduct,
   InventoryProductQtyDto,
   ProductQuantityInputUnit,
+  PurchaseAccountingMode,
   UpdateInventoryDto,
 } from '../../interfaces/inventory.interface';
 import { InventoryService } from '../../services/inventory-service';
@@ -57,6 +58,7 @@ type InventoryRowProductMeta = {
   portionCount: number | null;
   portionUnit: ProductQuantityInputUnit | null;
   portionQuantityNormalized: number | null;
+  price: number | null;
 };
 
 type InventorySelectedProductRow = {
@@ -66,6 +68,7 @@ type InventorySelectedProductRow = {
   qtyUnit: ProductQuantityInputUnit;
   qtyUnitOptions: InventoryQtyUnitOption[];
   qtyUnitHelpText: string | null;
+  purchaseAccountingMode: PurchaseAccountingMode;
 } & InventoryRowProductMeta;
 
 type InventoryManagedProductRow = {
@@ -82,6 +85,7 @@ type InventoryProductMetaSource = {
   portionCount?: number | null;
   portionUnit?: string | null;
   portionQuantityNormalized?: number | null;
+  price?: number | null;
 };
 
 type InventoryQtyUnitOption = {
@@ -148,6 +152,12 @@ export class Inventory implements OnInit {
   createProductsFormError: string | null = null;
   addProductsFormError: string | null = null;
   manageProductsFormError: string | null = null;
+
+  readonly purchaseAccountingModeOptions: Array<{ value: PurchaseAccountingMode; label: string }> = [
+    { value: 'paid', label: 'Paye' },
+    { value: 'free', label: 'Offert' },
+    { value: 'excluded', label: 'Ignorer des stats' },
+  ];
 
   private readonly qtyUnitSet = new Set<ProductQuantityInputUnit>(INVENTORY_QTY_UNITS);
 
@@ -468,7 +478,7 @@ export class Inventory implements OnInit {
 
     this.saving = true;
     this.inventorySrv.addProducts(inventoryId, {
-      products: this.toProductQtyPayload(this.addSelectedProductRows),
+      products: this.toProductQtyPayload(this.addSelectedProductRows, true),
     }).subscribe({
       next: (response) => {
         this.lastResponse = response;
@@ -665,6 +675,22 @@ export class Inventory implements OnInit {
     return row.productId;
   }
 
+
+  private ensurePurchaseAccountingMode(
+    value: PurchaseAccountingMode | null | undefined,
+    meta: InventoryRowProductMeta,
+  ): PurchaseAccountingMode {
+    return value === 'paid' || value === 'free' || value === 'excluded'
+      ? value
+      : this.resolveDefaultPurchaseAccountingMode(meta);
+  }
+
+  private resolveDefaultPurchaseAccountingMode(
+    meta: InventoryRowProductMeta,
+  ): PurchaseAccountingMode {
+    return meta.price != null ? 'paid' : 'free';
+  }
+
   private loadInventories(): void {
     this.loading = true;
     this.inventorySrv.findAll().subscribe({
@@ -738,7 +764,7 @@ export class Inventory implements OnInit {
       name: value.name.trim(),
     };
 
-    const products = this.toProductQtyPayload(this.createSelectedProductRows);
+    const products = this.toProductQtyPayload(this.createSelectedProductRows, true);
     if (products.length > 0) {
       payload.products = products;
     }
@@ -807,9 +833,14 @@ export class Inventory implements OnInit {
           portionCount: meta.portionCount,
           portionUnit: meta.portionUnit,
           portionQuantityNormalized: meta.portionQuantityNormalized,
+          price: meta.price,
           qtyUnit,
           qtyUnitOptions: this.getQtyUnitOptions(meta),
           qtyUnitHelpText: this.getQtyUnitHelpText(meta),
+          purchaseAccountingMode: this.ensurePurchaseAccountingMode(
+            row.purchaseAccountingMode,
+            meta,
+          ),
         };
       })
       .filter((row): row is InventorySelectedProductRow => row !== null);
@@ -838,9 +869,14 @@ export class Inventory implements OnInit {
           portionCount: meta.portionCount,
           portionUnit: meta.portionUnit,
           portionQuantityNormalized: meta.portionQuantityNormalized,
+          price: meta.price,
           qtyUnit,
           qtyUnitOptions: this.getQtyUnitOptions(meta),
           qtyUnitHelpText: this.getQtyUnitHelpText(meta),
+          purchaseAccountingMode: this.ensurePurchaseAccountingMode(
+            existingRow.purchaseAccountingMode,
+            meta,
+          ),
         };
       }
 
@@ -851,12 +887,16 @@ export class Inventory implements OnInit {
         qtyUnit,
         qtyUnitOptions: this.getQtyUnitOptions(meta),
         qtyUnitHelpText: this.getQtyUnitHelpText(meta),
+        purchaseAccountingMode: this.resolveDefaultPurchaseAccountingMode(meta),
         ...meta,
       };
     });
   }
 
-  private toProductQtyPayload(rows: InventorySelectedProductRow[]): InventoryProductQtyDto[] {
+  private toProductQtyPayload(
+    rows: InventorySelectedProductRow[],
+    includeAccountingMode = false,
+  ): InventoryProductQtyDto[] {
     return rows
       .filter(
         (row) => typeof row.qty === 'number' && Number.isFinite(row.qty) && row.qty > 0,
@@ -865,6 +905,9 @@ export class Inventory implements OnInit {
         productId: row.productId,
         qty: row.qty as number,
         ...(row.qtyUnit !== 'unit' ? { qtyUnit: row.qtyUnit } : {}),
+        ...(includeAccountingMode
+          ? { purchaseAccountingMode: row.purchaseAccountingMode }
+          : {}),
       }));
   }
 
@@ -1067,6 +1110,7 @@ export class Inventory implements OnInit {
         qtyUnit: 'unit',
         qtyUnitOptions: this.getQtyUnitOptions(meta),
         qtyUnitHelpText: this.getQtyUnitHelpText(meta),
+        purchaseAccountingMode: 'excluded',
         currentQty,
         currentQtyUnit: 'unit',
         currentNormalizedQty:
@@ -1099,6 +1143,10 @@ export class Inventory implements OnInit {
         typeof source?.portionQuantityNormalized === 'number' &&
         Number.isFinite(source.portionQuantityNormalized)
           ? source.portionQuantityNormalized
+          : null,
+      price:
+        typeof source?.price === 'number' && Number.isFinite(source.price)
+          ? source.price
           : null,
     };
   }

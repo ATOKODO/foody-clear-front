@@ -26,6 +26,8 @@ describe('Inventory', () => {
         portionUnit: 'portion',
         portionQuantityNormalized: 0.5,
         nutritionValues: [],
+        price: 6,
+        priceUnit: 'kg',
       },
     },
   ];
@@ -63,6 +65,8 @@ describe('Inventory', () => {
         portionUnit: 'portion',
         portionQuantityNormalized: 0.5,
         nutritionValues: [],
+        price: 6,
+        priceUnit: 'kg',
       },
       {
         id: 2,
@@ -124,6 +128,8 @@ describe('Inventory', () => {
         portionUnit: 'portion',
         portionQuantityNormalized: 0.5,
         nutritionValues: [],
+        price: 6,
+        priceUnit: 'kg',
       },
       {
         id: 2,
@@ -231,8 +237,8 @@ describe('Inventory', () => {
     expect(inventoryServiceMock.create).toHaveBeenCalledWith({
       name: 'Nouveau stock',
       products: [
-        { productId: 1, qty: 2 },
-        { productId: 2, qty: 3 },
+        { productId: 1, qty: 2, purchaseAccountingMode: 'paid' },
+        { productId: 2, qty: 3, purchaseAccountingMode: 'free' },
       ],
     });
   });
@@ -250,7 +256,7 @@ describe('Inventory', () => {
     component.onAddSelectedProducts();
 
     expect(inventoryServiceMock.addProducts).toHaveBeenCalledWith(4, {
-      products: [{ productId: 2, qty: 4 }],
+      products: [{ productId: 2, qty: 4, purchaseAccountingMode: 'free' }],
     });
   });
 
@@ -267,7 +273,7 @@ describe('Inventory', () => {
 
     expect(inventoryServiceMock.create).toHaveBeenCalledWith({
       name: 'Stock portionne',
-      products: [{ productId: 2, qty: 2, qtyUnit: 'portion' }],
+      products: [{ productId: 2, qty: 2, qtyUnit: 'portion', purchaseAccountingMode: 'free' }],
     });
   });
 
@@ -285,7 +291,25 @@ describe('Inventory', () => {
     component.onAddSelectedProducts();
 
     expect(inventoryServiceMock.addProducts).toHaveBeenCalledWith(4, {
-      products: [{ productId: 2, qty: 3, qtyUnit: 'portion' }],
+      products: [{ productId: 2, qty: 3, qtyUnit: 'portion', purchaseAccountingMode: 'free' }],
+    });
+  });
+
+  it('should allow excluding a stock addition from statistics', () => {
+    component.onEditRequested({
+      id: '4',
+      name: 'Stock principal',
+      productCount: 1,
+    });
+    component.openAddProductsModal();
+    component.onProductsToAddSelected([component.productListItems[0]]);
+    component.addSelectedProductRows[0].qty = 1;
+    component.addSelectedProductRows[0].purchaseAccountingMode = 'excluded';
+
+    component.onAddSelectedProducts();
+
+    expect(inventoryServiceMock.addProducts).toHaveBeenCalledWith(4, {
+      products: [{ productId: 1, qty: 1, purchaseAccountingMode: 'excluded' }],
     });
   });
 
@@ -312,7 +336,7 @@ describe('Inventory', () => {
     component.onAddSelectedProducts();
 
     expect(inventoryServiceMock.addProducts).toHaveBeenCalledWith(4, {
-      products: [{ productId: 1, qty: 4 }],
+      products: [{ productId: 1, qty: 4, purchaseAccountingMode: 'paid' }],
     });
   });
 

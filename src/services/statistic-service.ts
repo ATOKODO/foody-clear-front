@@ -2,8 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
+  ProductPriceCorrectionDto,
+  ProductPriceCorrectionResponse,
   ProductPriceHistoryStatsResponse,
   StatisticsTimelineResponse,
+  UpdatePurchaseEventExclusionDto,
 } from '../interfaces/statistics.interface';
 import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
@@ -26,9 +29,12 @@ export class StatisticService {
       .set('from', fromDateLocal)
       .set('to', toDateLocal)
       .set('timezone', timezone);
-    return this.http.get<StatisticsTimelineResponse>(`${this.baseUrl}/statistics/timeline`, {
-      params,
-    });
+    return this.http.get<StatisticsTimelineResponse>(
+      `${this.baseUrl}/statistics/timeline`,
+      {
+        params,
+      },
+    );
   }
 
   getProductPriceHistory(
@@ -43,6 +49,36 @@ export class StatisticService {
       .set('timezone', timezone);
     return this.http.get<ProductPriceHistoryStatsResponse>(
       `${this.baseUrl}/statistics/product-price-history/${productId}`,
+      { params },
+    );
+  }
+
+  updatePurchaseEventExclusion(
+    eventId: number,
+    dto: UpdatePurchaseEventExclusionDto,
+    fromDateLocal: string,
+    toDateLocal: string,
+    timezone: string,
+  ): Observable<StatisticsTimelineResponse> {
+    const params = new HttpParams()
+      .set('from', fromDateLocal)
+      .set('to', toDateLocal)
+      .set('timezone', timezone);
+    return this.http.patch<StatisticsTimelineResponse>(
+      `${this.baseUrl}/statistics/purchase-events/${eventId}/exclusion`,
+      dto,
+      { params },
+    );
+  }
+
+  correctProductPrice(
+    dto: ProductPriceCorrectionDto,
+    timezone: string,
+  ): Observable<ProductPriceCorrectionResponse> {
+    const params = new HttpParams().set('timezone', timezone);
+    return this.http.post<ProductPriceCorrectionResponse>(
+      `${this.baseUrl}/statistics/product-price-corrections`,
+      dto,
       { params },
     );
   }

@@ -4,15 +4,45 @@
       <p class="stat-eyebrow">Foody Clear</p>
       <h1>Statistiques</h1>
       <p class="stat-subtitle">
-        Timeline des achats, progression sur les objectifs et evolution du prix des produits.
+        Timeline des achats, progression sur les objectifs et evolution du prix
+        des produits.
       </p>
     </div>
 
     <div class="stat-hero__actions">
-      <button mat-stroked-button type="button" data-testid="stat-quick-7" (click)="applyQuickRange(7)">7 jours</button>
-      <button mat-stroked-button type="button" data-testid="stat-quick-30" (click)="applyQuickRange(30)">30 jours</button>
-      <button mat-stroked-button type="button" data-testid="stat-quick-90" (click)="applyQuickRange(90)">90 jours</button>
-      <button mat-raised-button color="primary" type="button" data-testid="stat-refresh" (click)="refresh()">Actualiser</button>
+      <button
+        mat-stroked-button
+        type="button"
+        data-testid="stat-quick-7"
+        (click)="applyQuickRange(7)"
+      >
+        7 jours
+      </button>
+      <button
+        mat-stroked-button
+        type="button"
+        data-testid="stat-quick-30"
+        (click)="applyQuickRange(30)"
+      >
+        30 jours
+      </button>
+      <button
+        mat-stroked-button
+        type="button"
+        data-testid="stat-quick-90"
+        (click)="applyQuickRange(90)"
+      >
+        90 jours
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        data-testid="stat-refresh"
+        (click)="refresh()"
+      >
+        Actualiser
+      </button>
     </div>
   </header>
 
@@ -38,23 +68,29 @@
         <input matInput [(ngModel)]="timezone" />
       </mat-form-field>
 
-      <button mat-flat-button color="primary" type="button" data-testid="stat-load" (click)="refresh()">
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        data-testid="stat-load"
+        (click)="refresh()"
+      >
         Charger
       </button>
     </div>
   </mat-card>
 
-  <div class="stat-banner app-alert">
-    L'historique des achats commence a l'activation de la feature. Le stock deja present n'est pas retro-injecte.
-  </div>
-
   <mat-button-toggle-group
     [(ngModel)]="activeView"
     class="stat-view-switch"
     data-testid="stat-view-switch"
-    aria-label="Changer de vue statistiques">
+    aria-label="Changer de vue statistiques"
+  >
     @for (view of views; track view) {
-      <mat-button-toggle [value]="view.value" [attr.data-testid]="'stat-view-' + view.value">
+      <mat-button-toggle
+        [value]="view.value"
+        [attr.data-testid]="'stat-view-' + view.value"
+      >
         {{ view.label }}
       </mat-button-toggle>
     }
@@ -64,7 +100,7 @@
     <mat-progress-bar mode="indeterminate" />
   }
 
-  @if (activeView === 'expenses') {
+  @if (activeView === "expenses") {
     @if (timelineResponse; as timeline) {
       <div class="stat-grid stat-grid--summary">
         <mat-card appearance="outlined" class="stat-card stat-kpi">
@@ -86,7 +122,10 @@
         <div class="stat-card__head">
           <div>
             <h2>Timeline des depenses</h2>
-            <p>{{ timeline.fromDateLocal }} au {{ timeline.toDateLocal }} | {{ timeline.timezone }}</p>
+            <p>
+              {{ timeline.fromDateLocal }} au {{ timeline.toDateLocal }} |
+              {{ timeline.timezone }}
+            </p>
           </div>
         </div>
         <div class="expense-timeline" data-testid="stat-expense-timeline">
@@ -95,14 +134,28 @@
               type="button"
               class="expense-bar"
               [attr.data-testid]="'stat-expense-day-' + day.dateLocal"
-              [class.is-active]="selectedTimelineDay?.dateLocal === day.dateLocal"
-              (click)="selectTimelineDay(day.dateLocal)">
-              <span class="expense-bar__amount">{{ formatCurrency(day.expenses.totalAmount) }}</span>
+              [class.is-active]="
+                selectedTimelineDay?.dateLocal === day.dateLocal
+              "
+              (click)="selectTimelineDay(day.dateLocal)"
+            >
+              <span class="expense-bar__amount">{{
+                formatCurrency(day.expenses.totalAmount)
+              }}</span>
               <span class="expense-bar__rail">
-                <span class="expense-bar__fill" [style.height.%]="getBarHeight(day.expenses.totalAmount, expenseMax)"></span>
+                <span
+                  class="expense-bar__fill"
+                  [style.height.%]="
+                    getBarHeight(day.expenses.totalAmount, expenseMax)
+                  "
+                ></span>
               </span>
-              <span class="expense-bar__date">{{ formatDate(day.dateLocal) }}</span>
-              <span class="expense-bar__meta">{{ day.expenses.purchaseCount }} achat(s)</span>
+              <span class="expense-bar__date">{{
+                formatDate(day.dateLocal)
+              }}</span>
+              <span class="expense-bar__meta"
+                >{{ day.expenses.purchaseCount }} achat(s)</span
+              >
             </button>
           }
         </div>
@@ -113,7 +166,10 @@
         <div class="stat-card__head">
           <div>
             <h2>Detail du {{ day.dateLocal }}</h2>
-            <p>{{ day.expenses.events.length }} evenement(s) | {{ selectedDayExpenseTotal }}</p>
+            <p>
+              {{ day.expenses.events.length }} evenement(s) |
+              {{ selectedDayExpenseTotal }}
+            </p>
           </div>
         </div>
         @if (day.expenses.events.length > 0) {
@@ -121,39 +177,85 @@
             @for (event of day.expenses.events; track event) {
               <article
                 class="detail-item"
-                [attr.data-testid]="'stat-expense-event-' + event.id">
+                [attr.data-testid]="'stat-expense-event-' + event.id"
+              >
                 <div>
                   <strong>{{ event.productName }}</strong>
-                  <p>{{ event.inventoryName || 'Inventaire inconnu' }}</p>
-                  <p>{{ formatDateTime(event.occurredAt) }} | {{ event.qty }} {{ event.qtyUnit }}</p>
+                  <p>{{ event.inventoryName || "Inventaire inconnu" }}</p>
+                  <p>
+                    {{ formatDateTime(event.occurredAt) }} | {{ event.qty }}
+                    {{ event.qtyUnit }}
+                  </p>
                 </div>
                 <div class="detail-item__aside">
-                  @if (event.pricingStatus === 'complete') {
+                  @if (
+                    event.pricingStatus === "complete" ||
+                    event.pricingStatus === "free"
+                  ) {
                     <span>
                       {{ formatCurrency(event.expenseAmount) }}
                     </span>
+                  } @else if (
+                    event.excludedFromStats ||
+                    event.pricingStatus === "excluded"
+                  ) {
+                    <span class="status-chip">{{
+                      getPurchaseEventStatusLabel(event)
+                    }}</span>
                   } @else {
-                    <span class="status-chip status-chip--warn">prix incomplet</span>
+                    <span class="status-chip status-chip--warn">{{
+                      getPurchaseEventStatusLabel(event)
+                    }}</span>
+                  }
+                  @if (
+                    event.excludedFromStats ||
+                    event.pricingStatus === "excluded"
+                  ) {
+                    <button
+                      mat-stroked-button
+                      type="button"
+                      [disabled]="savingPurchaseEventId === event.id"
+                      [attr.data-testid]="'stat-purchase-restore-' + event.id"
+                      (click)="restorePurchaseEvent(event)"
+                    >
+                      Reintegrer
+                    </button>
+                  } @else {
+                    <button
+                      mat-stroked-button
+                      color="warn"
+                      type="button"
+                      [disabled]="savingPurchaseEventId === event.id"
+                      [attr.data-testid]="'stat-purchase-exclude-' + event.id"
+                      (click)="excludePurchaseEvent(event)"
+                    >
+                      Rembourse
+                    </button>
                   }
                 </div>
               </article>
             }
           </div>
         } @else {
-          <p class="empty-copy" data-testid="stat-empty-expenses">Aucun achat sur cette journee.</p>
+          <p class="empty-copy" data-testid="stat-empty-expenses">
+            Aucun achat sur cette journee.
+          </p>
         }
       </mat-card>
     }
   }
 
-  @if (activeView === 'targets') {
+  @if (activeView === "targets") {
     <mat-card appearance="outlined" class="stat-card">
       <div class="stat-card__head">
         <div>
           <h2>Objectifs / saisie du jour</h2>
           <p>Comparaison journaliere entre reel et cible.</p>
         </div>
-        <mat-button-toggle-group [(ngModel)]="activeMetric" aria-label="Choisir la metrique">
+        <mat-button-toggle-group
+          [(ngModel)]="activeMetric"
+          aria-label="Choisir la metrique"
+        >
           @for (metric of metricOptions; track metric) {
             <mat-button-toggle [value]="metric.key">
               {{ metric.label }}
@@ -168,14 +270,27 @@
               type="button"
               class="target-bar"
               [attr.data-testid]="'stat-target-day-' + day.dateLocal"
-              [class.is-active]="selectedTimelineDay?.dateLocal === day.dateLocal"
-              (click)="selectTimelineDay(day.dateLocal)">
-              <span class="target-bar__date">{{ formatDate(day.dateLocal) }}</span>
+              [class.is-active]="
+                selectedTimelineDay?.dateLocal === day.dateLocal
+              "
+              (click)="selectTimelineDay(day.dateLocal)"
+            >
+              <span class="target-bar__date">{{
+                formatDate(day.dateLocal)
+              }}</span>
               <span class="target-bar__stacks">
-                <span class="target-bar__goal" [style.height.%]="getTargetGoalHeight(day)"></span>
-                <span class="target-bar__actual" [style.height.%]="getTargetActualHeight(day)"></span>
+                <span
+                  class="target-bar__goal"
+                  [style.height.%]="getTargetGoalHeight(day)"
+                ></span>
+                <span
+                  class="target-bar__actual"
+                  [style.height.%]="getTargetActualHeight(day)"
+                ></span>
               </span>
-              <span class="target-bar__meta">{{ day.inputs.targetSource }}</span>
+              <span class="target-bar__meta">{{
+                day.inputs.targetSource
+              }}</span>
             </button>
           }
         </div>
@@ -206,7 +321,8 @@
         <div class="target-detail-meta">
           @if (day.inputs.assignment) {
             <p>
-              Cycle: {{ day.inputs.assignment.cycleTitle }} (jour {{ day.inputs.assignment.dayIndex }})
+              Cycle: {{ day.inputs.assignment.cycleTitle }} (jour
+              {{ day.inputs.assignment.dayIndex }})
             </p>
           }
           @if (day.inputs.daySet) {
@@ -215,7 +331,8 @@
           <p>Items saisis: {{ day.inputs.itemCount }}</p>
           @if (day.inputs.incompleteNutritionKeys.length > 0) {
             <p>
-              Nutrition incomplete: {{ day.inputs.incompleteNutritionKeys.join(', ') }}
+              Nutrition incomplete:
+              {{ day.inputs.incompleteNutritionKeys.join(", ") }}
             </p>
           }
         </div>
@@ -223,7 +340,7 @@
     }
   }
 
-  @if (activeView === 'prices') {
+  @if (activeView === "prices") {
     <mat-card appearance="outlined" class="stat-card">
       <div class="stat-card__head">
         <div>
@@ -234,7 +351,11 @@
       <div class="stat-filters">
         <mat-form-field appearance="fill">
           <mat-label>Produit</mat-label>
-          <mat-select data-testid="stat-price-product-select" [(ngModel)]="selectedPriceProductId" (selectionChange)="onPriceProductChange()">
+          <mat-select
+            data-testid="stat-price-product-select"
+            [(ngModel)]="selectedPriceProductId"
+            (selectionChange)="onPriceProductChange()"
+          >
             @for (product of products; track product) {
               <mat-option [value]="product.id">
                 {{ product.name }} (#{{ product.id }})
@@ -243,12 +364,71 @@
           </mat-select>
         </mat-form-field>
       </div>
+      <div class="stat-filters" data-testid="stat-price-correction-form">
+        <mat-form-field appearance="fill">
+          <mat-label>Nouveau prix</mat-label>
+          <input
+            matInput
+            type="number"
+            min="0"
+            step="0.01"
+            [(ngModel)]="priceCorrectionPrice"
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Unite</mat-label>
+          <mat-select [(ngModel)]="priceCorrectionPriceUnit">
+            @for (unit of priceUnitOptions; track unit) {
+              <mat-option [value]="unit">{{ unit }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Debut</mat-label>
+          <input
+            matInput
+            type="date"
+            [(ngModel)]="priceCorrectionFromDateLocal"
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Fin</mat-label>
+          <input
+            matInput
+            type="date"
+            [(ngModel)]="priceCorrectionToDateLocal"
+          />
+        </mat-form-field>
+
+        <mat-checkbox [(ngModel)]="priceCorrectionRecalculatePurchases">
+          Recalculer les achats
+        </mat-checkbox>
+
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          data-testid="stat-price-correction-submit"
+          [disabled]="correctingPrice || selectedPriceProductId === null"
+          (click)="submitPriceCorrection()"
+        >
+          Corriger
+        </button>
+      </div>
+
       @if (priceHistoryResponse; as history) {
         <div class="stat-grid stat-grid--summary">
           <div class="target-detail-box">
             <span>Prix courant</span>
             <strong>
-              {{ history.currentPrice.price != null ? formatCurrency(history.currentPrice.price) : '--' }}
+              {{
+                history.currentPrice.price != null
+                  ? formatCurrency(history.currentPrice.price)
+                  : "--"
+              }}
               {{ formatPriceChangeUnit(history.currentPrice.priceUnit) }}
             </strong>
           </div>
@@ -269,9 +449,17 @@
           <div class="target-detail-box">
             <span>Min / Max</span>
             <strong>
-              {{ history.stats.minPrice !== null ? formatCurrency(history.stats.minPrice) : '--' }}
+              {{
+                history.stats.minPrice !== null
+                  ? formatCurrency(history.stats.minPrice)
+                  : "--"
+              }}
               /
-              {{ history.stats.maxPrice !== null ? formatCurrency(history.stats.maxPrice) : '--' }}
+              {{
+                history.stats.maxPrice !== null
+                  ? formatCurrency(history.stats.maxPrice)
+                  : "--"
+              }}
             </strong>
           </div>
         </div>
@@ -282,18 +470,23 @@
             @for (change of history.changes; track change) {
               <article
                 class="price-timeline__item"
-                [attr.data-testid]="'stat-price-change-' + change.id">
+                [attr.data-testid]="'stat-price-change-' + change.id"
+              >
                 <div class="price-timeline__dot"></div>
                 <div class="price-timeline__content">
                   <div class="price-timeline__top">
-                    <strong>{{ formatCurrency(change.price) }} {{ formatPriceChangeUnit(change.priceUnit) }}</strong>
+                    <strong
+                      >{{ formatCurrency(change.price) }}
+                      {{ formatPriceChangeUnit(change.priceUnit) }}</strong
+                    >
                     <span>{{ formatDateTime(change.effectiveFrom) }}</span>
                   </div>
                   <p>
                     Ancien:
                     @if (change.previousPrice !== null) {
                       <span>
-                        {{ formatCurrency(change.previousPrice) }} {{ formatPriceChangeUnit(change.previousPriceUnit) }}
+                        {{ formatCurrency(change.previousPrice) }}
+                        {{ formatPriceChangeUnit(change.previousPriceUnit) }}
                       </span>
                     } @else {
                       --
@@ -310,9 +503,7 @@
                     }
                     |
                     @if (change.relativeDeltaPct !== null) {
-                      <span>
-                        {{ change.relativeDeltaPct }}%
-                      </span>
+                      <span> {{ change.relativeDeltaPct }}% </span>
                     } @else {
                       --
                     }
@@ -323,21 +514,34 @@
           </div>
         } @else {
           <p class="empty-copy" data-testid="stat-empty-price-changes">
-            Aucun changement de prix pour {{ selectedProductName }} sur cette periode.
+            Aucun changement de prix pour {{ selectedProductName }} sur cette
+            periode.
           </p>
         }
       } @else {
         <p class="empty-copy" data-testid="stat-empty-price-history">
-          Aucun historique de prix disponible pour {{ selectedProductName }} sur cette periode.
+          Aucun historique de prix disponible pour {{ selectedProductName }} sur
+          cette periode.
         </p>
       }
     </mat-card>
   }
 
-  @if (timelineError || priceHistoryError || productError) {
-    <app-ui-error-panel [error]="timelineError || priceHistoryError || productError" />
+  @if (
+    timelineError ||
+    priceHistoryError ||
+    productError ||
+    purchaseEventActionError ||
+    priceCorrectionError
+  ) {
+    <app-ui-error-panel
+      [error]="
+        timelineError ||
+        priceHistoryError ||
+        productError ||
+        purchaseEventActionError ||
+        priceCorrectionError
+      "
+    />
   }
-
-
-
 </section>

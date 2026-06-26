@@ -12,6 +12,8 @@ export type ProductQuantityInputUnit =
   | 'bouteille'
   | 'portion';
 
+export type PurchaseAccountingMode = 'paid' | 'free' | 'excluded';
+
 export interface InventoryLinkedProduct {
   id: number;
   name: string;
@@ -52,6 +54,7 @@ export interface InventoryProductQtyDto {
   productId: number;
   qty: number;
   qtyUnit?: ProductQuantityInputUnit;
+  purchaseAccountingMode?: PurchaseAccountingMode;
 }
 
 export interface CreateInventoryDto {

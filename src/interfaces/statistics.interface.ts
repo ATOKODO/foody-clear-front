@@ -14,7 +14,8 @@ export type ProductPriceUnit =
   | 'bocal'
   | 'autre';
 
-export type InventoryPurchasePricingStatus = 'complete' | 'incomplete';
+export type InventoryPurchasePricingStatus = 'complete' | 'incomplete' | 'free' | 'excluded';
+export type PurchaseExclusionReason = 'refunded' | 'manual' | 'other';
 
 export interface InventoryPurchaseEventSummary {
   id: number;
@@ -30,6 +31,8 @@ export interface InventoryPurchaseEventSummary {
   priceUnitSnapshot: ProductPriceUnit | null;
   expenseAmount: number | null;
   pricingStatus: InventoryPurchasePricingStatus;
+  excludedFromStats?: boolean;
+  exclusionReason?: PurchaseExclusionReason | null;
   occurredAt: string;
 }
 
@@ -119,4 +122,24 @@ export interface ProductPriceHistoryStatsResponse {
     priceUnit: ProductPriceUnit | null;
     hasMixedUnits: boolean;
   };
+}
+
+export interface UpdatePurchaseEventExclusionDto {
+  excludedFromStats: boolean;
+  exclusionReason?: PurchaseExclusionReason | null;
+}
+
+export interface ProductPriceCorrectionDto {
+  productId: number;
+  price: number;
+  priceUnit: ProductPriceUnit;
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+  recalculatePurchases?: boolean;
+}
+
+export interface ProductPriceCorrectionResponse {
+  productId: number;
+  priceHistory: ProductPriceHistoryStatsResponse;
+  recalculatedPurchaseCount?: number;
 }

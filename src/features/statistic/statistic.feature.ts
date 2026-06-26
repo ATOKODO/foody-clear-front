@@ -1,8 +1,8 @@
-
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -10,6 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { DateTime } from 'luxon';
 import {
+  InventoryPurchaseEventSummary,
   ProductPriceHistoryStatsResponse,
   ProductPriceUnit,
   StatisticsTimelineDay,
@@ -29,12 +30,13 @@ type StatisticMetricKey = 'energyKcal' | 'proteins' | 'carbs' | 'lipids';
     MatButtonModule,
     MatButtonToggleModule,
     MatCardModule,
+    MatCheckboxModule,
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
     MatSelectModule,
-    UiErrorPanel
-],
+    UiErrorPanel,
+  ],
   templateUrl: './statistic.feature.html',
   styleUrl: './statistic.feature.scss',
 })
@@ -53,23 +55,50 @@ export class StatisticFeature implements OnInit {
   loadingTimeline = false;
   loadingProducts = false;
   loadingPriceHistory = false;
+  savingPurchaseEventId: number | null = null;
+  correctingPrice = false;
 
   timelineError: unknown = null;
   productError: unknown = null;
   priceHistoryError: unknown = null;
+  purchaseEventActionError: unknown = null;
+  priceCorrectionError: unknown = null;
 
   timelineResponse: StatisticsTimelineResponse | null = null;
   priceHistoryResponse: ProductPriceHistoryStatsResponse | null = null;
   products: Product[] = [];
   selectedTimelineDateLocal = '';
   selectedPriceProductId: number | null = null;
+  priceCorrectionPrice: number | null = null;
+  priceCorrectionPriceUnit: ProductPriceUnit = 'kg';
+  priceCorrectionFromDateLocal = this.fromDateLocal;
+  priceCorrectionToDateLocal = '';
+  priceCorrectionRecalculatePurchases = true;
 
   readonly views: Array<{ value: StatisticView; label: string }> = [
     { value: 'expenses', label: 'Depenses' },
     { value: 'targets', label: 'Objectifs' },
     { value: 'prices', label: 'Prix produit' },
   ];
-  readonly metricOptions: Array<{ key: StatisticMetricKey; label: string; unit: string }> = [
+  readonly priceUnitOptions: ProductPriceUnit[] = [
+    'kg',
+    'g',
+    'l',
+    'ml',
+    'unite',
+    'paquet',
+    'bouteille',
+    'boite',
+    'sachet',
+    'canette',
+    'bocal',
+    'autre',
+  ];
+  readonly metricOptions: Array<{
+    key: StatisticMetricKey;
+    label: string;
+    unit: string;
+  }> = [
     { key: 'energyKcal', label: 'Energie', unit: 'kcal' },
     { key: 'proteins', label: 'Proteines', unit: 'g' },
     { key: 'carbs', label: 'Glucides', unit: 'g' },
@@ -91,8 +120,11 @@ export class StatisticFeature implements OnInit {
   }
 
   applyQuickRange(days: number): void {
-    this.fromDateLocal = DateTime.local().minus({ days: days - 1 }).toFormat('yyyy-LL-dd');
+    this.fromDateLocal = DateTime.local()
+      .minus({ days: days - 1 })
+      .toFormat('yyyy-LL-dd');
     this.toDateLocal = DateTime.local().toFormat('yyyy-LL-dd');
+    this.priceCorrectionFromDateLocal = this.fromDateLocal;
     this.loadTimeline();
     this.loadPriceHistory();
   }
@@ -107,7 +139,59 @@ export class StatisticFeature implements OnInit {
   }
 
   onPriceProductChange(): void {
+    this.syncPriceCorrectionDefaults();
     this.loadPriceHistory();
+  }
+
+  excludePurchaseEvent(event: InventoryPurchaseEventSummary): void {
+    this.updatePurchaseEventExclusion(event.id, true);
+  }
+
+  restorePurchaseEvent(event: InventoryPurchaseEventSummary): void {
+    this.updatePurchaseEventExclusion(event.id, false);
+  }
+
+  submitPriceCorrection(): void {
+    if (
+      this.selectedPriceProductId == null ||
+      this.priceCorrectionPrice == null ||
+      !Number.isFinite(this.priceCorrectionPrice) ||
+      this.priceCorrectionPrice < 0 ||
+      this.priceCorrectionFromDateLocal.length !== 10 ||
+      (this.priceCorrectionToDateLocal !== '' &&
+        this.priceCorrectionToDateLocal < this.priceCorrectionFromDateLocal)
+    ) {
+      this.priceCorrectionError = { message: 'Correction de prix invalide.' };
+      return;
+    }
+
+    this.correctingPrice = true;
+    this.priceCorrectionError = null;
+    this.statisticService
+      .correctProductPrice(
+        {
+          productId: this.selectedPriceProductId,
+          price: this.priceCorrectionPrice,
+          priceUnit: this.priceCorrectionPriceUnit,
+          effectiveFrom: this.priceCorrectionFromDateLocal,
+          effectiveTo: this.priceCorrectionToDateLocal || null,
+          recalculatePurchases: this.priceCorrectionRecalculatePurchases,
+        },
+        this.timezone,
+      )
+      .subscribe({
+        next: (response) => {
+          this.priceHistoryResponse = response.priceHistory;
+          this.correctingPrice = false;
+          if (this.priceCorrectionRecalculatePurchases) {
+            this.loadTimeline();
+          }
+        },
+        error: (error) => {
+          this.priceCorrectionError = error;
+          this.correctingPrice = false;
+        },
+      });
   }
 
   get selectedTimelineDay(): StatisticsTimelineDay | null {
@@ -115,14 +199,21 @@ export class StatisticFeature implements OnInit {
       return null;
     }
 
-    const dateLocal = this.selectedTimelineDateLocal || this.timelineResponse.days[0]?.dateLocal;
-    return this.timelineResponse.days.find((day) => day.dateLocal === dateLocal) ?? null;
+    const dateLocal =
+      this.selectedTimelineDateLocal ||
+      this.timelineResponse.days[0]?.dateLocal;
+    return (
+      this.timelineResponse.days.find((day) => day.dateLocal === dateLocal) ??
+      null
+    );
   }
 
   get expenseMax(): number {
     return Math.max(
       1,
-      ...(this.timelineResponse?.days.map((day) => day.expenses.totalAmount) ?? [0]),
+      ...(this.timelineResponse?.days.map(
+        (day) => day.expenses.totalAmount,
+      ) ?? [0]),
     );
   }
 
@@ -139,22 +230,31 @@ export class StatisticFeature implements OnInit {
   }
 
   get metricLabel(): string {
-    return this.metricOptions.find((item) => item.key === this.activeMetric)?.label ?? this.activeMetric;
+    return (
+      this.metricOptions.find((item) => item.key === this.activeMetric)
+        ?.label ?? this.activeMetric
+    );
   }
 
   get metricUnit(): string {
-    return this.metricOptions.find((item) => item.key === this.activeMetric)?.unit ?? '';
+    return (
+      this.metricOptions.find((item) => item.key === this.activeMetric)?.unit ??
+      ''
+    );
   }
 
   get selectedProductName(): string {
     return (
-      this.products.find((product) => product.id === this.selectedPriceProductId)?.name ??
-      'Aucun produit'
+      this.products.find(
+        (product) => product.id === this.selectedPriceProductId,
+      )?.name ?? 'Aucun produit'
     );
   }
 
   get selectedDayExpenseTotal(): string {
-    return this.formatCurrency(this.selectedTimelineDay?.expenses.totalAmount ?? 0);
+    return this.formatCurrency(
+      this.selectedTimelineDay?.expenses.totalAmount ?? 0,
+    );
   }
 
   get selectedDayTargetActual(): string {
@@ -163,12 +263,15 @@ export class StatisticFeature implements OnInit {
   }
 
   get selectedDayTargetGoal(): string {
-    const value = this.selectedTimelineDay?.inputs.targets?.[this.activeMetric] ?? null;
+    const value =
+      this.selectedTimelineDay?.inputs.targets?.[this.activeMetric] ?? null;
     return this.formatMetricValue(value);
   }
 
   get selectedDayTargetDelta(): string {
-    const value = this.selectedTimelineDay?.inputs.deltaToTargets?.[this.activeMetric] ?? null;
+    const value =
+      this.selectedTimelineDay?.inputs.deltaToTargets?.[this.activeMetric] ??
+      null;
     return this.formatMetricValue(value);
   }
 
@@ -178,7 +281,9 @@ export class StatisticFeature implements OnInit {
 
   getTargetActualHeight(day: StatisticsTimelineDay): number {
     const value = day.inputs.dayTotal[this.activeMetric];
-    return typeof value === 'number' ? this.getBarHeight(value, this.targetMax) : 6;
+    return typeof value === 'number'
+      ? this.getBarHeight(value, this.targetMax)
+      : 6;
   }
 
   getTargetGoalHeight(day: StatisticsTimelineDay): number {
@@ -187,7 +292,8 @@ export class StatisticFeature implements OnInit {
   }
 
   formatCurrency(value: number | null | undefined): string {
-    const normalized = typeof value === 'number' && Number.isFinite(value) ? value : 0;
+    const normalized =
+      typeof value === 'number' && Number.isFinite(value) ? value : 0;
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR',
@@ -230,6 +336,67 @@ export class StatisticFeature implements OnInit {
     return value ? `/${value}` : '';
   }
 
+  getPurchaseEventStatusLabel(event: InventoryPurchaseEventSummary): string {
+    if (event.excludedFromStats || event.pricingStatus === 'excluded') {
+      return event.exclusionReason === 'refunded' ? 'rembourse' : 'exclu';
+    }
+
+    if (event.pricingStatus === 'free') {
+      return 'gratuit';
+    }
+
+    return event.pricingStatus === 'complete' ? 'complet' : 'prix incomplet';
+  }
+
+  private updatePurchaseEventExclusion(
+    eventId: number,
+    excludedFromStats: boolean,
+  ): void {
+    this.savingPurchaseEventId = eventId;
+    this.purchaseEventActionError = null;
+    this.statisticService
+      .updatePurchaseEventExclusion(
+        eventId,
+        {
+          excludedFromStats,
+          exclusionReason: excludedFromStats ? 'refunded' : null,
+        },
+        this.fromDateLocal,
+        this.toDateLocal,
+        this.timezone,
+      )
+      .subscribe({
+        next: (response) => {
+          this.timelineResponse = response;
+          this.savingPurchaseEventId = null;
+          this.selectedTimelineDateLocal =
+            this.selectedTimelineDateLocal &&
+            response.days.some(
+              (day) => day.dateLocal === this.selectedTimelineDateLocal,
+            )
+              ? this.selectedTimelineDateLocal
+              : (response.days[0]?.dateLocal ?? '');
+        },
+        error: (error) => {
+          this.purchaseEventActionError = error;
+          this.savingPurchaseEventId = null;
+        },
+      });
+  }
+
+  private syncPriceCorrectionDefaults(): void {
+    const selected = this.products.find(
+      (product) => product.id === this.selectedPriceProductId,
+    );
+    this.priceCorrectionPrice =
+      typeof selected?.price === 'number' && Number.isFinite(selected.price)
+        ? selected.price
+        : this.priceCorrectionPrice;
+    this.priceCorrectionPriceUnit =
+      (selected?.priceUnit as ProductPriceUnit | null | undefined) ??
+      this.priceCorrectionPriceUnit;
+  }
+
   private loadTimeline(): void {
     if (!this.isDateRangeValid()) {
       return;
@@ -244,9 +411,12 @@ export class StatisticFeature implements OnInit {
           this.timelineResponse = response;
           this.loadingTimeline = false;
           this.selectedTimelineDateLocal =
-            this.selectedTimelineDateLocal && response.days.some((day) => day.dateLocal === this.selectedTimelineDateLocal)
+            this.selectedTimelineDateLocal &&
+            response.days.some(
+              (day) => day.dateLocal === this.selectedTimelineDateLocal,
+            )
               ? this.selectedTimelineDateLocal
-              : response.days[0]?.dateLocal ?? '';
+              : (response.days[0]?.dateLocal ?? '');
         },
         error: (error) => {
           this.timelineError = error;
@@ -262,11 +432,9 @@ export class StatisticFeature implements OnInit {
     this.productService.findAll().subscribe({
       next: (response) => {
         this.products = response;
-        if (
-          this.selectedPriceProductId == null &&
-          this.products.length > 0
-        ) {
+        if (this.selectedPriceProductId == null && this.products.length > 0) {
           this.selectedPriceProductId = this.products[0].id;
+          this.syncPriceCorrectionDefaults();
         }
         this.loadingProducts = false;
         this.loadPriceHistory();
