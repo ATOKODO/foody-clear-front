@@ -45,6 +45,7 @@ describe('FormCycle', () => {
       { nutritionKey: 'FAT', amount: 0, unit: 'G', reference: 'PER_100G' },
     ]);
     expect(component.selectedSlotIds).toEqual([]);
+    expect(component.selectedDefaultTemplateId).toBeNull();
     expect(component.daySetTimeline).toEqual([0]);
   });
 
@@ -65,6 +66,7 @@ describe('FormCycle', () => {
       typeDuree: 'jour',
       durationDays: 4,
       slotIds: [11, 12],
+      defaultTemplateId: 7,
       daySetOrder: [3, 0, 1, 0],
     });
     fixture.detectChanges();
@@ -85,6 +87,7 @@ describe('FormCycle', () => {
       },
     ]);
     expect(component.selectedSlotIds).toEqual([11, 12]);
+    expect(component.selectedDefaultTemplateId).toBe(7);
     expect(component.daySetTimeline).toEqual([3, 0, 1, 0]);
   });
 
@@ -100,6 +103,7 @@ describe('FormCycle', () => {
       durationDays: 6,
     });
     component.selectedSlotIds = [11, 12];
+    component.selectedDefaultTemplateId = 9;
     component.daySetTimeline = [0, 4, 0, 2, 0, 0];
     component.nutritionValues = [
       {
@@ -149,6 +153,7 @@ describe('FormCycle', () => {
           typeDuree: 'jour',
           durationDays: 6,
           slotIds: [11, 12],
+          defaultTemplateId: 9,
           daySetIds: [4, 2],
           daySetOrder: [0, 4, 0, 2, 0, 0],
         },

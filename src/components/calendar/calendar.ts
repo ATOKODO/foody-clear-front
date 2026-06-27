@@ -1097,6 +1097,10 @@ export class Calendar implements OnInit, OnChanges {
       return 'Template day-set';
     }
 
+    if (source === 'cycle') {
+      return 'Template cycle';
+    }
+
     return null;
   }
 

@@ -100,6 +100,7 @@ export function cycleFactory(overrides: Partial<MockCycle> = {}): MockCycle {
     durationDays: 7,
     durationCount: 7,
     durationType: 'jour',
+    defaultTemplateId: null,
     daySetOrder: [0, 0, 0, 0, 0, 0, 0],
     ...overrides,
   };

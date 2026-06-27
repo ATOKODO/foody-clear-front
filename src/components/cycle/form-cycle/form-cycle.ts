@@ -30,6 +30,7 @@ import {
   DaySetListItem,
 } from '../../day-set/day-set-list/day-set-list';
 import { SlotList, SlotListItem } from '../../slot/slot-list/slot-list';
+import { TemplateSummary } from '../../../interfaces/template.interface';
 import {
   getFallbackUnitsForNutritionKey,
   resolveDefaultNutritionKeys,
@@ -46,6 +47,7 @@ export interface CycleFormValue {
   typeDuree: TypeDuree;
   durationDays: number;
   slotIds: number[];
+  defaultTemplateId: number | null;
   daySetIds: number[];
   daySetOrder: number[];
 }
@@ -91,6 +93,7 @@ export class FormCycle implements OnInit, OnChanges {
   readonly nutritionKeys = input<NutritionKeyMeta[]>([]);
   readonly daySets = input<DaySetListItem[]>([]);
   readonly slots = input<SlotListItem[]>([]);
+  readonly templates = input<TemplateSummary[]>([]);
   readonly showHeading = input(true);
   readonly inDialog = input(false);
 
@@ -101,6 +104,7 @@ export class FormCycle implements OnInit, OnChanges {
 
   nutritionValues: CycleNutritionValue[] = [];
   selectedSlotIds: number[] = [];
+  selectedDefaultTemplateId: number | null = null;
   daySetTimeline: number[] = [];
   showSelectionError = false;
 
@@ -220,6 +224,7 @@ export class FormCycle implements OnInit, OnChanges {
         nutritionValues,
         durationDays,
         slotIds: [...this.selectedSlotIds],
+        defaultTemplateId: this.selectedDefaultTemplateId,
         daySetIds: this.extractAssignedDaySetIds(daySetOrder),
         daySetOrder,
       },
@@ -368,6 +373,7 @@ export class FormCycle implements OnInit, OnChanges {
       typeDuree: 'jour',
       durationDays: 1,
       slotIds: [],
+      defaultTemplateId: null,
       daySetIds: [],
       daySetOrder: [this.defaultDaySetId],
     };
@@ -397,6 +403,9 @@ export class FormCycle implements OnInit, OnChanges {
       this.selectedSlotIds = this.normalizeSlotIds(
         cycle.slotIds ?? defaults.slotIds,
       );
+      this.selectedDefaultTemplateId = this.normalizeTemplateId(
+        cycle.defaultTemplateId ?? defaults.defaultTemplateId,
+      );
       this.nutritionValues =
         cycle.nutritionValues && cycle.nutritionValues.length > 0
           ? this.cloneNutritionValues(cycle.nutritionValues)
@@ -414,6 +423,7 @@ export class FormCycle implements OnInit, OnChanges {
     });
     this.daySetTimeline = this.reconcileDaySetTimeline(defaults.daySetOrder);
     this.selectedSlotIds = [];
+    this.selectedDefaultTemplateId = defaults.defaultTemplateId;
     this.nutritionValues = this.cloneNutritionValues(defaults.nutritionValues);
     this.showSelectionError = false;
   }
@@ -502,6 +512,16 @@ export class FormCycle implements OnInit, OnChanges {
     return Array.from(
       new Set(slotIds.filter((id) => Number.isInteger(id) && id > 0)),
     );
+  }
+
+  private normalizeTemplateId(
+    templateId: number | null | undefined,
+  ): number | null {
+    return typeof templateId === 'number' &&
+      Number.isInteger(templateId) &&
+      templateId > 0
+      ? templateId
+      : null;
   }
 
   private normalizeDaySetIds(daySetIds: number[]): number[] {

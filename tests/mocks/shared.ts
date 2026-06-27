@@ -315,7 +315,7 @@ export function getDaySetForDate(state: MockApiState, dateLocal: string): MockDa
 export function getTemplateForDate(
   state: MockApiState,
   dateLocal: string,
-): { template: MockTemplate | null; source: 'manual' | 'daySet' | null } {
+): { template: MockTemplate | null; source: 'manual' | 'daySet' | 'cycle' | null } {
   const manualTemplateId = state.manualTemplateOverrides[dateLocal];
   if (manualTemplateId === null) {
     return { template: null, source: null };
@@ -325,12 +325,25 @@ export function getTemplateForDate(
     return { template: getTemplate(state, manualTemplateId), source: 'manual' };
   }
 
-  const daySet = getDaySetForDate(state, dateLocal);
-  if (!daySet || daySet.templateId == null) {
+  const activeAssignment = getActiveAssignmentForDate(state, dateLocal);
+  if (!activeAssignment) {
     return { template: null, source: null };
   }
 
-  return { template: getTemplate(state, daySet.templateId), source: 'daySet' };
+  const daySetId = activeAssignment.cycle.daySetOrder[activeAssignment.dayIndex - 1] ?? 0;
+  const daySet = getDaySet(state, daySetId);
+  if (daySet && daySet.templateId != null) {
+    return { template: getTemplate(state, daySet.templateId), source: 'daySet' };
+  }
+
+  if (daySetId <= 0 && activeAssignment.cycle.defaultTemplateId != null) {
+    return {
+      template: getTemplate(state, activeAssignment.cycle.defaultTemplateId),
+      source: 'cycle',
+    };
+  }
+
+  return { template: null, source: null };
 }
 
 export function hydrateCycleAssignment(

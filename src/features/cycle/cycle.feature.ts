@@ -50,10 +50,12 @@ import {
 } from '../../interfaces/cycle.interface';
 import { DaySet } from '../../interfaces/day-set.interface';
 import { Slot } from '../../interfaces/slot.interface';
+import { TemplateSummary } from '../../interfaces/template.interface';
 import { CycleService } from '../../services/cycle-service';
 import { DaySetService } from '../../services/day-set-service';
 import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
 import { SlotService } from '../../services/slot-service';
+import { TemplateService } from '../../services/template-service';
 import { DaySetFeature } from '../day-set/day-set.feature';
 import { SlotFeature } from '../slot/slot.feature';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
@@ -128,6 +130,7 @@ export class CycleFeature implements OnInit {
   private readonly daySetSrv = inject(DaySetService);
   private readonly metaSrv = inject(MetaService);
   private readonly slotSrv = inject(SlotService);
+  private readonly templateSrv = inject(TemplateService);
 
   private readonly cycleFormDialogTemplate =
     viewChild<TemplateRef<unknown>>('cycleFormDialog');
@@ -145,10 +148,12 @@ export class CycleFeature implements OnInit {
   private readonly loadingMetaState = signal(false);
   private readonly loadingDaySetsState = signal(false);
   private readonly loadingSlotsState = signal(false);
+  private readonly loadingTemplatesState = signal(false);
 
   private readonly cyclesState = signal<Cycle[]>([]);
   private readonly daySetsState = signal<DaySet[]>([]);
   private readonly slotsState = signal<Slot[]>([]);
+  private readonly templatesState = signal<TemplateSummary[]>([]);
   private readonly cycleListItemsState = computed<CycleListItem[]>(() =>
     this.cyclesState().map((cycle) =>
       buildCycleListItem(cycle, {
@@ -174,6 +179,12 @@ export class CycleFeature implements OnInit {
       startTime: slot.startTime ?? null,
       endTime: slot.endTime ?? null,
       nutritionValues: slot.nutritionValues ?? [],
+    })),
+  );
+  private readonly templateListItemsState = computed<TemplateSummary[]>(() =>
+    this.templatesState().map((template) => ({
+      id: template.id,
+      title: template.title,
     })),
   );
 
@@ -209,9 +220,11 @@ export class CycleFeature implements OnInit {
     this.metaSrv.setBaseUrl(this.baseUrl);
     this.daySetSrv.setBaseUrl(this.baseUrl);
     this.slotSrv.setBaseUrl(this.baseUrl);
+    this.templateSrv.setBaseUrl(this.baseUrl);
     this.loadNutritionKeys();
     this.loadDaySets();
     this.loadSlots();
+    this.loadTemplates();
     this.loadCycles();
   }
 
@@ -220,9 +233,11 @@ export class CycleFeature implements OnInit {
     this.metaSrv.setBaseUrl(this.baseUrl);
     this.daySetSrv.setBaseUrl(this.baseUrl);
     this.slotSrv.setBaseUrl(this.baseUrl);
+    this.templateSrv.setBaseUrl(this.baseUrl);
     this.loadNutritionKeys();
     this.loadDaySets();
     this.loadSlots();
+    this.loadTemplates();
     this.loadCycles();
   }
 
@@ -282,6 +297,14 @@ export class CycleFeature implements OnInit {
     this.loadingSlotsState.set(value);
   }
 
+  get loadingTemplates(): boolean {
+    return this.loadingTemplatesState();
+  }
+
+  set loadingTemplates(value: boolean) {
+    this.loadingTemplatesState.set(value);
+  }
+
   get cycles(): Cycle[] {
     return this.cyclesState();
   }
@@ -306,6 +329,14 @@ export class CycleFeature implements OnInit {
     this.slotsState.set(value);
   }
 
+  get templates(): TemplateSummary[] {
+    return this.templatesState();
+  }
+
+  set templates(value: TemplateSummary[]) {
+    this.templatesState.set(value);
+  }
+
   get cycleListItems(): CycleListItem[] {
     return this.cycleListItemsState();
   }
@@ -316,6 +347,10 @@ export class CycleFeature implements OnInit {
 
   get slotListItems(): SlotListItem[] {
     return this.slotListItemsState();
+  }
+
+  get templateListItems(): TemplateSummary[] {
+    return this.templateListItemsState();
   }
 
   get formDialogTitle(): string {
@@ -337,6 +372,7 @@ export class CycleFeature implements OnInit {
           this.loadingMeta ||
           this.loadingDaySets ||
           this.loadingSlots ||
+          this.loadingTemplates ||
           this.saving
         );
       case 'daySet':
@@ -370,6 +406,7 @@ export class CycleFeature implements OnInit {
     this.loadNutritionKeys();
     this.loadDaySets();
     this.loadSlots();
+    this.loadTemplates();
     this.loadCycles();
   }
 
@@ -433,6 +470,7 @@ export class CycleFeature implements OnInit {
       typeDuree: durationPresentation.durationType,
       durationDays: durationPresentation.durationDays,
       slotIds: (cycle.slots ?? []).map((slot) => slot.id),
+      defaultTemplateId: cycle.defaultTemplateId ?? null,
       daySetIds: resolveCycleDaySetIds(cycle),
       daySetOrder: resolveCycleDaySetTimeline(cycle),
     };
@@ -522,6 +560,7 @@ export class CycleFeature implements OnInit {
   onLinkedDataChanged(): void {
     this.loadDaySets();
     this.loadSlots();
+    this.loadTemplates();
     this.loadCycles();
   }
 
@@ -657,6 +696,23 @@ export class CycleFeature implements OnInit {
     });
   }
 
+  private loadTemplates(): void {
+    this.loadingTemplates = true;
+    this.templateSrv.findAll().subscribe({
+      next: (response) => {
+        this.templates = response.map((template) => ({
+          id: template.id,
+          title: template.title,
+        }));
+        this.loadingTemplates = false;
+      },
+      error: () => {
+        this.templates = [];
+        this.loadingTemplates = false;
+      },
+    });
+  }
+
   private loadNutritionKeys(): void {
     this.loadingMeta = true;
     this.metaSrv.getNutritionKeys().subscribe({
@@ -718,6 +774,7 @@ export class CycleFeature implements OnInit {
       durationCount: durationPresentation.durationCount,
       durationType: durationPresentation.durationType,
       slotIds: value.slotIds,
+      defaultTemplateId: this.normalizeTemplateId(value.defaultTemplateId),
       daySetIds: this.normalizeDaySetIds(value.daySetOrder),
       daySetOrder: this.normalizeDaySetTimeline(value.daySetOrder),
     };
@@ -852,6 +909,16 @@ export class CycleFeature implements OnInit {
 
   private roundNumber(value: number): number {
     return Math.round(value * 100) / 100;
+  }
+
+  private normalizeTemplateId(
+    templateId: number | null | undefined,
+  ): number | null {
+    return typeof templateId === 'number' &&
+      Number.isInteger(templateId) &&
+      templateId > 0
+      ? templateId
+      : null;
   }
 
   private normalizeDaySetIds(daySetIds: number[] | null | undefined): number[] {

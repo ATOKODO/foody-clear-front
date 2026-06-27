@@ -168,6 +168,7 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
         durationDays: Number(body.durationDays ?? 1),
         durationCount: Number(body.durationCount ?? body.durationDays ?? 1),
         durationType: String(body.durationType ?? 'jour') as MockCycle['durationType'],
+        defaultTemplateId: readNullableNumber(body.defaultTemplateId),
         daySetOrder: normalizeTimeline(body.daySetOrder, Number(body.durationDays ?? 1)),
       };
       state.cycles.push(cycle);
@@ -196,6 +197,9 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       cycle.durationDays = Number(body.durationDays ?? cycle.durationDays);
       cycle.durationCount = Number(body.durationCount ?? cycle.durationCount);
       cycle.durationType = String(body.durationType ?? cycle.durationType) as MockCycle['durationType'];
+      if ('defaultTemplateId' in body) {
+        cycle.defaultTemplateId = readNullableNumber(body.defaultTemplateId);
+      }
       if (Array.isArray(body.nutritionValues)) {
         cycle.nutritionValues = body.nutritionValues
           .map(toCycleNutritionValue)
@@ -260,6 +264,11 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       state.daySets.forEach((daySet) => {
         if (daySet.templateId === templateId) {
           daySet.templateId = null;
+        }
+      });
+      state.cycles.forEach((cycle) => {
+        if (cycle.defaultTemplateId === templateId) {
+          cycle.defaultTemplateId = null;
         }
       });
       await context.noContent();

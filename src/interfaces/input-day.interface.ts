@@ -107,7 +107,7 @@ export interface InputDayTemplateItemSummary {
 }
 
 export interface InputDayTemplateAssociationSummary {
-  source: 'manual' | 'daySet';
+  source: 'manual' | 'daySet' | 'cycle';
   template: {
     id: number;
     title: string;

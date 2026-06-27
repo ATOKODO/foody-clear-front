@@ -103,6 +103,7 @@ export type MockCycle = {
   durationDays: number;
   durationCount: number;
   durationType: 'jour' | 'semaine' | 'mois';
+  defaultTemplateId: number | null;
   daySetOrder: number[];
 };
 
@@ -431,6 +432,7 @@ export function createMockApiState(): MockApiState {
         durationDays: 7,
         durationCount: 7,
         durationType: 'jour',
+        defaultTemplateId: null,
         daySetOrder: [1, 1, 2, 1, 1, 2, 0],
       },
     ],

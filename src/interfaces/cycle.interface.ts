@@ -24,6 +24,7 @@ export interface Cycle {
   durationCount: number;
   durationType: CycleDurationType;
   slotIds?: number[];
+  defaultTemplateId?: number | null;
   slots?: Array<{
     id: number;
     key: string;
@@ -44,6 +45,7 @@ export interface CreateCycleDto {
   durationCount: number;
   durationType: CycleDurationType;
   slotIds?: number[];
+  defaultTemplateId?: number | null;
   daySetIds?: number[];
   daySetOrder?: number[];
 }

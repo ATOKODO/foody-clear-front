@@ -177,6 +177,24 @@
         [embedded]="true"
         (selectedMany)="onSlotsSelected($event)"
       />
+
+      <mat-form-field appearance="fill" class="fc-field w-full">
+        <mat-label>Template par defaut</mat-label>
+        <mat-select
+          [(ngModel)]="selectedDefaultTemplateId"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <mat-option [value]="null">Aucun template</mat-option>
+          @for (template of templates(); track template.id) {
+            <mat-option [value]="template.id">
+              {{ template.title }}
+            </mat-option>
+          }
+        </mat-select>
+        <mat-hint>
+          Utilise pour les journees du cycle qui n'utilisent pas de DaySet.
+        </mat-hint>
+      </mat-form-field>
     </div>
 
     <div class="space-y-3">

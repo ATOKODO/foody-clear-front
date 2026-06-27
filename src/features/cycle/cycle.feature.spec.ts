@@ -340,6 +340,7 @@ describe('CycleFeature', () => {
           typeDuree: 'jour' | 'semaine' | 'mois';
           durationDays: number;
           slotIds: number[];
+          defaultTemplateId: number | null;
           daySetIds: number[];
           daySetOrder: number[];
         }) => unknown;
@@ -352,6 +353,7 @@ describe('CycleFeature', () => {
       typeDuree: 'jour',
       durationDays: 12,
       slotIds: [21, 22],
+      defaultTemplateId: 6,
       daySetIds: [3, 1],
       daySetOrder: [0, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
     });
@@ -364,6 +366,7 @@ describe('CycleFeature', () => {
       durationCount: 12,
       durationType: 'jour',
       slotIds: [21, 22],
+      defaultTemplateId: 6,
       daySetIds: [3, 1],
       daySetOrder: [0, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
     });
@@ -379,6 +382,7 @@ describe('CycleFeature', () => {
         durationCount: 10,
         durationType: 'jour',
         nutritionValues: [nutritionValue('PROTEIN', 120)],
+        defaultTemplateId: 8,
         daySetOrder: [0, 5, 0, 2, 0, 0, 0, 0, 0, 0],
       },
     ];
@@ -411,6 +415,7 @@ describe('CycleFeature', () => {
       typeDuree: 'jour',
       durationDays: 10,
       slotIds: [],
+      defaultTemplateId: 8,
       daySetIds: [5, 2],
       daySetOrder: [0, 5, 0, 2, 0, 0, 0, 0, 0, 0],
     });
@@ -458,6 +463,7 @@ describe('CycleFeature', () => {
       typeDuree: 'semaine',
       durationDays: 14,
       slotIds: [],
+      defaultTemplateId: null,
       daySetIds: [],
       daySetOrder: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     });
@@ -552,6 +558,7 @@ describe('CycleFeature', () => {
         typeDuree: 'jour',
         durationDays: 10,
         slotIds: [],
+        defaultTemplateId: null,
         daySetIds: [],
         daySetOrder: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       },
@@ -579,6 +586,7 @@ describe('CycleFeature', () => {
       durationCount: 10,
       durationType: 'jour',
       slotIds: [],
+      defaultTemplateId: null,
       daySetIds: [],
       daySetOrder: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       assignmentRescheduleScope: 'future',
@@ -619,6 +627,7 @@ describe('CycleFeature', () => {
         nutritionValues: [nutritionValue('PROTEIN', 50)],
       },
     ]);
+    httpController.expectOne('http://localhost:3000/template').flush([]);
     httpController.expectOne('http://localhost:3000/cycle').flush([
       {
         id: 1,
@@ -663,6 +672,7 @@ describe('CycleFeature', () => {
         nutritionValues: [nutritionValue('PROTEIN', 50)],
       },
     ]);
+    httpController.expectOne('http://localhost:3000/template').flush([]);
     httpController.expectOne('http://localhost:3000/cycle').flush([
       {
         id: 1,
@@ -692,6 +702,7 @@ describe('CycleFeature', () => {
       .flush([]);
     httpController.expectOne('http://localhost:3000/day-set').flush([]);
     httpController.expectOne('http://localhost:3000/slot').flush([]);
+    httpController.expectOne('http://localhost:3000/template').flush([]);
     httpController.expectOne('http://localhost:3000/cycle').flush([
       {
         id: 11,
@@ -757,6 +768,7 @@ describe('CycleFeature', () => {
       .flush([]);
     httpController.expectOne('http://localhost:3000/day-set').flush([]);
     httpController.expectOne('http://localhost:3000/slot').flush([]);
+    httpController.expectOne('http://localhost:3000/template').flush([]);
     httpController.expectOne('http://localhost:3000/cycle').flush([]);
   }
 
