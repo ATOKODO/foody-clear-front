@@ -1,7 +1,15 @@
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Component, DestroyRef, inject } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+  NavigationEnd,
+  Params,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
+import { DateTime } from 'luxon';
 import { filter } from 'rxjs';
 import {
   APP_NAVIGATION,
@@ -59,6 +67,17 @@ export class App {
 
   get themeToggleLabel(): string {
     return this.isDarkMode ? 'Passer en clair' : 'Passer en sombre';
+  }
+
+  getEntryQueryParams(entry: AppNavigationEntry): Params | null {
+    if (entry.id !== 'planning') {
+      return null;
+    }
+
+    return {
+      view: 'day',
+      date: DateTime.local().toFormat('yyyy-LL-dd'),
+    };
   }
 
   toggleTheme(): void {

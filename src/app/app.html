@@ -28,6 +28,7 @@
             <a
               class="app-shell__nav-link"
               [routerLink]="entry.path"
+              [queryParams]="getEntryQueryParams(entry)"
               routerLinkActive="is-active"
               [routerLinkActiveOptions]="{ exact: true }"
               (click)="closeMobileNavigation()"

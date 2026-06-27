@@ -3,17 +3,20 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   OnInit,
   viewChild,
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { ActivatedRoute, ParamMap } from '@angular/router';
 import { DateTime } from 'luxon';
 import {
   Calendar,
@@ -62,6 +65,7 @@ type PlanningCalendarController = Pick<
   | 'navigate'
   | 'switchView'
   | 'openDayView'
+  | 'currentDate'
   | 'getViewLabel'
 >;
 
@@ -106,6 +110,8 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   private readonly cycleAssignmentService = inject(CycleAssignementService);
   private readonly inputDayService = inject(InputDayService);
   private readonly slotService = inject(SlotService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly calendarRef =
     viewChild<PlanningCalendarController>('calendarRef');
@@ -126,9 +132,11 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   slots: Slot[] = [];
   inputDayTimezone = DateTime.local().zoneName || 'UTC';
   readonly calendarViewOptions = PLANNING_CALENDAR_VIEW_OPTIONS;
+  readonly initialCalendarDateLocal = this.resolveInitialCalendarDateLocal();
+  readonly initialCalendarView = this.resolveInitialCalendarView();
   calendarHeaderLabel = 'Chargement...';
 
-  currentCalendarView: CalendarView = 'month';
+  currentCalendarView: CalendarView = this.initialCalendarView;
   currentAnchorDateLocal: string | null = null;
   currentRangeFromLocal: string | null = null;
   currentRangeToLocal: string | null = null;
@@ -164,6 +172,9 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   private lastInputDataLoadedKey: string | null = null;
   private lastInputDataLoadedAt = 0;
   private hasHandledInitialCalendarData = false;
+  private calendarViewReady = false;
+  private requestedCalendarView: CalendarView = this.initialCalendarView;
+  private requestedCalendarDateLocal = this.initialCalendarDateLocal;
 
   get loadingCycles(): boolean {
     return this.loadingCyclesState();
@@ -210,11 +221,21 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.cycleService.setBaseUrl(this.baseUrl);
     this.inputDayService.setBaseUrl(this.baseUrl);
     this.slotService.setBaseUrl(this.baseUrl);
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((queryParamMap) => {
+        this.updateRequestedCalendarState(queryParamMap);
+        if (this.calendarViewReady) {
+          this.applyRouteCalendarState();
+        }
+      });
     this.refreshPlanningData(true, { includeCycles: false });
   }
 
   ngAfterViewInit(): void {
+    this.calendarViewReady = true;
     this.syncCalendarHeaderState();
+    this.applyRouteCalendarState();
     this.changeDetectorRef.detectChanges();
   }
 
@@ -1038,6 +1059,71 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     if (calendarRef?.currentViewLabel) {
       this.calendarHeaderLabel = calendarRef.currentViewLabel;
     }
+  }
+
+  private applyRouteCalendarState(): void {
+    const calendarRef = this.calendarRef();
+    if (!calendarRef) {
+      return;
+    }
+
+    const requestedView = this.requestedCalendarView;
+    const requestedDateLocal = this.requestedCalendarDateLocal;
+    const currentDateLocal = calendarRef.currentDate?.toISODate() ?? null;
+
+    if (
+      calendarRef.currentView === requestedView &&
+      currentDateLocal === requestedDateLocal
+    ) {
+      return;
+    }
+
+    if (requestedView === 'day') {
+      calendarRef.openDayView(requestedDateLocal);
+      this.syncCalendarHeaderState();
+      return;
+    }
+
+    if (calendarRef.currentView !== requestedView) {
+      calendarRef.switchView(requestedView);
+      this.syncCalendarHeaderState();
+    }
+  }
+
+  private updateRequestedCalendarState(queryParamMap: ParamMap): void {
+    this.requestedCalendarView = this.resolveCalendarView(queryParamMap);
+    this.requestedCalendarDateLocal = this.resolveCalendarDateLocal(queryParamMap);
+  }
+
+  private resolveInitialCalendarView(): CalendarView {
+    return this.resolveCalendarView(this.route.snapshot.queryParamMap);
+  }
+
+  private resolveInitialCalendarDateLocal(): string {
+    return this.resolveCalendarDateLocal(this.route.snapshot.queryParamMap);
+  }
+
+  private resolveCalendarView(queryParamMap: ParamMap): CalendarView {
+    const requestedView = queryParamMap.get('view');
+    return this.isCalendarView(requestedView) ? requestedView : 'month';
+  }
+
+  private resolveCalendarDateLocal(queryParamMap: ParamMap): string {
+    const requestedDateLocal = queryParamMap.get('date') ?? '';
+    if (this.isDateLocal(requestedDateLocal)) {
+      return requestedDateLocal;
+    }
+
+    return DateTime.local().toFormat('yyyy-LL-dd');
+  }
+
+  private isCalendarView(value: string | null): value is CalendarView {
+    return (
+      value === 'day' ||
+      value === 'week' ||
+      value === 'month' ||
+      value === 'year'
+    );
   }
 
   private getFallbackCalendarViewLabel(view: CalendarView): string {

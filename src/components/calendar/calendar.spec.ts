@@ -1148,7 +1148,7 @@ describe('Calendar', () => {
     renderView('day', '2026-02-17');
 
     const block = fixture.nativeElement.querySelector(
-      '[data-testid="calendar-day-template-block-Sans slot"]',
+      '[data-testid="calendar-day-template-block-Non rattache a un slot"]',
     ) as HTMLElement;
     const button = fixture.nativeElement.querySelector(
       '[data-testid="calendar-day-convert-template-92"]',

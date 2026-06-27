@@ -161,6 +161,7 @@ button.home-dashboard__hero-link {
 }
 
 .home-panel__empty,
+.home-panel__count,
 .home-schedule__empty {
   margin: 0;
   color: var(--app-text-muted);
@@ -226,6 +227,30 @@ button.home-dashboard__hero-link {
   overflow-wrap: anywhere;
 }
 
+.home-schedule__item-main {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.home-schedule__item-main strong {
+  color: var(--app-text-strong);
+  font-size: 0.88rem;
+}
+
+.home-schedule__item-main em {
+  color: var(--app-text-muted);
+  font-size: 0.76rem;
+  font-style: normal;
+}
+
+.home-schedule__item-actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: end;
+  gap: 0.45rem;
+}
+
 .home-schedule__item small {
   flex: 0 0 auto;
   color: var(--app-text-muted);
@@ -242,6 +267,74 @@ button.home-dashboard__hero-link {
 
 .home-schedule__item small.is-warning {
   color: var(--app-warning-text);
+}
+
+.home-schedule__action {
+  display: inline-flex;
+  min-height: 1.9rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--app-info-border);
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  background: var(--app-info-bg);
+  color: var(--app-info-text);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.home-schedule__action--revert {
+  border-color: var(--app-warning-border);
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
+}
+
+.home-schedule__action:disabled {
+  cursor: default;
+  opacity: 0.48;
+}
+
+.home-day-entries {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.home-day-entry {
+  display: grid;
+  grid-template-columns: 3.8rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--app-border-soft);
+  border-radius: 0.5rem;
+  background: var(--app-surface);
+}
+
+.home-day-entry__time,
+.home-day-entry__qty {
+  color: var(--app-text-strong);
+  font-size: 0.8rem;
+  font-weight: 850;
+}
+
+.home-day-entry__content {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.home-day-entry__content strong {
+  color: var(--app-text-strong);
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.home-day-entry__content small {
+  color: var(--app-text-muted);
+  font-size: 0.74rem;
+  overflow-wrap: anywhere;
 }
 
 .home-macro-grid {
@@ -405,5 +498,15 @@ button.home-dashboard__hero-link {
   .home-macro__meta {
     align-items: start;
     flex-direction: column;
+  }
+
+  .home-schedule__item-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .home-day-entry {
+    grid-template-columns: 1fr;
+    align-items: start;
   }
 }

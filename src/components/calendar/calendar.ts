@@ -220,6 +220,8 @@ export class Calendar implements OnInit, OnChanges {
   readonly inputDayTimezone = input(DateTime.local().zoneName || 'UTC');
   readonly slotCatalog = input<Slot[]>([]);
   readonly showHeader = input(true);
+  readonly initialView = input<CalendarView | null>(null);
+  readonly initialDateLocal = input<string | null>(null);
 
   readonly dayClick = output<CalendarDayClickEvent>();
   readonly hourClick = output<CalendarHourClickEvent>();
@@ -299,6 +301,7 @@ export class Calendar implements OnInit, OnChanges {
   };
 
   ngOnInit(): void {
+    this.applyInitialState();
     this.refreshView();
     this.viewChanged.emit(this.buildViewChangeEvent());
   }
@@ -676,6 +679,23 @@ export class Calendar implements OnInit, OnChanges {
     this.applyInputDayData();
   }
 
+  private applyInitialState(): void {
+    const requestedView = this.initialView();
+    if (requestedView && this.VIEWS.includes(requestedView)) {
+      this.currentView = requestedView;
+    }
+
+    const requestedDateLocal = this.initialDateLocal()?.trim() ?? '';
+    if (!requestedDateLocal) {
+      return;
+    }
+
+    const parsedDate = DateTime.fromISO(requestedDateLocal).startOf('day');
+    if (parsedDate.isValid) {
+      this.currentDate = parsedDate;
+    }
+  }
+
   formatItemTime(occurredAt: string | null, insertedAt: string): string {
     const parsed = DateTime.fromISO(occurredAt?.trim() || insertedAt, {
       setZone: true,
@@ -1016,7 +1036,7 @@ export class Calendar implements OnInit, OnChanges {
       timeLabel: this.formatItemTime(item.occurredAt, item.insertedAt),
       productName: item.productName,
       qtyLabel: this.formatQuantityLabel(item.qty),
-      slotLabel: item.slotTitle || item.slotKey || 'Sans slot',
+      slotLabel: item.slotTitle || item.slotKey || 'Non rattache a un slot',
       item,
     }));
   }
@@ -2386,7 +2406,7 @@ export class Calendar implements OnInit, OnChanges {
       blocks.push({
         id: `orphan:${dateLocal}:${startMinute}`,
         kind: 'orphan',
-        title: 'Sans slot',
+        title: 'Non rattache a un slot',
         slotKey: null,
         rangeLabel: `${this.formatMinutesClock(startMinute)}-${this.formatMinutesClock(endMinute)}`,
         startMinute,

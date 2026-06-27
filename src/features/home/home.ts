@@ -16,7 +16,9 @@ import {
   StatisticsTimelineDay,
   StatisticsTimelineResponse,
 } from '../../interfaces/statistics.interface';
+import { Slot } from '../../interfaces/slot.interface';
 import { InputDayService } from '../../services/input-day-service';
+import { SlotService } from '../../services/slot-service';
 import { StatisticService } from '../../services/statistic-service';
 import { InputDayFeature } from '../input-day/input-day.feature';
 
@@ -41,6 +43,14 @@ interface HomeScheduleRow {
   plannedItems: InputDayTemplateItemSummary[];
 }
 
+interface HomeDayEntryRow {
+  id: number;
+  timeLabel: string;
+  productName: string;
+  slotLabel: string;
+  qtyLabel: string;
+}
+
 @Component({
   selector: 'app-home',
   imports: [
@@ -56,12 +66,17 @@ interface HomeScheduleRow {
 export class Home implements OnInit {
   private readonly inputDayService = inject(InputDayService);
   private readonly statisticService = inject(StatisticService);
+  private readonly slotService = inject(SlotService);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
   private readonly now = DateTime.local();
 
   readonly todayDateLocal = this.now.toFormat('yyyy-LL-dd');
   readonly todayLabel = this.now.setLocale('fr').toFormat('cccc d LLLL');
   readonly timezone = this.now.zoneName || 'UTC';
+  readonly planningTodayQueryParams = {
+    view: 'day',
+    date: this.todayDateLocal,
+  };
   readonly macroDefinitions: Array<{
     key: HomeMacroKey;
     label: string;
@@ -80,11 +95,14 @@ export class Home implements OnInit {
   timelineError: unknown = null;
   inputDayResponse: InputDayResponse | null = null;
   timelineResponse: StatisticsTimelineResponse | null = null;
+  slotCatalog: Slot[] = [];
 
   ngOnInit(): void {
     this.baseUrl = this.statisticService.baseUrl;
     this.inputDayService.setBaseUrl(this.baseUrl);
     this.statisticService.setBaseUrl(this.baseUrl);
+    this.slotService.setBaseUrl(this.baseUrl);
+    this.loadSlotCatalog();
     this.refreshDashboard();
   }
 
@@ -192,14 +210,35 @@ export class Home implements OnInit {
     if (orphanItems.length > 0 || orphanPlannedItems.length > 0) {
       rows.push({
         key: 'without-slot',
-        title: 'Sans slot',
-        rangeLabel: 'Horaire libre',
+        title: 'Non rattache a un slot',
+        rangeLabel: 'Sans plage horaire',
         items: orphanItems,
         plannedItems: orphanPlannedItems,
       });
     }
 
     return rows;
+  }
+
+  get dayEntryRows(): HomeDayEntryRow[] {
+    const response = this.inputDayResponse;
+    if (!response) {
+      return [];
+    }
+
+    return [...response.items]
+      .sort((left, right) =>
+        this.resolveItemTimestamp(left).localeCompare(
+          this.resolveItemTimestamp(right),
+        ),
+      )
+      .map((item) => ({
+        id: item.id,
+        timeLabel: this.formatDateTime(item.occurredAt || item.insertedAt),
+        productName: item.productName,
+        slotLabel: this.getItemSlotLabel(item),
+        qtyLabel: this.formatItemQty(item),
+      }));
   }
 
   get recentPurchaseEvents(): InventoryPurchaseEventSummary[] {
@@ -283,7 +322,91 @@ export class Home implements OnInit {
   }
 
   getTemplateStockLabel(item: InputDayTemplateItemSummary): string {
+    if (this.isConvertedTemplateItem(item)) {
+      return 'Converti';
+    }
+
     return item.stockAvailability.enoughStock ? 'Stock OK' : 'Stock insuffisant';
+  }
+
+  getTemplateSlotLabel(item: InputDayTemplateItemSummary): string {
+    const slot = this.findSlotForTemplateItem(item);
+    if (slot) {
+      return `${slot.title} · ${this.formatSlotRange(slot)}`;
+    }
+
+    const slotKey = item.slotKey?.trim();
+    return slotKey ? `Slot ${slotKey}` : 'Non rattache a un slot';
+  }
+
+  canConvertTemplateItem(item: InputDayTemplateItemSummary): boolean {
+    return (
+      !this.isConvertedTemplateItem(item) &&
+      item.status === 'pending' &&
+      this.getTemplateInventoryId(item) !== null
+    );
+  }
+
+  isConvertedTemplateItem(item: InputDayTemplateItemSummary): boolean {
+    return item.status === 'converted' || this.getConvertedItemId(item) !== null;
+  }
+
+  convertTemplateItem(item: InputDayTemplateItemSummary): void {
+    const inventoryId = this.getTemplateInventoryId(item);
+    if (inventoryId === null || this.loadingDay) {
+      return;
+    }
+
+    this.loadingDay = true;
+    this.dayError = null;
+    this.inputDayService
+      .convertTemplateItem(this.todayDateLocal, item.id, [inventoryId])
+      .subscribe({
+        next: (response) => {
+          this.inputDayResponse = response;
+          this.loadingDay = false;
+          this.loadTodayStats();
+          this.changeDetectorRef.detectChanges();
+        },
+        error: (error) => {
+          this.dayError = error;
+          this.loadingDay = false;
+          this.changeDetectorRef.detectChanges();
+        },
+      });
+  }
+
+  revertTemplateItem(item: InputDayTemplateItemSummary): void {
+    const itemId = this.getConvertedItemId(item);
+    if (itemId === null || this.loadingDay) {
+      return;
+    }
+
+    this.loadingDay = true;
+    this.dayError = null;
+    this.inputDayService.removeItem(this.todayDateLocal, itemId).subscribe({
+      next: () => {
+        this.loadTodayPlanning();
+        this.loadTodayStats();
+      },
+      error: (error) => {
+        this.dayError = error;
+        this.loadingDay = false;
+        this.changeDetectorRef.detectChanges();
+      },
+    });
+  }
+
+  private loadSlotCatalog(): void {
+    this.slotService.findAll().subscribe({
+      next: (response) => {
+        this.slotCatalog = response;
+        this.changeDetectorRef.detectChanges();
+      },
+      error: () => {
+        this.slotCatalog = [];
+      },
+    });
   }
 
   private loadTodayPlanning(): void {
@@ -327,9 +450,11 @@ export class Home implements OnInit {
   private resolveDaySlots(
     response: InputDayResponse,
   ): InputDayDaySetSlotSummary[] {
-    return response.slots && response.slots.length > 0
-      ? response.slots
-      : (response.daySet?.slots ?? []);
+    return this.mergeSlots(
+      response.daySet?.slots ?? [],
+      response.slots ?? [],
+      this.resolveTemplateCatalogSlots(response),
+    );
   }
 
   private buildScheduleRow(
@@ -394,6 +519,92 @@ export class Home implements OnInit {
   ): boolean {
     const slot = this.findSlotForTemplateItem(item);
     return slot ? this.getSlotKey(slot) === slotKey : false;
+  }
+
+  private getTemplateInventoryId(
+    item: InputDayTemplateItemSummary,
+  ): number | null {
+    if (!item.stockAvailability.enoughStock) {
+      return null;
+    }
+
+    return (
+      item.stockByInventory.find((stock) => stock.enoughStock)?.inventoryId ??
+      null
+    );
+  }
+
+  private getConvertedItemId(item: InputDayTemplateItemSummary): number | null {
+    if (item.convertedItemId !== null) {
+      return item.convertedItemId;
+    }
+
+    return (
+      this.inputDayResponse?.items.find(
+        (enteredItem) => enteredItem.templateItemId === item.id,
+      )?.id ?? null
+    );
+  }
+
+  private getItemSlotLabel(item: InputDayItemSummary): string {
+    const slot = this.findSlotForItem(item);
+    if (slot) {
+      return `${slot.title} · ${this.formatSlotRange(slot)}`;
+    }
+
+    const slotKey = item.slotKey?.trim();
+    return slotKey ? `Slot ${slotKey}` : 'Non rattache a un slot';
+  }
+
+  private resolveItemTimestamp(item: InputDayItemSummary): string {
+    return item.occurredAt?.trim() || item.insertedAt?.trim() || '';
+  }
+
+  private resolveTemplateCatalogSlots(
+    response: InputDayResponse,
+  ): InputDayDaySetSlotSummary[] {
+    const referencedIds = new Set(
+      (response.templateItems ?? [])
+        .map((item) => item.slotId)
+        .filter((slotId): slotId is number => typeof slotId === 'number'),
+    );
+    const referencedKeys = new Set(
+      (response.templateItems ?? [])
+        .map((item) => item.slotKey?.trim() ?? '')
+        .filter((slotKey) => slotKey !== ''),
+    );
+
+    return this.slotCatalog
+      .filter(
+        (slot) => referencedIds.has(slot.id) || referencedKeys.has(slot.key),
+      )
+      .map((slot) => ({
+        slotId: slot.id,
+        slotKey: slot.key,
+        title: slot.title,
+        sortOrder: slot.sortOrder,
+        startTime: slot.startTime ?? null,
+        endTime: slot.endTime ?? null,
+        nutritionValue: null,
+      }));
+  }
+
+  private mergeSlots(
+    ...slotGroups: InputDayDaySetSlotSummary[][]
+  ): InputDayDaySetSlotSummary[] {
+    const uniqueSlots = new Map<string, InputDayDaySetSlotSummary>();
+
+    slotGroups.flat().forEach((slot) => {
+      const key = slot.slotId !== null ? `id:${slot.slotId}` : `key:${slot.slotKey}`;
+      if (!uniqueSlots.has(key)) {
+        uniqueSlots.set(key, slot);
+      }
+    });
+
+    return [...uniqueSlots.values()].sort(
+      (left, right) =>
+        left.sortOrder - right.sortOrder || left.title.localeCompare(right.title, 'fr'),
+    );
   }
 
   private getSlotKey(slot: InputDayDaySetSlotSummary): string {

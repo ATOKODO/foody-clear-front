@@ -101,6 +101,8 @@
         [loadingDayItems]="loadingDayItems"
         [dayItemsError]="dayItemsError"
         [showHeader]="false"
+        [initialView]="initialCalendarView"
+        [initialDateLocal]="initialCalendarDateLocal"
         (viewChanged)="onCalendarViewChanged($event)"
         (dayClick)="onCalendarDayClick($event)"
         (hourClick)="onCalendarHourClick($event)"

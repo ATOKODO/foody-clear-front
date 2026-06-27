@@ -9,6 +9,7 @@ import { StatisticsTimelineResponse } from '../../interfaces/statistics.interfac
 import { InventoryService } from '../../services/inventory-service';
 import { InputDayService } from '../../services/input-day-service';
 import { ProductService } from '../../services/product-service';
+import { SlotService } from '../../services/slot-service';
 import { StatisticService } from '../../services/statistic-service';
 import { TemplateService } from '../../services/template-service';
 import { Home } from './home';
@@ -82,7 +83,14 @@ describe('Home', () => {
           totalAvailableNormalized: 500,
           requestedQtyNormalized: 80,
         },
-        stockByInventory: [],
+        stockByInventory: [
+          {
+            inventoryId: 4,
+            inventoryName: 'Stock principal',
+            qtyAvailableNormalized: 500,
+            enoughStock: true,
+          },
+        ],
         nutritionValue: {},
       },
     ],
@@ -231,6 +239,12 @@ describe('Home', () => {
     findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
   };
 
+  const slotServiceMock = {
+    baseUrl: 'http://localhost:3000',
+    setBaseUrl: jasmine.createSpy('setBaseUrl'),
+    findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Home],
@@ -241,6 +255,7 @@ describe('Home', () => {
         { provide: ProductService, useValue: productServiceMock },
         { provide: InventoryService, useValue: inventoryServiceMock },
         { provide: TemplateService, useValue: templateServiceMock },
+        { provide: SlotService, useValue: slotServiceMock },
       ],
     }).compileComponents();
 

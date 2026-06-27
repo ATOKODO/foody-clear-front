@@ -1,6 +1,8 @@
 import { Component, input, output } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { provideRouter } from '@angular/router';
+import { DateTime } from 'luxon';
 import { of, Subject } from 'rxjs';
 
 import { PlanningFeature } from './planning.feature';
@@ -32,8 +34,11 @@ class CalendarStub {
   readonly loadingDayItems = input<unknown>(null);
   readonly dayItemsError = input<unknown>(null);
   readonly showHeader = input(true);
+  readonly initialView = input<unknown>(null);
+  readonly initialDateLocal = input<unknown>(null);
 
   currentView = 'month';
+  currentDate = DateTime.fromISO('2026-03-01');
   currentViewLabel = 'mars 2026';
 
   readonly viewChanged = output<unknown>();
@@ -57,6 +62,7 @@ class CalendarStub {
 
   openDayView(dateLocal: string): void {
     this.currentView = 'day';
+    this.currentDate = DateTime.fromISO(dateLocal);
     this.currentViewLabel = dateLocal;
     this.viewChanged.emit({
       view: 'day',
@@ -191,6 +197,7 @@ describe('PlanningFeature', () => {
     await TestBed.configureTestingModule({
       imports: [PlanningFeature],
       providers: [
+        provideRouter([]),
         { provide: CycleService, useValue: cycleServiceMock },
         {
           provide: CycleAssignementService,

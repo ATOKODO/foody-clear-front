@@ -23,6 +23,7 @@
       </a>
       <a
         routerLink="/planning"
+        [queryParams]="planningTodayQueryParams"
         class="home-dashboard__hero-link home-dashboard__hero-link--secondary"
       >
         Voir le planning
@@ -73,7 +74,13 @@
           <p class="home-panel__eyebrow">Planning jour</p>
           <h2>Ce qui est prevu aujourd'hui</h2>
         </div>
-        <a routerLink="/planning" class="home-panel__link">Ouvrir</a>
+        <a
+          routerLink="/planning"
+          [queryParams]="planningTodayQueryParams"
+          class="home-panel__link"
+        >
+          Ouvrir
+        </a>
       </div>
 
       @if (scheduleRows.length > 0) {
@@ -90,15 +97,37 @@
                     <span class="home-schedule__group-label">Prevu</span>
                     @for (item of row.plannedItems; track item.id) {
                       <div class="home-schedule__item home-schedule__item--planned">
-                        <span>
-                          {{ item.productName }} · {{ formatItemQty(item) }}
+                        <span class="home-schedule__item-main">
+                          <strong>{{ item.productName }} · {{ formatItemQty(item) }}</strong>
+                          <em>{{ getTemplateSlotLabel(item) }}</em>
                         </span>
-                        <small
-                          [class.is-ok]="item.stockAvailability.enoughStock"
-                          [class.is-warning]="!item.stockAvailability.enoughStock"
-                        >
-                          {{ item.status === "converted" ? "Converti" : getTemplateStockLabel(item) }}
-                        </small>
+                        <span class="home-schedule__item-actions">
+                          <small
+                            [class.is-ok]="item.stockAvailability.enoughStock || isConvertedTemplateItem(item)"
+                            [class.is-warning]="!item.stockAvailability.enoughStock && !isConvertedTemplateItem(item)"
+                          >
+                            {{ getTemplateStockLabel(item) }}
+                          </small>
+                          @if (isConvertedTemplateItem(item)) {
+                            <button
+                              type="button"
+                              class="home-schedule__action home-schedule__action--revert"
+                              [disabled]="loadingDay"
+                              (click)="revertTemplateItem(item)"
+                            >
+                              Remettre cote template
+                            </button>
+                          } @else {
+                            <button
+                              type="button"
+                              class="home-schedule__action"
+                              [disabled]="!canConvertTemplateItem(item) || loadingDay"
+                              (click)="convertTemplateItem(item)"
+                            >
+                              Convertir
+                            </button>
+                          }
+                        </span>
                       </div>
                     }
                   </div>
@@ -130,6 +159,32 @@
     </article>
 
     <aside class="home-dashboard__side-stack">
+      <article class="home-panel home-panel--day-entries">
+        <div class="home-panel__header">
+          <div>
+            <p class="home-panel__eyebrow">Resume rapide</p>
+            <h2>Entrees du jour</h2>
+          </div>
+          <span class="home-panel__count">{{ dayEntryRows.length }} items</span>
+        </div>
+        @if (dayEntryRows.length > 0) {
+          <div class="home-day-entries">
+            @for (entry of dayEntryRows; track entry.id) {
+              <article class="home-day-entry">
+                <span class="home-day-entry__time">{{ entry.timeLabel }}</span>
+                <span class="home-day-entry__content">
+                  <strong>{{ entry.productName }}</strong>
+                  <small>{{ entry.slotLabel }}</small>
+                </span>
+                <span class="home-day-entry__qty">{{ entry.qtyLabel }}</span>
+              </article>
+            }
+          </div>
+        } @else {
+          <p class="home-panel__empty">Aucune entree saisie aujourd'hui.</p>
+        }
+      </article>
+
       <article class="home-panel">
         <div class="home-panel__header">
           <div>
