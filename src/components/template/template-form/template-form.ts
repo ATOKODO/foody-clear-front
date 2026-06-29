@@ -13,12 +13,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import {
-  ProductList,
-  ProductListItem,
-} from '../../product/product-list/product-list';
-import { mapProductToProductListItem } from '../../product/product-list/product-list-item.mapper';
 import { ProductQuantityInputUnit } from '../../../interfaces/input-day.interface';
+import { PreparedDish, PreparedMeal } from '../../../interfaces/meal-prep.interface';
 import { Slot } from '../../../interfaces/slot.interface';
 import { Template, TemplateItem } from '../../../interfaces/template.interface';
 import { Product as ProductApiModel } from '../../../services/product-service';
@@ -27,7 +23,10 @@ export type TemplateFormMode = 'add' | 'edit';
 
 export interface TemplateItemDraft {
   id: number | null;
+  itemType: 'product' | 'dish' | 'meal';
   productId: number | null;
+  dishId: number | null;
+  mealId: number | null;
   qty: number | null;
   qtyUnit: ProductQuantityInputUnit | null;
   slotId: number | null;
@@ -49,7 +48,6 @@ export interface TemplateFormSubmittedEvent {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    ProductList,
   ],
   templateUrl: './template-form.html',
   styleUrl: './template-form.scss',
@@ -58,6 +56,8 @@ export class TemplateForm implements OnInit, OnChanges {
   readonly mode = input<TemplateFormMode>('add');
   readonly template = input<Template | null>(null);
   readonly products = input<ProductApiModel[]>([]);
+  readonly dishes = input<PreparedDish[]>([]);
+  readonly meals = input<PreparedMeal[]>([]);
   readonly slots = input<Slot[]>([]);
   readonly qtyUnitOptions = input<ProductQuantityInputUnit[]>([]);
   readonly savingTemplate = input(false);
@@ -100,23 +100,29 @@ export class TemplateForm implements OnInit, OnChanges {
   get canSaveItem(): boolean {
     return (
       this.template() !== null &&
-      this.itemDraft.productId !== null &&
       this.itemDraft.qty !== null &&
       this.itemDraft.qty > 0 &&
+      this.hasSelectedSource() &&
       !this.savingItem()
     );
   }
 
-  get productListItems(): ProductListItem[] {
-    return this.products().map((product) =>
-      mapProductToProductListItem(product),
+  get sortedProducts(): ProductApiModel[] {
+    return [...this.products()].sort((left, right) =>
+      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
     );
   }
 
-  get selectedProductIds(): string[] {
-    return this.itemDraft.productId !== null
-      ? [String(this.itemDraft.productId)]
-      : [];
+  get sortedDishes(): PreparedDish[] {
+    return [...this.dishes()].sort((left, right) =>
+      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
+    );
+  }
+
+  get sortedMeals(): PreparedMeal[] {
+    return [...this.meals()].sort((left, right) =>
+      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
+    );
   }
 
   get sortedSlots(): Slot[] {
@@ -151,7 +157,10 @@ export class TemplateForm implements OnInit, OnChanges {
   editItem(item: TemplateItem): void {
     this.itemDraft = {
       id: item.id,
-      productId: item.productId,
+      itemType: item.itemType ?? this.resolveItemType(item),
+      productId: item.productId ?? null,
+      dishId: item.dishId ?? null,
+      mealId: item.mealId ?? null,
       qty: item.qty,
       qtyUnit: item.qtyUnit,
       slotId: item.slotId,
@@ -160,20 +169,19 @@ export class TemplateForm implements OnInit, OnChanges {
     };
   }
 
-  onProductSelected(product: ProductListItem): void {
-    const productId = Number(product.id);
-    if (!Number.isInteger(productId) || productId < 1) {
-      return;
-    }
-
-    this.updateItemDraft({ productId });
-  }
-
   updateItemDraft(patch: Partial<TemplateItemDraft>): void {
-    this.itemDraft = {
+    const nextDraft = {
       ...this.itemDraft,
       ...patch,
     };
+
+    if (Object.prototype.hasOwnProperty.call(patch, 'itemType')) {
+      nextDraft.productId = null;
+      nextDraft.dishId = null;
+      nextDraft.mealId = null;
+    }
+
+    this.itemDraft = nextDraft;
   }
 
   onItemSave(): void {
@@ -184,7 +192,10 @@ export class TemplateForm implements OnInit, OnChanges {
     const itemDraft = this.itemDraft;
     this.itemSubmitted.emit({
       id: itemDraft.id,
+      itemType: itemDraft.itemType,
       productId: itemDraft.productId,
+      dishId: itemDraft.dishId,
+      mealId: itemDraft.mealId,
       qty: itemDraft.qty,
       qtyUnit: itemDraft.qtyUnit,
       slotId: itemDraft.slotId,
@@ -212,6 +223,27 @@ export class TemplateForm implements OnInit, OnChanges {
     }
 
     return item.slotKey?.trim() || 'Sans slot';
+  }
+
+  resolveTemplateItemLabel(item: TemplateItem): string {
+    return (
+      item.displayName ??
+      item.mealName ??
+      item.dishName ??
+      item.productName ??
+      'Element sans nom'
+    );
+  }
+
+  resolveTemplateItemTypeLabel(item: TemplateItem): string {
+    const itemType = item.itemType ?? this.resolveItemType(item);
+    if (itemType === 'meal') {
+      return 'Repas';
+    }
+    if (itemType === 'dish') {
+      return 'Plat';
+    }
+    return 'Produit';
   }
 
   formatPreferredTime(value: string | null | undefined): string {
@@ -242,12 +274,39 @@ export class TemplateForm implements OnInit, OnChanges {
   private buildEmptyItemDraft(): TemplateItemDraft {
     return {
       id: null,
+      itemType: 'product',
       productId: null,
+      dishId: null,
+      mealId: null,
       qty: null,
       qtyUnit: null,
       slotId: null,
       slotKey: '',
       preferredTime: '06:00',
     };
+  }
+
+  private hasSelectedSource(): boolean {
+    if (this.itemDraft.itemType === 'dish') {
+      return this.itemDraft.dishId !== null;
+    }
+
+    if (this.itemDraft.itemType === 'meal') {
+      return this.itemDraft.mealId !== null;
+    }
+
+    return this.itemDraft.productId !== null;
+  }
+
+  private resolveItemType(item: TemplateItem): 'product' | 'dish' | 'meal' {
+    if (item.mealId != null) {
+      return 'meal';
+    }
+
+    if (item.dishId != null) {
+      return 'dish';
+    }
+
+    return 'product';
   }
 }

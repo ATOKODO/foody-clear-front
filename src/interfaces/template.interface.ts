@@ -4,6 +4,7 @@ import {
   InputDayTotalsMacrosSummary,
   ProductQuantityInputUnit,
 } from './input-day.interface';
+import type { MealPrepEntryType, MealPrepResolvedProductLine } from './meal-prep.interface';
 
 export interface TemplateSummary {
   id: number;
@@ -25,8 +26,14 @@ export interface TemplateStockAvailability {
 
 export interface TemplateItem {
   id: number;
-  productId: number;
+  itemType?: MealPrepEntryType;
+  productId?: number | null;
   productName: string;
+  dishId?: number | null;
+  dishName?: string | null;
+  mealId?: number | null;
+  mealName?: string | null;
+  displayName?: string | null;
   qty: number;
   qtyUnit: ProductQuantityInputUnit | null;
   qtyNormalized: number;
@@ -38,6 +45,7 @@ export interface TemplateItem {
   stockByInventory: TemplateStockByInventory[];
   status?: 'pending' | 'converted';
   convertedItemId?: number | null;
+  resolvedProducts?: MealPrepResolvedProductLine[];
 }
 
 export interface TemplateComparisonDaySet {
@@ -62,7 +70,10 @@ export interface CreateTemplateDto {
 export type UpdateTemplateDto = Partial<CreateTemplateDto>;
 
 export interface CreateTemplateItemDto {
-  productId: number;
+  itemType?: MealPrepEntryType;
+  productId?: number | null;
+  dishId?: number | null;
+  mealId?: number | null;
   qty: number;
   qtyUnit?: ProductQuantityInputUnit;
   slotId?: number | null;

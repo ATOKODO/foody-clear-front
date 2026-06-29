@@ -96,7 +96,7 @@
                 <table class="min-w-full text-sm">
                   <thead class="bg-slate-50 text-left text-slate-700">
                     <tr>
-                      <th class="px-3 py-2">Produit</th>
+                      <th class="px-3 py-2">Element</th>
                       <th class="px-3 py-2">Qty</th>
                       <th class="px-3 py-2">Slot</th>
                       <th class="px-3 py-2">Stock global</th>
@@ -110,8 +110,8 @@
                         class="border-t border-slate-100 align-top"
                         >
                         <td class="px-3 py-2">
-                          <p class="font-medium text-slate-900">{{ item.productName }}</p>
-                          <p class="text-xs text-slate-500">#{{ item.productId }}</p>
+                          <p class="font-medium text-slate-900">{{ resolveTemplateItemLabel(item) }}</p>
+                          <p class="text-xs text-slate-500">{{ resolveTemplateItemTypeLabel(item) }}</p>
                         </td>
                         <td class="px-3 py-2">
                           {{ formatNutritionAmount(item.qty) }}

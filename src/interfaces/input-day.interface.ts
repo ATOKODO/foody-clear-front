@@ -1,3 +1,5 @@
+import type { MealPrepEntryType, MealPrepResolvedProductLine } from './meal-prep.interface';
+
 export type ProductQuantityInputUnit =
   | 'mg'
   | 'g'
@@ -126,8 +128,14 @@ export interface InputDayTemplateStockByInventory {
 
 export interface InputDayTemplateItemSummary {
   id: number;
-  productId: number;
+  itemType?: MealPrepEntryType;
+  productId?: number | null;
   productName: string;
+  dishId?: number | null;
+  dishName?: string | null;
+  mealId?: number | null;
+  mealName?: string | null;
+  displayName?: string | null;
   qty: number;
   qtyUnit: ProductQuantityInputUnit | null;
   qtyNormalized: number;
@@ -143,6 +151,7 @@ export interface InputDayTemplateItemSummary {
   };
   stockByInventory: InputDayTemplateStockByInventory[];
   nutritionValue: InputDayNutritionValue;
+  resolvedProducts?: MealPrepResolvedProductLine[];
 }
 
 export interface InputDayTemplateAssociationSummary {

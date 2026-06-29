@@ -68,8 +68,8 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
   },
   {
     id: 'operations',
-    label: 'Stocks & execution',
-    description: 'Stocks, saisie du jour et execution',
+    label: 'Stocks',
+    description: 'Stocks et achats',
     entries: [
       {
         id: 'inventory',
@@ -85,6 +85,14 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
         label: 'Listes de course',
         shortLabel: 'LC',
         description: "Preparation d'achats, checklists et conversion en stock",
+        featured: true,
+      },
+      {
+        id: 'meal-prep',
+        path: '/meal-prep',
+        label: 'Preparation de repas',
+        shortLabel: 'PR',
+        description: 'Plats, repas reutilisables et generation de courses',
         featured: true,
       },
     ],

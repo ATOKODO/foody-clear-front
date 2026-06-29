@@ -149,6 +149,22 @@ export class TemplateList {
     return !!value && Object.keys(value).length > 0;
   }
 
+
+  resolveTemplateItemLabel(item: TemplateItem): string {
+    return item.displayName ?? item.mealName ?? item.dishName ?? item.productName ?? 'Element sans nom';
+  }
+
+  resolveTemplateItemTypeLabel(item: TemplateItem): string {
+    const itemType = item.itemType ?? (item.mealId != null ? 'meal' : item.dishId != null ? 'dish' : 'product');
+    if (itemType === 'meal') {
+      return 'Repas';
+    }
+    if (itemType === 'dish') {
+      return 'Plat';
+    }
+    return 'Produit';
+  }
+
   resolveTemplateItemSlotLabel(item: TemplateItem): string {
     if (item.slotId != null) {
       const slot = this.slots().find((candidate) => candidate.id === item.slotId) ?? null;

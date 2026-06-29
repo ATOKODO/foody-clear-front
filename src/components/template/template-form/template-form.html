@@ -31,46 +31,77 @@
   </div>
 
   <p class="text-sm text-slate-600">
-    Le template reste neutre vis-a-vis du stock. Les quantites restent
-    previsionnelles tant qu'elles ne sont pas converties dans un input day.
+    Le template peut contenir des produits simples, des plats et des repas.
+    La conversion reste previsionnelle tant qu'elle n'est pas appliquee dans le jour.
   </p>
 
   @if (template(); as template) {
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
         <mat-card-title>
-          {{
-            itemDraft.id !== null ? "Modifier une ligne" : "Ajouter une ligne"
-          }}
+          {{ itemDraft.id !== null ? "Modifier une ligne" : "Ajouter une ligne" }}
         </mat-card-title>
         <mat-card-subtitle>{{ template.title }}</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content class="space-y-4 pt-2">
-        <section class="template-form__product-selection space-y-3">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h4 class="text-sm font-semibold text-slate-900">Produit</h4>
-              <p class="text-sm text-slate-600">
-                Choisis le produit avec la meme liste visuelle que dans
-                l'inventaire.
-              </p>
-            </div>
-            <span
-              class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Type</mat-label>
+            <mat-select
+              [ngModel]="itemDraft.itemType"
+              (ngModelChange)="updateItemDraft({ itemType: $event })"
             >
-              {{ selectedProductIds.length }} selectionne(s)
-            </span>
-          </div>
-          <app-product-list
-            [mode]="'select-single'"
-            [products]="productListItems"
-            [selectedIds]="selectedProductIds"
-            [compact]="true"
-            [embedded]="true"
-            (selected)="onProductSelected($event)"
-          />
-        </section>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <mat-option value="product">Produit</mat-option>
+              <mat-option value="dish">Plat</mat-option>
+              <mat-option value="meal">Repas</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          @if (itemDraft.itemType === 'product') {
+            <mat-form-field appearance="fill" class="w-full md:col-span-2 xl:col-span-2">
+              <mat-label>Produit</mat-label>
+              <mat-select
+                [ngModel]="itemDraft.productId"
+                (ngModelChange)="updateItemDraft({ productId: $event })"
+              >
+                <mat-option [value]="null">Selectionner</mat-option>
+                @for (product of sortedProducts; track product.id) {
+                  <mat-option [value]="product.id">{{ product.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+
+          @if (itemDraft.itemType === 'dish') {
+            <mat-form-field appearance="fill" class="w-full md:col-span-2 xl:col-span-2">
+              <mat-label>Plat</mat-label>
+              <mat-select
+                [ngModel]="itemDraft.dishId"
+                (ngModelChange)="updateItemDraft({ dishId: $event })"
+              >
+                <mat-option [value]="null">Selectionner</mat-option>
+                @for (dish of sortedDishes; track dish.id) {
+                  <mat-option [value]="dish.id">{{ dish.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+
+          @if (itemDraft.itemType === 'meal') {
+            <mat-form-field appearance="fill" class="w-full md:col-span-2 xl:col-span-2">
+              <mat-label>Repas</mat-label>
+              <mat-select
+                [ngModel]="itemDraft.mealId"
+                (ngModelChange)="updateItemDraft({ mealId: $event })"
+              >
+                <mat-option [value]="null">Selectionner</mat-option>
+                @for (meal of sortedMeals; track meal.id) {
+                  <mat-option [value]="meal.id">{{ meal.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Quantite</mat-label>
             <input
@@ -103,7 +134,7 @@
               (ngModelChange)="updateItemDraft({ slotId: $event })"
             >
               <mat-option [value]="null">Sans slot</mat-option>
-              @for (slot of sortedSlots; track slot) {
+              @for (slot of sortedSlots; track slot.id) {
                 <mat-option [value]="slot.id">
                   {{ slot.sortOrder }}. {{ slot.title }} ({{ slot.key }})
                 </mat-option>
@@ -128,17 +159,11 @@
                 [ngModel]="itemDraft.preferredTime"
                 (ngModelChange)="updateItemDraft({ preferredTime: $event })"
               />
-              <mat-hint
-                >Utilisee dans le planning lorsque l'element est sans
-                slot.</mat-hint
-              >
             </mat-form-field>
           }
         </div>
         @if (itemError(); as itemError) {
-          <p
-            class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-          >
+          <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {{ itemError }}
           </p>
         }
@@ -175,7 +200,7 @@
             <table class="min-w-full text-sm">
               <thead class="bg-slate-50 text-left text-slate-700">
                 <tr>
-                  <th class="px-3 py-2">Produit</th>
+                  <th class="px-3 py-2">Element</th>
                   <th class="px-3 py-2">Qty</th>
                   <th class="px-3 py-2">Slot</th>
                   <th class="px-3 py-2">Stock global</th>
@@ -183,24 +208,22 @@
                 </tr>
               </thead>
               <tbody>
-                @for (item of template.items; track item) {
+                @for (item of template.items; track item.id) {
                   <tr
                     [attr.data-testid]="'template-item-edit-row-' + item.id"
                     class="border-t border-slate-100 align-top"
                   >
                     <td class="px-3 py-2">
                       <p class="font-medium text-slate-900">
-                        {{ item.productName }}
+                        {{ resolveTemplateItemLabel(item) }}
                       </p>
                       <p class="text-xs text-slate-500">
-                        #{{ item.productId }}
+                        {{ resolveTemplateItemTypeLabel(item) }}
                       </p>
                     </td>
                     <td class="px-3 py-2">
                       {{ formatNutritionAmount(item.qty) }}
-                      <span class="text-slate-500">{{
-                        item.qtyUnit ?? "-"
-                      }}</span>
+                      <span class="text-slate-500">{{ item.qtyUnit ?? "-" }}</span>
                     </td>
                     <td class="px-3 py-2">
                       {{ resolveTemplateItemSlotLabel(item) }}
@@ -213,22 +236,12 @@
                     <td class="px-3 py-2">
                       <span
                         class="rounded-full px-2 py-1 text-xs font-medium"
-                        [class.bg-emerald-100]="
-                          item.stockAvailability.enoughStock
-                        "
-                        [class.text-emerald-700]="
-                          item.stockAvailability.enoughStock
-                        "
+                        [class.bg-emerald-100]="item.stockAvailability.enoughStock"
+                        [class.text-emerald-700]="item.stockAvailability.enoughStock"
                         [class.bg-red-100]="!item.stockAvailability.enoughStock"
-                        [class.text-red-700]="
-                          !item.stockAvailability.enoughStock
-                        "
+                        [class.text-red-700]="!item.stockAvailability.enoughStock"
                       >
-                        {{
-                          item.stockAvailability.enoughStock
-                            ? "Stock OK"
-                            : "Stock insuffisant"
-                        }}
+                        {{ item.stockAvailability.enoughStock ? "Stock OK" : "Stock insuffisant" }}
                       </span>
                     </td>
                     <td class="px-3 py-2">
@@ -260,18 +273,14 @@
             </table>
           </div>
         } @else {
-          <p
-            class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
-          >
+          <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
             Aucune ligne dans ce template.
           </p>
         }
       </mat-card-content>
     </mat-card>
   } @else {
-    <div
-      class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-600"
-    >
+    <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-600">
       Commence par creer le template pour pouvoir ajouter ses lignes.
     </div>
   }

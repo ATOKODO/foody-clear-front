@@ -1,0 +1,176 @@
+.meal-prep-panel {
+  display: block;
+}
+
+.meal-prep-panel__header,
+.meal-prep-column__header,
+.meal-prep-inline-actions,
+.meal-prep-detail-card__header,
+.meal-prep-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.meal-prep-panel__header,
+.meal-prep-panel__content,
+.meal-prep-editor-card,
+.meal-prep-detail-card,
+.meal-prep-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.meal-prep-panel__header {
+  padding: 1.25rem 1.25rem 0;
+}
+
+.meal-prep-panel__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.meal-prep-panel__subtitle {
+  margin: 0.25rem 0 0;
+  color: rgb(71 85 105);
+}
+
+.meal-prep-panel__actions {
+  display: grid;
+  grid-template-columns: minmax(16rem, 22rem) auto;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.meal-prep-panel__base-url {
+  width: 100%;
+}
+
+.meal-prep-panel__content {
+  padding: 1.25rem;
+}
+
+.meal-prep-grid {
+  display: grid;
+  grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.meal-prep-column {
+  display: grid;
+  gap: 1rem;
+}
+
+.meal-prep-list-card,
+.meal-prep-editor-card,
+.meal-prep-detail-card {
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
+  background: white;
+}
+
+.meal-prep-list-card {
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.9rem 1rem;
+}
+
+.meal-prep-list-card.is-active {
+  border-color: rgb(59 130 246);
+  background: rgb(239 246 255);
+}
+
+.meal-prep-list-card__title {
+  font-weight: 600;
+  color: rgb(15 23 42);
+}
+
+.meal-prep-list-card__meta,
+.meal-prep-empty {
+  font-size: 0.875rem;
+  color: rgb(100 116 139);
+}
+
+.meal-prep-editor-card,
+.meal-prep-detail-card {
+  padding: 1rem;
+}
+
+.meal-prep-lines {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.meal-prep-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) repeat(2, minmax(7rem, 0.8fr)) auto;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.meal-prep-line--meal {
+  grid-template-columns:
+    minmax(7rem, 0.6fr)
+    minmax(0, 1.5fr)
+    repeat(2, minmax(7rem, 0.8fr))
+    auto;
+}
+
+.meal-prep-line__source {
+  width: 100%;
+}
+
+.meal-prep-detail-card__header h4,
+.meal-prep-detail-card__header p {
+  margin: 0;
+}
+
+.meal-prep-detail-card__header p {
+  margin-top: 0.2rem;
+  color: rgb(100 116 139);
+  font-size: 0.875rem;
+}
+
+.meal-prep-detail-card__body {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.meal-prep-detail-row {
+  padding-top: 0.5rem;
+  border-top: 1px solid rgb(241 245 249);
+  font-size: 0.925rem;
+}
+
+.meal-prep-badge,
+.meal-prep-feedback {
+  border-radius: 999px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.meal-prep-badge {
+  background: rgb(241 245 249);
+  color: rgb(15 23 42);
+  white-space: nowrap;
+}
+
+.meal-prep-feedback {
+  background: rgb(236 253 245);
+  color: rgb(6 95 70);
+  width: fit-content;
+}
+
+@media (max-width: 1024px) {
+  .meal-prep-panel__actions,
+  .meal-prep-grid,
+  .meal-prep-line,
+  .meal-prep-line--meal {
+    grid-template-columns: 1fr;
+  }
+}

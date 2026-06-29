@@ -37,6 +37,8 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 import { DaySetService } from '../../services/day-set-service';
 import { SlotService } from '../../services/slot-service';
 import { TemplateService } from '../../services/template-service';
+import { PreparedDish, PreparedMeal } from '../../interfaces/meal-prep.interface';
+import { MealPrepService } from '../../services/meal-prep-service';
 
 @Component({
   selector: 'app-template',
@@ -57,6 +59,7 @@ export class TemplateFeature implements OnInit {
   private readonly productSrv = inject(ProductService);
   private readonly daySetSrv = inject(DaySetService);
   private readonly slotSrv = inject(SlotService);
+  private readonly mealPrepSrv = inject(MealPrepService);
 
   private readonly templateEditorDialog = viewChild<TemplateRef<unknown>>(
     'templateEditorDialog',
@@ -82,6 +85,8 @@ export class TemplateFeature implements OnInit {
   baseUrl = '';
   private readonly templatesState = signal<Template[]>([]);
   private readonly productsState = signal<ProductApiModel[]>([]);
+  private readonly dishesState = signal<PreparedDish[]>([]);
+  private readonly mealsState = signal<PreparedMeal[]>([]);
   private readonly daySetsState = signal<DaySet[]>([]);
   private readonly slotsState = signal<Slot[]>([]);
   private readonly selectedTemplateIdState = signal<number | null>(null);
@@ -89,6 +94,7 @@ export class TemplateFeature implements OnInit {
   private readonly compareDaySetIdState = signal<number | null>(null);
   private readonly loadingTemplatesState = signal(false);
   private readonly loadingProductsState = signal(false);
+  private readonly loadingMealPrepState = signal(false);
   private readonly loadingDaySetsState = signal(false);
   private readonly loadingSlotsState = signal(false);
   private readonly savingTemplateState = signal(false);
@@ -98,6 +104,16 @@ export class TemplateFeature implements OnInit {
 
   private readonly productOptionsState = computed<ProductApiModel[]>(() =>
     [...this.productsState()].sort((left, right) =>
+      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
+    ),
+  );
+  private readonly dishOptionsState = computed<PreparedDish[]>(() =>
+    [...this.dishesState()].sort((left, right) =>
+      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
+    ),
+  );
+  private readonly mealOptionsState = computed<PreparedMeal[]>(() =>
+    [...this.mealsState()].sort((left, right) =>
       left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
     ),
   );
@@ -117,6 +133,7 @@ export class TemplateFeature implements OnInit {
     () =>
       this.loadingTemplatesState() ||
       this.loadingProductsState() ||
+      this.loadingMealPrepState() ||
       this.loadingDaySetsState() ||
       this.loadingSlotsState() ||
       this.savingTemplateState() ||
@@ -132,6 +149,7 @@ export class TemplateFeature implements OnInit {
     this.baseUrl = this.templateSrv.baseUrl;
     this.syncBaseUrls();
     this.loadProducts();
+    this.loadMealPrepOptions();
     this.loadDaySets();
     this.loadSlots();
     this.loadTemplates({ autoSelectFirst: true });
@@ -151,6 +169,22 @@ export class TemplateFeature implements OnInit {
 
   set products(value: ProductApiModel[]) {
     this.productsState.set(value);
+  }
+
+  get dishes(): PreparedDish[] {
+    return this.dishesState();
+  }
+
+  set dishes(value: PreparedDish[]) {
+    this.dishesState.set(value);
+  }
+
+  get meals(): PreparedMeal[] {
+    return this.mealsState();
+  }
+
+  set meals(value: PreparedMeal[]) {
+    this.mealsState.set(value);
   }
 
   get daySets(): DaySet[] {
@@ -207,6 +241,14 @@ export class TemplateFeature implements OnInit {
 
   set loadingProducts(value: boolean) {
     this.loadingProductsState.set(value);
+  }
+
+  get loadingMealPrep(): boolean {
+    return this.loadingMealPrepState();
+  }
+
+  set loadingMealPrep(value: boolean) {
+    this.loadingMealPrepState.set(value);
   }
 
   get loadingDaySets(): boolean {
@@ -283,6 +325,14 @@ export class TemplateFeature implements OnInit {
     return this.productOptionsState();
   }
 
+  get dishOptions(): PreparedDish[] {
+    return this.dishOptionsState();
+  }
+
+  get mealOptions(): PreparedMeal[] {
+    return this.mealOptionsState();
+  }
+
   get daySetOptions(): DaySet[] {
     return this.daySetOptionsState();
   }
@@ -298,6 +348,7 @@ export class TemplateFeature implements OnInit {
   onBaseUrlChange(): void {
     this.syncBaseUrls();
     this.loadProducts();
+    this.loadMealPrepOptions();
     this.loadDaySets();
     this.loadSlots();
     this.loadTemplates({
@@ -308,6 +359,7 @@ export class TemplateFeature implements OnInit {
 
   onRefreshRequested(): void {
     this.loadProducts();
+    this.loadMealPrepOptions();
     this.loadDaySets();
     this.loadSlots();
     this.loadTemplates({
@@ -462,7 +514,10 @@ export class TemplateFeature implements OnInit {
     }
 
     const payload: CreateTemplateItemDto = {
-      productId: itemDraft.productId as number,
+      itemType: itemDraft.itemType,
+      ...(itemDraft.itemType === 'product' ? { productId: itemDraft.productId as number } : {}),
+      ...(itemDraft.itemType === 'dish' ? { dishId: itemDraft.dishId as number } : {}),
+      ...(itemDraft.itemType === 'meal' ? { mealId: itemDraft.mealId as number } : {}),
       qty: itemDraft.qty as number,
       ...(itemDraft.qtyUnit ? { qtyUnit: itemDraft.qtyUnit } : {}),
       slotId: itemDraft.slotId,
@@ -541,6 +596,7 @@ export class TemplateFeature implements OnInit {
     this.productSrv.setBaseUrl(this.baseUrl);
     this.daySetSrv.setBaseUrl(this.baseUrl);
     this.slotSrv.setBaseUrl(this.baseUrl);
+    this.mealPrepSrv.setBaseUrl(this.baseUrl);
   }
 
   private loadTemplates(options?: {
@@ -602,6 +658,29 @@ export class TemplateFeature implements OnInit {
           this.loadingTemplates = false;
         },
       });
+  }
+
+  private loadMealPrepOptions(): void {
+    this.loadingMealPrep = true;
+    this.mealPrepSrv.findAllDishes().subscribe({
+      next: (response) => {
+        this.dishes = response;
+        this.mealPrepSrv.findAllMeals().subscribe({
+          next: (meals) => {
+            this.meals = meals;
+            this.loadingMealPrep = false;
+          },
+          error: (error) => {
+            this.lastError = error;
+            this.loadingMealPrep = false;
+          },
+        });
+      },
+      error: (error) => {
+        this.lastError = error;
+        this.loadingMealPrep = false;
+      },
+    });
   }
 
   private loadProducts(): void {

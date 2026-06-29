@@ -41,6 +41,11 @@
               Produits...
             </span>
           }
+          @if (loadingMealPrep) {
+            <span class="app-status-pill app-status-pill--info">
+              Plats et repas...
+            </span>
+          }
           @if (loadingDaySets) {
             <span class="app-status-pill app-status-pill--info">
               Day-sets...
@@ -111,6 +116,8 @@
       <app-template-form [mode]="formMode"
         [template]="editedTemplate"
         [products]="productOptions"
+        [dishes]="dishOptions"
+        [meals]="mealOptions"
         [slots]="slotOptions"
         [qtyUnitOptions]="qtyUnitOptions"
         [savingTemplate]="savingTemplate"
