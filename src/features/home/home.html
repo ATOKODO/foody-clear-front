@@ -21,6 +21,15 @@
       <a routerLink="/product" class="home-dashboard__hero-link">
         Ouvrir le catalogue
       </a>
+      <button
+        type="button"
+        class="home-dashboard__hero-link home-dashboard__hero-link--secondary"
+        data-testid="home-dashboard-external-entry"
+        [disabled]="loading"
+        (click)="openExternalMealEntry()"
+      >
+        Entree exterieure
+      </button>
       <a
         routerLink="/planning"
         [queryParams]="planningTodayQueryParams"
@@ -169,14 +178,24 @@
         </div>
         @if (dayEntryRows.length > 0) {
           <div class="home-day-entries">
-            @for (entry of dayEntryRows; track entry.id) {
+            @for (entry of dayEntryRows; track entry.key) {
               <article class="home-day-entry">
                 <span class="home-day-entry__time">{{ entry.timeLabel }}</span>
                 <span class="home-day-entry__content">
-                  <strong>{{ entry.productName }}</strong>
+                  <strong>
+                    {{ entry.productName }}
+                    @if (entry.isExternal) {
+                      <em class="home-day-entry__badge">Exterieur</em>
+                    }
+                  </strong>
                   <small>{{ entry.slotLabel }}</small>
                 </span>
-                <span class="home-day-entry__qty">{{ entry.qtyLabel }}</span>
+                <span class="home-day-entry__qty">
+                  {{ entry.qtyLabel }}
+                  @if (entry.paymentLabel) {
+                    <small>{{ entry.paymentLabel }}</small>
+                  }
+                </span>
               </article>
             }
           </div>

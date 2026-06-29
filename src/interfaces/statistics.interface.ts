@@ -63,6 +63,7 @@ export interface StatisticsTimelineDay {
     deltaToTargets: Record<string, InputDayMacroValue> | null;
     incompleteNutritionKeys: string[];
     itemCount: number;
+    externalEntryCount?: number;
   };
 }
 

@@ -44,6 +44,45 @@ export interface InputDayNutritionValue {
   [nutritionKey: string]: number;
 }
 
+export type ExternalMealEntryPaymentStatus = 'paid' | 'free' | 'refunded';
+
+export interface ExternalMealEntryMacroValues {
+  energyKcal: number;
+  proteins: number;
+  carbs: number;
+  lipids: number;
+}
+
+export interface CreateExternalMealEntryDto {
+  dateLocal: string;
+  occurredAt: string;
+  name: string;
+  paymentStatus: ExternalMealEntryPaymentStatus;
+  priceAmount?: number | null;
+  nutritionValue: ExternalMealEntryMacroValues;
+  slotId?: number | null;
+  slotKey?: string | null;
+  restaurantName?: string | null;
+  note?: string | null;
+}
+
+export type UpdateExternalMealEntryDto = CreateExternalMealEntryDto;
+
+export interface ExternalMealEntrySummary {
+  id: number;
+  dateLocal: string;
+  name: string;
+  paymentStatus: ExternalMealEntryPaymentStatus;
+  priceAmount: number | null;
+  insertedAt: string;
+  occurredAt: string;
+  slotId: number | null;
+  slotKey: string | null;
+  restaurantName?: string | null;
+  note?: string | null;
+  nutritionValue: ExternalMealEntryMacroValues;
+}
+
 export interface InputDayAssignmentSummary {
   id: number;
   cycleId: number;
@@ -169,6 +208,7 @@ export interface InputDayResponse {
   templateAssociation?: InputDayTemplateAssociationSummary | null;
   templateItems?: InputDayTemplateItemSummary[];
   items: InputDayItemSummary[];
+  externalEntries?: ExternalMealEntrySummary[];
   totalsMacros: InputDayTotalsMacrosSummary | null;
   projectedTotalsMacros?: InputDayTotalsMacrosSummary | null;
   itemsBySlot?: InputDayItemsBySlotEntry[];

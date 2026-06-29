@@ -1,6 +1,7 @@
 import type { MockApiRequestContext } from '../shared';
 import {
   buildInputDayResponse,
+  hydrateExternalMealEntry,
   buildMonthResponse,
   buildWeekResponse,
   getInventory,
@@ -13,7 +14,7 @@ import {
   removeArrayItem,
   updateInventoryStock,
 } from '../shared';
-import type { MockInputDayItem, MockInventory } from '../state';
+import type { MockExternalMealEntry, MockInputDayItem, MockInventory } from '../state';
 
 export async function handleExecutionRequest(context: MockApiRequestContext): Promise<boolean> {
   const { path, request, state } = context;
@@ -209,6 +210,54 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     }
   }
 
+  if (/^\/input-days\/[^/]+\/external-entries$/.test(path) && method === 'POST') {
+    const dateLocal = path.split('/')[2];
+    const body = await context.readJson<Record<string, unknown>>();
+    const created = createExternalMealEntry(context, dateLocal, body);
+    if (!created) {
+      await context.json({ message: 'Invalid external-entry payload' }, 400);
+      return true;
+    }
+
+    state.externalMealEntries.push(created);
+    await context.json(hydrateExternalMealEntry(state, created), 201);
+    return true;
+  }
+
+  if (/^\/input-days\/[^/]+\/external-entries\/\d+$/.test(path)) {
+    const [, , dateLocal, , entryIdValue] = path.split('/');
+    const entryId = Number(entryIdValue);
+    const entry = state.externalMealEntries.find((candidate) => candidate.id === entryId && candidate.dateLocal === dateLocal) ?? null;
+    if (!entry) {
+      await context.notFound('External meal entry not found');
+      return true;
+    }
+
+    if (method === 'PATCH') {
+      const body = await context.readJson<Record<string, unknown>>();
+      const updated = createExternalMealEntry(context, String(body.dateLocal ?? entry.dateLocal), {
+        ...entry,
+        ...body,
+      }, entry.id, entry.insertedAt);
+      if (!updated) {
+        await context.json({ message: 'Invalid external-entry payload' }, 400);
+        return true;
+      }
+
+      state.externalMealEntries = state.externalMealEntries.map((candidate) =>
+        candidate.id === entry.id ? updated : candidate,
+      );
+      await context.json(hydrateExternalMealEntry(state, updated));
+      return true;
+    }
+
+    if (method === 'DELETE') {
+      state.externalMealEntries = removeArrayItem(state.externalMealEntries, entryId);
+      await context.noContent();
+      return true;
+    }
+  }
+
   if (/^\/input-days\/[^/]+\/items$/.test(path) && method === 'POST') {
     const dateLocal = path.split('/')[2];
     const body = await context.readJson<Record<string, unknown>>();
@@ -315,6 +364,59 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
   }
 
   return false;
+}
+
+function createExternalMealEntry(
+  context: MockApiRequestContext,
+  dateLocal: string,
+  payload: Record<string, unknown>,
+  existingId?: number,
+  existingInsertedAt?: string,
+): MockExternalMealEntry | null {
+  const name = readNullableString(payload.name);
+  const occurredAt = readNullableString(payload.occurredAt);
+  const paymentStatus = readNullableString(payload.paymentStatus);
+  const nutritionValue = payload.nutritionValue as Record<string, unknown> | null;
+  if (
+    !name ||
+    !occurredAt ||
+    (paymentStatus !== 'paid' && paymentStatus !== 'free' && paymentStatus !== 'refunded') ||
+    !nutritionValue
+  ) {
+    return null;
+  }
+
+  const paidPriceAmount = Number(payload.priceAmount ?? 0);
+  if (paymentStatus === 'paid' && (!Number.isFinite(paidPriceAmount) || paidPriceAmount <= 0)) {
+    return null;
+  }
+
+  const normalizedPriceAmount = paymentStatus === 'paid' ? paidPriceAmount : null;
+
+  const macros = {
+    energyKcal: Number(nutritionValue.energyKcal ?? 0),
+    proteins: Number(nutritionValue.proteins ?? 0),
+    carbs: Number(nutritionValue.carbs ?? 0),
+    lipids: Number(nutritionValue.lipids ?? 0),
+  };
+  if (Object.values(macros).some((value) => !Number.isFinite(value) || value < 0)) {
+    return null;
+  }
+
+  return {
+    id: existingId ?? context.nextId('externalMealEntry'),
+    dateLocal,
+    name,
+    paymentStatus,
+    priceAmount: normalizedPriceAmount,
+    occurredAt,
+    insertedAt: existingInsertedAt ?? occurredAt,
+    slotId: readNullableNumber(payload.slotId),
+    slotKey: readNullableString(payload.slotKey),
+    restaurantName: readNullableString(payload.restaurantName),
+    note: readNullableString(payload.note),
+    nutritionValue: macros,
+  };
 }
 
 function createInputDayItem(

@@ -456,7 +456,7 @@ describe('PlanningFeature', () => {
   it('should reload current input data when embedded items change', () => {
     const reloadSpy = spyOn<any>(component, 'reloadInputDataForCurrentView');
 
-    component.onEmbeddedItemsChanged({ dateLocal: '2026-02-16' });
+    component.onEmbeddedItemsChanged();
 
     expect(reloadSpy).toHaveBeenCalled();
   });

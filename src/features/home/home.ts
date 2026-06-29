@@ -1,10 +1,12 @@
 import { NgClass } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
 import { DateTime } from 'luxon';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 import {
+  ExternalMealEntrySummary,
   InputDayDaySetSlotSummary,
   InputDayItemSummary,
   InputDayMacroValue,
@@ -17,6 +19,7 @@ import {
   StatisticsTimelineResponse,
 } from '../../interfaces/statistics.interface';
 import { Slot } from '../../interfaces/slot.interface';
+import { ExternalMealEntryDialogService } from '../../services/external-meal-entry-dialog-service';
 import { InputDayService } from '../../services/input-day-service';
 import { SlotService } from '../../services/slot-service';
 import { StatisticService } from '../../services/statistic-service';
@@ -44,11 +47,14 @@ interface HomeScheduleRow {
 }
 
 interface HomeDayEntryRow {
+  key: string;
   id: number;
   timeLabel: string;
   productName: string;
   slotLabel: string;
   qtyLabel: string;
+  isExternal: boolean;
+  paymentLabel: string | null;
 }
 
 @Component({
@@ -56,6 +62,7 @@ interface HomeDayEntryRow {
   imports: [
     RouterLink,
     NgClass,
+    MatDialogModule,
     MatProgressBarModule,
     UiErrorPanel,
     InputDayFeature,
@@ -64,6 +71,7 @@ interface HomeDayEntryRow {
   styleUrl: './home.scss',
 })
 export class Home implements OnInit {
+  private readonly externalMealEntryDialog = inject(ExternalMealEntryDialogService);
   private readonly inputDayService = inject(InputDayService);
   private readonly statisticService = inject(StatisticService);
   private readonly slotService = inject(SlotService);
@@ -77,11 +85,11 @@ export class Home implements OnInit {
     view: 'day',
     date: this.todayDateLocal,
   };
-  readonly macroDefinitions: Array<{
+  readonly macroDefinitions: {
     key: HomeMacroKey;
     label: string;
     unit: string;
-  }> = [
+  }[] = [
     { key: 'energyKcal', label: 'Energie', unit: 'kcal' },
     { key: 'proteins', label: 'Proteines', unit: 'g' },
     { key: 'carbs', label: 'Glucides', unit: 'g' },
@@ -115,6 +123,22 @@ export class Home implements OnInit {
     this.refreshDashboard();
   }
 
+  openExternalMealEntry(): void {
+    this.externalMealEntryDialog
+      .openCreate({
+        apiBaseUrl: this.baseUrl,
+        dateLocal: this.todayDateLocal,
+        occurredAt: DateTime.local().toISO({ suppressMilliseconds: true }),
+        timezone: this.timezone,
+        slots: this.inputDayResponse ? this.resolveDaySlots(this.inputDayResponse) : [],
+      })
+      .subscribe((result) => {
+        if (result) {
+          this.refreshDashboard();
+        }
+      });
+  }
+
   get loading(): boolean {
     return this.loadingDay || this.loadingTimeline;
   }
@@ -143,10 +167,14 @@ export class Home implements OnInit {
 
   get enteredItemCount(): number {
     return (
-      this.inputDayResponse?.items.length ??
-      this.todayTimelineDay?.inputs.itemCount ??
-      0
+      (this.inputDayResponse
+        ? this.inputDayResponse.items.length + this.externalEntries.length
+        : this.todayTimelineDay?.inputs.itemCount) ?? 0
     );
+  }
+
+  get externalEntries(): ExternalMealEntrySummary[] {
+    return this.inputDayResponse?.externalEntries ?? [];
   }
 
   get pendingTemplateItems(): InputDayTemplateItemSummary[] {
@@ -226,18 +254,41 @@ export class Home implements OnInit {
       return [];
     }
 
-    return [...response.items]
-      .sort((left, right) =>
-        this.resolveItemTimestamp(left).localeCompare(
-          this.resolveItemTimestamp(right),
-        ),
-      )
-      .map((item) => ({
-        id: item.id,
-        timeLabel: this.formatDateTime(item.occurredAt || item.insertedAt),
-        productName: item.productName,
-        slotLabel: this.getItemSlotLabel(item),
-        qtyLabel: this.formatItemQty(item),
+    const stockRows = response.items.map((item) => ({
+      key: `stock-${item.id}`,
+      id: item.id,
+      occurredAt: this.resolveItemTimestamp(item),
+      timeLabel: this.formatDateTime(item.occurredAt || item.insertedAt),
+      productName: item.productName,
+      slotLabel: this.getItemSlotLabel(item),
+      qtyLabel: this.formatItemQty(item),
+      isExternal: false,
+      paymentLabel: null,
+    }));
+
+    const externalRows = this.externalEntries.map((entry) => ({
+      key: `external-${entry.id}`,
+      id: entry.id,
+      occurredAt: entry.occurredAt,
+      timeLabel: this.formatDateTime(entry.occurredAt),
+      productName: entry.name,
+      slotLabel: this.getExternalEntrySlotLabel(entry),
+      qtyLabel: this.formatExternalEntryMacros(entry),
+      isExternal: true,
+      paymentLabel: this.getExternalPaymentLabel(entry),
+    }));
+
+    return [...stockRows, ...externalRows]
+      .sort((left, right) => left.occurredAt.localeCompare(right.occurredAt))
+      .map((row) => ({
+        key: row.key,
+        id: row.id,
+        timeLabel: row.timeLabel,
+        productName: row.productName,
+        slotLabel: row.slotLabel,
+        qtyLabel: row.qtyLabel,
+        isExternal: row.isExternal,
+        paymentLabel: row.paymentLabel,
       }));
   }
 
@@ -554,6 +605,50 @@ export class Home implements OnInit {
 
     const slotKey = item.slotKey?.trim();
     return slotKey ? `Slot ${slotKey}` : 'Non rattache a un slot';
+  }
+
+  private getExternalEntrySlotLabel(entry: ExternalMealEntrySummary): string {
+    const slot = this.findSlotForExternalEntry(entry);
+    if (slot) {
+      return `${slot.title} · ${this.formatSlotRange(slot)}`;
+    }
+
+    const slotKey = entry.slotKey?.trim();
+    return slotKey ? `Slot ${slotKey}` : 'Non rattache a un slot';
+  }
+
+  private findSlotForExternalEntry(
+    entry: ExternalMealEntrySummary,
+  ): InputDayDaySetSlotSummary | null {
+    const slots = this.inputDayResponse
+      ? this.resolveDaySlots(this.inputDayResponse)
+      : [];
+    return (
+      slots.find((slot) => {
+        if (entry.slotId !== null && entry.slotId === slot.slotId) {
+          return true;
+        }
+
+        return entry.slotKey != null && entry.slotKey === slot.slotKey;
+      }) ?? null
+    );
+  }
+
+  private formatExternalEntryMacros(entry: ExternalMealEntrySummary): string {
+    const macros = entry.nutritionValue;
+    return `${this.roundNumber(macros.energyKcal)} kcal · P ${this.roundNumber(macros.proteins)} · G ${this.roundNumber(macros.carbs)} · L ${this.roundNumber(macros.lipids)}`;
+  }
+
+  private getExternalPaymentLabel(entry: ExternalMealEntrySummary): string {
+    if (entry.paymentStatus === 'free') {
+      return 'Offert';
+    }
+
+    if (entry.paymentStatus === 'refunded') {
+      return 'Rembourse';
+    }
+
+    return this.formatCurrency(entry.priceAmount ?? 0);
   }
 
   private resolveItemTimestamp(item: InputDayItemSummary): string {

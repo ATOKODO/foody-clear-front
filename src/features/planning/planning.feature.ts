@@ -12,6 +12,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -48,6 +49,7 @@ import {
 } from '../../interfaces/input-day.interface';
 import { CycleAssignementService } from '../../services/cycle-assignement-service';
 import { CycleService } from '../../services/cycle-service';
+import { ExternalMealEntryDialogService } from '../../services/external-meal-entry-dialog-service';
 import { InputDayService } from '../../services/input-day-service';
 import { SlotService } from '../../services/slot-service';
 import { InputDayFeature } from '../input-day/input-day.feature';
@@ -89,6 +91,7 @@ const PLANNING_DATA_CACHE_MS = 60_000;
     ListCycle,
     MatButtonModule,
     MatCardModule,
+    MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
@@ -106,6 +109,7 @@ const PLANNING_DATA_CACHE_MS = 60_000;
 })
 export class PlanningFeature implements OnInit, AfterViewInit {
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
+  private readonly externalMealEntryDialog = inject(ExternalMealEntryDialogService);
   private readonly cycleService = inject(CycleService);
   private readonly cycleAssignmentService = inject(CycleAssignementService);
   private readonly inputDayService = inject(InputDayService);
@@ -443,6 +447,20 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     );
   }
 
+  openExternalEntryFromActions(): void {
+    this.openExternalMealEntry(
+      this.selectedModalDateLocal,
+      this.selectedOccurredAt,
+    );
+  }
+
+  openExternalEntryFromItems(): void {
+    this.openExternalMealEntry(
+      this.selectedModalDateLocal,
+      this.selectedOccurredAt,
+    );
+  }
+
   closeActiveModal(): void {
     if (this.savingAssignment) {
       return;
@@ -516,7 +534,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     });
   }
 
-  onEmbeddedItemsChanged(_: { dateLocal: string }): void {
+  onEmbeddedItemsChanged(): void {
     this.reloadInputDataForCurrentView(true);
   }
 
@@ -926,6 +944,26 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.selectedActionAssignment = sourceAssignment;
   }
 
+  private openExternalMealEntry(dateLocal: string, occurredAt: string | null): void {
+    if (!this.isDateLocal(dateLocal)) {
+      return;
+    }
+
+    this.externalMealEntryDialog
+      .openCreate({
+        apiBaseUrl: this.baseUrl,
+        dateLocal,
+        occurredAt,
+        timezone: this.resolveTimezone(),
+        slots: this.resolveExternalEntrySlots(dateLocal),
+      })
+      .subscribe((result) => {
+        if (result) {
+          this.reloadInputDataForCurrentView(true);
+        }
+      });
+  }
+
   private openItemsModal(
     dateLocal: string,
     occurredAt: string | null,
@@ -941,6 +979,36 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.selectedModalDateLocal = dateLocal;
     this.selectedOccurredAt = occurredAt;
     this.selectedItemId = itemId;
+  }
+
+  private resolveExternalEntrySlots(dateLocal: string) {
+    const response = this.findInputDayResponseForDate(dateLocal);
+    const responseSlots = response?.slots ?? response?.daySet?.slots ?? [];
+    if (responseSlots.length > 0) {
+      return responseSlots;
+    }
+
+    return this.slots.map((slot) => ({
+      slotId: slot.id,
+      slotKey: slot.key,
+      title: slot.title,
+      sortOrder: slot.sortOrder,
+      startTime: slot.startTime ?? null,
+      endTime: slot.endTime ?? null,
+      nutritionValue: null,
+    }));
+  }
+
+  private findInputDayResponseForDate(dateLocal: string): InputDayResponse | null {
+    if (this.inputDayResponse?.dateLocal === dateLocal) {
+      return this.inputDayResponse;
+    }
+
+    return (
+      this.inputWeekResponse?.days.find((day) => day.dateLocal === dateLocal) ??
+      this.inputMonthResponse?.days.find((day) => day.dateLocal === dateLocal) ??
+      null
+    );
   }
 
   private isDateLocal(value: string): boolean {

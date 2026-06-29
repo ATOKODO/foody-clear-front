@@ -782,7 +782,7 @@ export class Calendar implements OnInit, OnChanges {
 
   getWeekSummaryItemCount(): number {
     return Array.from(this.visibleDayResponseByDate.values()).reduce(
-      (total, response) => total + response.items.length,
+      (total, response) => total + this.getResponseEntryCount(response),
       0,
     );
   }
@@ -826,7 +826,8 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getWeekDayProductCount(dateLocal: string): number {
-    return this.visibleDayResponseByDate.get(dateLocal)?.items.length ?? 0;
+    const response = this.visibleDayResponseByDate.get(dateLocal) ?? null;
+    return response ? this.getResponseEntryCount(response) : 0;
   }
 
   getWeekDaySlotCount(dateLocal: string): number {
@@ -903,7 +904,8 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayItemCount(): number {
-    return this.inputDayResponse()?.items.length ?? 0;
+    const response = this.inputDayResponse();
+    return response ? this.getResponseEntryCount(response) : 0;
   }
 
   getDaySlotCount(): number {
@@ -1369,6 +1371,10 @@ export class Calendar implements OnInit, OnChanges {
 
   getWeekDaySlots(dateLocal: string): CalendarDaySlot[] {
     return this.visibleDaySlotsByDate.get(dateLocal) ?? this.emptySlots;
+  }
+
+  private getResponseEntryCount(response: InputDayResponse): number {
+    return response.items.length + (response.externalEntries?.length ?? 0);
   }
 
   getWeekTimelineBlocks(dateLocal: string): CalendarWeekTimelineBlock[] {

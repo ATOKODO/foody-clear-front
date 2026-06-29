@@ -326,9 +326,40 @@ button.home-dashboard__hero-link {
 }
 
 .home-day-entry__content strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
   color: var(--app-text-strong);
   font-size: 0.88rem;
   overflow-wrap: anywhere;
+}
+
+.home-day-entry__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.15rem;
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  background: var(--app-info-bg);
+  color: var(--app-info-text);
+  font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+.home-day-entry__qty {
+  display: grid;
+  justify-items: end;
+  gap: 0.15rem;
+  text-align: right;
+}
+
+.home-day-entry__qty small {
+  color: var(--app-text-muted);
+  font-size: 0.68rem;
+  font-weight: 750;
 }
 
 .home-day-entry__content small {

@@ -2,11 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
+  CreateExternalMealEntryDto,
   CreateInputDayItemsDto,
   InputDayItemCommand,
   InputMonthResponse,
   InputDayResponse,
   InputWeekResponse,
+  UpdateExternalMealEntryDto,
   UpdateInputDayItemDto,
 } from '../interfaces/input-day.interface';
 import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
@@ -88,6 +90,33 @@ export class InputDayService {
       {
         inventoryId: inventoryIds[0] ?? null,
       },
+    );
+  }
+
+  createExternalEntry(
+    dateLocal: string,
+    dto: CreateExternalMealEntryDto,
+  ): Observable<unknown> {
+    return this.http.post(
+      `${this.baseUrl}/input-days/${dateLocal}/external-entries`,
+      dto,
+    );
+  }
+
+  updateExternalEntry(
+    dateLocal: string,
+    entryId: number,
+    dto: UpdateExternalMealEntryDto,
+  ): Observable<unknown> {
+    return this.http.patch(
+      `${this.baseUrl}/input-days/${dateLocal}/external-entries/${entryId}`,
+      dto,
+    );
+  }
+
+  removeExternalEntry(dateLocal: string, entryId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.baseUrl}/input-days/${dateLocal}/external-entries/${entryId}`,
     );
   }
 

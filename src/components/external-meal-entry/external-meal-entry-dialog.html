@@ -1,0 +1,130 @@
+<div class="external-entry-dialog" data-testid="external-entry-dialog">
+  <div class="external-entry-dialog__header">
+    <div>
+      <p class="external-entry-dialog__eyebrow">Entree exterieure</p>
+      <h3 class="external-entry-dialog__title">{{ title() }}</h3>
+      <p class="external-entry-dialog__subtitle">Repas non prevu, sans impact sur le stock.</p>
+    </div>
+  </div>
+
+  <mat-dialog-content class="external-entry-dialog__content">
+    <form [formGroup]="form" class="external-entry-dialog__form" (ngSubmit)="submit()">
+      @if (error) {
+        <app-ui-error-panel [error]="error" />
+      }
+
+      <div class="external-entry-dialog__grid external-entry-dialog__grid--context">
+        <mat-form-field appearance="fill">
+          <mat-label>Date</mat-label>
+          <input matInput type="date" formControlName="dateLocal" />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Heure</mat-label>
+          <input matInput type="datetime-local" formControlName="occurredAt" />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Repas / slot</mat-label>
+          <mat-select formControlName="slotKey">
+            <mat-option [value]="null">Sans slot</mat-option>
+            @for (slot of slotOptions; track slot.slotKey) {
+              <mat-option [value]="slot.slotKey">
+                {{ slot.title }} · {{ slot.rangeLabel }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="external-entry-dialog__grid">
+        <mat-form-field appearance="fill">
+          <mat-label>Nom du repas / plat</mat-label>
+          <input matInput type="text" formControlName="name" data-testid="external-entry-name" />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Restaurant / source</mat-label>
+          <input matInput type="text" formControlName="restaurantName" />
+        </mat-form-field>
+      </div>
+
+      <div class="external-entry-dialog__grid external-entry-dialog__grid--payment">
+        <mat-form-field appearance="fill">
+          <mat-label>Statut</mat-label>
+          <mat-select formControlName="paymentStatus" data-testid="external-entry-payment-status">
+            @for (status of paymentStatuses; track status.value) {
+              <mat-option [value]="status.value">{{ status.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Prix</mat-label>
+          <input
+            matInput
+            type="number"
+            min="0.01"
+            step="0.01"
+            formControlName="priceAmount"
+            data-testid="external-entry-price"
+            [readonly]="!isPaid" />
+          <span matTextSuffix>€</span>
+          @if (!isPaid) {
+            <mat-hint>Non comptabilise en depense.</mat-hint>
+          }
+        </mat-form-field>
+      </div>
+
+      <section class="external-entry-dialog__macros" aria-label="Macros">
+        <div class="external-entry-dialog__section-head">
+          <h4>Macros</h4>
+        </div>
+        <div class="external-entry-dialog__macro-grid">
+          <mat-form-field appearance="fill">
+            <mat-label>Energie</mat-label>
+            <input matInput type="number" min="0" step="1" formControlName="energyKcal" />
+            <span matTextSuffix>kcal</span>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Proteines</mat-label>
+            <input matInput type="number" min="0" step="0.1" formControlName="proteins" />
+            <span matTextSuffix>g</span>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Glucides</mat-label>
+            <input matInput type="number" min="0" step="0.1" formControlName="carbs" />
+            <span matTextSuffix>g</span>
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>Lipides</mat-label>
+            <input matInput type="number" min="0" step="0.1" formControlName="lipids" />
+            <span matTextSuffix>g</span>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Note</mat-label>
+        <textarea matInput rows="3" formControlName="note"></textarea>
+      </mat-form-field>
+    </form>
+  </mat-dialog-content>
+
+  @if (saving) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <mat-dialog-actions align="end" class="external-entry-dialog__actions">
+    <button mat-stroked-button type="button" (click)="cancel()" [disabled]="saving">Annuler</button>
+    <button
+      mat-raised-button
+      color="primary"
+      type="button"
+      data-testid="external-entry-submit"
+      (click)="submit()"
+      [disabled]="!canSubmit">
+      Ajouter
+    </button>
+  </mat-dialog-actions>
+</div>
