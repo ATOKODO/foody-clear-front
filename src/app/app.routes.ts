@@ -24,6 +24,7 @@ export const routes: Routes = [
     {path: 'tag', loadComponent: () => import('../features/tag/tag').then(m => m.Tag), title: 'Tags'},
     {path: 'nutrition-value', loadComponent: () => import('../features/nutrition-value/nutrition-value').then(m => m.NutritionValues), title: 'Valeurs nutritionnelles'},
     {path: 'inventory', loadComponent: () => import('../features/inventory/inventory').then(m => m.Inventory), title: 'Inventaires'},
+    {path: 'shopping-list', loadComponent: () => import('../features/shopping-list/shopping-list').then(m => m.ShoppingList), title: 'Listes de course'},
     {path: 'cycle', loadComponent: () => import('../features/cycle/cycle.feature').then(m => m.CycleFeature), title: 'Cycles'},
     {path: 'input-day', loadComponent: () => import('../features/input-day/input-day.feature').then(m => m.InputDayFeature), title: 'Saisie du jour'},
     {path: 'day-set', loadComponent: () => import('../features/day-set/day-set.feature').then(m => m.DaySetFeature), title: 'Jours types'},

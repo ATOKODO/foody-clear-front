@@ -87,6 +87,13 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
         featured: true,
       },
       {
+        id: 'shopping-list',
+        path: '/shopping-list',
+        label: 'Listes de course',
+        shortLabel: 'LC',
+        description: "Preparation d'achats, checklists et conversion en stock",
+      },
+      {
         id: 'input-day',
         path: '/input-day',
         label: 'Saisie du jour',

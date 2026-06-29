@@ -1,0 +1,252 @@
+<section class="app-page shopping-list-page" data-testid="shopping-list-page">
+  <mat-card class="shopping-list-panel" data-testid="shopping-list-panel">
+    <div class="shopping-list-panel__header">
+      <div>
+        <h2 class="shopping-list-panel__title">Listes de course</h2>
+        <p class="shopping-list-panel__subtitle">Preparation d'achats, conversion en stock et reutilisation via modeles.</p>
+      </div>
+      <button
+        mat-stroked-button
+        type="button"
+        class="shopping-list-action shopping-list-action--secondary"
+        (click)="loadScreen()"
+        [disabled]="loading || saving">
+        Rafraichir
+      </button>
+    </div>
+
+    <div class="shopping-list-panel__content">
+      @if (loading || saving) {
+        <div class="app-status-row">
+          @if (loading) {
+            <span class="app-status-pill app-status-pill--neutral">Chargement...</span>
+          }
+          @if (saving) {
+            <span class="app-status-pill app-status-pill--saving">Sauvegarde...</span>
+          }
+        </div>
+      }
+
+      @if (lastError) {
+        <app-ui-error-panel [error]="lastError" />
+      }
+
+      <div class="shopping-list-grid">
+        <section class="shopping-list-column shopping-list-column--lists">
+          <div class="shopping-list-column__header">
+            <h3>Listes actives</h3>
+            <span>{{ shoppingLists.length }}</span>
+          </div>
+
+          <div class="shopping-list-create-row">
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Nom de la liste</mat-label>
+              <input matInput [(ngModel)]="draftListName" />
+            </mat-form-field>
+            <button
+              mat-raised-button
+              color="primary"
+              class="shopping-list-action shopping-list-action--primary"
+              type="button"
+              (click)="createList()"
+              [disabled]="!draftListName.trim() || loading || saving">
+              Creer
+            </button>
+          </div>
+
+          <div class="shopping-list-stack">
+            @for (list of shoppingLists; track trackById($index, list)) {
+              <button
+                type="button"
+                class="shopping-list-list-card"
+                [class.is-active]="selectedList?.id === list.id"
+                (click)="selectList(list.id)"
+                [attr.data-testid]="'shopping-list-card-' + list.id">
+                <span class="shopping-list-list-card__title">{{ list.name }}</span>
+                <span class="shopping-list-list-card__meta">{{ list.items.length }} ligne(s)</span>
+                <span class="shopping-list-list-card__meta">{{ countChecked(list) }} cochee(s)</span>
+              </button>
+            } @empty {
+              <p class="shopping-list-empty">Aucune liste active.</p>
+            }
+          </div>
+        </section>
+
+        <section class="shopping-list-column shopping-list-column--detail">
+          @if (selectedList; as list) {
+            <div class="shopping-list-column__header">
+              <h3>Detail</h3>
+              <span>{{ checkedItemCount }}/{{ list.items.length }} coche(s)</span>
+            </div>
+
+            <div class="shopping-list-detail-card">
+              <div class="shopping-list-create-row shopping-list-create-row--inline">
+                <mat-form-field appearance="fill" class="w-full">
+                  <mat-label>Nom</mat-label>
+                  <input matInput [(ngModel)]="list.name" />
+                </mat-form-field>
+                <button mat-stroked-button type="button" (click)="renameSelectedList()" [disabled]="saving">
+                  Renommer
+                </button>
+                <button mat-stroked-button type="button" (click)="deleteSelectedList()" [disabled]="saving">
+                  Supprimer
+                </button>
+              </div>
+
+              <div class="shopping-list-create-row shopping-list-create-row--items">
+                <mat-form-field appearance="fill" class="shopping-list-field--product">
+                  <mat-label>Produit</mat-label>
+                  <mat-select [(ngModel)]="draftItemProductId">
+                    @for (product of products; track trackById($index, product)) {
+                      <mat-option [value]="product.id">{{ product.name }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                  <mat-label>Quantite</mat-label>
+                  <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="draftItemQty" />
+                </mat-form-field>
+                <mat-form-field appearance="fill">
+                  <mat-label>Unite</mat-label>
+                  <mat-select [(ngModel)]="draftItemQtyUnit">
+                    @for (qtyUnit of qtyUnitOptions; track qtyUnit) {
+                      <mat-option [value]="qtyUnit">{{ qtyUnit }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <button mat-raised-button color="primary" type="button" (click)="addItemToSelectedList()" [disabled]="draftItemProductId == null || saving">
+                  Ajouter
+                </button>
+              </div>
+
+              <div class="shopping-list-table-wrap">
+                <table class="shopping-list-table">
+                  <thead>
+                    <tr>
+                      <th>Check</th>
+                      <th>Produit</th>
+                      <th>Quantite</th>
+                      <th>Unite</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of list.items; track trackById($index, item)) {
+                      <tr>
+                        <td>
+                          <mat-checkbox [ngModel]="item.checked" (ngModelChange)="toggleItem(item, $event)"></mat-checkbox>
+                        </td>
+                        <td>{{ resolveProductName(item) }}</td>
+                        <td>
+                          <input class="shopping-list-inline-input" type="number" min="0.01" step="0.01" [(ngModel)]="item.qty" />
+                        </td>
+                        <td>
+                          <select class="shopping-list-inline-select" [(ngModel)]="item.qtyUnit">
+                            @for (qtyUnit of qtyUnitOptions; track qtyUnit) {
+                              <option [ngValue]="qtyUnit">{{ qtyUnit }}</option>
+                            }
+                          </select>
+                        </td>
+                        <td class="shopping-list-table__actions">
+                          <button mat-stroked-button type="button" (click)="saveItem(item)" [disabled]="saving">Enregistrer</button>
+                          <button mat-stroked-button type="button" (click)="removeItem(item.id)" [disabled]="saving">Retirer</button>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="5" class="shopping-list-empty-row">Aucune ligne dans cette liste.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="shopping-list-convert-card">
+                <mat-form-field appearance="fill" class="w-full">
+                  <mat-label>Inventaire cible</mat-label>
+                  <mat-select [(ngModel)]="selectedInventoryId">
+                    @for (inventory of inventories; track trackById($index, inventory)) {
+                      <mat-option [value]="inventory.id">{{ inventory.name }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <div class="shopping-list-convert-actions">
+                  <button mat-stroked-button type="button" (click)="setAllChecked(true)" [disabled]="saving || list.items.length === 0">Tout cocher</button>
+                  <button mat-stroked-button type="button" (click)="setAllChecked(false)" [disabled]="saving || list.items.length === 0">Tout decocher</button>
+                  <button mat-stroked-button type="button" (click)="convertChecked()" [disabled]="saving || checkedItemCount === 0 || selectedInventoryId == null">Convertir les coches</button>
+                  <button mat-raised-button color="primary" class="shopping-list-action shopping-list-action--primary" type="button" (click)="convertAll()" [disabled]="saving || list.items.length === 0 || selectedInventoryId == null">Tout passer en inventaire</button>
+                </div>
+              </div>
+
+              <div class="shopping-list-save-template">
+                <mat-form-field appearance="fill" class="w-full">
+                  <mat-label>Nom du modele</mat-label>
+                  <input matInput [(ngModel)]="templateDraftName" />
+                </mat-form-field>
+                <button mat-stroked-button type="button" (click)="saveAsTemplate()" [disabled]="saving || list.items.length === 0">
+                  Sauvegarder comme modele
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="shopping-list-empty shopping-list-empty--panel">Selectionne ou cree une liste active.</div>
+          }
+        </section>
+
+        <section class="shopping-list-column shopping-list-column--templates">
+          <div class="shopping-list-column__header">
+            <h3>Modeles</h3>
+            <span>{{ templates.length }}</span>
+          </div>
+
+          <div class="shopping-list-stack">
+            @for (template of templates; track trackById($index, template)) {
+              <button
+                type="button"
+                class="shopping-list-list-card shopping-list-list-card--template"
+                [class.is-active]="selectedTemplate?.id === template.id"
+                (click)="selectTemplate(template.id)"
+                [attr.data-testid]="'shopping-template-card-' + template.id">
+                <span class="shopping-list-list-card__title">{{ template.name }}</span>
+                <span class="shopping-list-list-card__meta">{{ template.items.length }} ligne(s)</span>
+              </button>
+            } @empty {
+              <p class="shopping-list-empty">Aucun modele sauvegarde.</p>
+            }
+          </div>
+
+          @if (selectedTemplate; as template) {
+            <div class="shopping-list-detail-card shopping-list-detail-card--template">
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Nom du modele</mat-label>
+                <input matInput [(ngModel)]="template.name" />
+              </mat-form-field>
+              <div class="shopping-list-convert-actions">
+                <button mat-stroked-button type="button" (click)="renameSelectedTemplate()" [disabled]="saving">Renommer</button>
+                <button mat-stroked-button type="button" (click)="deleteSelectedTemplate()" [disabled]="saving">Supprimer</button>
+              </div>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Nom de la nouvelle liste</mat-label>
+                <input matInput [(ngModel)]="templateCreateListName" />
+              </mat-form-field>
+              <button mat-raised-button color="primary" class="shopping-list-action shopping-list-action--primary" type="button" (click)="createListFromTemplate()" [disabled]="saving">
+                Creer une liste depuis ce modele
+              </button>
+
+              <div class="shopping-list-template-items">
+                @for (item of template.items; track trackById($index, item)) {
+                  <div class="shopping-list-template-item">
+                    <span>{{ resolveProductName(item) }}</span>
+                    <span>{{ item.qty }} {{ item.qtyUnit || '-' }}</span>
+                  </div>
+                } @empty {
+                  <p class="shopping-list-empty">Modele vide.</p>
+                }
+              </div>
+            </div>
+          }
+        </section>
+      </div>
+    </div>
+  </mat-card>
+</section>
