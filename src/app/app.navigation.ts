@@ -64,13 +64,6 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
         shortLabel: 'TG',
         description: 'Taxonomie et filtres transverses',
       },
-      {
-        id: 'nutrition-value',
-        path: '/nutrition-value',
-        label: 'Valeurs nutritionnelles',
-        shortLabel: 'VN',
-        description: 'Validation rapide des endpoints nutrition',
-      },
     ],
   },
   {
@@ -92,13 +85,7 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
         label: 'Listes de course',
         shortLabel: 'LC',
         description: "Preparation d'achats, checklists et conversion en stock",
-      },
-      {
-        id: 'input-day',
-        path: '/input-day',
-        label: 'Saisie du jour',
-        shortLabel: 'SJ',
-        description: 'Execution quotidienne, stocks et templates actifs',
+        featured: true,
       },
     ],
   },
@@ -136,13 +123,6 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
         shortLabel: 'TP',
         description: 'Journees previsionnelles et verification stock',
         featured: true,
-      },
-      {
-        id: 'calendar',
-        path: '/calendar',
-        label: 'Calendrier',
-        shortLabel: 'CL',
-        description: 'Lecture annuelle, mensuelle et journaliere',
       },
       {
         id: 'planning',
