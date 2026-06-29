@@ -1,7 +1,8 @@
 import type { MockApiRequestContext } from '../shared';
+import type { MockInputDayItem, MockInventory } from '../state';
+
 import {
   buildInputDayResponse,
-  hydrateExternalMealEntry,
   buildMonthResponse,
   buildWeekResponse,
   getInventory,
@@ -14,18 +15,14 @@ import {
   removeArrayItem,
   updateInventoryStock,
 } from '../shared';
-import type { MockExternalMealEntry, MockInputDayItem, MockInventory } from '../state';
-
 export async function handleExecutionRequest(context: MockApiRequestContext): Promise<boolean> {
   const { path, request, state } = context;
   const method = request.method();
-
   if (path === '/inventory') {
     if (method === 'GET') {
       await context.json(state.inventories.map((inventory) => hydrateInventory(state, inventory)));
       return true;
     }
-
     if (method === 'POST') {
       const body = await context.readJson<Record<string, unknown>>();
       const inventory: MockInventory = {
@@ -33,7 +30,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
         name: String(body.name ?? '').trim(),
       };
       state.inventories.push(inventory);
-
       const products = Array.isArray(body.products) ? body.products : [];
       products.forEach((entry) => {
         const payload = entry as Record<string, unknown>;
@@ -42,7 +38,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
         if (!product) {
           return;
         }
-
         updateInventoryStock(
           state,
           inventory.id,
@@ -51,12 +46,10 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
           'set',
         );
       });
-
       await context.json(hydrateInventory(state, inventory), 201);
       return true;
     }
   }
-
   if (path.startsWith('/inventory/') && path.split('/').length === 3) {
     const inventoryId = Number(path.split('/')[2]);
     const inventory = getInventory(state, inventoryId);
@@ -64,19 +57,16 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       await context.notFound('Inventory not found');
       return true;
     }
-
     if (method === 'GET') {
       await context.json(hydrateInventory(state, inventory));
       return true;
     }
-
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
       inventory.name = String(body.name ?? inventory.name).trim();
       await context.json(hydrateInventory(state, inventory));
       return true;
     }
-
     if (method === 'DELETE') {
       state.inventories = removeArrayItem(state.inventories, inventoryId);
       state.inventoryProducts = state.inventoryProducts.filter((item) => item.inventoryId !== inventoryId);
@@ -84,7 +74,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       return true;
     }
   }
-
   if (path.startsWith('/inventory/') && path.endsWith('/products')) {
     const inventoryId = Number(path.split('/')[2]);
     const inventory = getInventory(state, inventoryId);
@@ -92,13 +81,11 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       await context.notFound('Inventory not found');
       return true;
     }
-
     if (method === 'GET') {
       await context.json(getInventoryProducts(state, inventoryId).map((item) => hydrateInventoryProduct(state, item)));
       return true;
     }
   }
-
   if (path.startsWith('/inventory/') && path.endsWith('/products/add')) {
     const inventoryId = Number(path.split('/')[2]);
     const inventory = getInventory(state, inventoryId);
@@ -106,7 +93,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       await context.notFound('Inventory not found');
       return true;
     }
-
     const body = await context.readJson<Record<string, unknown>>();
     const products = Array.isArray(body.products) ? body.products : [];
     products.forEach((entry) => {
@@ -116,7 +102,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       if (!product) {
         return;
       }
-
       updateInventoryStock(
         state,
         inventoryId,
@@ -128,7 +113,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json(hydrateInventory(state, inventory));
     return true;
   }
-
   if (path.startsWith('/inventory/') && path.endsWith('/products/remove')) {
     const inventoryId = Number(path.split('/')[2]);
     const inventory = getInventory(state, inventoryId);
@@ -136,7 +120,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       await context.notFound('Inventory not found');
       return true;
     }
-
     const body = await context.readJson<Record<string, unknown>>();
     const products = Array.isArray(body.products) ? body.products : [];
     products.forEach((entry) => {
@@ -146,7 +129,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       if (!product) {
         return;
       }
-
       updateInventoryStock(
         state,
         inventoryId,
@@ -158,7 +140,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json(hydrateInventory(state, inventory));
     return true;
   }
-
   if (path.startsWith('/inventory/') && path.endsWith('/products/reconcile')) {
     const inventoryId = Number(path.split('/')[2]);
     const inventory = getInventory(state, inventoryId);
@@ -166,7 +147,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       await context.notFound('Inventory not found');
       return true;
     }
-
     state.inventoryProducts = state.inventoryProducts.filter((item) => item.inventoryId !== inventoryId);
     const body = await context.readJson<Record<string, unknown>>();
     const products = Array.isArray(body.products) ? body.products : [];
@@ -177,7 +157,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       if (!product) {
         return;
       }
-
       updateInventoryStock(
         state,
         inventoryId,
@@ -189,19 +168,16 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json(hydrateInventory(state, inventory));
     return true;
   }
-
   if (path.startsWith('/input-days/month/')) {
     const dateLocal = path.split('/')[3];
     await context.json(buildMonthResponse(state, dateLocal));
     return true;
   }
-
   if (path.startsWith('/input-days/week/')) {
     const dateLocal = path.split('/')[3];
     await context.json(buildWeekResponse(state, dateLocal));
     return true;
   }
-
   if (/^\/input-days\/[^/]+$/.test(path)) {
     const dateLocal = path.split('/')[2];
     if (method === 'GET') {
@@ -209,55 +185,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       return true;
     }
   }
-
-  if (/^\/input-days\/[^/]+\/external-entries$/.test(path) && method === 'POST') {
-    const dateLocal = path.split('/')[2];
-    const body = await context.readJson<Record<string, unknown>>();
-    const created = createExternalMealEntry(context, dateLocal, body);
-    if (!created) {
-      await context.json({ message: 'Invalid external-entry payload' }, 400);
-      return true;
-    }
-
-    state.externalMealEntries.push(created);
-    await context.json(hydrateExternalMealEntry(state, created), 201);
-    return true;
-  }
-
-  if (/^\/input-days\/[^/]+\/external-entries\/\d+$/.test(path)) {
-    const [, , dateLocal, , entryIdValue] = path.split('/');
-    const entryId = Number(entryIdValue);
-    const entry = state.externalMealEntries.find((candidate) => candidate.id === entryId && candidate.dateLocal === dateLocal) ?? null;
-    if (!entry) {
-      await context.notFound('External meal entry not found');
-      return true;
-    }
-
-    if (method === 'PATCH') {
-      const body = await context.readJson<Record<string, unknown>>();
-      const updated = createExternalMealEntry(context, String(body.dateLocal ?? entry.dateLocal), {
-        ...entry,
-        ...body,
-      }, entry.id, entry.insertedAt);
-      if (!updated) {
-        await context.json({ message: 'Invalid external-entry payload' }, 400);
-        return true;
-      }
-
-      state.externalMealEntries = state.externalMealEntries.map((candidate) =>
-        candidate.id === entry.id ? updated : candidate,
-      );
-      await context.json(hydrateExternalMealEntry(state, updated));
-      return true;
-    }
-
-    if (method === 'DELETE') {
-      state.externalMealEntries = removeArrayItem(state.externalMealEntries, entryId);
-      await context.noContent();
-      return true;
-    }
-  }
-
   if (/^\/input-days\/[^/]+\/items$/.test(path) && method === 'POST') {
     const dateLocal = path.split('/')[2];
     const body = await context.readJson<Record<string, unknown>>();
@@ -270,7 +197,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json(created, 201);
     return true;
   }
-
   if (/^\/input-days\/[^/]+\/items\/bulk$/.test(path) && method === 'POST') {
     const dateLocal = path.split('/')[2];
     const body = await context.readJson<Record<string, unknown>>();
@@ -284,7 +210,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json({ created: items.length }, 201);
     return true;
   }
-
   if (/^\/input-days\/[^/]+\/items\/\d+$/.test(path)) {
     const [, , dateLocal, , itemIdValue] = path.split('/');
     const itemId = Number(itemIdValue);
@@ -293,7 +218,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       await context.notFound('Input-day item not found');
       return true;
     }
-
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
       const product = getProduct(state, Number(body.productId ?? item.productId));
@@ -311,7 +235,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       await context.json(item);
       return true;
     }
-
     if (method === 'DELETE') {
       state.inputDayItems = removeArrayItem(state.inputDayItems, itemId);
       state.templateConversions = state.templateConversions.filter((entry) => entry.itemId !== itemId);
@@ -319,7 +242,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       return true;
     }
   }
-
   if (/^\/input-days\/[^/]+\/template$/.test(path) && method === 'PUT') {
     const dateLocal = path.split('/')[2];
     const body = await context.readJson<Record<string, unknown>>();
@@ -327,7 +249,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json(buildInputDayResponse(state, dateLocal));
     return true;
   }
-
   if (/^\/input-days\/[^/]+\/template-items\/\d+\/convert$/.test(path) && method === 'POST') {
     const [, , dateLocal, , templateItemIdValue] = path.split('/');
     const templateItemId = Number(templateItemIdValue);
@@ -337,7 +258,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       await context.notFound('Template item not found');
       return true;
     }
-
     const body = await context.readJson<Record<string, unknown>>();
     const created = createInputDayItem(context, dateLocal, {
       productId: templateItem.productId,
@@ -351,7 +271,6 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       await context.json({ message: 'Unable to convert template item' }, 400);
       return true;
     }
-
     created.templateItemId = templateItem.id;
     state.inputDayItems.push(created);
     state.templateConversions.push({
@@ -362,63 +281,8 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json(buildInputDayResponse(state, dateLocal));
     return true;
   }
-
   return false;
 }
-
-function createExternalMealEntry(
-  context: MockApiRequestContext,
-  dateLocal: string,
-  payload: Record<string, unknown>,
-  existingId?: number,
-  existingInsertedAt?: string,
-): MockExternalMealEntry | null {
-  const name = readNullableString(payload.name);
-  const occurredAt = readNullableString(payload.occurredAt);
-  const paymentStatus = readNullableString(payload.paymentStatus);
-  const nutritionValue = payload.nutritionValue as Record<string, unknown> | null;
-  if (
-    !name ||
-    !occurredAt ||
-    (paymentStatus !== 'paid' && paymentStatus !== 'free' && paymentStatus !== 'refunded') ||
-    !nutritionValue
-  ) {
-    return null;
-  }
-
-  const paidPriceAmount = Number(payload.priceAmount ?? 0);
-  if (paymentStatus === 'paid' && (!Number.isFinite(paidPriceAmount) || paidPriceAmount <= 0)) {
-    return null;
-  }
-
-  const normalizedPriceAmount = paymentStatus === 'paid' ? paidPriceAmount : null;
-
-  const macros = {
-    energyKcal: Number(nutritionValue.energyKcal ?? 0),
-    proteins: Number(nutritionValue.proteins ?? 0),
-    carbs: Number(nutritionValue.carbs ?? 0),
-    lipids: Number(nutritionValue.lipids ?? 0),
-  };
-  if (Object.values(macros).some((value) => !Number.isFinite(value) || value < 0)) {
-    return null;
-  }
-
-  return {
-    id: existingId ?? context.nextId('externalMealEntry'),
-    dateLocal,
-    name,
-    paymentStatus,
-    priceAmount: normalizedPriceAmount,
-    occurredAt,
-    insertedAt: existingInsertedAt ?? occurredAt,
-    slotId: readNullableNumber(payload.slotId),
-    slotKey: readNullableString(payload.slotKey),
-    restaurantName: readNullableString(payload.restaurantName),
-    note: readNullableString(payload.note),
-    nutritionValue: macros,
-  };
-}
-
 function createInputDayItem(
   context: MockApiRequestContext,
   dateLocal: string,
@@ -428,11 +292,9 @@ function createInputDayItem(
   if (!product) {
     return null;
   }
-
   const qty = Number(payload.qty ?? 0);
   const qtyUnit = readNullableString(payload.qtyUnit) as MockInputDayItem['qtyUnit'];
   const occurredAt = readNullableString(payload.occurredAt) ?? `${dateLocal}T12:00:00+01:00`;
-
   return {
     id: context.nextId('inputDayItem'),
     dateLocal,
@@ -448,37 +310,29 @@ function createInputDayItem(
     templateItemId: null,
   };
 }
-
 function readNullableNumber(value: unknown): number | null {
   if (value == null || value === '') {
     return null;
   }
-
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue : null;
 }
-
 function readFallbackNumber(value: unknown, fallback: number | null): number | null {
   if (value === undefined) {
     return fallback;
   }
-
   return readNullableNumber(value);
 }
-
 function readNullableString(value: unknown): string | null {
   if (value == null) {
     return null;
   }
-
   const candidate = String(value).trim();
   return candidate === '' ? null : candidate;
 }
-
 function readFallbackString(value: unknown, fallback: string | null): string | null {
   if (value === undefined) {
     return fallback;
   }
-
   return readNullableString(value);
 }

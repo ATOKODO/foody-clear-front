@@ -6,7 +6,6 @@ import type {
   MockCycle,
   MockCycleAssignment,
   MockDaySet,
-  MockExternalMealEntry,
   MockGenericProduct,
   MockInputDayItem,
   MockInventory,
@@ -607,23 +606,6 @@ export function hydrateInputDayItem(state: MockApiState, item: MockInputDayItem)
   };
 }
 
-export function hydrateExternalMealEntry(state: MockApiState, entry: MockExternalMealEntry): Record<string, unknown> {
-  const slot = getSlot(state, entry.slotId);
-  return {
-    id: entry.id,
-    dateLocal: entry.dateLocal,
-    name: entry.name,
-    paymentStatus: entry.paymentStatus,
-    priceAmount: entry.priceAmount,
-    insertedAt: entry.insertedAt,
-    occurredAt: entry.occurredAt,
-    slotId: slot?.id ?? entry.slotId,
-    slotKey: slot?.key ?? entry.slotKey,
-    restaurantName: entry.restaurantName,
-    note: entry.note,
-    nutritionValue: { ...entry.nutritionValue },
-  };
-}
 
 export function hydrateInputDayTemplateItem(
   state: MockApiState,
@@ -660,9 +642,6 @@ export function buildInputDayResponse(state: MockApiState, dateLocal: string): R
   const dayItems = state.inputDayItems
     .filter((item) => item.dateLocal === dateLocal)
     .map((item) => hydrateInputDayItem(state, item));
-  const externalEntries = state.externalMealEntries
-    .filter((entry) => entry.dateLocal === dateLocal)
-    .map((entry) => hydrateExternalMealEntry(state, entry));
 
   const templateItems = templateResolution.template
     ? templateResolution.template.items.map((item) =>
@@ -671,7 +650,6 @@ export function buildInputDayResponse(state: MockApiState, dateLocal: string): R
     : [];
   const enteredNutrition = sumNutrition([
     ...dayItems.map((item) => item.nutritionValue as Record<string, number>),
-    ...externalEntries.map((entry) => entry.nutritionValue as Record<string, number>),
   ]);
   const templateNutrition = sumNutrition(
     templateItems.map((item) =>
@@ -734,10 +712,10 @@ export function buildInputDayResponse(state: MockApiState, dateLocal: string): R
     totalsMacros: {
       bySlot: slots.map((slot) => ({
         slot,
-        ...macrosForSlotItems([...dayItems, ...externalEntries], slot.slotId, slot.slotKey),
+        ...macrosForSlotItems(dayItems, slot.slotId, slot.slotKey),
         targets: slot.nutritionValue,
         deltaToTargets: subtractNutrition(
-          macrosForSlotItems([...dayItems, ...externalEntries], slot.slotId, slot.slotKey),
+          macrosForSlotItems(dayItems, slot.slotId, slot.slotKey),
           slot.nutritionValue,
         ),
         incompleteNutritionKeys: [],
@@ -748,19 +726,18 @@ export function buildInputDayResponse(state: MockApiState, dateLocal: string): R
       incompleteNutritionKeys: [],
       targetSource: daySet ? 'daySet' : activeAssignment ? 'cycle' : 'none',
     },
-    externalEntries,
     projectedTotalsMacros: templateItems.length > 0
       ? {
           bySlot: slots.map((slot) => ({
             slot,
             ...sumNutrition([
-              macrosForSlotItems([...dayItems, ...externalEntries], slot.slotId, slot.slotKey),
+              macrosForSlotItems(dayItems, slot.slotId, slot.slotKey),
               macrosForTemplateItems(templateItems, slot.slotId),
             ]),
             targets: slot.nutritionValue,
             deltaToTargets: subtractNutrition(
               sumNutrition([
-                macrosForSlotItems([...dayItems, ...externalEntries], slot.slotId, slot.slotKey),
+                macrosForSlotItems(dayItems, slot.slotId, slot.slotKey),
                 macrosForTemplateItems(templateItems, slot.slotId),
               ]),
               slot.nutritionValue,
@@ -849,43 +826,17 @@ export function buildStatisticsTimeline(
       };
     });
 
-    const externalEvents = state.externalMealEntries
-      .filter((entry) => entry.dateLocal === dateLocal)
-      .map((entry) => ({
-        id: 100000 + entry.id,
-        inventoryId: null,
-        inventoryName: null,
-        productId: null,
-        productName: entry.name,
-        qty: 1,
-        qtyUnit: 'repas',
-        qtyNormalized: 1,
-        qtyInProductUnits: 1,
-        priceSnapshot: entry.paymentStatus === 'paid' ? entry.priceAmount : null,
-        priceUnitSnapshot: 'autre',
-        expenseAmount: entry.paymentStatus === 'paid' ? entry.priceAmount : 0,
-        pricingStatus:
-          entry.paymentStatus === 'paid'
-            ? 'complete'
-            : entry.paymentStatus === 'free'
-              ? 'free'
-              : 'excluded',
-        excludedFromStats: entry.paymentStatus === 'refunded',
-        exclusionReason: entry.paymentStatus === 'refunded' ? 'refunded' : null,
-        occurredAt: entry.occurredAt,
-      }));
-    const allEvents = [...events, ...externalEvents];
     const totalAmount = round(
-      allEvents.reduce((sum, event) => sum + (event.expenseAmount ?? 0), 0),
+      events.reduce((sum, event) => sum + (event.expenseAmount ?? 0), 0),
     );
 
     return {
       dateLocal,
       expenses: {
         totalAmount,
-        purchaseCount: allEvents.length,
-        incompletePurchaseCount: allEvents.filter((event) => event.expenseAmount == null).length,
-        events: allEvents,
+        purchaseCount: events.length,
+        incompletePurchaseCount: events.filter((event) => event.expenseAmount == null).length,
+        events,
       },
       inputs: {
         assignment: response.assignment,
@@ -900,8 +851,7 @@ export function buildStatisticsTimeline(
         targets: response.totalsMacros?.targets ?? null,
         deltaToTargets: response.totalsMacros?.deltaToTargets ?? null,
         incompleteNutritionKeys: response.totalsMacros?.incompleteNutritionKeys ?? [],
-        itemCount: dayItems.length + state.externalMealEntries.filter((entry) => entry.dateLocal === dateLocal).length,
-        externalEntryCount: state.externalMealEntries.filter((entry) => entry.dateLocal === dateLocal).length,
+        itemCount: dayItems.length,
       },
     };
   });

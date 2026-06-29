@@ -141,25 +141,6 @@ export type MockInputDayItem = {
   templateItemId: number | null;
 };
 
-export type MockExternalMealEntry = {
-  id: number;
-  dateLocal: string;
-  name: string;
-  paymentStatus: 'paid' | 'free' | 'refunded';
-  priceAmount: number | null;
-  occurredAt: string;
-  insertedAt: string;
-  slotId: number | null;
-  slotKey: string | null;
-  restaurantName: string | null;
-  note: string | null;
-  nutritionValue: {
-    energyKcal: number;
-    proteins: number;
-    carbs: number;
-    lipids: number;
-  };
-};
 
 export type MockTemplateConversion = {
   dateLocal: string;
@@ -198,7 +179,6 @@ export type MockApiState = {
   inventories: MockInventory[];
   inventoryProducts: MockInventoryProduct[];
   inputDayItems: MockInputDayItem[];
-  externalMealEntries: MockExternalMealEntry[];
   manualTemplateOverrides: Record<string, number | null>;
   templateConversions: MockTemplateConversion[];
   nextIds: Record<string, number>;
@@ -499,7 +479,6 @@ export function createMockApiState(): MockApiState {
         templateItemId: null,
       },
     ],
-    externalMealEntries: [],
     manualTemplateOverrides: {},
     templateConversions: [],
     nextIds: {
@@ -517,7 +496,6 @@ export function createMockApiState(): MockApiState {
       inventory: 3,
       inventoryProduct: 4,
       inputDayItem: 3,
-      externalMealEntry: 1,
       priceHistory: 7,
     },
   };
