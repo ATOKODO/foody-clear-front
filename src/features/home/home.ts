@@ -1,6 +1,5 @@
 import { NgClass } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
 import { DateTime } from 'luxon';
@@ -62,7 +61,6 @@ interface HomeDayEntryRow {
   imports: [
     RouterLink,
     NgClass,
-    MatDialogModule,
     MatProgressBarModule,
     UiErrorPanel,
     InputDayFeature,
@@ -99,6 +97,7 @@ export class Home implements OnInit {
   baseUrl = '';
   loadingDay = false;
   loadingTimeline = false;
+  slotCatalogLoaded = false;
   dayError: unknown = null;
   timelineError: unknown = null;
   inputDayResponse: InputDayResponse | null = null;
@@ -110,13 +109,14 @@ export class Home implements OnInit {
     this.inputDayService.setBaseUrl(this.baseUrl);
     this.statisticService.setBaseUrl(this.baseUrl);
     this.slotService.setBaseUrl(this.baseUrl);
-    this.loadSlotCatalog();
-    this.refreshDashboard();
+    this.loadTodayPlanning();
+    this.scheduleDeferredDashboardData();
   }
 
   refreshDashboard(): void {
     this.loadTodayPlanning();
     this.loadTodayStats();
+    this.ensureSlotCatalogLoaded();
   }
 
   onInputDayItemsChanged(): void {
@@ -141,6 +141,10 @@ export class Home implements OnInit {
 
   get loading(): boolean {
     return this.loadingDay || this.loadingTimeline;
+  }
+
+  get showPrimaryLoading(): boolean {
+    return this.loadingDay && this.inputDayResponse === null;
   }
 
   get todayTimelineDay(): StatisticsTimelineDay | null {
@@ -452,10 +456,12 @@ export class Home implements OnInit {
     this.slotService.findAll().subscribe({
       next: (response) => {
         this.slotCatalog = response;
+        this.slotCatalogLoaded = true;
         this.changeDetectorRef.detectChanges();
       },
       error: () => {
         this.slotCatalog = [];
+        this.slotCatalogLoaded = true;
       },
     });
   }
@@ -496,6 +502,25 @@ export class Home implements OnInit {
           this.changeDetectorRef.detectChanges();
         },
       });
+  }
+
+  private scheduleDeferredDashboardData(): void {
+    this.runAfterFirstPaint(() => {
+      this.ensureSlotCatalogLoaded();
+      this.loadTodayStats();
+    });
+  }
+
+  private ensureSlotCatalogLoaded(): void {
+    if (this.slotCatalogLoaded) {
+      return;
+    }
+
+    this.loadSlotCatalog();
+  }
+
+  private runAfterFirstPaint(task: () => void): void {
+    globalThis.setTimeout(task, 0);
   }
 
   private resolveDaySlots(

@@ -404,7 +404,7 @@ describe('PlanningFeature', () => {
   it('should open the clicked month day in day view from calendar openDayView output', () => {
     const calendar = fixture.debugElement.query(By.directive(CalendarStub))
       .componentInstance as CalendarStub;
-    const openDayViewSpy = spyOn(calendar, 'openDayView').and.callThrough();
+    const openDayViewSpy = spyOn(calendar, 'activateDayView').and.callThrough();
     inputDayServiceMock.getInputDay.calls.reset();
 
     calendar.openDayView.emit({ dateLocal: '2026-02-16' });
@@ -586,7 +586,7 @@ describe('PlanningFeature', () => {
 
   it('should load month input data when the calendar switches to month view', () => {
     inputDayServiceMock.getInputMonth.calls.reset();
-    (component as PlanningFeature & { hasHandledInitialCalendarData: boolean }).hasHandledInitialCalendarData = true;
+    (component as unknown as { hasHandledInitialCalendarData: boolean }).hasHandledInitialCalendarData = true;
 
     component.onCalendarViewChanged({
       view: 'month',

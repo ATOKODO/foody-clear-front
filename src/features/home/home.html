@@ -40,7 +40,7 @@
     </div>
   </header>
 
-  @if (loading) {
+  @if (showPrimaryLoading) {
     <mat-progress-bar mode="indeterminate" />
   }
 
@@ -266,12 +266,18 @@
         <h2>Remplir la journee</h2>
       </div>
     </div>
-    <app-input-day
-      [displayMode]="'embedded'"
-      [apiBaseUrl]="baseUrl"
-      [initialDateLocal]="todayDateLocal"
-      [lockDate]="true"
-      (itemsChanged)="onInputDayItemsChanged()"
-    />
+    @defer (on viewport) {
+      <app-input-day
+        [displayMode]="'embedded'"
+        [apiBaseUrl]="baseUrl"
+        [initialDateLocal]="todayDateLocal"
+        [lockDate]="true"
+        (itemsChanged)="onInputDayItemsChanged()"
+      />
+    } @placeholder {
+      <div class="home-panel__empty">
+        Charge au scroll pour garder le tableau de bord reactif.
+      </div>
+    }
   </section>
 </section>

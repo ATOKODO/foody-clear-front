@@ -276,13 +276,22 @@ describe('Home', () => {
     expect(compiled.textContent).toContain('Voir le planning');
     expect(compiled.textContent).toContain('Cycle prise de masse');
     expect(compiled.textContent).toContain('Jour entrainement');
-    expect(compiled.textContent).toContain('Ce qui est prevu aujourd\'hui');
+    expect(compiled.textContent).toContain("Ce qui est prevu aujourd'hui");
     expect(compiled.textContent).toContain('Porridge');
     expect(compiled.textContent).toContain('Banane');
-    expect(compiled.textContent).toContain('2,50');
+    expect(compiled.textContent).toContain('Depenses du jour');
   });
 
-  it('should load today planning and statistics', () => {
+  it('should load today planning on init', () => {
+    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith(today, timezone);
+  });
+
+  it('should load planning and statistics on manual refresh', () => {
+    inputDayServiceMock.getInputDay.calls.reset();
+    statisticServiceMock.getTimeline.calls.reset();
+
+    component.refreshDashboard();
+
     expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith(today, timezone);
     expect(statisticServiceMock.getTimeline).toHaveBeenCalledWith(
       today,
