@@ -476,6 +476,28 @@ button.home-dashboard__hero-link {
   display: block;
 }
 
+.home-editor-launch {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.home-editor-launch__button {
+  width: fit-content;
+  min-height: 2.6rem;
+  border: 1px solid var(--app-border-strong);
+  border-radius: 0.5rem;
+  padding: 0.68rem 0.9rem;
+  background: var(--app-text-strong);
+  color: var(--app-bg);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.home-editor-launch__button:hover {
+  cursor: pointer;
+}
+
 :host-context(.dark) .home-dashboard__hero-link,
 :host-context(.dark) .home-panel__link {
   color: #07111f;

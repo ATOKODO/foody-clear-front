@@ -266,7 +266,7 @@
         <h2>Remplir la journee</h2>
       </div>
     </div>
-    @defer (on viewport) {
+    @defer (on interaction(quickEntryTrigger)) {
       <app-input-day
         [displayMode]="'embedded'"
         [apiBaseUrl]="baseUrl"
@@ -275,8 +275,17 @@
         (itemsChanged)="onInputDayItemsChanged()"
       />
     } @placeholder {
-      <div class="home-panel__empty">
-        Charge au scroll pour garder le tableau de bord reactif.
+      <div class="home-editor-launch">
+        <p class="home-panel__empty">
+          Charge l'editeur a la demande pour garder le tableau de bord reactif.
+        </p>
+        <button
+          #quickEntryTrigger
+          type="button"
+          class="home-editor-launch__button"
+        >
+          Ouvrir la saisie rapide
+        </button>
       </div>
     }
   </section>
