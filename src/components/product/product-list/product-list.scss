@@ -10,6 +10,20 @@
   margin: 0;
 }
 
+.product-list__search-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.product-list__search-field {
+  width: min(100%, 30rem);
+}
+
+.product-list__search-field :where(.mat-mdc-text-field-wrapper) {
+  background: rgb(255 255 255 / 0.96);
+}
+
 .product-table .mat-mdc-header-row {
   background: var(--app-surface-soft);
 }

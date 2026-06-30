@@ -1098,6 +1098,29 @@ export class Product implements OnInit {
       : null;
   }
 
+  private matchesProductSearch(item: ProductListItem, searchTerm: string): boolean {
+    const haystack = [
+      item.name,
+      item.barcode ?? '',
+      item.category ?? '',
+      item.genericProduct ?? '',
+      ...(item.tagNames ?? []),
+    ]
+      .map((value) => this.normalizeProductSearchValue(value))
+      .filter((value) => value !== '')
+      .join(' ');
+
+    return haystack.includes(searchTerm);
+  }
+
+  private normalizeProductSearchValue(value: string | null | undefined): string {
+    return (value ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
   private normalizePriceUnit(value: unknown): ProductPriceUnit | null {
     const allowed: ProductPriceUnit[] = [
       'kg',

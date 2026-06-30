@@ -220,6 +220,26 @@ describe('Product', () => {
     expect(productServiceMock.findAll).toHaveBeenCalledTimes(1);
   });
 
+  it('should filter the product list from the local search field', () => {
+    component.products = [
+      buildProduct({ id: 1, name: 'Pomme verte', barcode: '111' }),
+      buildProduct({ id: 2, name: 'Riz blanc', barcode: '222' }),
+    ];
+    fixture.detectChanges();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+    const searchInput = nativeElement.querySelector(
+      '[data-testid="product-list-search"]',
+    ) as HTMLInputElement;
+
+    searchInput.value = 'riz';
+    searchInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(nativeElement.querySelector('[data-testid="product-row-2"]')).not.toBeNull();
+    expect(nativeElement.querySelector('[data-testid="product-row-1"]')).toBeNull();
+  });
+
   it('should render products after an async load without switching views', async () => {
     const products$ = new Subject<ProductModel[]>();
     productServiceMock.findAll.and.returnValue(products$);

@@ -1,3 +1,22 @@
+<ng-template #searchContent>
+  @if (showSearch) {
+    <div class="product-list__search-row">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="product-list__search-field">
+        <mat-label>Rechercher un produit</mat-label>
+        <input
+          #productListSearchInput
+          matInput
+          type="search"
+          placeholder="Nom, barcode, categorie, produit generique ou tag"
+          [value]="searchTerm()"
+          (input)="onSearchTermChange(productListSearchInput.value)"
+          data-testid="product-list-search"
+        />
+      </mat-form-field>
+    </div>
+  }
+</ng-template>
+
 <ng-template #tableContent>
   <div class="overflow-x-auto rounded-xl border border-slate-200">
     <table mat-table [dataSource]="resolvedProducts" class="product-table w-full">
@@ -126,23 +145,33 @@
           </button>
         }
       </div>
-      @if (hasItems) {
-        <div class="p-3 sm:p-4">
+      <div class="p-3 sm:p-4">
+        <ng-container [ngTemplateOutlet]="searchContent" />
+        @if (hasItems) {
           <ng-container [ngTemplateOutlet]="tableContent" />
-        </div>
-      } @else {
-        <mat-card appearance="outlined" class="rounded-xl">
-          <mat-card-content class="p-4 text-sm text-slate-600">
-            Aucun produit disponible.
-          </mat-card-content>
-        </mat-card>
-      }
+        } @else if (hasActiveSearch && hasSourceItems) {
+          <mat-card appearance="outlined" class="rounded-xl">
+            <mat-card-content class="p-4 text-sm text-slate-600">
+              Aucun produit ne correspond a la recherche.
+            </mat-card-content>
+          </mat-card>
+        } @else {
+          <mat-card appearance="outlined" class="rounded-xl">
+            <mat-card-content class="p-4 text-sm text-slate-600">
+              Aucun produit disponible.
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
     </mat-card>
   </section>
 } @else {
   <div class="product-list product-list--embedded" data-testid="product-list-embedded">
+    <ng-container [ngTemplateOutlet]="searchContent" />
     @if (hasItems) {
       <ng-container [ngTemplateOutlet]="tableContent" />
+    } @else if (hasActiveSearch && hasSourceItems) {
+      <p class="product-list__empty text-sm text-slate-600">Aucun produit ne correspond a la recherche.</p>
     } @else {
       <p class="product-list__empty text-sm text-slate-600">Aucun produit disponible.</p>
     }

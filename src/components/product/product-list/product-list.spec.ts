@@ -76,6 +76,54 @@ describe('ProductList', () => {
     expect(component.isSelected(component.resolvedProducts[0].id)).toBeTrue();
   });
 
+  it('should filter products from the shared search field', () => {
+    fixture.componentRef.setInput('embedded', true);
+    fixture.componentRef.setInput('products', [
+      {
+        id: '10',
+        name: 'Riz',
+        barcode: '123',
+        category: 'Epicerie',
+        genericProduct: 'Riz blanc',
+        tagNames: ['Sec'],
+      },
+      {
+        id: '11',
+        name: 'Pomme',
+        barcode: '456',
+        category: 'Fruits',
+        genericProduct: 'Pomme verte',
+        tagNames: ['Bio'],
+      },
+    ]);
+    fixture.detectChanges();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+    const searchInput = nativeElement.querySelector('[data-testid="product-list-search"]') as HTMLInputElement;
+
+    searchInput.value = 'riz';
+    searchInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(nativeElement.querySelector('[data-testid="product-row-10"]')).not.toBeNull();
+    expect(nativeElement.querySelector('[data-testid="product-row-11"]')).toBeNull();
+  });
+
+  it('should show an empty-state message when search has no match', () => {
+    fixture.componentRef.setInput('embedded', true);
+    fixture.componentRef.setInput('products', [{ id: '10', name: 'Riz' }]);
+    fixture.detectChanges();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+    const searchInput = nativeElement.querySelector('[data-testid="product-list-search"]') as HTMLInputElement;
+
+    searchInput.value = 'banane';
+    searchInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(nativeElement.textContent).toContain('Aucun produit ne correspond a la recherche.');
+  });
+
   it('should render category and generic product columns in manage mode', () => {
     fixture.componentRef.setInput('products', [
       {

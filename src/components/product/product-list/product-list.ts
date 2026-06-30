@@ -5,11 +5,14 @@ import {
   OnInit,
   SimpleChanges,
   input,
-  output
+  output,
+  signal
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { ProductListItem } from './product-list-item.model';
 
@@ -27,6 +30,8 @@ export type { ProductListItem } from './product-list-item.model';
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatTableModule,
     NgTemplateOutlet
 ],
@@ -79,7 +84,9 @@ export class ProductList implements OnInit, OnChanges {
   ];
 
   resolvedProducts: ProductListItem[] = [];
+  readonly searchTerm = signal('');
 
+  private allProducts: ProductListItem[] = [];
   private selectedIdSet = new Set<string>();
 
   ngOnInit(): void {
@@ -113,6 +120,18 @@ export class ProductList implements OnInit, OnChanges {
 
   get hasItems(): boolean {
     return this.resolvedProducts.length > 0;
+  }
+
+  get hasSourceItems(): boolean {
+    return this.allProducts.length > 0;
+  }
+
+  get hasActiveSearch(): boolean {
+    return this.searchTerm().trim() !== '';
+  }
+
+  get showSearch(): boolean {
+    return this.hasSourceItems || this.hasActiveSearch;
   }
 
   get displayedColumns(): string[] {
@@ -279,25 +298,66 @@ export class ProductList implements OnInit, OnChanges {
     this.deleteRequested.emit(item);
   }
 
+  onSearchTermChange(value: string): void {
+    this.searchTerm.set(value);
+    this.applySearchFilter();
+  }
+
   private applyInputState(): void {
     const products = this.products();
-    this.resolvedProducts = products === null ? [...this.defaultProducts] : [...products];
+    this.allProducts = products === null ? [...this.defaultProducts] : [...products];
 
     const initialIds = this.selectedIds() ?? [];
-    const availableIds = new Set(this.resolvedProducts.map((item) => item.id));
+    const availableIds = new Set(this.allProducts.map((item) => item.id));
     this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
 
     if (this.isSingleEditMode && this.selectedIdSet.size > 1) {
-      const firstSelected = this.resolvedProducts.find((item) => this.selectedIdSet.has(item.id));
+      const firstSelected = this.allProducts.find((item) => this.selectedIdSet.has(item.id));
       this.selectedIdSet.clear();
       if (firstSelected) {
         this.selectedIdSet.add(firstSelected.id);
       }
     }
+
+    this.applySearchFilter();
+  }
+
+  private applySearchFilter(): void {
+    const searchTerm = this.normalizeSearchValue(this.searchTerm());
+
+    if (searchTerm === '') {
+      this.resolvedProducts = [...this.allProducts];
+      return;
+    }
+
+    this.resolvedProducts = this.allProducts.filter((item) => this.matchesSearch(item, searchTerm));
+  }
+
+  private matchesSearch(item: ProductListItem, searchTerm: string): boolean {
+    const haystack = [
+      item.name,
+      item.barcode ?? '',
+      item.category ?? '',
+      item.genericProduct ?? '',
+      ...(item.tagNames ?? []),
+    ]
+      .map((value) => this.normalizeSearchValue(value))
+      .filter((value) => value !== '')
+      .join(' ');
+
+    return haystack.includes(searchTerm);
+  }
+
+  private normalizeSearchValue(value: string | null | undefined): string {
+    return (value ?? '')
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .trim();
   }
 
   private getSelectedItems(): ProductListItem[] {
-    return this.resolvedProducts.filter((item) => this.selectedIdSet.has(item.id));
+    return this.allProducts.filter((item) => this.selectedIdSet.has(item.id));
   }
 
   private insertAvailableQtyColumn(columns: string[]): string[] {
