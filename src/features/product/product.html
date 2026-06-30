@@ -94,11 +94,13 @@
         }
         @case ('genericProduct') {
           <app-generic-product [embedded]="true"
+            [openCreateRequestId]="genericProductCreateRequestId"
             (dataChanged)="onLinkedDataChanged()"
            />
         }
         @case ('tag') {
           <app-tag [embedded]="true"
+            [openCreateRequestId]="tagCreateRequestId"
             (dataChanged)="onLinkedDataChanged()"
            />
         }

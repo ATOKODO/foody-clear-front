@@ -26,3 +26,46 @@
 .product-table .mat-mdc-row.pl-active {
   background: var(--app-info-bg);
 }
+
+.product-table .mat-mdc-cell.product-table__actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.product-table__actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.product-table__action {
+  min-width: 6.5rem;
+  border-width: 2px;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.product-table__action--edit {
+  border-color: #8c7600;
+  background: #ffe167;
+  color: #544600;
+}
+
+.product-table__action--delete {
+  border-color: #de3731;
+  background: #ff897e;
+  color: #690005;
+}
+
+.product-table__name strong {
+  color: var(--app-text-strong);
+  font-size: 0.95rem;
+}
+
+.product-table__barcode,
+.product-table__tags {
+  overflow-wrap: anywhere;
+}
+

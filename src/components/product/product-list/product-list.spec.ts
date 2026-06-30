@@ -76,6 +76,35 @@ describe('ProductList', () => {
     expect(component.isSelected(component.resolvedProducts[0].id)).toBeTrue();
   });
 
+  it('should render category and generic product columns in manage mode', () => {
+    fixture.componentRef.setInput('products', [
+      {
+        id: '10',
+        name: 'Riz',
+        barcode: '123',
+        quantityPerUnit: 500,
+        quantityUnit: 'g',
+        price: 2.5,
+        priceUnit: 'kg',
+        tagNames: ['Sec'],
+        nutritionValuesCount: 4,
+        category: 'Epicerie',
+        genericProduct: 'Riz blanc',
+      },
+    ]);
+    fixture.detectChanges();
+
+    const nativeElement = fixture.nativeElement as HTMLElement;
+    const headerCells = Array.from(nativeElement.querySelectorAll('th')).map(
+      (cell) => (cell as HTMLElement).textContent?.trim() ?? '',
+    );
+
+    expect(headerCells).toContain('Categorie');
+    expect(headerCells).toContain('Produit generique');
+    expect(nativeElement.textContent).toContain('Epicerie');
+    expect(nativeElement.textContent).toContain('Riz blanc');
+  });
+
   it('should show available quantity column when requested', () => {
     fixture.componentRef.setInput('mode', 'select-multi');
     fixture.componentRef.setInput('showAvailableQty', true);

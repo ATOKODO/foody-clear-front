@@ -122,6 +122,8 @@ export class ProductList implements OnInit, OnChanges {
     if (this.isManageMode) {
       return withAvailability([
         'name',
+        'category',
+        'genericProduct',
         'barcode',
         'unit',
         'price',
@@ -133,8 +135,8 @@ export class ProductList implements OnInit, OnChanges {
 
     return withAvailability(
       this.isMultiEditMode
-        ? ['select', 'name', 'barcode', 'unit', 'price', 'tags', 'nutritionValues']
-        : ['name', 'barcode', 'unit', 'price', 'tags', 'nutritionValues'],
+        ? ['select', 'name', 'category', 'genericProduct', 'barcode', 'unit', 'price', 'tags', 'nutritionValues']
+        : ['name', 'category', 'genericProduct', 'barcode', 'unit', 'price', 'tags', 'nutritionValues'],
     );
   }
 
@@ -203,6 +205,11 @@ export class ProductList implements OnInit, OnChanges {
       .filter((name) => name !== '');
 
     return names.length > 0 ? names.join(', ') : '-';
+  }
+
+  getLinkedEntityDisplay(value: string | null | undefined): string {
+    const normalized = value?.trim();
+    return normalized ? normalized : '-';
   }
 
   onRowClick(item: ProductListItem): void {

@@ -26,3 +26,34 @@
 .tag-table .mat-mdc-row.tl-active {
   background: var(--app-info-bg);
 }
+
+.tag-table .mat-mdc-cell.tag-table__actions-cell {
+  text-align: right;
+}
+
+.tag-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+
+.tag-table__action {
+  min-width: 6.5rem;
+  border-width: 2px;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.tag-table__action--edit {
+  border-color: #8c7600;
+  background: #ffe167;
+  color: #544600;
+}
+
+.tag-table__action--delete {
+  border-color: #de3731;
+  background: #ff897e;
+  color: #690005;
+}

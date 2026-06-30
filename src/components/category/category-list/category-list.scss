@@ -26,3 +26,32 @@
 .category-table .mat-mdc-row.cl-active {
   background: var(--app-info-bg);
 }
+
+.category-table .mat-mdc-cell.category-table__actions-cell {
+  text-align: right;
+}
+
+.category-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.category-table__action {
+  min-width: 0;
+  border-width: 2px;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.category-table__action--edit {
+  border-color: #8c7600;
+  background: #ffe167;
+  color: #544600;
+}
+
+.category-table__action--delete {
+  border-color: #de3731;
+  background: #ff897e;
+  color: #690005;
+}

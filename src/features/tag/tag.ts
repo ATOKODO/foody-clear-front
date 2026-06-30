@@ -1,5 +1,5 @@
 
-import { Component, OnInit, input, output, inject, signal } from '@angular/core';
+import { Component, OnChanges, OnInit, SimpleChanges, input, output, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -34,10 +34,11 @@ import {
   templateUrl: './tag.html',
   styleUrl: './tag.scss',
 })
-export class Tag implements OnInit {
+export class Tag implements OnInit, OnChanges {
   private readonly tagSrv = inject(TagService);
 
   readonly embedded = input(false);
+  readonly openCreateRequestId = input(0);
   readonly dataChanged = output<void>();
 
   baseUrl = '';
@@ -57,6 +58,23 @@ export class Tag implements OnInit {
   ngOnInit(): void {
     this.baseUrl = this.tagSrv.baseUrl;
     this.loadTags();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const openCreateRequestChange = changes['openCreateRequestId'];
+    if (!openCreateRequestChange) {
+      return;
+    }
+
+    if (openCreateRequestChange.firstChange) {
+      return;
+    }
+
+    const nextRequestId = Number(openCreateRequestChange.currentValue ?? 0);
+    const previousRequestId = Number(openCreateRequestChange.previousValue ?? 0);
+    if (nextRequestId > previousRequestId) {
+      this.openCreate();
+    }
   }
 
   onBaseUrlChange(): void {

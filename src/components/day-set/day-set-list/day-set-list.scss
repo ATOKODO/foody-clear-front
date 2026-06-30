@@ -44,6 +44,38 @@
   padding-right: 1rem;
 }
 
+.day-set-table .mat-mdc-cell.dsl-actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.dsl-actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.dsl-action {
+  min-width: 6.5rem;
+  border-width: 2px;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.dsl-action--edit {
+  border-color: #8c7600;
+  background: #ffe167;
+  color: #544600;
+}
+
+.dsl-action--delete {
+  border-color: #de3731;
+  background: #ff897e;
+  color: #690005;
+}
+
 .day-set-table .mat-mdc-row.dsl-selectable {
   cursor: pointer;
 }

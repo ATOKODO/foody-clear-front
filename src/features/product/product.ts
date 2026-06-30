@@ -118,6 +118,8 @@ export class Product implements OnInit {
   saving = false;
   loadingMeta = false;
   linkedDataDirty = false;
+  genericProductCreateRequestId = 0;
+  tagCreateRequestId = 0;
 
   private readonly productsState = signal<ProductApiModel[]>([]);
   readonly productListItems = computed<ProductListItem[]>(() =>
@@ -237,10 +239,10 @@ export class Product implements OnInit {
         this.categoryFeature()?.openCreate();
         break;
       case 'genericProduct':
-        this.genericProductFeature()?.openCreate();
+        this.genericProductCreateRequestId += 1;
         break;
       case 'tag':
-        this.tagFeature()?.openCreate();
+        this.tagCreateRequestId += 1;
         break;
     }
   }

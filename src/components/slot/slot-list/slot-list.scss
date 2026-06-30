@@ -44,6 +44,38 @@
   padding-right: 1rem;
 }
 
+.slot-table .mat-mdc-cell.sl-actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.sl-actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.sl-action {
+  min-width: 6.5rem;
+  border-width: 2px;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.sl-action--edit {
+  border-color: #8c7600;
+  background: #ffe167;
+  color: #544600;
+}
+
+.sl-action--delete {
+  border-color: #de3731;
+  background: #ff897e;
+  color: #690005;
+}
+
 .slot-table .mat-mdc-row.sl-selectable {
   cursor: pointer;
 }

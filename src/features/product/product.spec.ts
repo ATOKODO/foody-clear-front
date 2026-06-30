@@ -173,6 +173,37 @@ describe('Product', () => {
     expect(fixture.nativeElement.textContent).toContain('Aucun tag disponible.');
   });
 
+  it('should open the generic product and tag dialogs from the shared add action', () => {
+    clickToggle(2);
+
+    let nativeElement = fixture.nativeElement as HTMLElement;
+    let addButton = nativeElement.querySelector(
+      '[data-testid="catalogue-add-action"]',
+    ) as HTMLButtonElement;
+    addButton.click();
+    fixture.detectChanges();
+    fixture.detectChanges();
+
+    expect(nativeElement.querySelector('[data-testid="generic-product-dialog"]')).not.toBeNull();
+
+    const closeButton = nativeElement.querySelector(
+      '[data-testid="generic-product-dialog"] button',
+    ) as HTMLButtonElement;
+    closeButton.click();
+    fixture.detectChanges();
+
+    clickToggle(3);
+    nativeElement = fixture.nativeElement as HTMLElement;
+    addButton = nativeElement.querySelector(
+      '[data-testid="catalogue-add-action"]',
+    ) as HTMLButtonElement;
+    addButton.click();
+    fixture.detectChanges();
+    fixture.detectChanges();
+
+    expect(nativeElement.querySelector('[data-testid="tag-dialog"]')).not.toBeNull();
+  });
+
   it('should reload products when returning to product after linked data changes', () => {
     productServiceMock.findAll.calls.reset();
 
