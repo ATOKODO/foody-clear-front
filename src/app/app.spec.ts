@@ -52,10 +52,10 @@ describe('App', () => {
       'Catalogue',
       'Inventaires',
       'Listes de course',
+      'Preparation de repas',
       'Cycles',
       'Modeles',
       'Assignations',
-      'Statistiques',
     ]);
     expect(compiled.querySelector('.app-theme-toggle')).not.toBeNull();
   });

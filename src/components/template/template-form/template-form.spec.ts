@@ -69,7 +69,7 @@ describe('TemplateForm', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should render the embedded product list when a template is editable', () => {
+  it('should render the item editor when a template is editable', () => {
     fixture.componentRef.setInput('products', products);
     fixture.componentRef.setInput('template', template);
     fixture.detectChanges();
@@ -77,21 +77,20 @@ describe('TemplateForm', () => {
     const nativeElement = fixture.nativeElement as HTMLElement;
 
     expect(
-      nativeElement.querySelector('[data-testid="product-list-embedded"]'),
+      nativeElement.querySelector('[data-testid="template-item-save"]'),
     ).not.toBeNull();
   });
 
-  it('should update the selected product when a row is picked', () => {
-    component.onProductSelected({
-      id: '8',
-      name: 'Riz',
-    });
+  it('should update the selected product in the draft', () => {
+    component.updateItemDraft({ productId: 8 });
 
+    expect(component.itemDraft.itemType).toBe('product');
     expect(component.itemDraft.productId).toBe(8);
-    expect(component.selectedProductIds).toEqual(['8']);
+    expect(component.itemDraft.dishId).toBeNull();
+    expect(component.itemDraft.mealId).toBeNull();
   });
 
-  it('should preselect the edited product row in the embedded list', async () => {
+  it('should preload the edited product in the draft', async () => {
     fixture.componentRef.setInput('products', products);
     fixture.componentRef.setInput('template', template);
     fixture.detectChanges();
@@ -101,13 +100,10 @@ describe('TemplateForm', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const nativeElement = fixture.nativeElement as HTMLElement;
-    const selectedRow = nativeElement.querySelector(
-      '[data-testid="product-row-7"]',
-    );
-
-    expect(component.selectedProductIds).toEqual(['7']);
-    expect(selectedRow?.classList.contains('pl-active')).toBeTrue();
+    expect(component.itemDraft.itemType).toBe('product');
+    expect(component.itemDraft.productId).toBe(7);
+    expect(component.itemDraft.dishId).toBeNull();
+    expect(component.itemDraft.mealId).toBeNull();
   });
 
   it('should default slotless items to 06:00 and restore their preferred time when editing', async () => {
@@ -140,10 +136,7 @@ describe('TemplateForm', () => {
 
     expect(saveButton.disabled).toBeTrue();
 
-    component.onProductSelected({
-      id: '8',
-      name: 'Riz',
-    });
+    component.updateItemDraft({ productId: 8 });
     component.updateItemDraft({ qty: 2 });
     fixture.detectChanges();
     await fixture.whenStable();

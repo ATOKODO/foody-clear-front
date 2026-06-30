@@ -275,7 +275,10 @@ describe('TemplateFeature', () => {
 
     const draft: TemplateItemDraft = {
       id: null,
+      itemType: 'product',
       productId: 7,
+      dishId: null,
+      mealId: null,
       qty: 2,
       qtyUnit: 'portion',
       slotId: 5,
@@ -287,6 +290,7 @@ describe('TemplateFeature', () => {
 
     expect(templateServiceMock.createItem).toHaveBeenCalledTimes(1);
     expect(templateServiceMock.createItem).toHaveBeenCalledWith(1, {
+      itemType: 'product',
       productId: 7,
       qty: 2,
       qtyUnit: 'portion',
@@ -300,7 +304,10 @@ describe('TemplateFeature', () => {
 
     const draft: TemplateItemDraft = {
       id: 11,
+      itemType: 'product',
       productId: 8,
+      dishId: null,
+      mealId: null,
       qty: 3,
       qtyUnit: 'g',
       slotId: null,
@@ -312,6 +319,7 @@ describe('TemplateFeature', () => {
 
     expect(templateServiceMock.updateItem).toHaveBeenCalledTimes(1);
     expect(templateServiceMock.updateItem).toHaveBeenCalledWith(1, 11, {
+      itemType: 'product',
       productId: 8,
       qty: 3,
       qtyUnit: 'g',
