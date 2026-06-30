@@ -65,23 +65,23 @@ import {
 type InputDayDisplayMode = 'standalone' | 'embedded';
 type InputDayEmbeddedSection = 'stock' | 'templates';
 
-type InputDaySelectedProductRow = {
+interface InputDaySelectedProductRow {
   productId: number;
   productName: string;
   qty: number | null;
   qtyUnit: ProductQuantityInputUnit | null;
-};
+}
 
-type InputDayAvailableSlot = {
+interface InputDayAvailableSlot {
   slotId: number;
   title: string;
   slotKey: string;
   sortOrder: number;
   startTime: string | null;
   endTime: string | null;
-};
+}
 
-type ProductListSource = {
+interface ProductListSource {
   id: number;
   name: string;
   barcode?: string | null;
@@ -96,12 +96,12 @@ type ProductListSource = {
   nutritionValues?: unknown[];
   category?: unknown | null;
   genericProduct?: unknown | null;
-};
+}
 
-type InputDaySelectedInventoryTemplateStock = {
+interface InputDaySelectedInventoryTemplateStock {
   enoughStock: boolean;
   qtyAvailableNormalized: number;
-};
+}
 
 const INPUT_DAY_EMBEDDED_SECTION_OPTIONS: readonly SegmentedToggleOption<InputDayEmbeddedSection>[] =
   [
@@ -1171,7 +1171,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   getSlotMacroEntries(
     slotTotals: InputDayTotalsMacrosBySlotEntry,
-  ): Array<{ key: string; value: InputDayMacroValue }> {
+  ): { key: string; value: InputDayMacroValue }[] {
     return Object.entries(slotTotals)
       .filter(
         ([key, value]) =>
@@ -1404,7 +1404,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       return null;
     }
 
-    let qtyUnit: ProductQuantityInputUnit | null = null;
+    let qtyUnit: ProductQuantityInputUnit | null;
     try {
       qtyUnit = this.normalizeQtyUnit(this.itemEditorForm.value.qtyUnit);
     } catch (error) {

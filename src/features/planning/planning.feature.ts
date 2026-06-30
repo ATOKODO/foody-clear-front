@@ -66,7 +66,7 @@ type PlanningCalendarController = Pick<
   | 'goToToday'
   | 'navigate'
   | 'switchView'
-  | 'openDayView'
+  | 'activateDayView'
   | 'currentDate'
   | 'getViewLabel'
 >;
@@ -357,7 +357,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   onCalendarOpenDayView(event: CalendarOpenDayViewEvent): void {
-    this.calendarRef()?.openDayView(event.dateLocal);
+    this.calendarRef()?.activateDayView(event.dateLocal);
     this.syncCalendarHeaderState();
   }
 
@@ -1147,7 +1147,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     }
 
     if (requestedView === 'day') {
-      calendarRef.openDayView(requestedDateLocal);
+      calendarRef.activateDayView(requestedDateLocal);
       this.syncCalendarHeaderState();
       return;
     }

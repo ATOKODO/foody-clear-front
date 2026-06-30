@@ -330,12 +330,12 @@ describe('CycleFeature', () => {
         toCreateDto: (value: {
           titre: string;
           couleur: string;
-          nutritionValues: Array<{
+          nutritionValues: {
             nutritionKey: string;
             amount: number;
             unit: string;
             reference: 'PER_100G' | 'PER_100ML';
-          }>;
+          }[];
           nombre: number;
           typeDuree: 'jour' | 'semaine' | 'mois';
           durationDays: number;

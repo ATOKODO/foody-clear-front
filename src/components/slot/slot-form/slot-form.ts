@@ -5,7 +5,6 @@ import {
   OnInit,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy,
   input,
   output
 } from '@angular/core';
@@ -60,7 +59,7 @@ export class SlotForm implements OnInit, OnChanges {
   readonly menuClicked = output<void>();
 
   nutritionValues: CycleNutritionValue[] = [];
-  readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
+  readonly referenceOptions: { label: string; value: NutritionReference }[] = [
     { label: 'Pour 100 g', value: 'PER_100G' },
     { label: 'Pour 100 ml', value: 'PER_100ML' },
   ];

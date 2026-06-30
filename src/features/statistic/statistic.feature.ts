@@ -77,7 +77,7 @@ export class StatisticFeature implements OnInit {
   priceCorrectionRecalculatePurchases = true;
   private activeTimelineRequestKey: string | null = null;
 
-  readonly views: Array<{ value: StatisticView; label: string }> = [
+  readonly views: { value: StatisticView; label: string }[] = [
     { value: 'targets', label: 'Objectifs' },
     { value: 'expenses', label: 'Depenses' },
     { value: 'prices', label: 'Prix produit' },
@@ -96,11 +96,11 @@ export class StatisticFeature implements OnInit {
     'bocal',
     'autre',
   ];
-  readonly metricOptions: Array<{
+  readonly metricOptions: {
     key: StatisticMetricKey;
     label: string;
     unit: string;
-  }> = [
+  }[] = [
     { key: 'energyKcal', label: 'Energie', unit: 'kcal' },
     { key: 'proteins', label: 'Proteines', unit: 'g' },
     { key: 'carbs', label: 'Glucides', unit: 'g' },

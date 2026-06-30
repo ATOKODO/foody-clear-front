@@ -64,7 +64,7 @@
 
 
 @if (formVisible) {
-  <div class="app-modal-backdrop" (click)="onCancelForm()"></div>
+  <div class="app-modal-backdrop" tabindex="0" role="button" aria-label="Fermer la modale" (click)="onCancelForm()" (keydown.enter)="onCancelForm()" (keydown.space)="onCancelForm(); $event.preventDefault()"></div>
 }
 @if (formVisible) {
   <div class="app-modal-shell">

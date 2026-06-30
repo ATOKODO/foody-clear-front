@@ -114,7 +114,7 @@ describe('ProductForm', () => {
   });
 
   it('should emit submitted payload', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.submitted.subscribe((payload) => emitted.push(payload));
 
     component.form.patchValue({
@@ -149,7 +149,7 @@ describe('ProductForm', () => {
   });
 
   it('should preserve nutrition value ids in edit submitted payload', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.submitted.subscribe((payload) => emitted.push(payload));
 
     fixture.componentRef.setInput('mode', 'edit');

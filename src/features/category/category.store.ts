@@ -21,7 +21,7 @@ import {
   UpdateCategoryDto,
 } from '../../services/category-service';
 
-type CategoryState = {
+interface CategoryState {
   categories: CategoryApiModel[];
   loading: boolean;
   saving: boolean;
@@ -31,12 +31,12 @@ type CategoryState = {
   editingCategoryId: number | null;
   formInitialValue: Partial<CategoryFormValue> | null;
   mutationVersion: number;
-};
+}
 
-type CategoryFormSubmission = {
+interface CategoryFormSubmission {
   mode: CategoryFormMode;
   value: CategoryFormValue;
-};
+}
 
 const initialState: CategoryState = {
   categories: [],

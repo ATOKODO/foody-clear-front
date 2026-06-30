@@ -26,19 +26,19 @@ import { MealPrepService } from '../../services/meal-prep-service';
 
 type MealPrepView = 'dish' | 'meal';
 
-type DishDraftLine = {
+interface DishDraftLine {
   productId: number | null;
   qty: number;
   qtyUnit: ProductQuantityInputUnit | null;
-};
+}
 
-type MealDraftLine = {
+interface MealDraftLine {
   itemType: 'product' | 'dish';
   productId: number | null;
   dishId: number | null;
   qty: number;
   qtyUnit: ProductQuantityInputUnit | null;
-};
+}
 
 const VIEW_OPTIONS: readonly SegmentedToggleOption<MealPrepView>[] = [
   { value: 'dish', label: 'Plats' },

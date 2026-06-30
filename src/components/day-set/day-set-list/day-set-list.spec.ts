@@ -54,7 +54,7 @@ describe('DaySetList', () => {
   });
 
   it('should emit selected in single select mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.selected.subscribe((item) => emitted.push(item));
 
     fixture.componentRef.setInput('mode', 'select-single');
@@ -74,7 +74,7 @@ describe('DaySetList', () => {
   });
 
   it('should emit selectedMany in multi select mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.selectedMany.subscribe((items) => emitted.push(items));
 
     fixture.componentRef.setInput('mode', 'select-multi');
@@ -102,7 +102,7 @@ describe('DaySetList', () => {
   });
 
   it('should toggle selection on the first checkbox click in multi select mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.selectedMany.subscribe((items) => emitted.push(items));
 
     fixture.componentRef.setInput('mode', 'select-multi');

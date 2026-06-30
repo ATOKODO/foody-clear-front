@@ -108,7 +108,7 @@ export class TemplateList {
 
   getSlotMacroEntries(
     value: InputDayTotalsMacrosBySlotEntry,
-  ): Array<{ key: string; value: InputDayMacroValue }> {
+  ): { key: string; value: InputDayMacroValue }[] {
     return Object.entries(value)
       .filter(
         ([key]) =>

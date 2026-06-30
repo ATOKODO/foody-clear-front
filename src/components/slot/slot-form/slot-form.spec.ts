@@ -63,7 +63,7 @@ describe('SlotForm', () => {
   });
 
   it('should emit submitted payload with mode and form value', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.submitted.subscribe((payload) => emitted.push(payload));
 
     component.form.setValue({

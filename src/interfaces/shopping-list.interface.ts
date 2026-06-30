@@ -51,7 +51,11 @@ export interface UpdateShoppingListDto {
   name?: string;
 }
 
-export interface CreateShoppingListItemDto extends ShoppingListItemQtyDto {}
+export interface CreateShoppingListItemDto {
+  productId: number;
+  qty: number;
+  qtyUnit?: ProductQuantityInputUnit | null;
+}
 
 export interface UpdateShoppingListItemDto {
   productId?: number;

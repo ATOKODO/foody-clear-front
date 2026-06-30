@@ -3,7 +3,6 @@ import {
   OnChanges,
   OnInit,
   SimpleChanges,
-  ChangeDetectionStrategy,
   input,
   output,
 } from '@angular/core';

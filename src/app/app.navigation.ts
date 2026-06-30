@@ -1,18 +1,18 @@
-export type AppNavigationEntry = {
+export interface AppNavigationEntry {
   id: string;
   path: string;
   label: string;
   shortLabel: string;
   description: string;
   featured?: boolean;
-};
+}
 
-export type AppNavigationGroup = {
+export interface AppNavigationGroup {
   id: string;
   label: string;
   description: string;
   entries: AppNavigationEntry[];
-};
+}
 
 export const APP_NAVIGATION: AppNavigationGroup[] = [
   {

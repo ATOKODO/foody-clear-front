@@ -5,7 +5,6 @@ import {
   OnInit,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy,
   input,
   output
 } from '@angular/core';
@@ -66,7 +65,7 @@ export class DaySetForm implements OnInit, OnChanges {
   nutritionValues: CycleNutritionValue[] = [];
   selectedSlotIds: number[] = [];
   selectedTemplateId: number | null = null;
-  readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
+  readonly referenceOptions: { label: string; value: NutritionReference }[] = [
     { label: 'Pour 100 g', value: 'PER_100G' },
     { label: 'Pour 100 ml', value: 'PER_100ML' },
   ];

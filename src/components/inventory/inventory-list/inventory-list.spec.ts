@@ -52,7 +52,7 @@ describe('InventoryList', () => {
   });
 
   it('should emit selected in single select mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.selected.subscribe((item) => emitted.push(item));
 
     fixture.componentRef.setInput('mode', 'select-single');
@@ -70,7 +70,7 @@ describe('InventoryList', () => {
   });
 
   it('should emit selectedMany in multi select mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.selectedMany.subscribe((items) => emitted.push(items));
 
     fixture.componentRef.setInput('mode', 'select-multi');
@@ -94,7 +94,7 @@ describe('InventoryList', () => {
   });
 
   it('should toggle selection on the first checkbox click in multi select mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.selectedMany.subscribe((items) => emitted.push(items));
 
     fixture.componentRef.setInput('mode', 'select-multi');

@@ -358,7 +358,7 @@ describe('InputDayFeature', () => {
 
   it('should create selected items with shared metadata and per-product qty', () => {
     inputDayServiceMock.createItems.calls.reset();
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.itemsChanged.subscribe((event) => emitted.push(event));
 
     component.form.patchValue({

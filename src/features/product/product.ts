@@ -51,10 +51,10 @@ import {
 
 type ProductHubView = 'product' | 'category' | 'genericProduct' | 'tag';
 
-type ProductHubViewConfig = {
+interface ProductHubViewConfig {
   title: string;
   addLabel: string;
-};
+}
 
 const PRODUCT_HUB_VIEW_CONFIG: Record<ProductHubView, ProductHubViewConfig> = {
   product: {

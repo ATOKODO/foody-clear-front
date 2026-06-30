@@ -52,7 +52,7 @@ describe('InventoryForm', () => {
   });
 
   it('should emit submitted payload with trimmed name', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.submitted.subscribe((payload) => emitted.push(payload));
 
     component.form.setValue({

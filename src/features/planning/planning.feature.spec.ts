@@ -45,22 +45,25 @@ class CalendarStub {
   readonly dayClick = output<unknown>();
   readonly hourClick = output<unknown>();
   readonly itemClick = output<unknown>();
-  readonly manageAssignmentRequested = output<unknown>({
-    alias: 'manageAssignment',
-  });
+  readonly manageAssignment = output<unknown>();
   readonly manageItems = output<unknown>();
   readonly monthClick = output<unknown>();
-  readonly openDayViewRequested = output<unknown>({ alias: 'openDayView' });
+  readonly openDayView = output<unknown>();
 
-  goToToday(): void {}
+  goToToday(): void {
+    this.currentDate = DateTime.local();
+    this.currentViewLabel = this.currentDate.toFormat('dd/MM/yyyy');
+  }
 
-  navigate(_: 'prev' | 'next'): void {}
+  navigate(direction: 'prev' | 'next'): void {
+    void direction;
+  }
 
   switchView(view: string): void {
     this.currentView = view;
   }
 
-  openDayView(dateLocal: string): void {
+  activateDayView(dateLocal: string): void {
     this.currentView = 'day';
     this.currentDate = DateTime.fromISO(dateLocal);
     this.currentViewLabel = dateLocal;
@@ -404,7 +407,7 @@ describe('PlanningFeature', () => {
     const openDayViewSpy = spyOn(calendar, 'openDayView').and.callThrough();
     inputDayServiceMock.getInputDay.calls.reset();
 
-    calendar.openDayViewRequested.emit({ dateLocal: '2026-02-16' });
+    calendar.openDayView.emit({ dateLocal: '2026-02-16' });
 
     expect(openDayViewSpy).toHaveBeenCalledWith('2026-02-16');
     expect(calendar.currentView).toBe('day');
@@ -434,7 +437,7 @@ describe('PlanningFeature', () => {
       endDateLocal: '2026-03-01',
     };
 
-    calendar.manageAssignmentRequested.emit({
+    calendar.manageAssignment.emit({
       view: 'month',
       currentDateIso: '2026-02-16T00:00:00.000Z',
       dateLocal: '2026-02-16',
@@ -454,7 +457,7 @@ describe('PlanningFeature', () => {
   });
 
   it('should reload current input data when embedded items change', () => {
-    const reloadSpy = spyOn<any>(component, 'reloadInputDataForCurrentView');
+    const reloadSpy = spyOn(component as PlanningFeature & { reloadInputDataForCurrentView: () => void }, 'reloadInputDataForCurrentView');
 
     component.onEmbeddedItemsChanged();
 
@@ -583,7 +586,7 @@ describe('PlanningFeature', () => {
 
   it('should load month input data when the calendar switches to month view', () => {
     inputDayServiceMock.getInputMonth.calls.reset();
-    (component as any).hasHandledInitialCalendarData = true;
+    (component as PlanningFeature & { hasHandledInitialCalendarData: boolean }).hasHandledInitialCalendarData = true;
 
     component.onCalendarViewChanged({
       view: 'month',

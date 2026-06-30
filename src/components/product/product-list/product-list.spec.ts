@@ -37,7 +37,7 @@ describe('ProductList', () => {
   });
 
   it('should emit selected in single-edit mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.selected.subscribe((item) => emitted.push(item));
 
     fixture.componentRef.setInput('mode', 'single-edit');
@@ -49,7 +49,7 @@ describe('ProductList', () => {
   });
 
   it('should emit selectedMany in multi-edit mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.selectedMany.subscribe((items) => emitted.push(items));
 
     fixture.componentRef.setInput('mode', 'multi-edit');
@@ -62,7 +62,7 @@ describe('ProductList', () => {
   });
 
   it('should toggle selection on the first checkbox click in multi-edit mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.selectedMany.subscribe((items) => emitted.push(items));
 
     fixture.componentRef.setInput('mode', 'multi-edit');

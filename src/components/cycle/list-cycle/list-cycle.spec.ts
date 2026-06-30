@@ -65,7 +65,7 @@ describe('ListCycle', () => {
   });
 
   it('should emit addRequested when plus button is clicked', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.addRequested.subscribe((value) => emitted.push(value));
 
     component.onAddCycle();
@@ -74,7 +74,7 @@ describe('ListCycle', () => {
   });
 
   it('should emit editRequested with clicked cycle', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     const cycle = createCycle();
     component.editRequested.subscribe((value) => emitted.push(value));
 
@@ -84,7 +84,7 @@ describe('ListCycle', () => {
   });
 
   it('should emit deleteRequested with clicked cycle', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     const cycle = createCycle({ id: 2, title: 'Masse' });
     component.deleteRequested.subscribe((value) => emitted.push(value));
 
@@ -94,7 +94,7 @@ describe('ListCycle', () => {
   });
 
   it('should emit selected in single select mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     const cycles = [createCycle(), createCycle({ id: 2, title: 'Masse' })];
     component.selected.subscribe((value) => emitted.push(value));
 
@@ -108,7 +108,7 @@ describe('ListCycle', () => {
   });
 
   it('should emit selectedMany in multi select mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     const cycles = [createCycle(), createCycle({ id: 2, title: 'Masse' })];
     component.selectedMany.subscribe((value) => emitted.push(value));
 
@@ -123,7 +123,7 @@ describe('ListCycle', () => {
   });
 
   it('should toggle selection on the first checkbox click in multi select mode', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     const cycles = [createCycle()];
     component.selectedMany.subscribe((value) => emitted.push(value));
 

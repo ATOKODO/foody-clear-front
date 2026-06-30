@@ -42,9 +42,7 @@ export interface UpdateInputDayItemDto {
 export type InputDayIncompleteValue = 'donnee incomplete';
 export type InputDayMacroValue = number | InputDayIncompleteValue;
 
-export interface InputDayNutritionValue {
-  [nutritionKey: string]: number;
-}
+export type InputDayNutritionValue = Record<string, number>;
 
 export type ExternalMealEntryPaymentStatus = 'paid' | 'free' | 'refunded';
 

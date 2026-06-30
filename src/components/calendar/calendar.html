@@ -212,7 +212,11 @@
             <div class="calendar-month-grid__body">
               @for (day of monthDays; track trackByDate($index, day)) {
                 <article
+                  tabindex="0"
+                  role="button"
                   (click)="onMonthDayClick(day)"
+                  (keydown.enter)="onMonthDayClick(day)"
+                  (keydown.space)="onMonthDayClick(day); $event.preventDefault()"
                   [attr.data-testid]="'calendar-month-day-' + day.date"
                   class="calendar-month-day"
                   [class.calendar-month-day--current]="day.isCurrentMonth"
@@ -505,11 +509,15 @@
                 <div class="calendar-week-mobile__blocks">
                   @for (block of getWeekTimelineBlocks(day.date); track trackByWeekTimelineBlock($index, block)) {
                     <div
+                      tabindex="0"
+                      role="button"
                       [attr.data-testid]="'calendar-week-mobile-block-' + day.date + '-' + block.title"
                       class="calendar-week-block calendar-week-block--mobile"
                       [class.calendar-week-block--orphan]="block.kind === 'orphan'"
                       [attr.data-tone]="block.tone"
-                      (click)="onWeekTimelineBlockClick(day, block, $event)">
+                      (click)="onWeekTimelineBlockClick(day, block, $event)"
+                      (keydown.enter)="onWeekTimelineBlockClick(day, block, $event)"
+                      (keydown.space)="onWeekTimelineBlockClick(day, block, $event); $event.preventDefault()">
                       <div class="calendar-week-block__header">
                         <div class="calendar-week-block__heading">
                           <span class="calendar-week-block__title">{{ block.title }}</span>
@@ -523,7 +531,11 @@
                         <div class="calendar-week-block__items">
                           @for (product of block.items; track trackByInsertedProduct($index, product)) {
                             <div
+                              tabindex="0"
+                              role="button"
                               (click)="onItemClick(product, day.date, $event)"
+                              (keydown.enter)="onItemClick(product, day.date, $event)"
+                              (keydown.space)="onItemClick(product, day.date, $event); $event.preventDefault()"
                               [attr.data-testid]="'calendar-week-mobile-item-' + day.date + '-' + product.id"
                               class="calendar-week-block__item">
                               <div class="calendar-week-block__item-top">
@@ -685,6 +697,8 @@
               }
               @for (block of getWeekTimelineBlocks(day.date); track trackByWeekTimelineBlock($index, block)) {
                 <div
+                  tabindex="0"
+                  role="button"
                   [attr.data-testid]="'calendar-week-block-' + day.date + '-' + block.title"
                   class="calendar-week-block"
                   [class.calendar-week-block--orphan]="block.kind === 'orphan'"
@@ -693,7 +707,9 @@
                   [style.grid-column-end]="dayIndex + 3"
                   [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
                   [style.grid-row-end]="getWeekTimelineBlockGridRowEnd(block)"
-                  (click)="onWeekTimelineBlockClick(day, block, $event)">
+                  (click)="onWeekTimelineBlockClick(day, block, $event)"
+                  (keydown.enter)="onWeekTimelineBlockClick(day, block, $event)"
+                  (keydown.space)="onWeekTimelineBlockClick(day, block, $event); $event.preventDefault()">
                   <div class="calendar-week-block__header">
                     <div class="calendar-week-block__heading">
                       <span class="calendar-week-block__title">{{ block.title }}</span>
@@ -707,7 +723,11 @@
                     <div class="calendar-week-block__items">
                       @for (product of block.items; track trackByInsertedProduct($index, product)) {
                         <div
+                          tabindex="0"
+                          role="button"
                           (click)="onItemClick(product, day.date, $event)"
+                          (keydown.enter)="onItemClick(product, day.date, $event)"
+                          (keydown.space)="onItemClick(product, day.date, $event); $event.preventDefault()"
                           [attr.data-testid]="'calendar-week-item-' + day.date + '-' + product.id"
                           class="calendar-week-block__item">
                           <div class="calendar-week-block__item-top">
@@ -985,12 +1005,16 @@
                 @if (getDayTemplateTimelineBlocks(); as templateBlocks) {
                   @for (block of templateBlocks; track trackByWeekTimelineBlock($index, block)) {
                     <div
+                      tabindex="0"
+                      role="button"
                       [attr.data-testid]="'calendar-day-template-block-' + block.title"
                       class="calendar-week-block calendar-day-grid__block"
                       [attr.data-tone]="block.tone"
                       [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
                       [style.grid-row-end]="getWeekTimelineBlockGridRowEnd(block)"
-                      (click)="onDayTimelineBlockClick(block, $event)">
+                      (click)="onDayTimelineBlockClick(block, $event)"
+                      (keydown.enter)="onDayTimelineBlockClick(block, $event)"
+                      (keydown.space)="onDayTimelineBlockClick(block, $event); $event.preventDefault()">
                       <div class="calendar-week-block__header">
                         <div class="calendar-week-block__heading">
                           <span class="calendar-week-block__title">{{ block.title }}</span>
@@ -1032,13 +1056,17 @@
                 @if (getDaySetTimelineBlocks(); as daySetBlocks) {
                   @for (block of daySetBlocks; track trackByWeekTimelineBlock($index, block)) {
                     <div
+                      tabindex="0"
+                      role="button"
                       [attr.data-testid]="'calendar-day-dayset-block-' + block.title"
                       class="calendar-week-block calendar-day-grid__block calendar-day-grid__block--entries"
                       [class.calendar-week-block--orphan]="block.kind === 'orphan'"
                       [attr.data-tone]="block.tone"
                       [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
                       [style.grid-row-end]="getWeekTimelineBlockGridRowEnd(block)"
-                      (click)="onDayTimelineBlockClick(block, $event)">
+                      (click)="onDayTimelineBlockClick(block, $event)"
+                      (keydown.enter)="onDayTimelineBlockClick(block, $event)"
+                      (keydown.space)="onDayTimelineBlockClick(block, $event); $event.preventDefault()">
                       <div class="calendar-week-block__header">
                         <div class="calendar-week-block__heading">
                           <span class="calendar-week-block__title">{{ block.title }}</span>
@@ -1052,9 +1080,13 @@
                         <div class="calendar-week-block__items">
                           @for (product of block.items; track trackByInsertedProduct($index, product)) {
                             <div
+                              tabindex="0"
+                              role="button"
                               [attr.data-testid]="'calendar-day-item-' + product.id"
                               class="calendar-week-block__item calendar-day-grid__completed-item"
-                              (click)="onItemClick(product, product.dateLocal, $event)">
+                              (click)="onItemClick(product, product.dateLocal, $event)"
+                              (keydown.enter)="onItemClick(product, product.dateLocal, $event)"
+                              (keydown.space)="onItemClick(product, product.dateLocal, $event); $event.preventDefault()">
                               <div class="calendar-week-block__item-top">
                                 <span class="calendar-week-block__item-name">{{ product.productName }}</span>
                                 <span class="calendar-week-block__item-time">

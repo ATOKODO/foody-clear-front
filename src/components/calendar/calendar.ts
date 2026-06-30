@@ -227,21 +227,11 @@ export class Calendar implements OnInit, OnChanges {
   readonly hourClick = output<CalendarHourClickEvent>();
   readonly monthClick = output<CalendarMonthClickEvent>();
   readonly manageItems = output<CalendarManageItemsEvent>();
-  readonly manageAssignmentRequested = output<CalendarManageAssignmentEvent>({
-    alias: 'manageAssignment',
-  });
+  readonly manageAssignment = output<CalendarManageAssignmentEvent>();
   readonly itemClick = output<CalendarItemClickEvent>();
-  readonly convertTemplateItemRequested =
-    output<CalendarConvertTemplateItemEvent>({
-      alias: 'convertTemplateItem',
-    });
-  readonly revertTemplateItemRequested =
-    output<CalendarRevertTemplateItemEvent>({
-      alias: 'revertTemplateItem',
-    });
-  readonly openDayViewRequested = output<CalendarOpenDayViewEvent>({
-    alias: 'openDayView',
-  });
+  readonly convertTemplateItem = output<CalendarConvertTemplateItemEvent>();
+  readonly revertTemplateItem = output<CalendarRevertTemplateItemEvent>();
+  readonly openDayView = output<CalendarOpenDayViewEvent>();
   readonly viewChanged = output<CalendarViewChangeEvent>();
 
   readonly VIEWS: CalendarView[] = ['year', 'month', 'week', 'day'];
@@ -449,7 +439,7 @@ export class Calendar implements OnInit, OnChanges {
     this.viewChanged.emit(this.buildViewChangeEvent());
   }
 
-  openDayView(dateLocal: string): void {
+  activateDayView(dateLocal: string): void {
     const parsedDate = DateTime.fromISO(dateLocal).startOf('day');
     if (!parsedDate.isValid) {
       return;
@@ -543,7 +533,7 @@ export class Calendar implements OnInit, OnChanges {
         ? null
         : (this.findAssignmentForDate(dateLocal) ?? null);
 
-    this.manageAssignmentRequested.emit({
+    this.manageAssignment.emit({
       view: this.currentView,
       currentDateIso: this.currentDate.toISO() ?? '',
       dateLocal,
@@ -565,7 +555,7 @@ export class Calendar implements OnInit, OnChanges {
       return;
     }
 
-    this.openDayViewRequested.emit({ dateLocal });
+    this.openDayView.emit({ dateLocal });
   }
 
   onCurrentDayClick(): void {
@@ -620,7 +610,7 @@ export class Calendar implements OnInit, OnChanges {
       return;
     }
 
-    this.convertTemplateItemRequested.emit({
+    this.convertTemplateItem.emit({
       dateLocal,
       templateItemId: item.id,
       inventoryId: item.inventoryId,
@@ -633,7 +623,7 @@ export class Calendar implements OnInit, OnChanges {
       return;
     }
 
-    this.revertTemplateItemRequested.emit({
+    this.revertTemplateItem.emit({
       dateLocal: item.dateLocal,
       itemId: item.id,
     });
@@ -1685,7 +1675,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   private mergeSlots(
-    ...sources: Array<InputDayDaySetSlotSummary[]>
+    ...sources: InputDayDaySetSlotSummary[][]
   ): InputDayDaySetSlotSummary[] {
     const unique = new Map<string, InputDayDaySetSlotSummary>();
 

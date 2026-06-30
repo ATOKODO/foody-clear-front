@@ -51,7 +51,7 @@ const INVENTORY_QTY_UNITS: ProductQuantityInputUnit[] = [
   'portion',
 ];
 
-type InventoryRowProductMeta = {
+interface InventoryRowProductMeta {
   unitType: string | null;
   quantityPerUnit: number | null;
   quantityUnit: ProductQuantityInputUnit | null;
@@ -59,7 +59,7 @@ type InventoryRowProductMeta = {
   portionUnit: ProductQuantityInputUnit | null;
   portionQuantityNormalized: number | null;
   price: number | null;
-};
+}
 
 type InventorySelectedProductRow = {
   productId: number;
@@ -78,7 +78,7 @@ type InventoryManagedProductRow = {
   currentQtyDisplay: string;
 } & InventorySelectedProductRow;
 
-type InventoryProductMetaSource = {
+interface InventoryProductMetaSource {
   unitType?: string | null;
   quantityPerUnit?: number | null;
   quantityUnit?: string | null;
@@ -86,12 +86,12 @@ type InventoryProductMetaSource = {
   portionUnit?: string | null;
   portionQuantityNormalized?: number | null;
   price?: number | null;
-};
+}
 
-type InventoryQtyUnitOption = {
+interface InventoryQtyUnitOption {
   value: ProductQuantityInputUnit;
   label: string;
-};
+}
 
 @Component({
   selector: 'app-inventory',
@@ -153,7 +153,7 @@ export class Inventory implements OnInit {
   addProductsFormError: string | null = null;
   manageProductsFormError: string | null = null;
 
-  readonly purchaseAccountingModeOptions: Array<{ value: PurchaseAccountingMode; label: string }> = [
+  readonly purchaseAccountingModeOptions: { value: PurchaseAccountingMode; label: string }[] = [
     { value: 'paid', label: 'Paye' },
     { value: 'free', label: 'Offert' },
     { value: 'excluded', label: 'Ignorer des stats' },

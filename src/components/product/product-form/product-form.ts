@@ -5,7 +5,6 @@ import {
   OnInit,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy,
   input,
   output
 } from '@angular/core';
@@ -109,7 +108,7 @@ export class ProductForm implements OnInit, OnChanges {
     'bouteille',
     'portion',
   ];
-  readonly priceUnitOptions: Array<{ label: string; value: ProductPriceUnit }> = [
+  readonly priceUnitOptions: { label: string; value: ProductPriceUnit }[] = [
     { label: 'EUR/kg', value: 'kg' },
     { label: 'EUR/g', value: 'g' },
     { label: 'EUR/l', value: 'l' },
@@ -123,7 +122,7 @@ export class ProductForm implements OnInit, OnChanges {
     { label: 'EUR/bocal', value: 'bocal' },
     { label: 'EUR/autre', value: 'autre' },
   ];
-  readonly referenceOptions: Array<{ label: string; value: NutritionReference }> = [
+  readonly referenceOptions: { label: string; value: NutritionReference }[] = [
     { label: 'Pour 100 g', value: 'PER_100G' },
     { label: 'Pour 100 ml', value: 'PER_100ML' },
   ];

@@ -71,16 +71,16 @@ import {
 type CycleHubView = 'cycle' | 'daySet' | 'slot';
 type CycleImpactDialogResult = 'submitted' | 'cancelled';
 
-type CycleHubViewConfig = {
+interface CycleHubViewConfig {
   title: string;
   addLabel: string;
-};
+}
 
-type CycleUpdateImpactOptions = {
+interface CycleUpdateImpactOptions {
   assignmentRescheduleScope: CycleAssignmentRescheduleScope;
   assignmentGapMode: CycleAssignmentGapMode;
   assignmentEffectiveDateLocal?: string;
-};
+}
 
 const CYCLE_HUB_VIEW_CONFIG: Record<CycleHubView, CycleHubViewConfig> = {
   cycle: {

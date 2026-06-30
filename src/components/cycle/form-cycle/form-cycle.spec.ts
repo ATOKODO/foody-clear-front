@@ -92,7 +92,7 @@ describe('FormCycle', () => {
   });
 
   it('should emit submitted payload with the full daySet timeline', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.submitted.subscribe((payload) => emitted.push(payload));
 
     component.form.setValue({
@@ -173,7 +173,7 @@ describe('FormCycle', () => {
   });
 
   it('should block submit when assigned day sets remain beyond durationDays', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.submitted.subscribe((payload) => emitted.push(payload));
 
     component.form.setValue({

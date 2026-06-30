@@ -5,7 +5,6 @@ import {
   OnInit,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy,
   input,
   output
 } from '@angular/core';

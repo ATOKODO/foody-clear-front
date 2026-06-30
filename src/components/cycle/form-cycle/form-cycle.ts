@@ -9,7 +9,6 @@ import {
   OnInit,
   SimpleChanges,
   inject,
-  ChangeDetectionStrategy,
   input,
   output,
 } from '@angular/core';
@@ -52,21 +51,21 @@ export interface CycleFormValue {
   daySetOrder: number[];
 }
 
-type CycleTimelineSlot = {
+interface CycleTimelineSlot {
   index: number;
   dayNumber: number;
   daySetId: number;
   title: string;
   isDefault: boolean;
   isOverflow: boolean;
-};
+}
 
-type DurationPreset = {
+interface DurationPreset {
   label: string;
   days: number;
   legacyCount: number;
   legacyType: TypeDuree;
-};
+}
 
 @Component({
   selector: 'app-form-cycle',

@@ -15,7 +15,7 @@ import { Slot } from '../../../interfaces/slot.interface';
 
 type MacroKey = 'proteins' | 'carbs' | 'lipids';
 
-type DaySetRecord = {
+interface DaySetRecord {
   id: number;
   title: string;
   nutritionValues: CycleNutritionValue[];
@@ -23,9 +23,9 @@ type DaySetRecord = {
   hasSlotIdsProperty: boolean;
   slots: unknown[] | null;
   hasSlotsProperty: boolean;
-};
+}
 
-type SlotRecord = {
+interface SlotRecord {
   id: number | null;
   key: string;
   title: string;
@@ -33,12 +33,12 @@ type SlotRecord = {
   startTime: string | null;
   endTime: string | null;
   nutritionValues: CycleNutritionValue[];
-};
+}
 
-type SlotResolution = {
+interface SlotResolution {
   slots: SlotRecord[];
   hasMissingSlotBreakdown: boolean;
-};
+}
 
 export interface CycleDurationPresentation {
   durationDays: number;
@@ -60,12 +60,12 @@ export const DEFAULT_MACRO_NUTRITION_KEYS: MacroNutritionKeys = {
   lipids: 'FAT',
 };
 
-const NUTRITION_DEFINITIONS: Array<{
+const NUTRITION_DEFINITIONS: {
   key: CycleBreakdownMetric['key'];
   totalKey: keyof CycleMacroTotals;
   label: string;
   unit: CycleBreakdownMetric['unit'];
-}> = [
+}[] = [
   { key: 'kcal', totalKey: 'energyKcal', label: 'KCAL', unit: 'kcal' },
   { key: 'proteins', totalKey: 'proteins', label: 'Proteines', unit: 'g' },
   { key: 'carbs', totalKey: 'carbs', label: 'Glucides', unit: 'g' },
@@ -715,7 +715,7 @@ function extractMacroTotals(
 
     if (isEnergyNutritionKey(key)) {
       explicitEnergyKcal =
-        roundNumber(explicitEnergyKcal ?? 0) + toKcal(value.amount, value.unit);
+        roundNumber(explicitEnergyKcal ?? 0) + toKcal(value.amount);
       return;
     }
 
@@ -757,7 +757,7 @@ function isEnergyNutritionKey(key: string): boolean {
   return ['ENERGY_KCAL', 'ENERGY', 'CALORIES', 'CALORIE', 'KCAL'].includes(key);
 }
 
-function toKcal(amount: number, _unit: string): number {
+function toKcal(amount: number): number {
   return amount;
 }
 

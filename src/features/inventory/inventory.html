@@ -71,7 +71,7 @@
 </section>
 
 @if (formVisible) {
-  <div class="modal-backdrop modal-backdrop--inventory" (click)="closeFormModal()"></div>
+  <div class="modal-backdrop modal-backdrop--inventory" tabindex="0" role="button" aria-label="Fermer la modale" (click)="closeFormModal()" (keydown.enter)="closeFormModal()" (keydown.space)="closeFormModal(); $event.preventDefault()"></div>
 }
 @if (formVisible) {
   <div class="modal-shell modal-shell--inventory" data-testid="inventory-dialog">
@@ -329,7 +329,7 @@
 }
 
 @if (isAddProductsModalOpen) {
-  <div class="modal-backdrop modal-backdrop--nested" (click)="closeActiveModal()"></div>
+  <div class="modal-backdrop modal-backdrop--nested" tabindex="0" role="button" aria-label="Fermer la modale" (click)="closeActiveModal()" (keydown.enter)="closeActiveModal()" (keydown.space)="closeActiveModal(); $event.preventDefault()"></div>
 }
 @if (isAddProductsModalOpen) {
   <div class="modal-shell modal-shell--nested" data-testid="inventory-add-products-dialog">

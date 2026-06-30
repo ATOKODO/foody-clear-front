@@ -25,14 +25,14 @@ export interface Cycle {
   durationType: CycleDurationType;
   slotIds?: number[];
   defaultTemplateId?: number | null;
-  slots?: Array<{
+  slots?: {
     id: number;
     key: string;
     title: string;
     sortOrder: number;
     startTime?: string | null;
     endTime?: string | null;
-  }>;
+  }[];
   daySetOrder?: number[];
   daySets?: unknown[];
 }

@@ -9,7 +9,7 @@ export interface NutritionValue {
   amount: number;
   unit: string;  // ex: "g", "kcal"
   per: number;   // ex: 100
-  product?: any; // selon ta réponse API
+  product?: unknown;
   productId?: number;
 }
 
@@ -18,7 +18,7 @@ export interface CreateNutritionValueDto {
   amount: number;
   unit: string;
   per: number;
-  productId: number; // requis pour l’endpoint dédié
+  productId: number;
 }
 
 export type UpdateNutritionValueDto = Partial<CreateNutritionValueDto>;

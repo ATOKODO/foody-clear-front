@@ -38,7 +38,7 @@ describe('Calendar', () => {
   });
 
   it('should emit manageItems from day view', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.manageItems.subscribe((event) => emitted.push(event));
 
     renderView('day', '2026-03-25');
@@ -50,7 +50,7 @@ describe('Calendar', () => {
   });
 
   it('should emit manageItems from week view', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.manageItems.subscribe((event) => emitted.push(event));
 
     renderView('week', '2026-02-18');
@@ -239,7 +239,7 @@ describe('Calendar', () => {
   });
 
   it('should emit the clicked day date from the year mini calendar', () => {
-    const emitted: Array<CalendarDayClickEvent> = [];
+    const emitted: CalendarDayClickEvent[] = [];
     component.dayClick.subscribe((event) => emitted.push(event));
 
     renderView('year', '2026-03-15');
@@ -311,8 +311,8 @@ describe('Calendar', () => {
 
   it('should emit openDayView requests from the month card and Jour button', () => {
     const currentDateLocal = component.currentDate.toISODate() ?? '2026-03-13';
-    const emitted: Array<{ dateLocal: string }> = [];
-    component.openDayViewRequested.subscribe((event) => emitted.push(event));
+    const emitted: { dateLocal: string }[] = [];
+    component.openDayView.subscribe((event) => emitted.push(event));
     fixture.detectChanges();
 
     const root = fixture.nativeElement;
@@ -337,8 +337,8 @@ describe('Calendar', () => {
 
   it('should emit manageAssignment with the source assignment from the month cycle button', () => {
     const currentDateLocal = component.currentDate.toISODate() ?? '2026-03-13';
-    const emitted: Array<unknown> = [];
-    component.manageAssignmentRequested.subscribe((event) =>
+    const emitted: unknown[] = [];
+    component.manageAssignment.subscribe((event) =>
       emitted.push(event),
     );
     fixture.componentRef.setInput('cycleAssignments', [
@@ -378,10 +378,10 @@ describe('Calendar', () => {
   });
 
   it('should switch to day view when openDayView is called directly', () => {
-    const emitted: Array<unknown> = [];
+    const emitted: unknown[] = [];
     component.viewChanged.subscribe((event) => emitted.push(event));
 
-    component.openDayView('2026-02-14');
+    component.activateDayView('2026-02-14');
 
     expect(component.currentView).toBe('day');
     expect(component.currentDate.toISODate()).toBe('2026-02-14');
@@ -1029,8 +1029,8 @@ describe('Calendar', () => {
       itemsBySlot: [],
       slots: [],
     });
-    const convertEvents: Array<unknown> = [];
-    component.convertTemplateItemRequested.subscribe((event) =>
+    const convertEvents: unknown[] = [];
+    component.convertTemplateItem.subscribe((event) =>
       convertEvents.push(event),
     );
     renderView('day', '2026-02-17');
@@ -1080,8 +1080,8 @@ describe('Calendar', () => {
     expect(fixture.nativeElement.textContent).toContain(
       'Toutes les entrees ont ete converties.',
     );
-    const revertEvents: Array<unknown> = [];
-    component.revertTemplateItemRequested.subscribe((event) =>
+    const revertEvents: unknown[] = [];
+    component.revertTemplateItem.subscribe((event) =>
       revertEvents.push(event),
     );
     const revertButton = fixture.nativeElement.querySelector(
@@ -1141,8 +1141,8 @@ describe('Calendar', () => {
       itemsBySlot: [],
       slots: [],
     });
-    const events: Array<unknown> = [];
-    component.convertTemplateItemRequested.subscribe((event) =>
+    const events: unknown[] = [];
+    component.convertTemplateItem.subscribe((event) =>
       events.push(event),
     );
     renderView('day', '2026-02-17');
@@ -1234,9 +1234,9 @@ describe('Calendar', () => {
   });
 
   it('should emit manageAssignment and manageItems from day summary actions', () => {
-    const assignmentEvents: Array<unknown> = [];
-    const itemEvents: Array<unknown> = [];
-    component.manageAssignmentRequested.subscribe((event) =>
+    const assignmentEvents: unknown[] = [];
+    const itemEvents: unknown[] = [];
+    component.manageAssignment.subscribe((event) =>
       assignmentEvents.push(event),
     );
     component.manageItems.subscribe((event) => itemEvents.push(event));
@@ -1282,7 +1282,7 @@ describe('Calendar', () => {
   });
 
   it('should include occurredAt when a half-hour slot is clicked', () => {
-    const emitted: Array<{ occurredAt: string | null }> = [];
+    const emitted: { occurredAt: string | null }[] = [];
     component.hourClick.subscribe((event) => emitted.push(event));
 
     component.switchView('day');
@@ -1294,8 +1294,8 @@ describe('Calendar', () => {
   });
 
   it('should emit itemClick without bubbling to hourClick', () => {
-    const itemEvents: Array<unknown> = [];
-    const hourEvents: Array<unknown> = [];
+    const itemEvents: unknown[] = [];
+    const hourEvents: unknown[] = [];
     component.itemClick.subscribe((event) => itemEvents.push(event));
     component.hourClick.subscribe((event) => hourEvents.push(event));
 

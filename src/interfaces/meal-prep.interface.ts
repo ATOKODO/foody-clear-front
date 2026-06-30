@@ -5,13 +5,13 @@ export type MealPrepEntryType = 'product' | 'dish' | 'meal';
 export interface MealPrepAvailability {
   isInStock: boolean;
   maxPreparations: number;
-  missingProducts: Array<{
+  missingProducts: {
     productId: number;
     productName: string;
     requiredQtyNormalized: number;
     availableQtyNormalized: number;
     missingQtyNormalized: number;
-  }>;
+  }[];
 }
 
 export interface MealPrepResolvedProductLine {
@@ -75,7 +75,10 @@ export interface CreatePreparedDishDto {
   items: CreatePreparedDishItemDto[];
 }
 
-export interface UpdatePreparedDishDto extends Partial<CreatePreparedDishDto> {}
+export interface UpdatePreparedDishDto {
+  name?: string;
+  items?: CreatePreparedDishItemDto[];
+}
 
 export interface CreatePreparedMealItemDto {
   itemType: 'product' | 'dish';
@@ -90,7 +93,10 @@ export interface CreatePreparedMealDto {
   items: CreatePreparedMealItemDto[];
 }
 
-export interface UpdatePreparedMealDto extends Partial<CreatePreparedMealDto> {}
+export interface UpdatePreparedMealDto {
+  name?: string;
+  items?: CreatePreparedMealItemDto[];
+}
 
 export interface CreateMealPrepShoppingListDto {
   name?: string;

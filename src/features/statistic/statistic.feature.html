@@ -427,7 +427,7 @@
             <span>Prix courant</span>
             <strong>
               {{
-                history.currentPrice.price != null
+                history.currentPrice.price !== null
                   ? formatCurrency(history.currentPrice.price)
                   : "--"
               }}

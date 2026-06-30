@@ -85,7 +85,12 @@
     class="app-modal-backdrop"
     [class.app-modal-backdrop--embedded-day-set]="embedded()"
     [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset()"
-  (click)="onCancelForm()"></div>
+    tabindex="0"
+    role="button"
+    aria-label="Fermer la modale"
+    (click)="onCancelForm()"
+    (keydown.enter)="onCancelForm()"
+    (keydown.space)="onCancelForm(); $event.preventDefault()"></div>
 }
 @if (formVisible()) {
   <div
