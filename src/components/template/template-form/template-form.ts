@@ -17,7 +17,7 @@ import { ProductQuantityInputUnit } from '../../../interfaces/input-day.interfac
 import { PreparedDish, PreparedMeal } from '../../../interfaces/meal-prep.interface';
 import { Slot } from '../../../interfaces/slot.interface';
 import { Template, TemplateItem } from '../../../interfaces/template.interface';
-import { Product as ProductApiModel } from '../../../services/product-service';
+import { PortionUnit, Product as ProductApiModel } from '../../../services/product-service';
 
 export type TemplateFormMode = 'add' | 'edit';
 
@@ -133,6 +133,15 @@ export class TemplateForm implements OnInit, OnChanges {
     );
   }
 
+  getAvailableQtyUnitOptions(): { value: ProductQuantityInputUnit; label: string }[] {
+    if (this.itemDraft.itemType !== 'product') {
+      return this.qtyUnitOptions().map((unit) => ({ value: unit, label: unit }));
+    }
+
+    const product = this.sortedProducts.find((item) => item.id === this.itemDraft.productId) ?? null;
+    return this.buildProductQtyUnitOptions(product);
+  }
+
   onTemplateSave(): void {
     const title = this.draftTitle.trim();
     if (title === '') {
@@ -155,7 +164,7 @@ export class TemplateForm implements OnInit, OnChanges {
   }
 
   editItem(item: TemplateItem): void {
-    this.itemDraft = {
+    const nextDraft: TemplateItemDraft = {
       id: item.id,
       itemType: item.itemType ?? this.resolveItemType(item),
       productId: item.productId ?? null,
@@ -167,6 +176,17 @@ export class TemplateForm implements OnInit, OnChanges {
       slotKey: item.slotKey ?? '',
       preferredTime: this.formatPreferredTime(item.preferredTime),
     };
+
+    if (nextDraft.itemType === 'product') {
+      nextDraft.qtyUnit = this.normalizeQtyUnitSelection(
+        nextDraft.qtyUnit,
+        this.buildProductQtyUnitOptions(
+          this.sortedProducts.find((product) => product.id === nextDraft.productId) ?? null,
+        ),
+      );
+    }
+
+    this.itemDraft = nextDraft;
   }
 
   updateItemDraft(patch: Partial<TemplateItemDraft>): void {
@@ -179,6 +199,15 @@ export class TemplateForm implements OnInit, OnChanges {
       nextDraft.productId = null;
       nextDraft.dishId = null;
       nextDraft.mealId = null;
+    }
+
+    if (nextDraft.itemType === 'product') {
+      nextDraft.qtyUnit = this.normalizeQtyUnitSelection(
+        nextDraft.qtyUnit,
+        this.buildProductQtyUnitOptions(
+          this.sortedProducts.find((item) => item.id === nextDraft.productId) ?? null,
+        ),
+      );
     }
 
     this.itemDraft = nextDraft;
@@ -284,6 +313,65 @@ export class TemplateForm implements OnInit, OnChanges {
       slotKey: '',
       preferredTime: '06:00',
     };
+  }
+
+  private buildProductQtyUnitOptions(
+    product: ProductApiModel | null,
+  ): { value: ProductQuantityInputUnit; label: string }[] {
+    const options: { value: ProductQuantityInputUnit; label: string }[] = [];
+    const seen = new Set<ProductQuantityInputUnit>();
+
+    const pushOption = (value: ProductQuantityInputUnit | null, label: string): void => {
+      if (value === null || seen.has(value)) {
+        return;
+      }
+
+      seen.add(value);
+      options.push({ value, label });
+    };
+
+    const unitType = product?.unitType?.trim();
+    pushOption('unit', unitType ? `Unite produit (${unitType})` : 'Unite produit');
+
+    const portionUnit = this.normalizePortionQtyUnit(product?.portionUnit);
+    if (portionUnit) {
+      pushOption(portionUnit, this.toTitleCase(portionUnit));
+    }
+
+    pushOption('g', 'G (Gramme)');
+
+    return options;
+  }
+
+  private normalizePortionQtyUnit(value: PortionUnit | null | undefined): ProductQuantityInputUnit | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim().toLowerCase();
+    const allowed: ProductQuantityInputUnit[] = ['tranche', 'piece', 'part', 'bouteille', 'portion'];
+    return allowed.includes(candidate as ProductQuantityInputUnit)
+      ? (candidate as ProductQuantityInputUnit)
+      : null;
+  }
+
+  private normalizeQtyUnitSelection(
+    currentValue: ProductQuantityInputUnit | null,
+    options: { value: ProductQuantityInputUnit; label: string }[],
+  ): ProductQuantityInputUnit | null {
+    if (currentValue && options.some((option) => option.value === currentValue)) {
+      return currentValue;
+    }
+
+    return options[0]?.value ?? null;
+  }
+
+  private toTitleCase(value: string): string {
+    if (value.length === 0) {
+      return value;
+    }
+
+    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
   }
 
   private hasSelectedSource(): boolean {

@@ -9,7 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { forkJoin } from 'rxjs';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
-import { Inventory, ProductQuantityInputUnit } from '../../interfaces/inventory.interface';
+import { Inventory, InventoryLinkedProduct, ProductQuantityInputUnit } from '../../interfaces/inventory.interface';
 import {
   ShoppingList as ShoppingListModel,
   ShoppingListItem,
@@ -40,21 +40,6 @@ export class ShoppingList implements OnInit {
   private readonly shoppingListSrv = inject(ShoppingListService);
   private readonly productSrv = inject(ProductService);
   private readonly inventorySrv = inject(InventoryService);
-
-  readonly qtyUnitOptions: ProductQuantityInputUnit[] = [
-    'mg',
-    'g',
-    'kg',
-    'ml',
-    'l',
-    'unit',
-    'pack',
-    'tranche',
-    'piece',
-    'part',
-    'bouteille',
-    'portion',
-  ];
 
   baseUrl = '';
   draftListName = '';
@@ -437,8 +422,107 @@ export class ShoppingList implements OnInit {
     return item.productId;
   }
 
+  getDraftQtyUnitOptions(): { value: ProductQuantityInputUnit; label: string }[] {
+    const product = this.products.find((item) => item.id === this.draftItemProductId) ?? null;
+    return this.buildQtyUnitOptions(product);
+  }
+
+  getItemQtyUnitOptions(item: ShoppingListItem): { value: ProductQuantityInputUnit; label: string }[] {
+    const product = this.resolveLinkedProduct(item.productId, item.product ?? null);
+    return this.buildQtyUnitOptions(product);
+  }
+
+  onDraftProductChange(productId: number | null): void {
+    this.draftItemProductId = productId;
+    this.draftItemQtyUnit = this.normalizeQtyUnitSelection(this.draftItemQtyUnit, this.getDraftQtyUnitOptions());
+  }
+
   resolveProductName(item: { product?: { name?: string | null } | null; productId: number }): string {
     return item.product?.name?.trim() || `Produit #${item.productId}`;
+  }
+
+  private resolveLinkedProduct(
+    productId: number,
+    inlineProduct: InventoryLinkedProduct | Product | null,
+  ): InventoryLinkedProduct | Product | null {
+    if (inlineProduct) {
+      return inlineProduct;
+    }
+
+    return this.products.find((item) => item.id === productId) ?? null;
+  }
+
+  private buildQtyUnitOptions(
+    product: InventoryLinkedProduct | Product | null,
+  ): { value: ProductQuantityInputUnit; label: string }[] {
+    const options: { value: ProductQuantityInputUnit; label: string }[] = [];
+    const seen = new Set<ProductQuantityInputUnit>();
+
+    const pushOption = (value: ProductQuantityInputUnit | null, label: string): void => {
+      if (value === null || seen.has(value)) {
+        return;
+      }
+
+      seen.add(value);
+      options.push({ value, label });
+    };
+
+    const unitType = product?.unitType?.trim();
+    pushOption('unit', unitType ? `Unite produit (${unitType})` : 'Unite produit');
+
+    const portionUnit = this.normalizeQtyUnit(product?.portionUnit);
+    if (portionUnit) {
+      pushOption(portionUnit, this.toTitleCase(portionUnit));
+    }
+
+    pushOption('g', 'G (Gramme)');
+
+    return options;
+  }
+
+  private normalizeQtyUnit(value: string | null | undefined): ProductQuantityInputUnit | null {
+    const allowed: ProductQuantityInputUnit[] = [
+      'mg',
+      'g',
+      'kg',
+      'ml',
+      'l',
+      'unit',
+      'pack',
+      'tranche',
+      'piece',
+      'part',
+      'bouteille',
+      'portion',
+    ];
+
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const candidate = value.trim().toLowerCase();
+    return allowed.includes(candidate as ProductQuantityInputUnit)
+      ? (candidate as ProductQuantityInputUnit)
+      : null;
+  }
+
+  private normalizeQtyUnitSelection(
+    currentValue: ProductQuantityInputUnit | null,
+    options: { value: ProductQuantityInputUnit; label: string }[],
+  ): ProductQuantityInputUnit | null {
+    if (currentValue && options.some((option) => option.value === currentValue)) {
+      return currentValue;
+    }
+
+    return options[0]?.value ?? null;
+  }
+
+  private toTitleCase(value: string): string {
+    if (value.length === 0) {
+      return value;
+    }
+
+    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
   }
 
   public loadScreen(): void {

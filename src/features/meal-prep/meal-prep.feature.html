@@ -103,7 +103,7 @@
                   <div class="meal-prep-line">
                     <mat-form-field appearance="fill" class="meal-prep-line__source">
                       <mat-label>Produit</mat-label>
-                      <mat-select [(ngModel)]="line.productId">
+                      <mat-select [ngModel]="line.productId" (ngModelChange)="onDishProductChange(line, $event)">
                         <mat-option [value]="null">Selectionner</mat-option>
                         @for (product of sortedProducts; track product.id) {
                           <mat-option [value]="product.id">{{ product.name }}</mat-option>
@@ -117,9 +117,8 @@
                     <mat-form-field appearance="fill">
                       <mat-label>Unite</mat-label>
                       <mat-select [(ngModel)]="line.qtyUnit">
-                        <mat-option [value]="null">Auto</mat-option>
-                        @for (unit of qtyUnitOptions; track unit) {
-                          <mat-option [value]="unit">{{ unit }}</mat-option>
+                        @for (unit of getDishQtyUnitOptions(line); track unit.value) {
+                          <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
                         }
                       </mat-select>
                     </mat-form-field>
@@ -218,7 +217,7 @@
                   <div class="meal-prep-line meal-prep-line--meal">
                     <mat-form-field appearance="fill">
                       <mat-label>Type</mat-label>
-                      <mat-select [(ngModel)]="line.itemType">
+                      <mat-select [ngModel]="line.itemType" (ngModelChange)="onMealItemTypeChange(line, $event)">
                         <mat-option value="dish">Plat</mat-option>
                         <mat-option value="product">Produit</mat-option>
                       </mat-select>
@@ -226,7 +225,7 @@
                     @if (line.itemType === 'dish') {
                       <mat-form-field appearance="fill" class="meal-prep-line__source">
                         <mat-label>Plat</mat-label>
-                        <mat-select [(ngModel)]="line.dishId">
+                        <mat-select [ngModel]="line.dishId" (ngModelChange)="onMealDishChange(line, $event)">
                           <mat-option [value]="null">Selectionner</mat-option>
                           @for (dish of sortedDishes; track dish.id) {
                             <mat-option [value]="dish.id">{{ dish.name }}</mat-option>
@@ -236,7 +235,7 @@
                     } @else {
                       <mat-form-field appearance="fill" class="meal-prep-line__source">
                         <mat-label>Produit</mat-label>
-                        <mat-select [(ngModel)]="line.productId">
+                        <mat-select [ngModel]="line.productId" (ngModelChange)="onMealProductChange(line, $event)">
                           <mat-option [value]="null">Selectionner</mat-option>
                           @for (product of sortedProducts; track product.id) {
                             <mat-option [value]="product.id">{{ product.name }}</mat-option>
@@ -251,9 +250,8 @@
                     <mat-form-field appearance="fill">
                       <mat-label>Unite</mat-label>
                       <mat-select [(ngModel)]="line.qtyUnit">
-                        <mat-option [value]="null">Auto</mat-option>
-                        @for (unit of qtyUnitOptions; track unit) {
-                          <mat-option [value]="unit">{{ unit }}</mat-option>
+                        @for (unit of getMealQtyUnitOptions(line); track unit.value) {
+                          <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
                         }
                       </mat-select>
                     </mat-form-field>

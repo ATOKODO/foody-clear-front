@@ -96,7 +96,7 @@
               <div class="shopping-list-create-row shopping-list-create-row--items">
                 <mat-form-field appearance="fill" class="shopping-list-field--product">
                   <mat-label>Produit</mat-label>
-                  <mat-select [(ngModel)]="draftItemProductId">
+                  <mat-select [ngModel]="draftItemProductId" (ngModelChange)="onDraftProductChange($event)">
                     @for (product of products; track trackById($index, product)) {
                       <mat-option [value]="product.id">{{ product.name }}</mat-option>
                     }
@@ -109,8 +109,8 @@
                 <mat-form-field appearance="fill">
                   <mat-label>Unite</mat-label>
                   <mat-select [(ngModel)]="draftItemQtyUnit">
-                    @for (qtyUnit of qtyUnitOptions; track qtyUnit) {
-                      <mat-option [value]="qtyUnit">{{ qtyUnit }}</mat-option>
+                    @for (qtyUnit of getDraftQtyUnitOptions(); track qtyUnit.value) {
+                      <mat-option [value]="qtyUnit.value">{{ qtyUnit.label }}</mat-option>
                     }
                   </mat-select>
                 </mat-form-field>
@@ -142,8 +142,8 @@
                         </td>
                         <td>
                           <select class="shopping-list-inline-select" [(ngModel)]="item.qtyUnit">
-                            @for (qtyUnit of qtyUnitOptions; track qtyUnit) {
-                              <option [ngValue]="qtyUnit">{{ qtyUnit }}</option>
+                            @for (qtyUnit of getItemQtyUnitOptions(item); track qtyUnit.value) {
+                              <option [ngValue]="qtyUnit.value">{{ qtyUnit.label }}</option>
                             }
                           </select>
                         </td>

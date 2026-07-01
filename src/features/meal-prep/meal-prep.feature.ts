@@ -21,7 +21,7 @@ import {
   PreparedMealItem,
 } from '../../interfaces/meal-prep.interface';
 import { ProductQuantityInputUnit } from '../../interfaces/inventory.interface';
-import { Product, ProductService } from '../../services/product-service';
+import { PortionUnit, Product, ProductService } from '../../services/product-service';
 import { MealPrepService } from '../../services/meal-prep-service';
 
 type MealPrepView = 'dish' | 'meal';
@@ -38,6 +38,11 @@ interface MealDraftLine {
   dishId: number | null;
   qty: number;
   qtyUnit: ProductQuantityInputUnit | null;
+}
+
+interface QtyUnitOption {
+  value: ProductQuantityInputUnit;
+  label: string;
 }
 
 const VIEW_OPTIONS: readonly SegmentedToggleOption<MealPrepView>[] = [
@@ -67,20 +72,6 @@ export class MealPrepFeature implements OnInit {
   private readonly productSrv = inject(ProductService);
 
   readonly viewOptions = VIEW_OPTIONS;
-  readonly qtyUnitOptions: ProductQuantityInputUnit[] = [
-    'mg',
-    'g',
-    'kg',
-    'ml',
-    'l',
-    'unit',
-    'pack',
-    'tranche',
-    'piece',
-    'part',
-    'bouteille',
-    'portion',
-  ];
 
   baseUrl = '';
   activeView: MealPrepView = 'dish';
@@ -171,6 +162,43 @@ export class MealPrepFeature implements OnInit {
     return [...this.meals].sort((left, right) =>
       left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
     );
+  }
+
+  getDishQtyUnitOptions(line: DishDraftLine): QtyUnitOption[] {
+    return this.buildProductQtyUnitOptions(this.resolveProduct(line.productId));
+  }
+
+  getMealQtyUnitOptions(line: MealDraftLine): QtyUnitOption[] {
+    if (line.itemType === 'product') {
+      return this.buildProductQtyUnitOptions(this.resolveProduct(line.productId));
+    }
+
+    return [{ value: 'unit', label: 'Unite' }];
+  }
+
+  onDishProductChange(line: DishDraftLine, productId: number | null): void {
+    line.productId = productId;
+    line.qtyUnit = this.normalizeQtyUnitSelection(line.qtyUnit, this.getDishQtyUnitOptions(line));
+  }
+
+  onMealItemTypeChange(line: MealDraftLine, itemType: 'product' | 'dish'): void {
+    line.itemType = itemType;
+    if (itemType === 'product') {
+      line.dishId = null;
+    } else {
+      line.productId = null;
+    }
+    line.qtyUnit = this.normalizeQtyUnitSelection(line.qtyUnit, this.getMealQtyUnitOptions(line));
+  }
+
+  onMealProductChange(line: MealDraftLine, productId: number | null): void {
+    line.productId = productId;
+    line.qtyUnit = this.normalizeQtyUnitSelection(line.qtyUnit, this.getMealQtyUnitOptions(line));
+  }
+
+  onMealDishChange(line: MealDraftLine, dishId: number | null): void {
+    line.dishId = dishId;
+    line.qtyUnit = this.normalizeQtyUnitSelection(line.qtyUnit, this.getMealQtyUnitOptions(line));
   }
 
   onBaseUrlChange(): void {
@@ -491,7 +519,10 @@ export class MealPrepFeature implements OnInit {
         ? dish.items.map((item) => ({
             productId: item.productId,
             qty: item.qty,
-            qtyUnit: item.qtyUnit ?? null,
+            qtyUnit: this.normalizeQtyUnitSelection(
+              item.qtyUnit ?? null,
+              this.buildProductQtyUnitOptions(this.resolveProduct(item.productId)),
+            ),
           }))
         : [this.createEmptyDishLine()];
   }
@@ -501,32 +532,99 @@ export class MealPrepFeature implements OnInit {
     this.mealDraftName = meal.name;
     this.mealDraftLines =
       meal.items.length > 0
-        ? meal.items.map((item) => ({
-            itemType: item.itemType,
-            productId: item.productId ?? null,
-            dishId: item.dishId ?? null,
-            qty: item.qty,
-            qtyUnit: item.qtyUnit ?? null,
-          }))
+        ? meal.items.map((item) => {
+            const line: MealDraftLine = {
+              itemType: item.itemType,
+              productId: item.productId ?? null,
+              dishId: item.dishId ?? null,
+              qty: item.qty,
+              qtyUnit: item.qtyUnit ?? null,
+            };
+
+            return {
+              ...line,
+              qtyUnit: this.normalizeQtyUnitSelection(line.qtyUnit, this.getMealQtyUnitOptions(line)),
+            };
+          })
         : [this.createEmptyMealLine()];
   }
 
   private createEmptyDishLine(): DishDraftLine {
-    return {
+    const line: DishDraftLine = {
       productId: null,
       qty: 1,
       qtyUnit: null,
     };
+
+    return {
+      ...line,
+      qtyUnit: this.normalizeQtyUnitSelection(line.qtyUnit, this.getDishQtyUnitOptions(line)),
+    };
   }
 
   private createEmptyMealLine(): MealDraftLine {
-    return {
+    const line: MealDraftLine = {
       itemType: 'dish',
       productId: null,
       dishId: null,
       qty: 1,
       qtyUnit: null,
     };
+
+    return {
+      ...line,
+      qtyUnit: this.normalizeQtyUnitSelection(line.qtyUnit, this.getMealQtyUnitOptions(line)),
+    };
+  }
+
+  private resolveProduct(productId: number | null): Product | null {
+    if (productId === null) {
+      return null;
+    }
+
+    return this.sortedProducts.find((product) => product.id === productId) ?? null;
+  }
+
+  private buildProductQtyUnitOptions(product: Product | null): QtyUnitOption[] {
+    const options: QtyUnitOption[] = [
+      {
+        value: 'unit',
+        label: product ? `Unite produit (${product.unitType})` : 'Unite produit',
+      },
+    ];
+
+    if (product?.portionUnit) {
+      options.push({
+        value: product.portionUnit,
+        label: this.toTitleCase(product.portionUnit),
+      });
+    }
+
+    options.push({ value: 'g', label: 'G (Gramme)' });
+
+    return options;
+  }
+
+  private normalizeQtyUnitSelection(
+    qtyUnit: ProductQuantityInputUnit | null,
+    options: QtyUnitOption[],
+  ): ProductQuantityInputUnit {
+    const normalizedQtyUnit = this.normalizePortionQtyUnit(qtyUnit);
+    if (normalizedQtyUnit && options.some((option) => option.value === normalizedQtyUnit)) {
+      return normalizedQtyUnit;
+    }
+
+    return options[0]?.value ?? 'unit';
+  }
+
+  private normalizePortionQtyUnit(
+    qtyUnit: ProductQuantityInputUnit | PortionUnit | null | undefined,
+  ): ProductQuantityInputUnit | null {
+    return qtyUnit ?? null;
+  }
+
+  private toTitleCase(value: string): string {
+    return value.charAt(0).toUpperCase() + value.slice(1);
   }
 
   private syncBaseUrls(): void {

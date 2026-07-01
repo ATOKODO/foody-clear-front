@@ -16,6 +16,7 @@ describe('TemplateForm', () => {
       unitType: 'Paquet',
       quantityPerUnit: 150,
       quantityUnit: 'g',
+      portionUnit: 'portion',
       nutritionValues: [],
     },
     {
@@ -88,6 +89,20 @@ describe('TemplateForm', () => {
     expect(component.itemDraft.productId).toBe(8);
     expect(component.itemDraft.dishId).toBeNull();
     expect(component.itemDraft.mealId).toBeNull();
+  });
+
+  it('should expose unit, portion and gram options for the selected product', () => {
+    fixture.componentRef.setInput('products', products);
+    fixture.componentRef.setInput('template', template);
+    fixture.detectChanges();
+
+    component.updateItemDraft({ productId: 7 });
+
+    expect(component.getAvailableQtyUnitOptions()).toEqual([
+      { value: 'unit', label: 'Unite produit (Paquet)' },
+      { value: 'portion', label: 'Portion' },
+      { value: 'g', label: 'G (Gramme)' },
+    ]);
   });
 
   it('should preload the edited product in the draft', async () => {

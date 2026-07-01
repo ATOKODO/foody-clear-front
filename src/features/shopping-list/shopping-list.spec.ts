@@ -110,6 +110,23 @@ describe('ShoppingList', () => {
     expect(shoppingListServiceMock.create).toHaveBeenCalledWith({ name: 'Courses week-end' });
   });
 
+  it('should expose unit, portion and gram options for a linked product', () => {
+    const options = component.getItemQtyUnitOptions({
+      id: 101,
+      productId: 1,
+      product: { id: 1, name: 'Poulet', unitType: 'Paquet', portionUnit: 'portion' },
+      qty: 2,
+      qtyUnit: 'unit',
+      checked: false,
+    });
+
+    expect(options).toEqual([
+      { value: 'unit', label: 'Unite produit (Paquet)' },
+      { value: 'portion', label: 'Portion' },
+      { value: 'g', label: 'G (Gramme)' },
+    ]);
+  });
+
   it('should convert checked items into inventory', () => {
     component['selectedListIdState'].set(11);
     component.selectedInventoryId = 4;

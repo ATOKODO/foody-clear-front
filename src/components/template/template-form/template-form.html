@@ -119,10 +119,9 @@
               [ngModel]="itemDraft.qtyUnit"
               (ngModelChange)="updateItemDraft({ qtyUnit: $event })"
             >
-              <mat-option [value]="null">Auto</mat-option>
-              @for (unit of qtyUnitOptions(); track unit) {
-                <mat-option [value]="unit">
-                  {{ unit }}
+              @for (unit of getAvailableQtyUnitOptions(); track unit.value) {
+                <mat-option [value]="unit.value">
+                  {{ unit.label }}
                 </mat-option>
               }
             </mat-select>
