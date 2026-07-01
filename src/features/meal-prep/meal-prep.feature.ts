@@ -8,55 +8,57 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
-import {
-  SegmentedToggle,
-  SegmentedToggleOption,
-} from '../../app/ui/segmented-toggle/segmented-toggle';
+import { SegmentedToggle } from '../../app/ui/segmented-toggle/segmented-toggle';
 import {
   ProductList,
   ProductListItem,
 } from '../../components/product/product-list/product-list';
-import { mapProductToProductListItem } from '../../components/product/product-list/product-list-item.mapper';
 import {
-  CreatePreparedDishDto,
-  CreatePreparedMealDto,
   MealPrepEntryType,
   PreparedDish,
   PreparedMeal,
   PreparedMealItem,
 } from '../../interfaces/meal-prep.interface';
-import { ProductQuantityInputUnit } from '../../interfaces/inventory.interface';
-import { PortionUnit, Product, ProductService } from '../../services/product-service';
+import { Product, ProductService } from '../../services/product-service';
 import { MealPrepService } from '../../services/meal-prep-service';
-
-type MealPrepView = 'dish' | 'meal';
-type ProductPickerTarget =
-  | { kind: 'dish'; index: number }
-  | { kind: 'meal'; index: number };
-
-interface DishDraftLine {
-  productId: number | null;
-  qty: number;
-  qtyUnit: ProductQuantityInputUnit | null;
-}
-
-interface MealDraftLine {
-  itemType: 'product' | 'dish';
-  productId: number | null;
-  dishId: number | null;
-  qty: number;
-  qtyUnit: ProductQuantityInputUnit | null;
-}
-
-interface QtyUnitOption {
-  value: ProductQuantityInputUnit;
-  label: string;
-}
-
-const VIEW_OPTIONS: readonly SegmentedToggleOption<MealPrepView>[] = [
-  { value: 'dish', label: 'Plats' },
-  { value: 'meal', label: 'Repas' },
-];
+import {
+  DishDraftLine,
+  MEAL_PREP_VIEW_OPTIONS,
+  MealDraftLine,
+  MealLineItemType,
+  MealPrepView,
+  ProductPickerTarget,
+  QtyUnitOption,
+  buildMealPrepProductListItems,
+  canSaveDishDraft,
+  canSaveMealDraft,
+  createEmptyDishLine,
+  createEmptyMealLine,
+  createNewDishDraft,
+  createNewMealDraft,
+  getDishQtyUnitOptions,
+  getMealQtyUnitOptions,
+  removeDishDraftLine,
+  removeMealDraftLine,
+  resolveMealLineLabel,
+  resolveMealPrepAvailabilityLabel,
+  resolveMealPrepProductName,
+  resolveMealPrepTypeLabel,
+  resolveNextSelectionId,
+  resolveProductPickerSelectedIds,
+  selectDishLineProduct,
+  selectMealLineDish,
+  selectMealLineItemType,
+  selectMealLineProduct,
+  sortMealPrepDishes,
+  sortMealPrepMeals,
+  sortMealPrepProducts,
+  toCreatePreparedDishDto,
+  toCreatePreparedMealDto,
+  toDishDraftForm,
+  toMealDraftForm,
+  upsertById,
+} from './meal-prep.viewmodel';
 
 @Component({
   selector: 'app-meal-prep',
@@ -83,15 +85,14 @@ export class MealPrepFeature implements OnInit {
   private readonly mealPrepSrv = inject(MealPrepService);
   private readonly productSrv = inject(ProductService);
 
-  readonly viewOptions = VIEW_OPTIONS;
+  readonly viewOptions = MEAL_PREP_VIEW_OPTIONS;
 
-  baseUrl = '';
   activeView: MealPrepView = 'dish';
 
   dishDraftName = '';
   mealDraftName = '';
-  dishDraftLines: DishDraftLine[] = [this.createEmptyDishLine()];
-  mealDraftLines: MealDraftLine[] = [this.createEmptyMealLine()];
+  dishDraftLines: DishDraftLine[] = [createEmptyDishLine([])];
+  mealDraftLines: MealDraftLine[] = [createEmptyMealLine([])];
   editingDishId: number | null = null;
   editingMealId: number | null = null;
 
@@ -99,7 +100,7 @@ export class MealPrepFeature implements OnInit {
   private readonly mealsState = signal<PreparedMeal[]>([]);
   private readonly productsState = signal<Product[]>([]);
   private readonly productListItemsState = computed<ProductListItem[]>(() =>
-    this.productsState().map((product) => mapProductToProductListItem(product)),
+    buildMealPrepProductListItems(this.productsState()),
   );
   private readonly selectedDishIdState = signal<number | null>(null);
   private readonly selectedMealIdState = signal<number | null>(null);
@@ -121,8 +122,7 @@ export class MealPrepFeature implements OnInit {
   );
 
   ngOnInit(): void {
-    this.baseUrl = this.mealPrepSrv.baseUrl;
-    this.syncBaseUrls();
+    this.productSrv.setBaseUrl(this.mealPrepSrv.baseUrl);
     this.loadScreen();
   }
 
@@ -175,88 +175,59 @@ export class MealPrepFeature implements OnInit {
   }
 
   get productPickerSelectedIds(): string[] {
-    const target = this.productPickerTarget;
-    if (target === null) {
-      return [];
-    }
-
-    const productId =
-      target.kind === 'dish'
-        ? this.dishDraftLines[target.index]?.productId
-        : this.mealDraftLines[target.index]?.productId;
-
-    return productId === null || productId === undefined ? [] : [String(productId)];
+    return resolveProductPickerSelectedIds(
+      this.productPickerTarget,
+      this.dishDraftLines,
+      this.mealDraftLines,
+    );
   }
 
   get sortedProducts(): Product[] {
-    return [...this.products].sort((left, right) =>
-      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
-    );
+    return sortMealPrepProducts(this.products);
   }
 
   get sortedDishes(): PreparedDish[] {
-    return [...this.dishes].sort((left, right) =>
-      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
-    );
+    return sortMealPrepDishes(this.dishes);
   }
 
   get sortedMeals(): PreparedMeal[] {
-    return [...this.meals].sort((left, right) =>
-      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
-    );
+    return sortMealPrepMeals(this.meals);
   }
 
   getDishQtyUnitOptions(line: DishDraftLine): QtyUnitOption[] {
-    return this.buildProductQtyUnitOptions(this.resolveProduct(line.productId));
+    return getDishQtyUnitOptions(line, this.products);
   }
 
   getMealQtyUnitOptions(line: MealDraftLine): QtyUnitOption[] {
-    if (line.itemType === 'product') {
-      return this.buildProductQtyUnitOptions(this.resolveProduct(line.productId));
-    }
-
-    return [{ value: 'unit', label: 'Unite' }];
+    return getMealQtyUnitOptions(line, this.products);
   }
 
   onDishProductChange(line: DishDraftLine, productId: number | null): void {
-    line.productId = productId;
-    line.qtyUnit = this.normalizeQtyUnitSelection(line.qtyUnit, this.getDishQtyUnitOptions(line));
+    Object.assign(line, selectDishLineProduct(line, productId, this.products));
   }
 
-  onMealItemTypeChange(line: MealDraftLine, itemType: 'product' | 'dish'): void {
-    line.itemType = itemType;
-    if (itemType === 'product') {
-      line.dishId = null;
-    } else {
-      line.productId = null;
-    }
-    line.qtyUnit = this.normalizeQtyUnitSelection(line.qtyUnit, this.getMealQtyUnitOptions(line));
+  onMealItemTypeChange(line: MealDraftLine, itemType: MealLineItemType): void {
+    Object.assign(line, selectMealLineItemType(line, itemType, this.products));
   }
 
   onMealProductChange(line: MealDraftLine, productId: number | null): void {
-    line.productId = productId;
-    line.qtyUnit = this.normalizeQtyUnitSelection(line.qtyUnit, this.getMealQtyUnitOptions(line));
+    Object.assign(line, selectMealLineProduct(line, productId, this.products));
   }
 
   onMealDishChange(line: MealDraftLine, dishId: number | null): void {
-    line.dishId = dishId;
-    line.qtyUnit = this.normalizeQtyUnitSelection(line.qtyUnit, this.getMealQtyUnitOptions(line));
+    Object.assign(line, selectMealLineDish(line, dishId, this.products));
   }
 
   openDishProductPicker(index: number): void {
-    if (this.saving) {
-      return;
+    if (!this.saving) {
+      this.productPickerTargetState.set({ kind: 'dish', index });
     }
-
-    this.productPickerTargetState.set({ kind: 'dish', index });
   }
 
   openMealProductPicker(index: number): void {
-    if (this.saving) {
-      return;
+    if (!this.saving) {
+      this.productPickerTargetState.set({ kind: 'meal', index });
     }
-
-    this.productPickerTargetState.set({ kind: 'meal', index });
   }
 
   closeProductPicker(): void {
@@ -265,12 +236,9 @@ export class MealPrepFeature implements OnInit {
 
   onProductPicked(item: ProductListItem): void {
     const productId = Number(item.id);
-    if (!Number.isInteger(productId)) {
-      return;
-    }
-
     const target = this.productPickerTarget;
-    if (target === null) {
+
+    if (!Number.isInteger(productId) || target === null) {
       return;
     }
 
@@ -282,8 +250,6 @@ export class MealPrepFeature implements OnInit {
     } else {
       const line = this.mealDraftLines[target.index];
       if (line) {
-        line.itemType = 'product';
-        line.dishId = null;
         this.onMealProductChange(line, productId);
       }
     }
@@ -295,11 +261,6 @@ export class MealPrepFeature implements OnInit {
     if (this.isProductPickerOpen) {
       this.closeProductPicker();
     }
-  }
-
-  onBaseUrlChange(): void {
-    this.syncBaseUrls();
-    this.loadScreen();
   }
 
   onViewChange(view: MealPrepView): void {
@@ -316,24 +277,8 @@ export class MealPrepFeature implements OnInit {
       meals: this.mealPrepSrv.findAllMeals(),
       products: this.productSrv.findAll(),
     }).subscribe({
-      next: ({ dishes, meals, products }) => {
-        this.dishesState.set(dishes);
-        this.mealsState.set(meals);
-        this.productsState.set(products);
-        this.selectedDishIdState.set(this.resolveNextSelectionId(dishes, this.selectedDishIdState()));
-        this.selectedMealIdState.set(this.resolveNextSelectionId(meals, this.selectedMealIdState()));
-        if (this.selectedDish) {
-          this.populateDishDraft(this.selectedDish);
-        }
-        if (this.selectedMeal) {
-          this.populateMealDraft(this.selectedMeal);
-        }
-        this.loadingState.set(false);
-      },
-      error: (error) => {
-        this.lastErrorState.set(error);
-        this.loadingState.set(false);
-      },
+      next: ({ dishes, meals, products }) => this.handleScreenLoaded(dishes, meals, products),
+      error: (error) => this.finishWithError(error, this.loadingState),
     });
   }
 
@@ -356,57 +301,37 @@ export class MealPrepFeature implements OnInit {
   }
 
   startNewDish(): void {
-    this.editingDishId = null;
-    this.dishDraftName = '';
-    this.dishDraftLines = [this.createEmptyDishLine()];
+    this.applyDishDraft(createNewDishDraft(this.products));
     this.shoppingListFeedbackState.set(null);
   }
 
   startNewMeal(): void {
-    this.editingMealId = null;
-    this.mealDraftName = '';
-    this.mealDraftLines = [this.createEmptyMealLine()];
+    this.applyMealDraft(createNewMealDraft(this.products));
     this.shoppingListFeedbackState.set(null);
   }
 
   addDishLine(): void {
-    this.dishDraftLines = [...this.dishDraftLines, this.createEmptyDishLine()];
+    this.dishDraftLines = [...this.dishDraftLines, createEmptyDishLine(this.products)];
   }
 
   removeDishLine(index: number): void {
-    this.dishDraftLines =
-      this.dishDraftLines.length === 1
-        ? [this.createEmptyDishLine()]
-        : this.dishDraftLines.filter((_, lineIndex) => lineIndex !== index);
+    this.dishDraftLines = removeDishDraftLine(this.dishDraftLines, index, this.products);
   }
 
   addMealLine(): void {
-    this.mealDraftLines = [...this.mealDraftLines, this.createEmptyMealLine()];
+    this.mealDraftLines = [...this.mealDraftLines, createEmptyMealLine(this.products)];
   }
 
   removeMealLine(index: number): void {
-    this.mealDraftLines =
-      this.mealDraftLines.length === 1
-        ? [this.createEmptyMealLine()]
-        : this.mealDraftLines.filter((_, lineIndex) => lineIndex !== index);
+    this.mealDraftLines = removeMealDraftLine(this.mealDraftLines, index, this.products);
   }
 
   canSaveDish(): boolean {
-    return (
-      this.dishDraftName.trim() !== '' &&
-      this.dishDraftLines.some((line) => line.productId !== null && line.qty > 0)
-    );
+    return canSaveDishDraft(this.dishDraftName, this.dishDraftLines);
   }
 
   canSaveMeal(): boolean {
-    return (
-      this.mealDraftName.trim() !== '' &&
-      this.mealDraftLines.some((line) =>
-        line.qty > 0 &&
-        ((line.itemType === 'product' && line.productId !== null) ||
-          (line.itemType === 'dish' && line.dishId !== null)),
-      )
-    );
+    return canSaveMealDraft(this.mealDraftName, this.mealDraftLines);
   }
 
   saveDish(): void {
@@ -414,33 +339,20 @@ export class MealPrepFeature implements OnInit {
       return;
     }
 
-    const payload: CreatePreparedDishDto = {
-      name: this.dishDraftName.trim(),
-      items: this.dishDraftLines
-        .filter((line) => line.productId !== null && line.qty > 0)
-        .map((line) => ({
-          productId: line.productId!,
-          qty: line.qty,
-          qtyUnit: line.qtyUnit,
-        })),
-    };
+    const payload = toCreatePreparedDishDto(this.dishDraftName, this.dishDraftLines);
+    const request$ =
+      this.editingDishId === null
+        ? this.mealPrepSrv.createDish(payload)
+        : this.mealPrepSrv.updateDish(this.editingDishId, payload);
 
     this.savingState.set(true);
-    const request$ = this.editingDishId === null
-      ? this.mealPrepSrv.createDish(payload)
-      : this.mealPrepSrv.updateDish(this.editingDishId, payload);
-
     request$.subscribe({
       next: (dish) => {
-        const nextDishes = this.upsertById(this.dishes, dish);
-        this.dishesState.set(nextDishes);
+        this.dishesState.set(upsertById(this.dishes, dish));
         this.selectDish(dish.id);
         this.savingState.set(false);
       },
-      error: (error) => {
-        this.lastErrorState.set(error);
-        this.savingState.set(false);
-      },
+      error: (error) => this.finishWithError(error, this.savingState),
     });
   }
 
@@ -449,302 +361,170 @@ export class MealPrepFeature implements OnInit {
       return;
     }
 
-    const payload: CreatePreparedMealDto = {
-      name: this.mealDraftName.trim(),
-      items: this.mealDraftLines
-        .filter((line) =>
-          line.qty > 0 &&
-          ((line.itemType === 'product' && line.productId !== null) ||
-            (line.itemType === 'dish' && line.dishId !== null)),
-        )
-        .map((line) => ({
-          itemType: line.itemType,
-          productId: line.itemType === 'product' ? line.productId : null,
-          dishId: line.itemType === 'dish' ? line.dishId : null,
-          qty: line.qty,
-          qtyUnit: line.qtyUnit,
-        })),
-    };
+    const payload = toCreatePreparedMealDto(this.mealDraftName, this.mealDraftLines);
+    const request$ =
+      this.editingMealId === null
+        ? this.mealPrepSrv.createMeal(payload)
+        : this.mealPrepSrv.updateMeal(this.editingMealId, payload);
 
     this.savingState.set(true);
-    const request$ = this.editingMealId === null
-      ? this.mealPrepSrv.createMeal(payload)
-      : this.mealPrepSrv.updateMeal(this.editingMealId, payload);
-
     request$.subscribe({
       next: (meal) => {
-        const nextMeals = this.upsertById(this.meals, meal);
-        this.mealsState.set(nextMeals);
+        this.mealsState.set(upsertById(this.meals, meal));
         this.selectMeal(meal.id);
         this.savingState.set(false);
       },
-      error: (error) => {
-        this.lastErrorState.set(error);
-        this.savingState.set(false);
-      },
+      error: (error) => this.finishWithError(error, this.savingState),
     });
   }
 
   deleteSelectedDish(): void {
-    if (this.selectedDish === null || this.saving) {
+    const dish = this.selectedDish;
+    if (dish === null || this.saving) {
       return;
     }
 
     this.savingState.set(true);
-    this.mealPrepSrv.removeDish(this.selectedDish.id).subscribe({
-      next: () => {
-        const nextDishes = this.dishes.filter((dish) => dish.id !== this.selectedDish!.id);
-        this.dishesState.set(nextDishes);
-        this.selectedDishIdState.set(nextDishes[0]?.id ?? null);
-        if (nextDishes[0]) {
-          this.populateDishDraft(nextDishes[0]);
-        } else {
-          this.startNewDish();
-        }
-        this.savingState.set(false);
-      },
-      error: (error) => {
-        this.lastErrorState.set(error);
-        this.savingState.set(false);
-      },
+    this.mealPrepSrv.removeDish(dish.id).subscribe({
+      next: () => this.handleDishDeleted(dish.id),
+      error: (error) => this.finishWithError(error, this.savingState),
     });
   }
 
   deleteSelectedMeal(): void {
-    if (this.selectedMeal === null || this.saving) {
+    const meal = this.selectedMeal;
+    if (meal === null || this.saving) {
       return;
     }
 
     this.savingState.set(true);
-    this.mealPrepSrv.removeMeal(this.selectedMeal.id).subscribe({
-      next: () => {
-        const nextMeals = this.meals.filter((meal) => meal.id !== this.selectedMeal!.id);
-        this.mealsState.set(nextMeals);
-        this.selectedMealIdState.set(nextMeals[0]?.id ?? null);
-        if (nextMeals[0]) {
-          this.populateMealDraft(nextMeals[0]);
-        } else {
-          this.startNewMeal();
-        }
-        this.savingState.set(false);
-      },
-      error: (error) => {
-        this.lastErrorState.set(error);
-        this.savingState.set(false);
-      },
+    this.mealPrepSrv.removeMeal(meal.id).subscribe({
+      next: () => this.handleMealDeleted(meal.id),
+      error: (error) => this.finishWithError(error, this.savingState),
     });
   }
 
   createShoppingListFromSelectedDish(): void {
-    if (this.selectedDish === null || this.saving) {
+    const dish = this.selectedDish;
+    if (dish === null || this.saving) {
       return;
     }
 
     this.savingState.set(true);
     this.shoppingListFeedbackState.set(null);
     this.mealPrepSrv
-      .createShoppingListFromDish(this.selectedDish.id, {
-        name: `${this.selectedDish.name} - achats`,
-      })
+      .createShoppingListFromDish(dish.id, { name: `${dish.name} - achats` })
       .subscribe({
         next: (list) => {
           this.shoppingListFeedbackState.set(`Liste creee: ${list.name}`);
           this.savingState.set(false);
         },
-        error: (error) => {
-          this.lastErrorState.set(error);
-          this.savingState.set(false);
-        },
+        error: (error) => this.finishWithError(error, this.savingState),
       });
   }
 
   createShoppingListFromSelectedMeal(): void {
-    if (this.selectedMeal === null || this.saving) {
+    const meal = this.selectedMeal;
+    if (meal === null || this.saving) {
       return;
     }
 
     this.savingState.set(true);
     this.shoppingListFeedbackState.set(null);
     this.mealPrepSrv
-      .createShoppingListFromMeal(this.selectedMeal.id, {
-        name: `${this.selectedMeal.name} - achats`,
-      })
+      .createShoppingListFromMeal(meal.id, { name: `${meal.name} - achats` })
       .subscribe({
         next: (list) => {
           this.shoppingListFeedbackState.set(`Liste creee: ${list.name}`);
           this.savingState.set(false);
         },
-        error: (error) => {
-          this.lastErrorState.set(error);
-          this.savingState.set(false);
-        },
+        error: (error) => this.finishWithError(error, this.savingState),
       });
   }
 
   resolveLineLabel(line: PreparedMealItem): string {
-    if (line.itemType === 'dish') {
-      return line.dish?.name ?? `Plat #${line.dishId ?? '-'}`;
-    }
-
-    return line.product?.name ?? `Produit #${line.productId ?? '-'}`;
+    return resolveMealLineLabel(line);
   }
 
   resolveTypeLabel(type: MealPrepEntryType): string {
-    if (type === 'dish') {
-      return 'Plat';
-    }
-    if (type === 'meal') {
-      return 'Repas';
-    }
-    return 'Produit';
+    return resolveMealPrepTypeLabel(type);
   }
 
   resolveAvailabilityLabel(maxPreparations: number | null | undefined): string {
-    if (typeof maxPreparations !== 'number' || Number.isNaN(maxPreparations)) {
-      return '-';
-    }
-
-    return `${maxPreparations}`;
+    return resolveMealPrepAvailabilityLabel(maxPreparations);
   }
 
   resolveProductName(productId: number | null): string {
-    return this.resolveProduct(productId)?.name ?? 'Aucun produit selectionne';
+    return resolveMealPrepProductName(productId, this.products);
+  }
+
+  private handleScreenLoaded(
+    dishes: PreparedDish[],
+    meals: PreparedMeal[],
+    products: Product[],
+  ): void {
+    this.dishesState.set(dishes);
+    this.mealsState.set(meals);
+    this.productsState.set(products);
+    this.selectedDishIdState.set(resolveNextSelectionId(dishes, this.selectedDishIdState()));
+    this.selectedMealIdState.set(resolveNextSelectionId(meals, this.selectedMealIdState()));
+
+    if (this.selectedDish) {
+      this.populateDishDraft(this.selectedDish);
+    }
+    if (this.selectedMeal) {
+      this.populateMealDraft(this.selectedMeal);
+    }
+
+    this.loadingState.set(false);
+  }
+
+  private handleDishDeleted(dishId: number): void {
+    const nextDishes = this.dishes.filter((dish) => dish.id !== dishId);
+    this.dishesState.set(nextDishes);
+    this.selectedDishIdState.set(nextDishes[0]?.id ?? null);
+    nextDishes[0] ? this.populateDishDraft(nextDishes[0]) : this.startNewDish();
+    this.savingState.set(false);
+  }
+
+  private handleMealDeleted(mealId: number): void {
+    const nextMeals = this.meals.filter((meal) => meal.id !== mealId);
+    this.mealsState.set(nextMeals);
+    this.selectedMealIdState.set(nextMeals[0]?.id ?? null);
+    nextMeals[0] ? this.populateMealDraft(nextMeals[0]) : this.startNewMeal();
+    this.savingState.set(false);
   }
 
   private populateDishDraft(dish: PreparedDish): void {
-    this.editingDishId = dish.id;
-    this.dishDraftName = dish.name;
-    this.dishDraftLines =
-      dish.items.length > 0
-        ? dish.items.map((item) => ({
-            productId: item.productId,
-            qty: item.qty,
-            qtyUnit: this.normalizeQtyUnitSelection(
-              item.qtyUnit ?? null,
-              this.buildProductQtyUnitOptions(this.resolveProduct(item.productId)),
-            ),
-          }))
-        : [this.createEmptyDishLine()];
+    this.applyDishDraft(toDishDraftForm(dish, this.products));
   }
 
   private populateMealDraft(meal: PreparedMeal): void {
-    this.editingMealId = meal.id;
-    this.mealDraftName = meal.name;
-    this.mealDraftLines =
-      meal.items.length > 0
-        ? meal.items.map((item) => {
-            const line: MealDraftLine = {
-              itemType: item.itemType,
-              productId: item.productId ?? null,
-              dishId: item.dishId ?? null,
-              qty: item.qty,
-              qtyUnit: item.qtyUnit ?? null,
-            };
-
-            return {
-              ...line,
-              qtyUnit: this.normalizeQtyUnitSelection(line.qtyUnit, this.getMealQtyUnitOptions(line)),
-            };
-          })
-        : [this.createEmptyMealLine()];
+    this.applyMealDraft(toMealDraftForm(meal, this.products));
   }
 
-  private createEmptyDishLine(): DishDraftLine {
-    const line: DishDraftLine = {
-      productId: null,
-      qty: 1,
-      qtyUnit: null,
-    };
-
-    return {
-      ...line,
-      qtyUnit: this.normalizeQtyUnitSelection(line.qtyUnit, this.getDishQtyUnitOptions(line)),
-    };
+  private applyDishDraft(draft: {
+    editingDishId: number | null;
+    dishDraftName: string;
+    dishDraftLines: DishDraftLine[];
+  }): void {
+    this.editingDishId = draft.editingDishId;
+    this.dishDraftName = draft.dishDraftName;
+    this.dishDraftLines = draft.dishDraftLines;
   }
 
-  private createEmptyMealLine(): MealDraftLine {
-    const line: MealDraftLine = {
-      itemType: 'dish',
-      productId: null,
-      dishId: null,
-      qty: 1,
-      qtyUnit: null,
-    };
-
-    return {
-      ...line,
-      qtyUnit: this.normalizeQtyUnitSelection(line.qtyUnit, this.getMealQtyUnitOptions(line)),
-    };
+  private applyMealDraft(draft: {
+    editingMealId: number | null;
+    mealDraftName: string;
+    mealDraftLines: MealDraftLine[];
+  }): void {
+    this.editingMealId = draft.editingMealId;
+    this.mealDraftName = draft.mealDraftName;
+    this.mealDraftLines = draft.mealDraftLines;
   }
 
-  private resolveProduct(productId: number | null): Product | null {
-    if (productId === null) {
-      return null;
-    }
-
-    return this.sortedProducts.find((product) => product.id === productId) ?? null;
-  }
-
-  private buildProductQtyUnitOptions(product: Product | null): QtyUnitOption[] {
-    const options: QtyUnitOption[] = [
-      {
-        value: 'unit',
-        label: product ? `Unite produit (${product.unitType})` : 'Unite produit',
-      },
-    ];
-
-    if (product?.portionUnit) {
-      options.push({
-        value: product.portionUnit,
-        label: this.toTitleCase(product.portionUnit),
-      });
-    }
-
-    options.push({ value: 'g', label: 'G (Gramme)' });
-
-    return options;
-  }
-
-  private normalizeQtyUnitSelection(
-    qtyUnit: ProductQuantityInputUnit | null,
-    options: QtyUnitOption[],
-  ): ProductQuantityInputUnit {
-    const normalizedQtyUnit = this.normalizePortionQtyUnit(qtyUnit);
-    if (normalizedQtyUnit && options.some((option) => option.value === normalizedQtyUnit)) {
-      return normalizedQtyUnit;
-    }
-
-    return options[0]?.value ?? 'unit';
-  }
-
-  private normalizePortionQtyUnit(
-    qtyUnit: ProductQuantityInputUnit | PortionUnit | null | undefined,
-  ): ProductQuantityInputUnit | null {
-    return qtyUnit ?? null;
-  }
-
-  private toTitleCase(value: string): string {
-    return value.charAt(0).toUpperCase() + value.slice(1);
-  }
-
-  private syncBaseUrls(): void {
-    this.mealPrepSrv.setBaseUrl(this.baseUrl);
-    this.productSrv.setBaseUrl(this.baseUrl);
-  }
-
-  private resolveNextSelectionId<T extends { id: number }>(
-    entries: T[],
-    currentId: number | null,
-  ): number | null {
-    if (currentId !== null && entries.some((entry) => entry.id === currentId)) {
-      return currentId;
-    }
-
-    return entries[0]?.id ?? null;
-  }
-
-  private upsertById<T extends { id: number }>(entries: T[], nextEntry: T): T[] {
-    const withoutCurrent = entries.filter((entry) => entry.id !== nextEntry.id);
-    return [...withoutCurrent, nextEntry].sort((left, right) => left.id - right.id);
+  private finishWithError(error: unknown, state: { set(value: boolean): void }): void {
+    this.lastErrorState.set(error);
+    state.set(false);
   }
 }
