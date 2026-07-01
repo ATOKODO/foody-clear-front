@@ -207,8 +207,8 @@ export class ShoppingList implements OnInit {
   }
 
   createList(): void {
-    const name = this.draftListName.trim();
-    if (!name || this.saving) {
+    const name = this.draftListName.trim() || this.buildDefaultListName();
+    if (this.saving) {
       return;
     }
     this.savingState.set(true);
@@ -631,6 +631,10 @@ export class ShoppingList implements OnInit {
     this.shoppingListSrv.setBaseUrl(this.baseUrl);
     this.productSrv.setBaseUrl(this.baseUrl);
     this.inventorySrv.setBaseUrl(this.baseUrl);
+  }
+
+  private buildDefaultListName(): string {
+    return `Liste de course ${this.shoppingLists.length + 1}`;
   }
 
   private upsertShoppingList(shoppingList: ShoppingListModel, select = false): void {

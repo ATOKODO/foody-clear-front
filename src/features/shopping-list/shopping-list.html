@@ -33,6 +33,16 @@
           [disabled]="loading || saving">
           Rafraichir
         </button>
+        @if (activeView === 'list') {
+          <button
+            mat-stroked-button
+            type="button"
+            class="shopping-list-action shopping-list-action--primary"
+            (click)="createList()"
+            [disabled]="saving">
+            Ajouter
+          </button>
+        }
       </div>
     </div>
 
@@ -64,23 +74,8 @@
             <div class="shopping-list-section-header">
               <div>
                 <h3>Listes</h3>
-                <p>Selectionne ou cree une liste active.</p>
+                <p>Selectionne une liste active et gere ses lignes.</p>
               </div>
-            </div>
-
-            <div class="shopping-list-create-row">
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Nouvelle liste</mat-label>
-                <input matInput [(ngModel)]="draftListName" placeholder="Courses semaine" />
-              </mat-form-field>
-              <button
-                mat-stroked-button
-                type="button"
-                class="shopping-list-action shopping-list-action--primary"
-                (click)="createList()"
-                [disabled]="saving || !draftListName.trim()">
-                Ajouter
-              </button>
             </div>
 
             <div class="shopping-list-stack">
