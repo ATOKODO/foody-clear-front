@@ -13,6 +13,11 @@ import {
   SegmentedToggleOption,
 } from '../../app/ui/segmented-toggle/segmented-toggle';
 import {
+  ProductList,
+  ProductListItem,
+} from '../../components/product/product-list/product-list';
+import { mapProductToProductListItem } from '../../components/product/product-list/product-list-item.mapper';
+import {
   CreatePreparedDishDto,
   CreatePreparedMealDto,
   MealPrepEntryType,
@@ -25,6 +30,9 @@ import { PortionUnit, Product, ProductService } from '../../services/product-ser
 import { MealPrepService } from '../../services/meal-prep-service';
 
 type MealPrepView = 'dish' | 'meal';
+type ProductPickerTarget =
+  | { kind: 'dish'; index: number }
+  | { kind: 'meal'; index: number };
 
 interface DishDraftLine {
   productId: number | null;
@@ -63,9 +71,13 @@ const VIEW_OPTIONS: readonly SegmentedToggleOption<MealPrepView>[] = [
     MatSelectModule,
     SegmentedToggle,
     UiErrorPanel,
+    ProductList,
   ],
   templateUrl: './meal-prep.feature.html',
   styleUrl: './meal-prep.feature.scss',
+  host: {
+    '(document:keydown.escape)': 'onEscapeKey()',
+  },
 })
 export class MealPrepFeature implements OnInit {
   private readonly mealPrepSrv = inject(MealPrepService);
@@ -86,12 +98,16 @@ export class MealPrepFeature implements OnInit {
   private readonly dishesState = signal<PreparedDish[]>([]);
   private readonly mealsState = signal<PreparedMeal[]>([]);
   private readonly productsState = signal<Product[]>([]);
+  private readonly productListItemsState = computed<ProductListItem[]>(() =>
+    this.productsState().map((product) => mapProductToProductListItem(product)),
+  );
   private readonly selectedDishIdState = signal<number | null>(null);
   private readonly selectedMealIdState = signal<number | null>(null);
   private readonly loadingState = signal(false);
   private readonly savingState = signal(false);
   private readonly lastErrorState = signal<unknown>(null);
   private readonly shoppingListFeedbackState = signal<string | null>(null);
+  private readonly productPickerTargetState = signal<ProductPickerTarget | null>(null);
 
   readonly selectedDishState = computed(
     () =>
@@ -122,6 +138,10 @@ export class MealPrepFeature implements OnInit {
     return this.productsState();
   }
 
+  get productListItems(): ProductListItem[] {
+    return this.productListItemsState();
+  }
+
   get selectedDish(): PreparedDish | null {
     return this.selectedDishState();
   }
@@ -144,6 +164,28 @@ export class MealPrepFeature implements OnInit {
 
   get shoppingListFeedback(): string | null {
     return this.shoppingListFeedbackState();
+  }
+
+  get productPickerTarget(): ProductPickerTarget | null {
+    return this.productPickerTargetState();
+  }
+
+  get isProductPickerOpen(): boolean {
+    return this.productPickerTarget !== null;
+  }
+
+  get productPickerSelectedIds(): string[] {
+    const target = this.productPickerTarget;
+    if (target === null) {
+      return [];
+    }
+
+    const productId =
+      target.kind === 'dish'
+        ? this.dishDraftLines[target.index]?.productId
+        : this.mealDraftLines[target.index]?.productId;
+
+    return productId === null || productId === undefined ? [] : [String(productId)];
   }
 
   get sortedProducts(): Product[] {
@@ -199,6 +241,60 @@ export class MealPrepFeature implements OnInit {
   onMealDishChange(line: MealDraftLine, dishId: number | null): void {
     line.dishId = dishId;
     line.qtyUnit = this.normalizeQtyUnitSelection(line.qtyUnit, this.getMealQtyUnitOptions(line));
+  }
+
+  openDishProductPicker(index: number): void {
+    if (this.saving) {
+      return;
+    }
+
+    this.productPickerTargetState.set({ kind: 'dish', index });
+  }
+
+  openMealProductPicker(index: number): void {
+    if (this.saving) {
+      return;
+    }
+
+    this.productPickerTargetState.set({ kind: 'meal', index });
+  }
+
+  closeProductPicker(): void {
+    this.productPickerTargetState.set(null);
+  }
+
+  onProductPicked(item: ProductListItem): void {
+    const productId = Number(item.id);
+    if (!Number.isInteger(productId)) {
+      return;
+    }
+
+    const target = this.productPickerTarget;
+    if (target === null) {
+      return;
+    }
+
+    if (target.kind === 'dish') {
+      const line = this.dishDraftLines[target.index];
+      if (line) {
+        this.onDishProductChange(line, productId);
+      }
+    } else {
+      const line = this.mealDraftLines[target.index];
+      if (line) {
+        line.itemType = 'product';
+        line.dishId = null;
+        this.onMealProductChange(line, productId);
+      }
+    }
+
+    this.closeProductPicker();
+  }
+
+  onEscapeKey(): void {
+    if (this.isProductPickerOpen) {
+      this.closeProductPicker();
+    }
   }
 
   onBaseUrlChange(): void {
@@ -509,6 +605,10 @@ export class MealPrepFeature implements OnInit {
     }
 
     return `${maxPreparations}`;
+  }
+
+  resolveProductName(productId: number | null): string {
+    return this.resolveProduct(productId)?.name ?? 'Aucun produit selectionne';
   }
 
   private populateDishDraft(dish: PreparedDish): void {

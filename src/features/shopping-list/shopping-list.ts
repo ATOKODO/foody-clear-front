@@ -9,6 +9,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { forkJoin } from 'rxjs';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import { SegmentedToggle, SegmentedToggleOption } from '../../app/ui/segmented-toggle/segmented-toggle';
+import { ProductList, ProductListItem } from '../../components/product/product-list/product-list';
+import { mapProductToProductListItem } from '../../components/product/product-list/product-list-item.mapper';
 import { Inventory, InventoryLinkedProduct, ProductQuantityInputUnit } from '../../interfaces/inventory.interface';
 import {
   ShoppingList as ShoppingListModel,
@@ -18,6 +21,13 @@ import {
 import { InventoryService } from '../../services/inventory-service';
 import { Product, ProductService } from '../../services/product-service';
 import { ShoppingListService } from '../../services/shopping-list-service';
+
+type ShoppingListView = 'list' | 'template';
+
+const SHOPPING_LIST_VIEW_OPTIONS: readonly SegmentedToggleOption<ShoppingListView>[] = [
+  { value: 'list', label: 'Liste de course' },
+  { value: 'template', label: 'Modele de course' },
+];
 
 @Component({
   selector: 'app-shopping-list',
@@ -31,10 +41,15 @@ import { ShoppingListService } from '../../services/shopping-list-service';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    ProductList,
+    SegmentedToggle,
     UiErrorPanel,
   ],
   templateUrl: './shopping-list.html',
   styleUrl: './shopping-list.scss',
+  host: {
+    '(document:keydown.escape)': 'onEscapeKey()',
+  },
 })
 export class ShoppingList implements OnInit {
   private readonly shoppingListSrv = inject(ShoppingListService);
@@ -49,6 +64,8 @@ export class ShoppingList implements OnInit {
   templateDraftName = '';
   templateCreateListName = '';
   selectedInventoryId: number | null = null;
+  activeView: ShoppingListView = 'list';
+  readonly viewOptions = SHOPPING_LIST_VIEW_OPTIONS;
 
   private readonly shoppingListsState = signal<ShoppingListModel[]>([]);
   private readonly templatesState = signal<ShoppingListTemplate[]>([]);
@@ -59,6 +76,7 @@ export class ShoppingList implements OnInit {
   private readonly loadingState = signal(false);
   private readonly savingState = signal(false);
   private readonly lastErrorState = signal<unknown>(null);
+  private readonly productPickerOpenState = signal(false);
 
   readonly selectedListState = computed<ShoppingListModel | null>(() => {
     const selectedId = this.selectedListIdState();
@@ -69,6 +87,10 @@ export class ShoppingList implements OnInit {
     const selectedId = this.selectedTemplateIdState();
     return this.templatesState().find((item) => item.id === selectedId) ?? null;
   });
+
+  readonly productListItemsState = computed<ProductListItem[]>(() =>
+    this.productsState().map((product) => mapProductToProductListItem(product)),
+  );
 
   ngOnInit(): void {
     this.baseUrl = this.shoppingListSrv.baseUrl;
@@ -86,6 +108,10 @@ export class ShoppingList implements OnInit {
 
   get products(): Product[] {
     return this.productsState();
+  }
+
+  get productListItems(): ProductListItem[] {
+    return this.productListItemsState();
   }
 
   get inventories(): Inventory[] {
@@ -112,12 +138,60 @@ export class ShoppingList implements OnInit {
     return this.lastErrorState();
   }
 
+  get isProductPickerOpen(): boolean {
+    return this.productPickerOpenState();
+  }
+
+  get productPickerSelectedIds(): string[] {
+    return this.draftItemProductId == null ? [] : [String(this.draftItemProductId)];
+  }
+
   get checkedItemCount(): number {
     return this.countChecked(this.selectedList);
   }
 
   countChecked(list: ShoppingListModel | null): number {
     return list?.items.filter((item) => item.checked).length ?? 0;
+  }
+
+  onActiveViewChange(view: ShoppingListView): void {
+    this.activeView = view;
+  }
+
+  openProductPicker(): void {
+    if (this.loading || this.saving) {
+      return;
+    }
+
+    this.productPickerOpenState.set(true);
+  }
+
+  closeProductPicker(): void {
+    this.productPickerOpenState.set(false);
+  }
+
+  onProductPicked(product: ProductListItem): void {
+    const productId = Number(product.id);
+    if (!Number.isInteger(productId)) {
+      return;
+    }
+
+    this.onDraftProductChange(productId);
+    this.closeProductPicker();
+  }
+
+  onEscapeKey(): void {
+    if (this.isProductPickerOpen) {
+      this.closeProductPicker();
+    }
+  }
+
+  resolveDraftProductName(): string {
+    if (this.draftItemProductId == null) {
+      return 'Aucun produit selectionne';
+    }
+
+    return this.products.find((item) => item.id === this.draftItemProductId)?.name ?? `Produit #${this.draftItemProductId}`;
   }
 
   selectList(id: number): void {
