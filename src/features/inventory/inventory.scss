@@ -28,9 +28,9 @@
   width: min(100%, 72rem);
   margin: 0 auto;
   overflow: hidden;
-  border: 1px solid rgb(217 223 189 / 0.92);
+  border: 1px solid rgb(226 232 240 / 0.92);
   border-radius: 0.75rem;
-  background: rgb(248 255 235 / 0.92);
+  background: rgb(255 255 255 / 0.94);
 }
 
 .inventory-panel__header {
@@ -39,7 +39,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 0.875rem 0.75rem 1.5rem;
-  border-bottom: 1px solid rgb(217 223 189 / 0.92);
+  border-bottom: 1px solid rgb(226 232 240 / 0.92);
   background: rgb(246 249 252 / 0.92);
 }
 
@@ -133,12 +133,12 @@
 
 :host-context(.dark) .inventory-panel {
   border-color: var(--app-border);
-  background: rgb(24 33 24 / 0.88);
+  background: var(--app-surface);
 }
 
 :host-context(.dark) .inventory-panel__header {
   border-bottom-color: var(--app-border);
-  background: rgb(24 35 54 / 0.94);
+  background: var(--app-form-field-bg);
 }
 
 :host-context(.dark) .inventory-panel__title {

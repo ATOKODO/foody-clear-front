@@ -16,9 +16,9 @@
   width: min(100%, 82rem);
   margin: 0 auto;
   overflow: hidden;
-  border: 1px solid rgb(217 223 189 / 0.92);
+  border: 1px solid rgb(226 232 240 / 0.92);
   border-radius: 0.75rem;
-  background: rgb(248 255 235 / 0.92);
+  background: rgb(255 255 255 / 0.94);
 }
 
 .meal-prep-panel__header {
@@ -27,7 +27,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgb(217 223 189 / 0.92);
+  border-bottom: 1px solid rgb(226 232 240 / 0.92);
   background: rgb(246 249 252 / 0.94);
 }
 
@@ -361,12 +361,12 @@
 :host-context(.dark) .meal-prep-detail-card,
 :host-context(.dark) .meal-prep-list-card {
   border-color: var(--app-border);
-  background: rgb(24 33 24 / 0.88);
+  background: var(--app-surface);
 }
 
 :host-context(.dark) .meal-prep-panel__header {
   border-bottom-color: var(--app-border);
-  background: rgb(24 35 54 / 0.94);
+  background: var(--app-form-field-bg);
 }
 
 :host-context(.dark) .meal-prep-panel__title,
@@ -391,7 +391,7 @@
 
 :host-context(.dark) .meal-prep-line-card {
   border-color: var(--app-border);
-  background: rgb(15 23 42 / 0.5);
+  background: var(--app-form-field-bg);
 }
 
 :host-context(.dark) .meal-prep-action--secondary {

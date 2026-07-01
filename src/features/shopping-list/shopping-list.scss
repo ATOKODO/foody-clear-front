@@ -15,9 +15,9 @@
   width: min(100%, 82rem);
   margin: 0 auto;
   overflow: hidden;
-  border: 1px solid rgb(217 223 189 / 0.92);
+  border: 1px solid rgb(226 232 240 / 0.92);
   border-radius: 0.75rem;
-  background: rgb(248 255 235 / 0.92);
+  background: rgb(255 255 255 / 0.94);
 }
 
 .shopping-list-panel__header {
@@ -26,7 +26,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgb(217 223 189 / 0.92);
+  border-bottom: 1px solid rgb(226 232 240 / 0.92);
   background: rgb(246 249 252 / 0.94);
 }
 
@@ -389,16 +389,16 @@
   width: min(100%, 68rem);
   max-height: min(86vh, 52rem);
   overflow: auto;
-  border: 1px solid rgb(217 223 189 / 0.92);
+  border: 1px solid rgb(226 232 240 / 0.92);
   border-radius: 0.75rem;
-  background: rgb(248 255 235);
+  background: rgb(255 255 255 / 0.98);
   pointer-events: auto;
 }
 
 .shopping-list-modal-card__header {
   justify-content: space-between;
   padding: 1rem;
-  border-bottom: 1px solid rgb(217 223 189 / 0.92);
+  border-bottom: 1px solid rgb(226 232 240 / 0.92);
   background: rgb(246 249 252 / 0.94);
 }
 
@@ -473,13 +473,13 @@
 :host-context(.dark) .shopping-list-list-card,
 :host-context(.dark) .shopping-list-modal-card {
   border-color: var(--app-border);
-  background: rgb(24 33 24 / 0.88);
+  background: var(--app-surface);
 }
 
 :host-context(.dark) .shopping-list-panel__header,
 :host-context(.dark) .shopping-list-modal-card__header {
   border-bottom-color: var(--app-border);
-  background: rgb(24 35 54 / 0.94);
+  background: var(--app-form-field-bg);
 }
 
 :host-context(.dark) .shopping-list-panel__title,
@@ -518,7 +518,7 @@
 :host-context(.dark) .shopping-list-template-line,
 :host-context(.dark) .shopping-list-empty--large {
   border-color: var(--app-border);
-  background: rgb(15 23 42 / 0.5);
+  background: var(--app-form-field-bg);
 }
 
 :host-context(.dark) .shopping-list-list-card:hover,
