@@ -30,14 +30,6 @@ import {
   CycleListItem,
   ListCycle,
 } from '../../components/cycle/list-cycle/list-cycle';
-import {
-  buildCycleListItem,
-  deriveCycleDurationPresentation,
-  getCycleMacroTotals,
-  resolveCycleDaySetIds,
-  resolveCycleDaySetTimeline,
-  resolveCycleDurationDays,
-} from '../../components/cycle/list-cycle/cycle-list-item.mapper';
 import { DaySetListItem } from '../../components/day-set/day-set-list/day-set-list';
 import { SlotListItem } from '../../components/slot/slot-list/slot-list';
 import {
@@ -45,7 +37,6 @@ import {
   CycleAssignmentGapMode,
   CycleAssignmentRescheduleScope,
   Cycle,
-  CycleNutritionValue,
   UpdateCycleDto,
 } from '../../interfaces/cycle.interface';
 import { DaySet } from '../../interfaces/day-set.interface';
@@ -59,49 +50,25 @@ import { TemplateService } from '../../services/template-service';
 import { DaySetFeature } from '../day-set/day-set.feature';
 import { SlotFeature } from '../slot/slot.feature';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import { SegmentedToggle } from '../../app/ui/segmented-toggle/segmented-toggle';
 import {
-  getFallbackUnitsForNutritionKey,
-  resolveDefaultNutritionKeys,
-} from '../../components/shared/default-nutrition-values';
-import {
-  SegmentedToggle,
-  SegmentedToggleOption,
-} from '../../app/ui/segmented-toggle/segmented-toggle';
-
-type CycleHubView = 'cycle' | 'daySet' | 'slot';
-type CycleImpactDialogResult = 'submitted' | 'cancelled';
-
-interface CycleHubViewConfig {
-  title: string;
-  addLabel: string;
-}
-
-interface CycleUpdateImpactOptions {
-  assignmentRescheduleScope: CycleAssignmentRescheduleScope;
-  assignmentGapMode: CycleAssignmentGapMode;
-  assignmentEffectiveDateLocal?: string;
-}
-
-const CYCLE_HUB_VIEW_CONFIG: Record<CycleHubView, CycleHubViewConfig> = {
-  cycle: {
-    title: 'Cycles',
-    addLabel: 'Ajouter un cycle',
-  },
-  daySet: {
-    title: 'Targets',
-    addLabel: 'Ajouter un day set',
-  },
-  slot: {
-    title: 'Slots',
-    addLabel: 'Ajouter un slot',
-  },
-};
-
-const CYCLE_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<CycleHubView>[] = [
-  { value: 'cycle', label: 'Cycles' },
-  { value: 'daySet', label: 'Targets' },
-  { value: 'slot', label: 'Slots' },
-];
+  CYCLE_HUB_VIEW_CONFIG,
+  CYCLE_HUB_VIEW_OPTIONS,
+  DEFAULT_CYCLE_MACRO_NUTRITION_KEYS,
+  CycleHubView,
+  CycleHubViewConfig,
+  CycleImpactDialogResult,
+  CycleUpdateImpactOptions,
+  MacroNutritionKeys,
+  buildCycleDaySetListItems,
+  buildCycleHubListItems,
+  buildCycleSlotListItems,
+  buildCycleTemplateListItems,
+  resolveMacroNutritionKeysFromMeta,
+  shouldConfirmCycleImpact,
+  toCreateCycleDto,
+  toCycleFormInitialValue,
+} from './cycle.viewmodel';
 
 @Component({
   selector: 'app-cycle',
@@ -155,37 +122,21 @@ export class CycleFeature implements OnInit {
   private readonly slotsState = signal<Slot[]>([]);
   private readonly templatesState = signal<TemplateSummary[]>([]);
   private readonly cycleListItemsState = computed<CycleListItem[]>(() =>
-    this.cyclesState().map((cycle) =>
-      buildCycleListItem(cycle, {
-        macroNutritionKeys: this.macroNutritionKeys,
-        fallbackDaySets: this.daySetsState(),
-        fallbackSlots: this.slotsState(),
-      }),
+    buildCycleHubListItems(
+      this.cyclesState(),
+      this.macroNutritionKeys,
+      this.daySetsState(),
+      this.slotsState(),
     ),
   );
   private readonly daySetListItemsState = computed<DaySetListItem[]>(() =>
-    this.daySetsState().map((daySet) => ({
-      id: String(daySet.id),
-      title: daySet.title,
-      nutritionValues: daySet.nutritionValues ?? [],
-    })),
+    buildCycleDaySetListItems(this.daySetsState()),
   );
   private readonly slotListItemsState = computed<SlotListItem[]>(() =>
-    this.slotsState().map((slot) => ({
-      id: String(slot.id),
-      key: slot.key,
-      title: slot.title,
-      sortOrder: slot.sortOrder,
-      startTime: slot.startTime ?? null,
-      endTime: slot.endTime ?? null,
-      nutritionValues: slot.nutritionValues ?? [],
-    })),
+    buildCycleSlotListItems(this.slotsState()),
   );
   private readonly templateListItemsState = computed<TemplateSummary[]>(() =>
-    this.templatesState().map((template) => ({
-      id: template.id,
-      title: template.title,
-    })),
+    buildCycleTemplateListItems(this.templatesState()),
   );
 
   selectedCycleId: number | null = null;
@@ -205,11 +156,9 @@ export class CycleFeature implements OnInit {
   readonly viewOptions = CYCLE_HUB_VIEW_OPTIONS;
   private dialogRef: MatDialogRef<unknown> | null = null;
   private impactDialogRef: MatDialogRef<unknown> | null = null;
-  private readonly macroNutritionKeysState = signal({
-    proteins: 'PROTEIN',
-    carbs: 'CARBOHYDRATE',
-    lipids: 'FAT',
-  });
+  private readonly macroNutritionKeysState = signal<MacroNutritionKeys>(
+    DEFAULT_CYCLE_MACRO_NUTRITION_KEYS,
+  );
   private pendingCycleUpdatePayload: CreateCycleDto | null = null;
 
   impactScope: CycleAssignmentRescheduleScope = 'future';
@@ -217,149 +166,42 @@ export class CycleFeature implements OnInit {
 
   ngOnInit(): void {
     this.baseUrl = this.cycleSrv.baseUrl;
-    this.metaSrv.setBaseUrl(this.baseUrl);
-    this.daySetSrv.setBaseUrl(this.baseUrl);
-    this.slotSrv.setBaseUrl(this.baseUrl);
-    this.templateSrv.setBaseUrl(this.baseUrl);
-    this.loadNutritionKeys();
-    this.loadDaySets();
-    this.loadSlots();
-    this.loadTemplates();
-    this.loadCycles();
+    this.syncBaseUrls();
+    this.loadCycleWorkspace();
   }
 
   onBaseUrlChange(): void {
-    this.cycleSrv.setBaseUrl(this.baseUrl);
-    this.metaSrv.setBaseUrl(this.baseUrl);
-    this.daySetSrv.setBaseUrl(this.baseUrl);
-    this.slotSrv.setBaseUrl(this.baseUrl);
-    this.templateSrv.setBaseUrl(this.baseUrl);
-    this.loadNutritionKeys();
-    this.loadDaySets();
-    this.loadSlots();
-    this.loadTemplates();
-    this.loadCycles();
+    this.syncBaseUrls();
+    this.loadCycleWorkspace();
   }
 
-  private get macroNutritionKeys(): {
-    proteins: string;
-    carbs: string;
-    lipids: string;
-  } {
-    return this.macroNutritionKeysState();
-  }
+  private get macroNutritionKeys(): MacroNutritionKeys { return this.macroNutritionKeysState(); }
+  private set macroNutritionKeys(value: MacroNutritionKeys) { this.macroNutritionKeysState.set(value); }
 
-  private set macroNutritionKeys(value: {
-    proteins: string;
-    carbs: string;
-    lipids: string;
-  }) {
-    this.macroNutritionKeysState.set(value);
-  }
+  get loading(): boolean { return this.loadingState(); }
+  get saving(): boolean { return this.savingState(); }
+  get loadingMeta(): boolean { return this.loadingMetaState(); }
+  get loadingDaySets(): boolean { return this.loadingDaySetsState(); }
+  get loadingSlots(): boolean { return this.loadingSlotsState(); }
+  get loadingTemplates(): boolean { return this.loadingTemplatesState(); }
 
-  get loading(): boolean {
-    return this.loadingState();
-  }
+  get cycles(): Cycle[] { return this.cyclesState(); }
+  set cycles(value: Cycle[]) { this.cyclesState.set(value); }
 
-  set loading(value: boolean) {
-    this.loadingState.set(value);
-  }
+  get daySets(): DaySet[] { return this.daySetsState(); }
+  set daySets(value: DaySet[]) { this.daySetsState.set(value); }
 
-  get saving(): boolean {
-    return this.savingState();
-  }
+  get slots(): Slot[] { return this.slotsState(); }
+  set slots(value: Slot[]) { this.slotsState.set(value); }
 
-  set saving(value: boolean) {
-    this.savingState.set(value);
-  }
+  get cycleListItems(): CycleListItem[] { return this.cycleListItemsState(); }
+  get daySetListItems(): DaySetListItem[] { return this.daySetListItemsState(); }
+  get slotListItems(): SlotListItem[] { return this.slotListItemsState(); }
+  get templateListItems(): TemplateSummary[] { return this.templateListItemsState(); }
 
-  get loadingMeta(): boolean {
-    return this.loadingMetaState();
-  }
+  get formDialogTitle(): string { return this.formMode === 'edit' ? 'Modifier un cycle' : 'Ajouter un cycle'; }
 
-  set loadingMeta(value: boolean) {
-    this.loadingMetaState.set(value);
-  }
-
-  get loadingDaySets(): boolean {
-    return this.loadingDaySetsState();
-  }
-
-  set loadingDaySets(value: boolean) {
-    this.loadingDaySetsState.set(value);
-  }
-
-  get loadingSlots(): boolean {
-    return this.loadingSlotsState();
-  }
-
-  set loadingSlots(value: boolean) {
-    this.loadingSlotsState.set(value);
-  }
-
-  get loadingTemplates(): boolean {
-    return this.loadingTemplatesState();
-  }
-
-  set loadingTemplates(value: boolean) {
-    this.loadingTemplatesState.set(value);
-  }
-
-  get cycles(): Cycle[] {
-    return this.cyclesState();
-  }
-
-  set cycles(value: Cycle[]) {
-    this.cyclesState.set(value);
-  }
-
-  get daySets(): DaySet[] {
-    return this.daySetsState();
-  }
-
-  set daySets(value: DaySet[]) {
-    this.daySetsState.set(value);
-  }
-
-  get slots(): Slot[] {
-    return this.slotsState();
-  }
-
-  set slots(value: Slot[]) {
-    this.slotsState.set(value);
-  }
-
-  get templates(): TemplateSummary[] {
-    return this.templatesState();
-  }
-
-  set templates(value: TemplateSummary[]) {
-    this.templatesState.set(value);
-  }
-
-  get cycleListItems(): CycleListItem[] {
-    return this.cycleListItemsState();
-  }
-
-  get daySetListItems(): DaySetListItem[] {
-    return this.daySetListItemsState();
-  }
-
-  get slotListItems(): SlotListItem[] {
-    return this.slotListItemsState();
-  }
-
-  get templateListItems(): TemplateSummary[] {
-    return this.templateListItemsState();
-  }
-
-  get formDialogTitle(): string {
-    return this.formMode === 'edit' ? 'Modifier un cycle' : 'Ajouter un cycle';
-  }
-
-  get activeViewConfig(): CycleHubViewConfig {
-    return CYCLE_HUB_VIEW_CONFIG[this.activeView];
-  }
+  get activeViewConfig(): CycleHubViewConfig { return CYCLE_HUB_VIEW_CONFIG[this.activeView]; }
 
   get activeViewBusy(): boolean {
     const daySetFeature = this.daySetFeature();
@@ -403,11 +245,7 @@ export class CycleFeature implements OnInit {
   }
 
   onRefreshRequested(): void {
-    this.loadNutritionKeys();
-    this.loadDaySets();
-    this.loadSlots();
-    this.loadTemplates();
-    this.loadCycles();
+    this.loadCycleWorkspace();
   }
 
   onRefreshActiveView(): void {
@@ -455,35 +293,23 @@ export class CycleFeature implements OnInit {
       return;
     }
 
-    const durationPresentation = deriveCycleDurationPresentation(
-      resolveCycleDurationDays(cycle),
-    );
-
     this.formMode = 'edit';
     this.editingCycleId = cycle.id;
     this.selectedCycleId = cycle.id;
-    this.formInitialValue = {
-      titre: cycle.title,
-      couleur: cycle.color,
-      nutritionValues: this.getEditableNutritionValues(cycle),
-      nombre: durationPresentation.durationCount,
-      typeDuree: durationPresentation.durationType,
-      durationDays: durationPresentation.durationDays,
-      slotIds: (cycle.slots ?? []).map((slot) => slot.id),
-      defaultTemplateId: cycle.defaultTemplateId ?? null,
-      daySetIds: resolveCycleDaySetIds(cycle),
-      daySetOrder: resolveCycleDaySetTimeline(cycle),
-    };
+    this.formInitialValue = toCycleFormInitialValue(cycle, {
+      macroNutritionKeys: this.macroNutritionKeys,
+      nutritionKeys: this.nutritionKeys,
+    });
     this.openFormDialog();
   }
 
   onDeleteRequested(item: CycleListItem): void {
-    this.saving = true;
+    this.savingState.set(true);
     this.cycleSrv.remove(item.id).subscribe({
       next: () => {
         this.lastResponse = { deleted: true, id: item.id };
         this.lastError = null;
-        this.saving = false;
+        this.savingState.set(false);
 
         if (this.editingCycleId === item.id) {
           this.onCancelForm();
@@ -493,7 +319,7 @@ export class CycleFeature implements OnInit {
       },
       error: (error) => {
         this.lastError = error;
-        this.saving = false;
+        this.savingState.set(false);
       },
     });
   }
@@ -511,18 +337,18 @@ export class CycleFeature implements OnInit {
       return;
     }
 
-    this.saving = true;
+    this.savingState.set(true);
     this.cycleSrv.create(payload).subscribe({
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
-        this.saving = false;
+        this.savingState.set(false);
         this.closeFormDialog('submitted');
         this.loadCycles();
       },
       error: (error) => {
         this.lastError = error;
-        this.saving = false;
+        this.savingState.set(false);
       },
     });
   }
@@ -645,14 +471,30 @@ export class CycleFeature implements OnInit {
     this.impactGapMode = 'preserve';
   }
 
+  private syncBaseUrls(): void {
+    this.cycleSrv.setBaseUrl(this.baseUrl);
+    this.metaSrv.setBaseUrl(this.baseUrl);
+    this.daySetSrv.setBaseUrl(this.baseUrl);
+    this.slotSrv.setBaseUrl(this.baseUrl);
+    this.templateSrv.setBaseUrl(this.baseUrl);
+  }
+
+  private loadCycleWorkspace(): void {
+    this.loadNutritionKeys();
+    this.loadDaySets();
+    this.loadSlots();
+    this.loadTemplates();
+    this.loadCycles();
+  }
+
   private loadCycles(): void {
-    this.loading = true;
+    this.loadingState.set(true);
     this.cycleSrv.findAll().subscribe({
       next: (response) => {
         this.cycles = response;
         this.lastResponse = response;
         this.lastError = null;
-        this.loading = false;
+        this.loadingState.set(false);
 
         if (
           this.selectedCycleId !== null &&
@@ -663,121 +505,74 @@ export class CycleFeature implements OnInit {
       },
       error: (error) => {
         this.lastError = error;
-        this.loading = false;
+        this.loadingState.set(false);
       },
     });
   }
 
   private loadDaySets(): void {
-    this.loadingDaySets = true;
+    this.loadingDaySetsState.set(true);
     this.daySetSrv.findAll().subscribe({
       next: (response) => {
         this.daySets = response;
-        this.loadingDaySets = false;
+        this.loadingDaySetsState.set(false);
       },
       error: () => {
         this.daySets = [];
-        this.loadingDaySets = false;
+        this.loadingDaySetsState.set(false);
       },
     });
   }
 
   private loadSlots(): void {
-    this.loadingSlots = true;
+    this.loadingSlotsState.set(true);
     this.slotSrv.findAll().subscribe({
       next: (response) => {
         this.slots = response;
-        this.loadingSlots = false;
+        this.loadingSlotsState.set(false);
       },
       error: () => {
         this.slots = [];
-        this.loadingSlots = false;
+        this.loadingSlotsState.set(false);
       },
     });
   }
 
   private loadTemplates(): void {
-    this.loadingTemplates = true;
+    this.loadingTemplatesState.set(true);
     this.templateSrv.findAll().subscribe({
       next: (response) => {
-        this.templates = response.map((template) => ({
-          id: template.id,
-          title: template.title,
-        }));
-        this.loadingTemplates = false;
+        this.templatesState.set(buildCycleTemplateListItems(response));
+        this.loadingTemplatesState.set(false);
       },
       error: () => {
-        this.templates = [];
-        this.loadingTemplates = false;
+        this.templatesState.set([]);
+        this.loadingTemplatesState.set(false);
       },
     });
   }
 
   private loadNutritionKeys(): void {
-    this.loadingMeta = true;
+    this.loadingMetaState.set(true);
     this.metaSrv.getNutritionKeys().subscribe({
       next: (nutritionKeys) => {
         this.nutritionKeys = nutritionKeys;
-        this.macroNutritionKeys = {
-          proteins: this.resolveNutritionKey(nutritionKeys, 'PROTEIN'),
-          carbs: this.resolveNutritionKey(nutritionKeys, 'CARBOHYDRATE'),
-          lipids: this.resolveNutritionKey(nutritionKeys, 'FAT'),
-        };
+        this.macroNutritionKeys = resolveMacroNutritionKeysFromMeta(nutritionKeys);
         this.lastMetaError = null;
-        this.loadingMeta = false;
+        this.loadingMetaState.set(false);
       },
       error: (error) => {
         this.lastMetaError = error;
-        this.loadingMeta = false;
+        this.loadingMetaState.set(false);
       },
     });
   }
 
-  private getEditableNutritionValues(cycle: Cycle): CycleNutritionValue[] {
-    if (cycle.nutritionValues && cycle.nutritionValues.length > 0) {
-      return cycle.nutritionValues.map((value) => ({
-        nutritionKey: value.nutritionKey,
-        amount: this.toNumber(value.amount),
-        unit: value.unit,
-        reference: value.reference,
-      }));
-    }
-
-    const macros = getCycleMacroTotals(cycle, this.macroNutritionKeys);
-    return this.buildNutritionValues(
-      macros.proteins,
-      macros.carbs,
-      macros.lipids,
-    );
-  }
-
   private toCreateDto(value: CycleFormValue): CreateCycleDto {
-    const durationPresentation = deriveCycleDurationPresentation(
-      this.normalizePositiveInteger(value.durationDays, 1),
-    );
-    const nutritionValues = value.nutritionValues
-      .map((nutritionValue) =>
-        this.buildNutritionValue(
-          nutritionValue.nutritionKey,
-          nutritionValue.amount,
-          nutritionValue.unit,
-          nutritionValue.reference,
-        ),
-      )
-      .filter((nutritionValue) => nutritionValue.nutritionKey.trim() !== '');
-
-    return {
-      title: value.titre,
-      color: value.couleur,
-      nutritionValues,
-      durationDays: durationPresentation.durationDays,
-      durationCount: durationPresentation.durationCount,
-      durationType: durationPresentation.durationType,
-      slotIds: value.slotIds,
-      defaultTemplateId: this.normalizeTemplateId(value.defaultTemplateId),
-      daySetIds: this.normalizeDaySetIds(value.daySetOrder),
-      daySetOrder: this.normalizeDaySetTimeline(value.daySetOrder),
-    };
+    return toCreateCycleDto(value, {
+      macroNutritionKeys: this.macroNutritionKeys,
+      nutritionKeys: this.nutritionKeys,
+    });
   }
 
   private submitCycleUpdate(
@@ -790,153 +585,32 @@ export class CycleFeature implements OnInit {
       ...impactOptions,
     };
 
-    this.saving = true;
+    this.savingState.set(true);
     this.cycleSrv.update(cycleId, updatePayload).subscribe({
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
-        this.saving = false;
+        this.savingState.set(false);
         this.closeFormDialog('submitted');
         this.loadCycles();
       },
       error: (error) => {
         this.lastError = error;
-        this.saving = false;
+        this.savingState.set(false);
       },
     });
   }
 
   private shouldConfirmImpact(payload: CreateCycleDto): boolean {
-    if (this.editingCycleId === null) {
-      return false;
-    }
+    const existingCycle = this.editingCycleId === null
+      ? null
+      : (this.cycles.find((cycle) => cycle.id === this.editingCycleId) ?? null);
 
-    const existingCycle = this.cycles.find(
-      (cycle) => cycle.id === this.editingCycleId,
-    );
-    if (!existingCycle) {
-      return false;
-    }
-
-    return resolveCycleDurationDays(existingCycle) !== payload.durationDays;
+    return shouldConfirmCycleImpact(existingCycle, payload);
   }
 
   private resolveTodayDateLocal(): string {
     return DateTime.local().toFormat('yyyy-LL-dd');
   }
 
-  private buildNutritionValues(
-    proteins: number,
-    carbs: number,
-    lipids: number,
-  ): CycleNutritionValue[] {
-    const [energyKey] = resolveDefaultNutritionKeys(this.nutritionKeys);
-    const energyKcal = this.roundNumber(proteins * 4 + carbs * 4 + lipids * 9);
-
-    return [
-      this.buildNutritionValue(energyKey, energyKcal),
-      this.buildNutritionValue(this.macroNutritionKeys.proteins, proteins),
-      this.buildNutritionValue(this.macroNutritionKeys.carbs, carbs),
-      this.buildNutritionValue(this.macroNutritionKeys.lipids, lipids),
-    ];
-  }
-
-  private buildNutritionValue(
-    nutritionKey: string,
-    amount: number,
-    unit?: string,
-    reference?: 'PER_100G' | 'PER_100ML',
-  ): CycleNutritionValue {
-    const resolvedNutritionKey = this.normalizeNutritionKey(nutritionKey);
-    return {
-      nutritionKey: resolvedNutritionKey,
-      amount: this.roundNumber(amount),
-      unit: unit ?? this.resolveUnitForNutritionKey(resolvedNutritionKey),
-      reference: reference ?? 'PER_100G',
-    };
-  }
-
-  private normalizeNutritionKey(nutritionKey: string): string {
-    const normalized = nutritionKey.trim();
-    if (normalized === '') {
-      return '';
-    }
-
-    const found = this.nutritionKeys.find(
-      (key) =>
-        key.value.toUpperCase() === normalized.toUpperCase() ||
-        key.key.toUpperCase() === normalized.toUpperCase(),
-    );
-    return found?.value ?? normalized.toUpperCase();
-  }
-
-  private resolveNutritionKey(
-    nutritionKeys: NutritionKeyMeta[],
-    expectedKey: 'PROTEIN' | 'CARBOHYDRATE' | 'FAT',
-  ): string {
-    const found = nutritionKeys.find(
-      (key) =>
-        key.value.toUpperCase() === expectedKey ||
-        key.key.toUpperCase() === expectedKey,
-    );
-    return found?.value ?? expectedKey;
-  }
-
-  private resolveUnitForNutritionKey(nutritionKey: string): string {
-    const found = this.nutritionKeys.find(
-      (key) =>
-        key.value.toUpperCase() === nutritionKey.toUpperCase() ||
-        key.key.toUpperCase() === nutritionKey.toUpperCase(),
-    );
-    if (!found || found.allowedUnits.length === 0) {
-      return getFallbackUnitsForNutritionKey(nutritionKey)[0];
-    }
-
-    const gramUnit = found.allowedUnits.find(
-      (unit) => unit.toUpperCase() === 'G',
-    );
-    return gramUnit ?? found.allowedUnits[0];
-  }
-
-  private toNumber(value: unknown): number {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return value;
-    }
-
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-
-  private roundNumber(value: number): number {
-    return Math.round(value * 100) / 100;
-  }
-
-  private normalizeTemplateId(
-    templateId: number | null | undefined,
-  ): number | null {
-    return typeof templateId === 'number' &&
-      Number.isInteger(templateId) &&
-      templateId > 0
-      ? templateId
-      : null;
-  }
-
-  private normalizeDaySetIds(daySetIds: number[] | null | undefined): number[] {
-    return Array.from(
-      new Set((daySetIds ?? []).filter((id) => Number.isInteger(id) && id > 0)),
-    );
-  }
-
-  private normalizeDaySetTimeline(
-    daySetOrder: number[] | null | undefined,
-  ): number[] {
-    return (daySetOrder ?? [])
-      .map((id) => Math.trunc(Number(id)))
-      .filter((id) => Number.isInteger(id) && id >= 0);
-  }
-
-  private normalizePositiveInteger(value: unknown, fallback: number): number {
-    const normalized = Math.trunc(Number(value));
-    return normalized >= 1 ? normalized : fallback;
-  }
 }
