@@ -16,7 +16,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { DateTime } from 'luxon';
 import { forkJoin } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -36,8 +35,6 @@ import {
   InventoryProduct,
 } from '../../interfaces/inventory.interface';
 import {
-  CreateInputDayItemsDto,
-  InputDayItemCommand,
   InputDayItemSummary,
   InputDayMacroValue,
   InputDayResponse,
@@ -46,7 +43,6 @@ import {
   InputDayTotalsMacrosBySlotEntry,
   InputDayTotalsMacrosSummary,
   ProductQuantityInputUnit,
-  UpdateInputDayItemDto,
 } from '../../interfaces/input-day.interface';
 import { InventoryService } from '../../services/inventory-service';
 import {
@@ -57,65 +53,60 @@ import { InputDayService } from '../../services/input-day-service';
 import { TemplateService } from '../../services/template-service';
 import { TemplateSummary } from '../../interfaces/template.interface';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import { SegmentedToggle } from '../../app/ui/segmented-toggle/segmented-toggle';
 import {
-  SegmentedToggle,
-  SegmentedToggleOption,
-} from '../../app/ui/segmented-toggle/segmented-toggle';
-
-type InputDayDisplayMode = 'standalone' | 'embedded';
-type InputDayEmbeddedSection = 'stock' | 'templates';
-
-interface InputDaySelectedProductRow {
-  productId: number;
-  productName: string;
-  qty: number | null;
-  qtyUnit: ProductQuantityInputUnit | null;
-}
-
-interface InputDayAvailableSlot {
-  slotId: number;
-  title: string;
-  slotKey: string;
-  sortOrder: number;
-  startTime: string | null;
-  endTime: string | null;
-}
-
-interface ProductListSource {
-  id: number;
-  name: string;
-  barcode?: string | null;
-  unitType?: string | null;
-  quantityPerUnit?: number | null;
-  quantityUnit?: string | null;
-  portionCount?: number | null;
-  portionUnit?: string | null;
-  portionQuantityNormalized?: number | null;
-  price?: number | null;
-  tags?: unknown[];
-  nutritionValues?: unknown[];
-  category?: unknown | null;
-  genericProduct?: unknown | null;
-}
-
-interface InputDaySelectedInventoryTemplateStock {
-  enoughStock: boolean;
-  qtyAvailableNormalized: number;
-}
-
-const INPUT_DAY_EMBEDDED_SECTION_OPTIONS: readonly SegmentedToggleOption<InputDayEmbeddedSection>[] =
-  [
-    {
-      value: 'stock',
-      label: 'Produits en stock',
-      testId: 'input-day-section-stock',
-    },
-    {
-      value: 'templates',
-      label: 'Modeles',
-      testId: 'input-day-section-templates',
-    },
-  ];
+  INPUT_DAY_EMBEDDED_SECTION_OPTIONS,
+  INPUT_DAY_QTY_UNIT_OPTIONS,
+  type InputDayAvailableSlot,
+  type InputDayDisplayMode,
+  type InputDayEmbeddedSection,
+  type InputDaySelectedInventoryTemplateStock,
+  type InputDaySelectedProductRow,
+  type InputDaySlotMacroEntry,
+} from './input-day.models';
+import {
+  buildInputDayItemEditorRequest,
+  buildInputDaySelectedItemsRequest,
+  canCreateInputDaySelectedItems,
+  canSubmitInputDayItemEditor,
+  type InputDayItemEditorRequest,
+  type InputDaySelectedItemsRequest,
+} from './input-day.commands';
+import {
+  areNumberArraysEqual,
+  buildInputDayAvailableSlots,
+  buildInputDaySelectableProductListItems,
+  canConvertInputDayTemplateItem,
+  extractInputDayInventoriesFromResponse,
+  extractInputDayInventoryProductsFromResponse,
+  extractInputDayProductsFromResponse,
+  formatInputDayDateLocal,
+  formatInputDayDateTime,
+  formatInputDaySelectedDateLabel,
+  formatInputDayMacroValue,
+  formatInputDayNutritionAmount,
+  formatInputDayTime,
+  getInputDaySelectedInventoriesTemplateStock,
+  getInputDaySlotMacroEntries,
+  getInputDayTargetSourceText,
+  getInputDayTemplateTargetSourceText,
+  hasInputDayEntries,
+  mapInputDayProductsToListItems,
+  normalizeInputDayInventoryIds,
+  normalizeIsoString,
+  normalizeNullablePositiveInteger,
+  normalizePositiveInteger,
+  parseInputDayDateInput,
+  resolveInputDayApiErrorMessage,
+  resolveInputDayFallbackTimezone,
+  resolveInputDayItemSlot,
+  resolveInputDayItemSlotKey,
+  resolveInputDayItemSlotTitle,
+  resolveInputDayTemplateItemSlotKey,
+  resolveInputDayTemplateItemSlotTitle,
+  roundInputDayQuantity,
+  toInputDayDateTimeLocalInput,
+} from './input-day.helpers';
 
 @Component({
   selector: 'app-input-day',
@@ -159,20 +150,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     dateLocal: string;
   }>();
 
-  readonly qtyUnitOptions: ProductQuantityInputUnit[] = [
-    'mg',
-    'g',
-    'kg',
-    'ml',
-    'l',
-    'unit',
-    'pack',
-    'tranche',
-    'piece',
-    'part',
-    'bouteille',
-    'portion',
-  ];
+  readonly qtyUnitOptions = [...INPUT_DAY_QTY_UNIT_OPTIONS];
 
   baseUrl = '';
   form: FormGroup;
@@ -222,17 +200,11 @@ export class InputDayFeature implements OnInit, OnChanges {
   private readonly qtyUnitSet = new Set<ProductQuantityInputUnit>(
     this.qtyUnitOptions,
   );
-  private readonly fallbackTimezone = DateTime.local().zoneName || 'UTC';
+  private readonly fallbackTimezone = resolveInputDayFallbackTimezone();
   private readonly inventoryProductsByInventoryId = new Map<
     number,
     InventoryProduct[]
   >();
-  private readonly slotTotalsMetaKeys = new Set([
-    'slot',
-    'targets',
-    'deltaToTargets',
-    'incompleteNutritionKeys',
-  ]);
 
   constructor() {
     this.form = this.fb.group({
@@ -395,12 +367,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       return this.initialDateLocal()?.trim() || '-';
     }
 
-    const parsed = DateTime.fromISO(dateLocal);
-    if (!parsed.isValid) {
-      return dateLocal;
-    }
-
-    return parsed.toFormat('EEEE d LLLL yyyy', { locale: 'fr' });
+    return formatInputDaySelectedDateLabel(dateLocal);
   }
 
   get productListItems(): ProductListItem[] {
@@ -426,7 +393,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       ? this.selectableProductListItems
       : this.emptyProductListItems;
 
-    const selectedProductId = this.normalizePositiveInteger(
+    const selectedProductId = normalizePositiveInteger(
       this.itemEditorForm.value.productId,
     );
     if (selectedProductId === null) {
@@ -501,12 +468,12 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   get isEditingItem(): boolean {
     return (
-      this.normalizePositiveInteger(this.itemEditorForm.value.itemId) !== null
+      normalizePositiveInteger(this.itemEditorForm.value.itemId) !== null
     );
   }
 
   get itemEditorSelectedSlotId(): number | null {
-    return this.normalizeNullablePositiveInteger(
+    return normalizeNullablePositiveInteger(
       this.itemEditorForm.value.slotId,
     );
   }
@@ -518,99 +485,37 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   get canSubmitItemEditor(): boolean {
-    if (
-      this.loading ||
-      this.loadingProducts ||
-      this.loadingInventories ||
-      this.productsError ||
-      this.inventoriesError ||
-      this.inventoryProductsError
-    ) {
-      return false;
-    }
-
-    if (this.initialDateError !== null || !this.hasValidSelectedDate) {
-      return false;
-    }
-
-    if (!this.hasSelectedInventories) {
-      return false;
-    }
-
-    const dateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
-    const productId = this.normalizePositiveInteger(
-      this.itemEditorForm.value.productId,
-    );
-    const qty = this.itemEditorForm.value.qty ?? null;
-    const occurredAtRaw = String(
-      this.itemEditorForm.value.occurredAt ?? '',
-    ).trim();
-
-    if (
-      !this.isDateLocal(dateLocal) ||
-      productId === null ||
-      qty == null ||
-      qty <= 0
-    ) {
-      return false;
-    }
-
-    if (occurredAtRaw === '') {
-      return true;
-    }
-
-    return this.buildOccurredAtIso(occurredAtRaw) !== null;
+    return canSubmitInputDayItemEditor({
+      value: this.itemEditorForm.value,
+      timezone: this.resolveTimezone(),
+      hasValidSelectedDate: this.hasValidSelectedDate,
+      hasSelectedInventories: this.hasSelectedInventories,
+      initialDateError: this.initialDateError,
+      loading: this.loading,
+      loadingProducts: this.loadingProducts,
+      loadingInventories: this.loadingInventories,
+      hasProductsError: !!this.productsError,
+      hasInventoriesError: !!this.inventoriesError,
+      hasInventoryProductsError: !!this.inventoryProductsError,
+    });
   }
 
   get canCreateSelectedItems(): boolean {
-    if (
-      this.loading ||
-      this.loadingProducts ||
-      this.loadingInventories ||
-      this.loadingInventoryProducts
-    ) {
-      return false;
-    }
-
-    if (!this.hasValidSelectedDate || this.initialDateError !== null) {
-      return false;
-    }
-
-    if (
-      this.productsError ||
-      this.inventoriesError ||
-      this.inventoryProductsError
-    ) {
-      return false;
-    }
-
-    if (!this.hasSelectedInventories) {
-      return false;
-    }
-
-    const dateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
-    const occurredAtRaw = String(
-      this.itemEditorForm.value.occurredAt ?? '',
-    ).trim();
-    if (!this.isDateLocal(dateLocal)) {
-      return false;
-    }
-
-    if (
-      occurredAtRaw !== '' &&
-      this.buildOccurredAtIso(occurredAtRaw) === null
-    ) {
-      return false;
-    }
-
-    if (this.selectedProductRows.length === 0) {
-      return false;
-    }
-
-    return this.selectedProductRows.every(
-      (row) =>
-        typeof row.qty === 'number' && Number.isFinite(row.qty) && row.qty > 0,
-    );
+    return canCreateInputDaySelectedItems({
+      value: this.itemEditorForm.value,
+      timezone: this.resolveTimezone(),
+      hasValidSelectedDate: this.hasValidSelectedDate,
+      hasSelectedInventories: this.hasSelectedInventories,
+      initialDateError: this.initialDateError,
+      loading: this.loading,
+      loadingProducts: this.loadingProducts,
+      loadingInventories: this.loadingInventories,
+      loadingInventoryProducts: this.loadingInventoryProducts,
+      hasProductsError: !!this.productsError,
+      hasInventoriesError: !!this.inventoriesError,
+      hasInventoryProductsError: !!this.inventoryProductsError,
+      selectedProductRows: this.selectedProductRows,
+    });
   }
 
   onBaseUrlChange(): void {
@@ -757,8 +662,9 @@ export class InputDayFeature implements OnInit, OnChanges {
       {
         itemId: item.id,
         dateLocal: sourceDateLocal,
-        occurredAt: this.toDateTimeLocalInput(
+        occurredAt: toInputDayDateTimeLocalInput(
           item.occurredAt ?? item.insertedAt,
+          this.resolveTimezone(),
         ),
         productId: item.productId,
         qty: item.qty,
@@ -785,7 +691,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   removeItem(itemId?: number): void {
     const resolvedItemId =
-      itemId ?? this.normalizePositiveInteger(this.itemEditorForm.value.itemId);
+      itemId ?? normalizePositiveInteger(this.itemEditorForm.value.itemId);
     if (resolvedItemId == null) {
       this.lastError = 'itemId est requis et doit etre un entier > 0.';
       return;
@@ -813,7 +719,7 @@ export class InputDayFeature implements OnInit, OnChanges {
         this.lastError = null;
         this.loading = false;
         if (
-          this.normalizePositiveInteger(this.itemEditorForm.value.itemId) ===
+          normalizePositiveInteger(this.itemEditorForm.value.itemId) ===
           resolvedItemId
         ) {
           this.prefillItemEditorForCreate(null);
@@ -857,10 +763,10 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   onSelectedInventoryChange(value: number | number[] | null): void {
-    const nextInventoryIds = this.normalizeInventoryIds(value);
+    const nextInventoryIds = normalizeInputDayInventoryIds(value);
 
     if (
-      this.areNumberArraysEqual(this.selectedInventoryIds, nextInventoryIds)
+      areNumberArraysEqual(this.selectedInventoryIds, nextInventoryIds)
     ) {
       return;
     }
@@ -895,7 +801,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   onManualTemplateSelectionChange(value: number | null): void {
-    const nextTemplateId = this.normalizeNullablePositiveInteger(value);
+    const nextTemplateId = normalizeNullablePositiveInteger(value);
     if (this.manualTemplateSelectionId === nextTemplateId) {
       return;
     }
@@ -965,7 +871,7 @@ export class InputDayFeature implements OnInit, OnChanges {
         },
         error: (error) => {
           this.lastError = error;
-          this.templateActionError = this.resolveApiErrorMessage(
+          this.templateActionError = resolveInputDayApiErrorMessage(
             error,
             'Impossible de convertir cette ligne template.',
           );
@@ -1027,103 +933,44 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   formatMacroValue(value: InputDayMacroValue): string {
-    if (typeof value === 'number') {
-      return this.formatDecimal(value);
-    }
-
-    return value;
+    return formatInputDayMacroValue(value);
   }
 
   formatNutritionAmount(value: number): string {
-    return this.formatDecimal(value);
+    return formatInputDayNutritionAmount(value);
   }
 
   formatTime(value: string | null | undefined): string {
-    if (!value) {
-      return '-';
-    }
-
-    return value.length >= 5 ? value.slice(0, 5) : value;
+    return formatInputDayTime(value);
   }
 
   formatDateTime(value: string | null | undefined): string {
-    if (!value) {
-      return '-';
-    }
-
-    const parsed = DateTime.fromISO(value, { setZone: true });
-    if (!parsed.isValid) {
-      return value;
-    }
-
-    return parsed.setZone(this.resolveTimezone()).toFormat('yyyy-LL-dd HH:mm');
+    return formatInputDayDateTime(value, this.resolveTimezone());
   }
 
   resolveItemSlotTitle(item: InputDayItemSummary): string {
-    const matchedSlot = this.findSlotForItem(item);
-    if (matchedSlot) {
-      return matchedSlot.title;
-    }
-
-    return item.slotKey?.trim() || 'Sans slot';
+    return resolveInputDayItemSlotTitle(item, this.availableSlots);
   }
 
   resolveItemSlotKey(item: InputDayItemSummary): string {
-    const matchedSlot = this.findSlotForItem(item);
-    if (matchedSlot) {
-      return matchedSlot.slotKey;
-    }
-
-    return item.slotKey?.trim() || '-';
+    return resolveInputDayItemSlotKey(item, this.availableSlots);
   }
 
   resolveTemplateItemSlotTitle(item: InputDayTemplateItemSummary): string {
-    if (item.slotId !== null) {
-      const matchedSlot =
-        this.availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
-      if (matchedSlot) {
-        return matchedSlot.title;
-      }
-    }
-
-    return item.slotKey?.trim() || 'Sans slot';
+    return resolveInputDayTemplateItemSlotTitle(item, this.availableSlots);
   }
 
   resolveTemplateItemSlotKey(item: InputDayTemplateItemSummary): string {
-    if (item.slotId !== null) {
-      const matchedSlot =
-        this.availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
-      if (matchedSlot) {
-        return matchedSlot.slotKey;
-      }
-    }
-
-    return item.slotKey?.trim() || '-';
+    return resolveInputDayTemplateItemSlotKey(item, this.availableSlots);
   }
 
   getSelectedInventoriesTemplateStock(
     item: InputDayTemplateItemSummary,
   ): InputDaySelectedInventoryTemplateStock | null {
-    if (!this.hasSelectedInventories) {
-      return null;
-    }
-
-    const selectedStocks = item.stockByInventory.filter((entry) =>
-      this.selectedInventoryIds.includes(entry.inventoryId),
+    return getInputDaySelectedInventoriesTemplateStock(
+      item,
+      this.selectedInventoryIds,
     );
-    if (selectedStocks.length === 0) {
-      return null;
-    }
-
-    return {
-      enoughStock: selectedStocks.some((entry) => entry.enoughStock),
-      qtyAvailableNormalized: this.roundQuantity(
-        selectedStocks.reduce(
-          (sum, entry) => sum + entry.qtyAvailableNormalized,
-          0,
-        ),
-      ),
-    };
   }
 
   isConvertingTemplateItem(item: InputDayTemplateItemSummary): boolean {
@@ -1131,57 +978,32 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   canConvertTemplateItem(item: InputDayTemplateItemSummary): boolean {
-    if (
-      item.status === 'converted' ||
-      this.loading ||
-      this.isConvertingTemplateItem(item) ||
-      !this.hasSelectedInventories
-    ) {
-      return false;
-    }
-
-    return item.stockByInventory.some(
-      (entry) =>
-        this.selectedInventoryIds.includes(entry.inventoryId) &&
-        entry.enoughStock,
+    return canConvertInputDayTemplateItem(
+      item,
+      this.selectedInventoryIds,
+      this.loading,
+      this.isConvertingTemplateItem(item),
     );
   }
 
   getTemplateTargetSourceText(
     totals: InputDayTotalsMacrosSummary | null | undefined,
   ): string {
-    return this.getTargetSourceText(totals?.targetSource ?? 'none');
+    return getInputDayTemplateTargetSourceText(totals);
   }
 
   hasEntries(value: Record<string, unknown> | null | undefined): boolean {
-    return !!value && Object.keys(value).length > 0;
+    return hasInputDayEntries(value);
   }
 
   getTargetSourceText(targetSource: InputDayTargetSource): string {
-    if (targetSource === 'cycle') {
-      return 'Cibles quotidiennes heritees du cycle (aucun day set actif).';
-    }
-
-    if (targetSource === 'daySet') {
-      return 'Cibles quotidiennes issues du day set actif.';
-    }
-
-    return 'Aucune cible quotidienne active.';
+    return getInputDayTargetSourceText(targetSource);
   }
 
   getSlotMacroEntries(
     slotTotals: InputDayTotalsMacrosBySlotEntry,
-  ): { key: string; value: InputDayMacroValue }[] {
-    return Object.entries(slotTotals)
-      .filter(
-        ([key, value]) =>
-          !this.slotTotalsMetaKeys.has(key) &&
-          (typeof value === 'number' || value === 'donnee incomplete'),
-      )
-      .map(([key, value]) => ({
-        key,
-        value: value as InputDayMacroValue,
-      }));
+  ): InputDaySlotMacroEntry[] {
+    return getInputDaySlotMacroEntries(slotTotals);
   }
 
   trackBySelectedProductRow(
@@ -1205,7 +1027,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     this.productSrv.findAll().subscribe({
       next: (response) => {
-        this.products = this.extractProductsFromResponse(response);
+        this.products = extractInputDayProductsFromResponse(response);
         this.refreshProductListItems();
         this.loadingProducts = false;
         this.productsError = null;
@@ -1227,7 +1049,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     this.inventorySrv.findAll().subscribe({
       next: (response) => {
-        this.inventories = this.extractInventoriesFromResponse(response);
+        this.inventories = extractInputDayInventoriesFromResponse(response);
         this.loadingInventories = false;
         this.inventoriesError = null;
         this.ensureSelectedInventoriesStillValid();
@@ -1282,7 +1104,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   private shouldEagerLoadProducts(): boolean {
     return (
       this.isStandaloneMode ||
-      this.normalizePositiveInteger(this.initialEditingItemId()) !== null
+      normalizePositiveInteger(this.initialEditingItemId()) !== null
     );
   }
 
@@ -1294,10 +1116,10 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private syncPendingEditorContextFromInputs(): void {
-    this.pendingInitialOccurredAt = this.normalizeIsoString(
+    this.pendingInitialOccurredAt = normalizeIsoString(
       this.initialOccurredAt(),
     );
-    this.pendingInitialEditingItemId = this.normalizePositiveInteger(
+    this.pendingInitialEditingItemId = normalizePositiveInteger(
       this.initialEditingItemId(),
     );
   }
@@ -1309,7 +1131,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       return;
     }
 
-    const parsed = this.parseDateInput(initialDateLocal);
+    const parsed = parseInputDayDateInput(initialDateLocal);
     if (!parsed) {
       this.initialDateError = 'dateLocal doit etre au format YYYY-MM-DD.';
       this.inputDayResponse = null;
@@ -1318,7 +1140,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     this.initialDateError = null;
     this.form.patchValue({
-      dateLocal: this.lockDate() ? this.formatDateLocal(parsed) : parsed,
+      dateLocal: this.lockDate() ? formatInputDayDateLocal(parsed) : parsed,
     });
   }
 
@@ -1349,12 +1171,12 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   private resolveDateLocalValue(): string | null {
     const rawDate = this.form.value.dateLocal;
-    const parsedDate = this.parseDateInput(rawDate);
+    const parsedDate = parseInputDayDateInput(rawDate);
     if (!parsedDate) {
       return null;
     }
 
-    return this.formatDateLocal(parsedDate);
+    return formatInputDayDateLocal(parsedDate);
   }
 
   private requireDate(): string | null {
@@ -1367,170 +1189,34 @@ export class InputDayFeature implements OnInit, OnChanges {
     return dateLocal;
   }
 
-  private buildItemEditorRequest():
-    | { itemId: null; requestDateLocal: string; payload: InputDayItemCommand }
-    | {
-        itemId: number;
-        requestDateLocal: string;
-        payload: UpdateInputDayItemDto;
-      }
-    | null {
-    const dateLocal = String(this.itemEditorForm.value.dateLocal ?? '').trim();
-    if (!this.isDateLocal(dateLocal)) {
-      this.itemEditorError =
-        "La date de l'entree doit etre au format YYYY-MM-DD.";
-      return null;
-    }
+  private buildItemEditorRequest(): InputDayItemEditorRequest | null {
+    const result = buildInputDayItemEditorRequest({
+      value: this.itemEditorForm.value,
+      selectedInventoryIds: this.selectedInventoryIds,
+      qtyUnitSet: this.qtyUnitSet,
+      timezone: this.resolveTimezone(),
+      resolveUpdateRequestDateLocal: () =>
+        this.editingSourceDateLocal ?? this.requireDate(),
+    });
 
-    if (!this.hasSelectedInventories) {
-      this.itemEditorError =
-        "Selectionne au moins un inventory avant d'enregistrer l'entree.";
-      return null;
-    }
-
-    const inventoryId = this.selectedInventoryIds[0];
-
-    const productId = this.normalizePositiveInteger(
-      this.itemEditorForm.value.productId,
-    );
-    if (productId === null) {
-      this.itemEditorError = 'Selectionne un produit.';
-      return null;
-    }
-
-    const qty = this.itemEditorForm.value.qty ?? null;
-    if (qty == null || !Number.isFinite(qty) || qty <= 0) {
-      this.itemEditorError = 'La quantite doit etre > 0.';
-      return null;
-    }
-
-    let qtyUnit: ProductQuantityInputUnit | null;
-    try {
-      qtyUnit = this.normalizeQtyUnit(this.itemEditorForm.value.qtyUnit);
-    } catch (error) {
-      this.itemEditorError =
-        error instanceof Error ? error.message : 'qtyUnit invalide.';
-      return null;
-    }
-
-    const occurredAtRaw = String(
-      this.itemEditorForm.value.occurredAt ?? '',
-    ).trim();
-    const occurredAt =
-      occurredAtRaw === '' ? null : this.buildOccurredAtIso(occurredAtRaw);
-    if (occurredAtRaw !== '' && occurredAt === null) {
-      this.itemEditorError = 'occurredAt doit etre une date/heure valide.';
-      return null;
-    }
-
-    const slotId = this.normalizeNullablePositiveInteger(
-      this.itemEditorForm.value.slotId,
-    );
-    const slotKey =
-      slotId === null
-        ? String(this.itemEditorForm.value.slotKey ?? '').trim()
-        : '';
-
-    const itemId = this.normalizePositiveInteger(
-      this.itemEditorForm.value.itemId,
-    );
-    this.itemEditorError = null;
-
-    if (itemId === null) {
-      const payload: InputDayItemCommand = {
-        productId,
-        inventoryId,
-        qty,
-        ...(occurredAt ? { occurredAt } : {}),
-        ...(qtyUnit ? { qtyUnit } : {}),
-        ...(slotId !== null ? { slotId } : {}),
-        ...(slotId === null && slotKey !== '' ? { slotKey } : {}),
-      };
-
-      return {
-        itemId: null,
-        requestDateLocal: dateLocal,
-        payload,
-      };
-    }
-
-    const requestDateLocal = this.editingSourceDateLocal ?? this.requireDate();
-    if (!requestDateLocal) {
-      return null;
-    }
-
-    const payload: UpdateInputDayItemDto = {
-      dateLocal,
-      productId,
-      inventoryId,
-      qty,
-      ...(occurredAt ? { occurredAt } : {}),
-      ...(qtyUnit ? { qtyUnit } : {}),
-      slotId,
-      ...(slotId === null && slotKey !== '' ? { slotKey } : {}),
-    };
-
-    return {
-      itemId,
-      requestDateLocal,
-      payload,
-    };
+    this.itemEditorError = result.error;
+    return result.request;
   }
 
-  private buildSelectedItemsRequest(): {
-    requestDateLocal: string;
-    payload: CreateInputDayItemsDto;
-  } | null {
-    const validationError = this.validateSelectedItemsPayload();
-    if (validationError) {
-      this.itemsFormError = validationError;
-      return null;
-    }
+  private buildSelectedItemsRequest(): InputDaySelectedItemsRequest | null {
+    const result = buildInputDaySelectedItemsRequest({
+      value: this.itemEditorForm.value,
+      selectedProductRows: this.selectedProductRows,
+      selectedInventoryIds: this.selectedInventoryIds,
+      selectedSlotId: this.selectedSlotId,
+      qtyUnitSet: this.qtyUnitSet,
+      timezone: this.resolveTimezone(),
+      hasValidSelectedDate: this.hasValidSelectedDate,
+      initialDateError: this.initialDateError,
+    });
 
-    const requestDateLocal = String(
-      this.itemEditorForm.value.dateLocal ?? '',
-    ).trim();
-    const inventoryId = this.selectedInventoryIds[0];
-    const occurredAtRaw = String(
-      this.itemEditorForm.value.occurredAt ?? '',
-    ).trim();
-    const occurredAt =
-      occurredAtRaw === '' ? null : this.buildOccurredAtIso(occurredAtRaw);
-    const slotKey =
-      this.selectedSlotId === null
-        ? String(this.itemEditorForm.value.slotKey ?? '').trim()
-        : '';
-
-    try {
-      const payload: CreateInputDayItemsDto = {
-        items: this.selectedProductRows.map((row) => {
-          const qtyUnit = this.normalizeQtyUnit(row.qtyUnit);
-          return {
-            productId: row.productId,
-            inventoryId,
-            qty: row.qty as number,
-            ...(occurredAt ? { occurredAt } : {}),
-            ...(qtyUnit ? { qtyUnit } : {}),
-            ...(this.selectedSlotId != null
-              ? { slotId: this.selectedSlotId }
-              : {}),
-            ...(this.selectedSlotId == null && slotKey !== ''
-              ? { slotKey }
-              : {}),
-          };
-        }),
-      };
-
-      this.itemsFormError = null;
-      return {
-        requestDateLocal,
-        payload,
-      };
-    } catch (error) {
-      this.itemsFormError =
-        error instanceof Error ? error.message : 'qtyUnit invalide.';
-      return null;
-    }
+    this.itemsFormError = result.error;
+    return result.request;
   }
 
   private prefillItemEditorForCreate(occurredAt: string | null): void {
@@ -1538,7 +1224,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       {
         itemId: null,
         dateLocal: this.resolveEditorDefaultDateLocal(),
-        occurredAt: this.toDateTimeLocalInput(occurredAt),
+        occurredAt: toInputDayDateTimeLocalInput(occurredAt, this.resolveTimezone()),
         productId: null,
         qty: null,
         qtyUnit: null,
@@ -1561,166 +1247,10 @@ export class InputDayFeature implements OnInit, OnChanges {
     );
   }
 
-  private validateSelectedItemsPayload(): string | null {
-    if (!this.hasValidSelectedDate || this.initialDateError !== null) {
-      return 'La date selectionnee est invalide.';
-    }
-
-    if (!this.hasSelectedInventories) {
-      return "Selectionne au moins un inventory avant d'ajouter des items.";
-    }
-
-    if (this.selectedProductRows.length === 0) {
-      return 'Selectionne au moins un produit.';
-    }
-
-    const requestDateLocal = String(
-      this.itemEditorForm.value.dateLocal ?? '',
-    ).trim();
-    if (!this.isDateLocal(requestDateLocal)) {
-      return 'La date metier doit etre au format YYYY-MM-DD.';
-    }
-
-    const occurredAtRaw = String(
-      this.itemEditorForm.value.occurredAt ?? '',
-    ).trim();
-    if (
-      occurredAtRaw !== '' &&
-      this.buildOccurredAtIso(occurredAtRaw) === null
-    ) {
-      return 'occurredAt doit etre une date/heure valide.';
-    }
-
-    if (
-      this.selectedProductRows.some(
-        (row) => row.qty == null || !Number.isFinite(row.qty) || row.qty <= 0,
-      )
-    ) {
-      return 'Chaque produit selectionne doit avoir une quantite > 0.';
-    }
-
-    return null;
-  }
-
   private finishTemplateItemConversion(templateItemId: number): void {
     const nextIds = new Set(this.convertingTemplateItemIds);
     nextIds.delete(templateItemId);
     this.convertingTemplateItemIds = nextIds;
-  }
-
-  private resolveApiErrorMessage(error: unknown, fallback: string): string {
-    if (!error || typeof error !== 'object') {
-      return fallback;
-    }
-
-    const responseError = (error as { error?: unknown }).error;
-    if (!responseError || typeof responseError !== 'object') {
-      return fallback;
-    }
-
-    const message = (responseError as { message?: unknown }).message;
-    if (typeof message === 'string' && message.trim() !== '') {
-      return `${fallback} ${message.trim()}`;
-    }
-
-    if (Array.isArray(message)) {
-      const details = message.filter(
-        (value): value is string => typeof value === 'string',
-      );
-      if (details.length > 0) {
-        return `${fallback} ${details.join(' ')}`;
-      }
-    }
-
-    return fallback;
-  }
-
-  private normalizeQtyUnit(value: unknown): ProductQuantityInputUnit | null {
-    if (value == null) {
-      return null;
-    }
-
-    const candidate = String(value).trim().toLowerCase();
-    if (candidate === '') {
-      return null;
-    }
-
-    if (!this.qtyUnitSet.has(candidate as ProductQuantityInputUnit)) {
-      throw new Error(`qtyUnit invalide: ${candidate}`);
-    }
-
-    return candidate as ProductQuantityInputUnit;
-  }
-
-  private buildOccurredAtIso(value: string): string | null {
-    const trimmed = value.trim();
-    if (trimmed === '') {
-      return null;
-    }
-
-    const parsed = DateTime.fromISO(trimmed, { zone: this.resolveTimezone() });
-    if (!parsed.isValid) {
-      return null;
-    }
-
-    return parsed.toISO({ suppressMilliseconds: true });
-  }
-
-  private toDateTimeLocalInput(value: string | null | undefined): string {
-    if (!value) {
-      return '';
-    }
-
-    const parsed = DateTime.fromISO(value, { setZone: true });
-    if (!parsed.isValid) {
-      return '';
-    }
-
-    return parsed
-      .setZone(this.resolveTimezone())
-      .toFormat("yyyy-LL-dd'T'HH:mm");
-  }
-
-  private parseDateInput(value: unknown): Date | null {
-    if (value instanceof Date && !Number.isNaN(value.getTime())) {
-      return value;
-    }
-
-    if (typeof value !== 'string') {
-      return null;
-    }
-
-    const trimmed = value.trim();
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
-    if (!match) {
-      return null;
-    }
-
-    const year = Number(match[1]);
-    const month = Number(match[2]);
-    const day = Number(match[3]);
-    const date = new Date(year, month - 1, day);
-
-    if (
-      date.getFullYear() !== year ||
-      date.getMonth() !== month - 1 ||
-      date.getDate() !== day
-    ) {
-      return null;
-    }
-
-    return date;
-  }
-
-  private formatDateLocal(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  private isDateLocal(value: string): boolean {
-    return value.length === 10 && DateTime.fromISO(value).isValid;
   }
 
   private resolveTimezone(): string {
@@ -1728,60 +1258,6 @@ export class InputDayFeature implements OnInit, OnChanges {
       this.form.value.timezone ?? this.fallbackTimezone,
     ).trim();
     return timezone !== '' ? timezone : this.fallbackTimezone;
-  }
-
-  private normalizeInventoryIds(
-    value: number | number[] | null | undefined,
-  ): number[] {
-    const values = Array.isArray(value) ? value : value == null ? [] : [value];
-    return Array.from(
-      new Set(
-        values.filter(
-          (inventoryId): inventoryId is number =>
-            typeof inventoryId === 'number' &&
-            Number.isInteger(inventoryId) &&
-            inventoryId > 0,
-        ),
-      ),
-    ).sort((left, right) => left - right);
-  }
-
-  private areNumberArraysEqual(left: number[], right: number[]): boolean {
-    return (
-      left.length === right.length &&
-      left.every((value, index) => value === right[index])
-    );
-  }
-
-  private normalizePositiveInteger(value: unknown): number | null {
-    if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
-      return null;
-    }
-
-    return value;
-  }
-
-  private normalizeNullablePositiveInteger(value: unknown): number | null {
-    return this.normalizePositiveInteger(value);
-  }
-
-  private normalizeIsoString(value: string | null | undefined): string | null {
-    const candidate = value?.trim();
-    return candidate ? candidate : null;
-  }
-
-  private formatDecimal(value: number): string {
-    if (!Number.isFinite(value)) {
-      return '0';
-    }
-
-    return Number.isInteger(value)
-      ? String(value)
-      : String(Math.round(value * 100) / 100);
-  }
-
-  private roundQuantity(value: number): number {
-    return Math.round(value * 100) / 100;
   }
 
   private clearSelectedProducts(): void {
@@ -1827,7 +1303,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       if (inventory && Array.isArray(inventory.inventoryProducts)) {
         this.inventoryProductsByInventoryId.set(
           inventoryId,
-          this.extractInventoryProductsFromResponse(
+          extractInputDayInventoryProductsFromResponse(
             inventory.inventoryProducts,
           ),
         );
@@ -1854,7 +1330,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     ).subscribe({
       next: (responses) => {
         if (
-          !this.areNumberArraysEqual(
+          !areNumberArraysEqual(
             this.selectedInventoryIds,
             nextInventoryIds,
           )
@@ -1865,14 +1341,14 @@ export class InputDayFeature implements OnInit, OnChanges {
         responses.forEach((response, index) => {
           this.inventoryProductsByInventoryId.set(
             missingInventoryIds[index],
-            this.extractInventoryProductsFromResponse(response),
+            extractInputDayInventoryProductsFromResponse(response),
           );
         });
         this.applySelectedInventoryProductsFromCache(nextInventoryIds);
       },
       error: (error) => {
         if (
-          !this.areNumberArraysEqual(
+          !areNumberArraysEqual(
             this.selectedInventoryIds,
             nextInventoryIds,
           )
@@ -1908,11 +1384,11 @@ export class InputDayFeature implements OnInit, OnChanges {
           continue;
         }
 
-        existing.qtyOnHandInUnits = this.roundQuantity(
+        existing.qtyOnHandInUnits = roundInputDayQuantity(
           (existing.qtyOnHandInUnits ?? 0) +
             (inventoryProduct.qtyOnHandInUnits ?? 0),
         );
-        existing.qtyOnHandNormalized = this.roundQuantity(
+        existing.qtyOnHandNormalized = roundInputDayQuantity(
           (existing.qtyOnHandNormalized ?? 0) +
             (inventoryProduct.qtyOnHandNormalized ?? 0),
         );
@@ -1954,44 +1430,14 @@ export class InputDayFeature implements OnInit, OnChanges {
     );
   }
 
-  private findSlotForItem(item: InputDayItemSummary): {
-    slotId: number;
-    title: string;
-    slotKey: string;
-    sortOrder: number;
-    startTime: string | null;
-    endTime: string | null;
-  } | null {
-    if (item.slotId !== null) {
-      return (
-        this.availableSlots.find((slot) => slot.slotId === item.slotId) ?? null
-      );
-    }
-
-    if (item.slotKey) {
-      return (
-        this.availableSlots.find((slot) => slot.slotKey === item.slotKey) ??
-        null
-      );
-    }
-
-    return null;
+  private findSlotForItem(item: InputDayItemSummary): InputDayAvailableSlot | null {
+    return resolveInputDayItemSlot(item, this.availableSlots);
   }
 
   private refreshAvailableSlots(): void {
-    this.availableSlotsCache = (this.inputDayResponse?.daySet?.slots ?? [])
-      .filter(
-        (slot): slot is typeof slot & { slotId: number } =>
-          slot.slotId !== null,
-      )
-      .map((slot) => ({
-        slotId: slot.slotId,
-        title: slot.title,
-        slotKey: slot.slotKey,
-        sortOrder: slot.sortOrder,
-        startTime: slot.startTime ?? null,
-        endTime: slot.endTime ?? null,
-      }));
+    this.availableSlotsCache = buildInputDayAvailableSlots(
+      this.inputDayResponse,
+    );
   }
 
   private syncManualTemplateSelectionFromResponse(): void {
@@ -2003,305 +1449,18 @@ export class InputDayFeature implements OnInit, OnChanges {
         : null;
   }
 
-  private extractProductsFromResponse(value: unknown): ProductApiModel[] {
-    if (Array.isArray(value)) {
-      return value.filter((item): item is ProductApiModel =>
-        this.isProductLike(item),
-      );
-    }
-
-    if (this.isProductLike(value)) {
-      return [value];
-    }
-
-    if (!value || typeof value !== 'object') {
-      return [];
-    }
-
-    const raw = value as Record<string, unknown>;
-    const nestedCandidates = [
-      'data',
-      'items',
-      'products',
-      'results',
-      'payload',
-    ];
-    for (const key of nestedCandidates) {
-      const nested = raw[key];
-      if (Array.isArray(nested)) {
-        const products = nested.filter((item): item is ProductApiModel =>
-          this.isProductLike(item),
-        );
-        if (products.length > 0) {
-          return products;
-        }
-      }
-    }
-
-    return [];
-  }
-
-  private extractInventoriesFromResponse(value: unknown): Inventory[] {
-    if (Array.isArray(value)) {
-      return value.filter((item): item is Inventory =>
-        this.isInventoryLike(item),
-      );
-    }
-
-    if (this.isInventoryLike(value)) {
-      return [value];
-    }
-
-    if (!value || typeof value !== 'object') {
-      return [];
-    }
-
-    const raw = value as Record<string, unknown>;
-    const nestedCandidates = [
-      'data',
-      'items',
-      'inventories',
-      'results',
-      'payload',
-    ];
-    for (const key of nestedCandidates) {
-      const nested = raw[key];
-      if (Array.isArray(nested)) {
-        const inventories = nested.filter((item): item is Inventory =>
-          this.isInventoryLike(item),
-        );
-        if (inventories.length > 0) {
-          return inventories;
-        }
-      }
-    }
-
-    return [];
-  }
-
-  private extractInventoryProductsFromResponse(
-    value: unknown,
-  ): InventoryProduct[] {
-    if (Array.isArray(value)) {
-      return value.filter((item): item is InventoryProduct =>
-        this.isInventoryProductLike(item),
-      );
-    }
-
-    if (this.isInventoryProductLike(value)) {
-      return [value];
-    }
-
-    if (!value || typeof value !== 'object') {
-      return [];
-    }
-
-    const raw = value as Record<string, unknown>;
-    const nestedCandidates = [
-      'data',
-      'items',
-      'inventoryProducts',
-      'products',
-      'results',
-      'payload',
-    ];
-    for (const key of nestedCandidates) {
-      const nested = raw[key];
-      if (Array.isArray(nested)) {
-        const products = nested.filter((item): item is InventoryProduct =>
-          this.isInventoryProductLike(item),
-        );
-        if (products.length > 0) {
-          return products;
-        }
-      }
-    }
-
-    return [];
-  }
-
-  private isProductLike(value: unknown): value is ProductApiModel {
-    if (!value || typeof value !== 'object') {
-      return false;
-    }
-
-    const product = value as Partial<ProductApiModel>;
-    return typeof product.id === 'number' && typeof product.name === 'string';
-  }
-
-  private isInventoryLike(value: unknown): value is Inventory {
-    if (!value || typeof value !== 'object') {
-      return false;
-    }
-
-    const inventory = value as Partial<Inventory>;
-    return (
-      typeof inventory.id === 'number' && typeof inventory.name === 'string'
-    );
-  }
-
-  private isInventoryProductLike(value: unknown): value is InventoryProduct {
-    if (!value || typeof value !== 'object') {
-      return false;
-    }
-
-    const inventoryProduct = value as Partial<InventoryProduct>;
-    return (
-      typeof inventoryProduct.id === 'number' &&
-      typeof inventoryProduct.productId === 'number' &&
-      typeof inventoryProduct.inventoryId === 'number'
-    );
-  }
-
-  private isProductListSourceLike(value: unknown): value is ProductListSource {
-    if (!value || typeof value !== 'object') {
-      return false;
-    }
-
-    const product = value as Partial<ProductListSource>;
-    return typeof product.id === 'number' && typeof product.name === 'string';
-  }
-
-  private mapProductToListItem(product: ProductListSource): ProductListItem {
-    return {
-      id: String(product.id),
-      name: product.name,
-      barcode: product.barcode ?? null,
-      unitType: product.unitType ?? undefined,
-      quantityPerUnit: product.quantityPerUnit ?? undefined,
-      quantityUnit: product.quantityUnit ?? null,
-      portionCount: product.portionCount ?? null,
-      portionUnit: product.portionUnit ?? null,
-      portionQuantityNormalized: product.portionQuantityNormalized ?? null,
-      price: product.price ?? null,
-      tagNames: this.resolveTagNames(product.tags),
-      nutritionValuesCount: Array.isArray(product.nutritionValues)
-        ? product.nutritionValues.length
-        : 0,
-      category: this.resolveLinkedEntityName(product.category),
-      genericProduct: this.resolveLinkedEntityName(product.genericProduct),
-    };
-  }
-
-  private resolveInventoryLinkedProductListItem(
-    inventoryProduct: InventoryProduct,
-  ): ProductListItem | null {
-    if (!this.isProductListSourceLike(inventoryProduct.product)) {
-      return null;
-    }
-
-    return this.mapProductToListItem(inventoryProduct.product);
-  }
-
-  private withAvailableQuantity(
-    item: ProductListItem,
-    inventoryProduct: InventoryProduct,
-  ): ProductListItem {
-    return {
-      ...item,
-      availableQuantity:
-        typeof inventoryProduct.qtyOnHandNormalized === 'number' &&
-        Number.isFinite(inventoryProduct.qtyOnHandNormalized)
-          ? inventoryProduct.qtyOnHandNormalized
-          : null,
-      availableQuantityUnit: item.quantityUnit ?? null,
-    };
-  }
-
   private refreshProductListItems(): void {
-    this.productListItemsCache = this.products.map((product) =>
-      this.mapProductToListItem(product),
-    );
+    this.productListItemsCache = mapInputDayProductsToListItems(this.products);
     this.refreshSelectableProductListItems();
   }
 
   private refreshSelectableProductListItems(): void {
-    this.selectableProductListItemsCache =
-      this.buildSelectableProductListItems();
+    this.selectableProductListItemsCache = this.hasSelectedInventories
+      ? buildInputDaySelectableProductListItems({
+          productListItems: this.productListItems,
+          selectedInventoryProducts: this.selectedInventoryProducts,
+        })
+      : [];
   }
 
-  private buildSelectableProductListItems(): ProductListItem[] {
-    if (!this.hasSelectedInventories) {
-      return [];
-    }
-
-    const productsById = new Map(
-      this.productListItems.map((item) => [Number(item.id), item] as const),
-    );
-    const resolvedIds = new Set<number>();
-    const resolvedItems: ProductListItem[] = [];
-
-    for (const inventoryProduct of this.selectedInventoryProducts) {
-      const productId = inventoryProduct.productId;
-      if (
-        !Number.isInteger(productId) ||
-        productId < 1 ||
-        resolvedIds.has(productId)
-      ) {
-        continue;
-      }
-
-      const fallbackItem =
-        this.resolveInventoryLinkedProductListItem(inventoryProduct);
-      const resolvedItem = productsById.get(productId) ?? fallbackItem;
-      if (!resolvedItem) {
-        continue;
-      }
-
-      resolvedIds.add(productId);
-      resolvedItems.push(
-        this.withAvailableQuantity(resolvedItem, inventoryProduct),
-      );
-    }
-
-    return resolvedItems;
-  }
-
-  private resolveTagNames(tags: unknown): string[] {
-    if (!Array.isArray(tags)) {
-      return [];
-    }
-
-    const names = tags
-      .map((tag) => {
-        if (typeof tag === 'string') {
-          return tag.trim();
-        }
-
-        if (!tag || typeof tag !== 'object') {
-          return '';
-        }
-
-        const raw = tag as Record<string, unknown>;
-        const fields = ['name', 'title', 'label', 'key'];
-        for (const field of fields) {
-          const value = raw[field];
-          if (typeof value === 'string' && value.trim() !== '') {
-            return value.trim();
-          }
-        }
-
-        return '';
-      })
-      .filter((name) => name !== '');
-
-    return Array.from(new Set(names));
-  }
-
-  private resolveLinkedEntityName(value: unknown): string {
-    if (!value || typeof value !== 'object') {
-      return 'Aucun';
-    }
-
-    const raw = value as Record<string, unknown>;
-    const fields = ['name', 'title', 'label'];
-    for (const field of fields) {
-      const candidate = raw[field];
-      if (typeof candidate === 'string' && candidate.trim() !== '') {
-        return candidate.trim();
-      }
-    }
-
-    return 'Aucun';
-  }
 }
