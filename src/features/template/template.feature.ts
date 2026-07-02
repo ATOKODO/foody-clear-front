@@ -2,9 +2,7 @@ import {
   Component,
   OnInit,
   TemplateRef,
-  computed,
   inject,
-  signal,
   viewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,30 +13,20 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { DaySet } from '../../interfaces/day-set.interface';
-import { ProductQuantityInputUnit } from '../../interfaces/input-day.interface';
-import { Slot } from '../../interfaces/slot.interface';
-import {
-  CreateTemplateItemDto,
-  Template,
-} from '../../interfaces/template.interface';
-import {
-  TemplateForm,
+import type {
   TemplateFormMode,
   TemplateFormSubmittedEvent,
   TemplateItemDraft,
 } from '../../components/template/template-form/template-form';
+import { TemplateForm } from '../../components/template/template-form/template-form';
 import { TemplateList } from '../../components/template/template-list/template-list';
-import {
-  Product as ProductApiModel,
-  ProductService,
-} from '../../services/product-service';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
-import { DaySetService } from '../../services/day-set-service';
-import { SlotService } from '../../services/slot-service';
-import { TemplateService } from '../../services/template-service';
-import { PreparedDish, PreparedMeal } from '../../interfaces/meal-prep.interface';
-import { MealPrepService } from '../../services/meal-prep-service';
+import type { DaySet } from '../../interfaces/day-set.interface';
+import type { PreparedDish, PreparedMeal } from '../../interfaces/meal-prep.interface';
+import type { Slot } from '../../interfaces/slot.interface';
+import type { Template } from '../../interfaces/template.interface';
+import type { Product as ProductApiModel } from '../../services/product-service';
+import { TemplateFeatureStore } from './template.store';
 
 @Component({
   selector: 'app-template',
@@ -51,252 +39,185 @@ import { MealPrepService } from '../../services/meal-prep-service';
     TemplateForm,
     TemplateList,
   ],
+  providers: [TemplateFeatureStore],
   templateUrl: './template.feature.html',
   styleUrl: './template.feature.scss',
 })
 export class TemplateFeature implements OnInit {
-  private readonly templateSrv = inject(TemplateService);
-  private readonly productSrv = inject(ProductService);
-  private readonly daySetSrv = inject(DaySetService);
-  private readonly slotSrv = inject(SlotService);
-  private readonly mealPrepSrv = inject(MealPrepService);
-
+  private readonly store = inject(TemplateFeatureStore);
+  private readonly dialog = inject(MatDialog);
   private readonly templateEditorDialog = viewChild<TemplateRef<unknown>>(
     'templateEditorDialog',
   );
 
-  private readonly dialog = inject(MatDialog);
-
-  readonly qtyUnitOptions: ProductQuantityInputUnit[] = [
-    'mg',
-    'g',
-    'kg',
-    'ml',
-    'l',
-    'unit',
-    'pack',
-    'tranche',
-    'piece',
-    'part',
-    'bouteille',
-    'portion',
-  ];
-
-  baseUrl = '';
-  private readonly templatesState = signal<Template[]>([]);
-  private readonly productsState = signal<ProductApiModel[]>([]);
-  private readonly dishesState = signal<PreparedDish[]>([]);
-  private readonly mealsState = signal<PreparedMeal[]>([]);
-  private readonly daySetsState = signal<DaySet[]>([]);
-  private readonly slotsState = signal<Slot[]>([]);
-  private readonly selectedTemplateIdState = signal<number | null>(null);
-  private readonly selectedTemplateState = signal<Template | null>(null);
-  private readonly compareDaySetIdState = signal<number | null>(null);
-  private readonly loadingTemplatesState = signal(false);
-  private readonly loadingProductsState = signal(false);
-  private readonly loadingMealPrepState = signal(false);
-  private readonly loadingDaySetsState = signal(false);
-  private readonly loadingSlotsState = signal(false);
-  private readonly savingTemplateState = signal(false);
-  private readonly savingItemState = signal(false);
-  private readonly lastErrorState = signal<unknown>(null);
-  private readonly itemErrorState = signal<string | null>(null);
-
-  private readonly productOptionsState = computed<ProductApiModel[]>(() =>
-    [...this.productsState()].sort((left, right) =>
-      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
-    ),
-  );
-  private readonly dishOptionsState = computed<PreparedDish[]>(() =>
-    [...this.dishesState()].sort((left, right) =>
-      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
-    ),
-  );
-  private readonly mealOptionsState = computed<PreparedMeal[]>(() =>
-    [...this.mealsState()].sort((left, right) =>
-      left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
-    ),
-  );
-  private readonly daySetOptionsState = computed<DaySet[]>(() =>
-    [...this.daySetsState()].sort((left, right) =>
-      left.title.localeCompare(right.title, 'fr', { sensitivity: 'base' }),
-    ),
-  );
-  private readonly slotOptionsState = computed<Slot[]>(() =>
-    [...this.slotsState()].sort(
-      (left, right) =>
-        left.sortOrder - right.sortOrder ||
-        left.title.localeCompare(right.title, 'fr', { sensitivity: 'base' }),
-    ),
-  );
-  private readonly busyState = computed(
-    () =>
-      this.loadingTemplatesState() ||
-      this.loadingProductsState() ||
-      this.loadingMealPrepState() ||
-      this.loadingDaySetsState() ||
-      this.loadingSlotsState() ||
-      this.savingTemplateState() ||
-      this.savingItemState(),
-  );
+  readonly qtyUnitOptions = this.store.qtyUnitOptions;
 
   formMode: TemplateFormMode = 'add';
   editingTemplateId: number | null = null;
-  lastResponse: unknown = null;
   private dialogRef: MatDialogRef<unknown> | null = null;
 
   ngOnInit(): void {
-    this.baseUrl = this.templateSrv.baseUrl;
-    this.syncBaseUrls();
-    this.loadProducts();
-    this.loadMealPrepOptions();
-    this.loadDaySets();
-    this.loadSlots();
-    this.loadTemplates({ autoSelectFirst: true });
+    this.store.init();
+  }
+
+  get baseUrl(): string {
+    return this.store.baseUrl;
+  }
+
+  set baseUrl(value: string) {
+    this.store.baseUrl = value;
   }
 
   get templates(): Template[] {
-    return this.templatesState();
+    return this.store.templates;
   }
 
   set templates(value: Template[]) {
-    this.templatesState.set(value);
+    this.store.templates = value;
   }
 
   get products(): ProductApiModel[] {
-    return this.productsState();
+    return this.store.products;
   }
 
   set products(value: ProductApiModel[]) {
-    this.productsState.set(value);
+    this.store.products = value;
   }
 
   get dishes(): PreparedDish[] {
-    return this.dishesState();
+    return this.store.dishes;
   }
 
   set dishes(value: PreparedDish[]) {
-    this.dishesState.set(value);
+    this.store.dishes = value;
   }
 
   get meals(): PreparedMeal[] {
-    return this.mealsState();
+    return this.store.meals;
   }
 
   set meals(value: PreparedMeal[]) {
-    this.mealsState.set(value);
+    this.store.meals = value;
   }
 
   get daySets(): DaySet[] {
-    return this.daySetsState();
+    return this.store.daySets;
   }
 
   set daySets(value: DaySet[]) {
-    this.daySetsState.set(value);
+    this.store.daySets = value;
   }
 
   get slots(): Slot[] {
-    return this.slotsState();
+    return this.store.slots;
   }
 
   set slots(value: Slot[]) {
-    this.slotsState.set(value);
+    this.store.slots = value;
   }
 
   get selectedTemplateId(): number | null {
-    return this.selectedTemplateIdState();
+    return this.store.selectedTemplateId;
   }
 
   set selectedTemplateId(value: number | null) {
-    this.selectedTemplateIdState.set(value);
+    this.store.selectedTemplateId = value;
   }
 
   get selectedTemplate(): Template | null {
-    return this.selectedTemplateState();
+    return this.store.selectedTemplate;
   }
 
   set selectedTemplate(value: Template | null) {
-    this.selectedTemplateState.set(value);
+    this.store.selectedTemplate = value;
   }
 
   get compareDaySetId(): number | null {
-    return this.compareDaySetIdState();
+    return this.store.compareDaySetId;
   }
 
   set compareDaySetId(value: number | null) {
-    this.compareDaySetIdState.set(value);
+    this.store.compareDaySetId = value;
   }
 
   get loadingTemplates(): boolean {
-    return this.loadingTemplatesState();
+    return this.store.loadingTemplates;
   }
 
   set loadingTemplates(value: boolean) {
-    this.loadingTemplatesState.set(value);
+    this.store.loadingTemplates = value;
   }
 
   get loadingProducts(): boolean {
-    return this.loadingProductsState();
+    return this.store.loadingProducts;
   }
 
   set loadingProducts(value: boolean) {
-    this.loadingProductsState.set(value);
+    this.store.loadingProducts = value;
   }
 
   get loadingMealPrep(): boolean {
-    return this.loadingMealPrepState();
+    return this.store.loadingMealPrep;
   }
 
   set loadingMealPrep(value: boolean) {
-    this.loadingMealPrepState.set(value);
+    this.store.loadingMealPrep = value;
   }
 
   get loadingDaySets(): boolean {
-    return this.loadingDaySetsState();
+    return this.store.loadingDaySets;
   }
 
   set loadingDaySets(value: boolean) {
-    this.loadingDaySetsState.set(value);
+    this.store.loadingDaySets = value;
   }
 
   get loadingSlots(): boolean {
-    return this.loadingSlotsState();
+    return this.store.loadingSlots;
   }
 
   set loadingSlots(value: boolean) {
-    this.loadingSlotsState.set(value);
+    this.store.loadingSlots = value;
   }
 
   get savingTemplate(): boolean {
-    return this.savingTemplateState();
+    return this.store.savingTemplate;
   }
 
   set savingTemplate(value: boolean) {
-    this.savingTemplateState.set(value);
+    this.store.savingTemplate = value;
   }
 
   get savingItem(): boolean {
-    return this.savingItemState();
+    return this.store.savingItem;
   }
 
   set savingItem(value: boolean) {
-    this.savingItemState.set(value);
+    this.store.savingItem = value;
   }
 
   get lastError(): unknown {
-    return this.lastErrorState();
+    return this.store.lastError;
   }
 
   set lastError(value: unknown) {
-    this.lastErrorState.set(value);
+    this.store.lastError = value;
   }
 
   get itemError(): string | null {
-    return this.itemErrorState();
+    return this.store.itemError;
   }
 
   set itemError(value: string | null) {
-    this.itemErrorState.set(value);
+    this.store.itemError = value;
+  }
+
+  get lastResponse(): unknown {
+    return this.store.lastResponse;
+  }
+
+  set lastResponse(value: unknown) {
+    this.store.lastResponse = value;
   }
 
   get editedTemplate(): Template | null {
@@ -322,50 +243,35 @@ export class TemplateFeature implements OnInit {
   }
 
   get productOptions(): ProductApiModel[] {
-    return this.productOptionsState();
+    return this.store.productOptions;
   }
 
   get dishOptions(): PreparedDish[] {
-    return this.dishOptionsState();
+    return this.store.dishOptions;
   }
 
   get mealOptions(): PreparedMeal[] {
-    return this.mealOptionsState();
+    return this.store.mealOptions;
   }
 
   get daySetOptions(): DaySet[] {
-    return this.daySetOptionsState();
+    return this.store.daySetOptions;
   }
 
   get slotOptions(): Slot[] {
-    return this.slotOptionsState();
+    return this.store.slotOptions;
   }
 
   get busy(): boolean {
-    return this.busyState();
+    return this.store.busy;
   }
 
   onBaseUrlChange(): void {
-    this.syncBaseUrls();
-    this.loadProducts();
-    this.loadMealPrepOptions();
-    this.loadDaySets();
-    this.loadSlots();
-    this.loadTemplates({
-      selectId: this.selectedTemplateId,
-      autoSelectFirst: this.selectedTemplateId === null,
-    });
+    this.store.onBaseUrlChange();
   }
 
   onRefreshRequested(): void {
-    this.loadProducts();
-    this.loadMealPrepOptions();
-    this.loadDaySets();
-    this.loadSlots();
-    this.loadTemplates({
-      selectId: this.selectedTemplateId,
-      autoSelectFirst: false,
-    });
+    this.store.onRefreshRequested();
   }
 
   startCreateTemplate(): void {
@@ -384,202 +290,44 @@ export class TemplateFeature implements OnInit {
   }
 
   onTemplateEditRequested(templateId: number): void {
-    if (!Number.isInteger(templateId) || templateId < 1) {
-      return;
-    }
-
-    if (this.selectedTemplate?.id === templateId) {
-      this.openTemplateEditor(templateId);
-      return;
-    }
-
-    this.loadingTemplates = true;
-    this.templateSrv.findOne(templateId, this.compareDaySetId).subscribe({
-      next: (response) => {
-        this.selectedTemplate = response;
-        this.selectedTemplateId = response.id;
-        this.syncTemplateInCollection(response);
-        this.loadingTemplates = false;
-        this.openTemplateEditor(response.id);
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.loadingTemplates = false;
-      },
+    this.store.loadTemplateForEdit(templateId, (readyTemplateId) => {
+      this.openTemplateEditor(readyTemplateId);
     });
   }
 
   onTemplateDeleteRequested(templateId: number): void {
-    if (!Number.isInteger(templateId) || templateId < 1) {
-      return;
-    }
-
     this.onTemplateDeleted(templateId);
   }
 
   selectTemplate(templateId: number): void {
-    this.selectedTemplateId = templateId;
-    this.loadSelectedTemplate();
+    this.store.selectTemplate(templateId);
   }
 
   onCompareDaySetChange(compareDaySetId: number | null): void {
-    this.compareDaySetId = compareDaySetId;
-    this.loadSelectedTemplate();
+    this.store.onCompareDaySetChange(compareDaySetId);
   }
 
   onTemplateSubmitted(event: TemplateFormSubmittedEvent): void {
-    const title = event.title.trim();
-    if (title === '') {
-      return;
-    }
-
-    this.savingTemplate = true;
-    this.lastError = null;
-    this.itemError = null;
-
-    if (event.mode === 'edit' && this.editingTemplateId !== null) {
-      this.templateSrv.update(this.editingTemplateId, { title }).subscribe({
-        next: (response) => {
-          this.lastResponse = response;
-          this.savingTemplate = false;
-          this.formMode = 'edit';
-          this.editingTemplateId = response.id;
-          this.selectedTemplateId = response.id;
-          this.selectedTemplate = response;
-          this.loadTemplates({
-            selectId: this.editingTemplateId,
-            autoSelectFirst: false,
-          });
-        },
-        error: (error) => {
-          this.lastError = error;
-          this.savingTemplate = false;
-        },
-      });
-      return;
-    }
-
-    this.templateSrv.create({ title }).subscribe({
-      next: (response) => {
-        this.lastResponse = response;
-        this.savingTemplate = false;
-        this.formMode = 'edit';
-        this.editingTemplateId = response.id;
-        this.selectedTemplateId = response.id;
-        this.selectedTemplate = response;
-        this.loadTemplates({
-          selectId: response.id,
-          autoSelectFirst: false,
-        });
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.savingTemplate = false;
-      },
+    this.store.saveTemplate(event, this.editingTemplateId, (template) => {
+      this.formMode = 'edit';
+      this.editingTemplateId = template.id;
     });
   }
 
   onTemplateDeleted(templateId: number): void {
-    this.savingTemplate = true;
-    this.lastError = null;
-    this.itemError = null;
-
-    this.templateSrv.remove(templateId).subscribe({
-      next: () => {
-        this.lastResponse = { deleted: true, id: templateId };
-        this.savingTemplate = false;
-        if (this.selectedTemplateId === templateId) {
-          this.selectedTemplateId = null;
-          this.selectedTemplate = null;
-          this.compareDaySetId = null;
-        }
-        if (this.editingTemplateId === templateId) {
-          this.closeEditorDialog();
-        }
-        this.loadTemplates({
-          selectId: this.selectedTemplateId,
-          autoSelectFirst: false,
-        });
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.savingTemplate = false;
-      },
+    this.store.deleteTemplate(templateId, this.editingTemplateId, () => {
+      this.closeEditorDialog();
     });
   }
 
   onItemSubmitted(itemDraft: TemplateItemDraft): void {
-    if (this.editingTemplateId === null) {
-      return;
-    }
-
-    const payload: CreateTemplateItemDto = {
-      itemType: itemDraft.itemType,
-      ...(itemDraft.itemType === 'product' ? { productId: itemDraft.productId as number } : {}),
-      ...(itemDraft.itemType === 'dish' ? { dishId: itemDraft.dishId as number } : {}),
-      ...(itemDraft.itemType === 'meal' ? { mealId: itemDraft.mealId as number } : {}),
-      qty: itemDraft.qty as number,
-      ...(itemDraft.qtyUnit ? { qtyUnit: itemDraft.qtyUnit } : {}),
-      slotId: itemDraft.slotId,
-      ...(itemDraft.slotKey.trim() !== ''
-        ? { slotKey: itemDraft.slotKey.trim() }
-        : {}),
-      ...(itemDraft.slotId === null
-        ? { preferredTime: itemDraft.preferredTime || '06:00' }
-        : {}),
-    };
-
-    this.savingItem = true;
-    this.itemError = null;
-
-    const request =
-      itemDraft.id === null
-        ? this.templateSrv.createItem(this.editingTemplateId, payload)
-        : this.templateSrv.updateItem(
-            this.editingTemplateId,
-            itemDraft.id,
-            payload,
-          );
-
-    request.subscribe({
-      next: (response) => {
-        this.lastResponse = response;
-        this.selectedTemplate = response;
-        this.selectedTemplateId = response.id;
-        this.editingTemplateId = response.id;
-        this.syncTemplateInCollection(response);
-        this.savingItem = false;
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.itemError = 'Impossible de sauvegarder la ligne template.';
-        this.savingItem = false;
-      },
+    this.store.saveItem(this.editingTemplateId, itemDraft, (template) => {
+      this.editingTemplateId = template.id;
     });
   }
 
   onItemDeleted(itemId: number): void {
-    if (this.editingTemplateId === null) {
-      return;
-    }
-
-    this.savingItem = true;
-    this.itemError = null;
-
-    this.templateSrv.removeItem(this.editingTemplateId, itemId).subscribe({
-      next: (response) => {
-        this.lastResponse = response;
-        this.selectedTemplate = response;
-        this.selectedTemplateId = response.id;
-        this.syncTemplateInCollection(response);
-        this.savingItem = false;
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.itemError = 'Impossible de supprimer la ligne template.';
-        this.savingItem = false;
-      },
-    });
+    this.store.deleteItem(this.editingTemplateId, itemId);
   }
 
   closeEditorDialog(): void {
@@ -589,140 +337,6 @@ export class TemplateFeature implements OnInit {
     }
 
     this.resetEditorState();
-  }
-
-  private syncBaseUrls(): void {
-    this.templateSrv.setBaseUrl(this.baseUrl);
-    this.productSrv.setBaseUrl(this.baseUrl);
-    this.daySetSrv.setBaseUrl(this.baseUrl);
-    this.slotSrv.setBaseUrl(this.baseUrl);
-    this.mealPrepSrv.setBaseUrl(this.baseUrl);
-  }
-
-  private loadTemplates(options?: {
-    selectId?: number | null;
-    autoSelectFirst?: boolean;
-  }): void {
-    const selectId = options?.selectId ?? this.selectedTemplateId;
-    const autoSelectFirst = options?.autoSelectFirst ?? false;
-
-    this.loadingTemplates = true;
-    this.templateSrv.findAll().subscribe({
-      next: (response) => {
-        this.templates = response;
-        this.loadingTemplates = false;
-
-        if (
-          typeof selectId === 'number' &&
-          this.templates.some((item) => item.id === selectId)
-        ) {
-          this.selectedTemplateId = selectId;
-          this.loadSelectedTemplate();
-          return;
-        }
-
-        if (autoSelectFirst && this.templates.length > 0) {
-          this.selectedTemplateId = this.templates[0].id;
-          this.loadSelectedTemplate();
-          return;
-        }
-
-        this.selectedTemplateId = null;
-        this.selectedTemplate = null;
-        this.compareDaySetId = null;
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.loadingTemplates = false;
-      },
-    });
-  }
-
-  private loadSelectedTemplate(): void {
-    if (this.selectedTemplateId === null) {
-      this.selectedTemplate = null;
-      return;
-    }
-
-    this.loadingTemplates = true;
-    this.templateSrv
-      .findOne(this.selectedTemplateId, this.compareDaySetId)
-      .subscribe({
-        next: (response) => {
-          this.selectedTemplate = response;
-          this.syncTemplateInCollection(response);
-          this.loadingTemplates = false;
-        },
-        error: (error) => {
-          this.lastError = error;
-          this.loadingTemplates = false;
-        },
-      });
-  }
-
-  private loadMealPrepOptions(): void {
-    this.loadingMealPrep = true;
-    this.mealPrepSrv.findAllDishes().subscribe({
-      next: (response) => {
-        this.dishes = response;
-        this.mealPrepSrv.findAllMeals().subscribe({
-          next: (meals) => {
-            this.meals = meals;
-            this.loadingMealPrep = false;
-          },
-          error: (error) => {
-            this.lastError = error;
-            this.loadingMealPrep = false;
-          },
-        });
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.loadingMealPrep = false;
-      },
-    });
-  }
-
-  private loadProducts(): void {
-    this.loadingProducts = true;
-    this.productSrv.findAll().subscribe({
-      next: (response) => {
-        this.products = response;
-        this.loadingProducts = false;
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.loadingProducts = false;
-      },
-    });
-  }
-
-  private loadDaySets(): void {
-    this.loadingDaySets = true;
-    this.daySetSrv.findAll().subscribe({
-      next: (response) => {
-        this.daySets = response;
-        this.loadingDaySets = false;
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.loadingDaySets = false;
-      },
-    });
-  }
-
-  private loadSlots(): void {
-    this.loadingSlots = true;
-    this.slotSrv.findAll().subscribe({
-      next: (response) => {
-        this.slots = response;
-        this.loadingSlots = false;
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.loadingSlots = false;
-      },
-    });
   }
 
   private openEditorDialog(): void {
@@ -759,21 +373,5 @@ export class TemplateFeature implements OnInit {
     this.editingTemplateId = templateId;
     this.itemError = null;
     this.openEditorDialog();
-  }
-
-  private syncTemplateInCollection(template: Template): void {
-    const nextTemplates = [...this.templates];
-    const index = nextTemplates.findIndex(
-      (candidate) => candidate.id === template.id,
-    );
-    if (index === -1) {
-      nextTemplates.push(template);
-    } else {
-      nextTemplates[index] = template;
-    }
-
-    this.templates = nextTemplates.sort((left, right) =>
-      left.title.localeCompare(right.title, 'fr', { sensitivity: 'base' }),
-    );
   }
 }

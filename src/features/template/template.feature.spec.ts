@@ -8,6 +8,7 @@ import { TemplateService } from '../../services/template-service';
 import { ProductService } from '../../services/product-service';
 import { DaySetService } from '../../services/day-set-service';
 import { SlotService } from '../../services/slot-service';
+import { MealPrepService } from '../../services/meal-prep-service';
 import { TemplateItemDraft } from '../../components/template/template-form/template-form';
 
 describe('TemplateFeature', () => {
@@ -100,6 +101,12 @@ describe('TemplateFeature', () => {
     findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
   };
 
+  const mealPrepServiceMock = {
+    setBaseUrl: jasmine.createSpy('setBaseUrl'),
+    findAllDishes: jasmine.createSpy('findAllDishes').and.returnValue(of([])),
+    findAllMeals: jasmine.createSpy('findAllMeals').and.returnValue(of([])),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TemplateFeature],
@@ -108,6 +115,7 @@ describe('TemplateFeature', () => {
         { provide: ProductService, useValue: productServiceMock },
         { provide: DaySetService, useValue: daySetServiceMock },
         { provide: SlotService, useValue: slotServiceMock },
+        { provide: MealPrepService, useValue: mealPrepServiceMock },
         provideNoopAnimations(),
       ],
     }).compileComponents();
@@ -139,6 +147,10 @@ describe('TemplateFeature', () => {
 
     slotServiceMock.setBaseUrl.calls.reset();
     slotServiceMock.findAll.calls.reset();
+
+    mealPrepServiceMock.setBaseUrl.calls.reset();
+    mealPrepServiceMock.findAllDishes.calls.reset();
+    mealPrepServiceMock.findAllMeals.calls.reset();
 
     fixture = TestBed.createComponent(TemplateFeature);
     component = fixture.componentInstance;
