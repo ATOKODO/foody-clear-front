@@ -97,21 +97,26 @@ describe('ShoppingList', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelector('[data-testid="shopping-list-panel"]')).not.toBeNull();
-    expect(element.textContent).toContain('Listes de course');
+    expect(element.textContent).toContain('Liste de course');
     expect(element.textContent).toContain('Courses semaine');
+
+    component.store.onActiveViewChange('template');
+    fixture.detectChanges();
+
+    expect(element.textContent).toContain('Modele de course');
     expect(element.textContent).toContain('Base meal prep');
   });
 
   it('should create a list from the draft form', () => {
-    component.draftListName = 'Courses week-end';
+    component.store.draftListName = 'Courses week-end';
 
-    component.createList();
+    component.store.createList();
 
     expect(shoppingListServiceMock.create).toHaveBeenCalledWith({ name: 'Courses week-end' });
   });
 
   it('should expose unit, portion and gram options for a linked product', () => {
-    const options = component.getItemQtyUnitOptions({
+    const options = component.store.getItemQtyUnitOptions({
       id: 101,
       productId: 1,
       product: { id: 1, name: 'Poulet', unitType: 'Paquet', portionUnit: 'portion' },
@@ -128,9 +133,9 @@ describe('ShoppingList', () => {
   });
 
   it('should convert checked items into inventory', () => {
-    component['selectedListIdState'].set(11);
-    component.selectedInventoryId = 4;
-    const list = component.selectedList;
+    component.store.selectList(11);
+    component.store.selectedInventoryId = 4;
+    const list = component.store.selectedList;
     if (!list) {
       fail('selected list should exist');
       return;
@@ -146,7 +151,7 @@ describe('ShoppingList', () => {
       },
     ];
 
-    component.convertChecked();
+    component.store.convertChecked();
 
     expect(shoppingListServiceMock.convertChecked).toHaveBeenCalledWith(11, { inventoryId: 4 });
   });
