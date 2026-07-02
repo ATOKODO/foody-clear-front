@@ -1,32 +1,32 @@
 @if (embedded()) {
   <div class="slot-feature slot-feature--embedded" data-testid="slot-page">
     <div class="app-status-row">
-      @if (loading) {
+      @if (store.loading) {
         <span class="app-status-pill app-status-pill--neutral">
           Chargement...
         </span>
       }
-      @if (saving) {
+      @if (store.saving) {
         <span class="app-status-pill app-status-pill--saving">
           Sauvegarde...
         </span>
       }
-      @if (loadingMeta) {
+      @if (store.loadingMeta) {
         <span class="app-status-pill app-status-pill--info">
           Meta nutrition...
         </span>
       }
     </div>
-    @if (lastError) {
-      <app-ui-error-panel [error]="lastError" />
+    @if (store.lastError) {
+      <app-ui-error-panel [error]="store.lastError" />
     }
-    @if (lastMetaError) {
+    @if (store.lastMetaError) {
       <p class="app-alert">
         Impossible de charger les cles nutritionnelles meta, fallback actif.
       </p>
     }
     <app-slot-list mode="manage"
-      [slots]="slotListItems()"
+      [slots]="store.slotListItems()"
       [embedded]="true"
       (addRequested)="onAddRequested()"
       (editRequested)="onEditRequested($event)"
@@ -44,32 +44,32 @@
       </div>
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
-          @if (loading) {
+          @if (store.loading) {
             <span class="app-status-pill app-status-pill--neutral">
               Chargement...
             </span>
           }
-          @if (saving) {
+          @if (store.saving) {
             <span class="app-status-pill app-status-pill--saving">
               Sauvegarde...
             </span>
           }
-          @if (loadingMeta) {
+          @if (store.loadingMeta) {
             <span class="app-status-pill app-status-pill--info">
               Meta nutrition...
             </span>
           }
         </div>
-        @if (lastError) {
-          <app-ui-error-panel [error]="lastError" />
+        @if (store.lastError) {
+          <app-ui-error-panel [error]="store.lastError" />
         }
-        @if (lastMetaError) {
+        @if (store.lastMetaError) {
           <p class="app-alert">
             Impossible de charger les cles nutritionnelles meta, fallback actif.
           </p>
         }
         <app-slot-list mode="manage"
-          [slots]="slotListItems()"
+          [slots]="store.slotListItems()"
           (addRequested)="onAddRequested()"
           (editRequested)="onEditRequested($event)"
           (deleteRequested)="onDeleteRequested($event)"
@@ -80,7 +80,7 @@
 }
 
 
-@if (formVisible()) {
+@if (store.formVisible()) {
   <div
     class="app-modal-backdrop"
     [class.app-modal-backdrop--embedded-slot]="embedded()"
@@ -92,7 +92,7 @@
     (keydown.enter)="onCancelForm()"
     (keydown.space)="onCancelForm(); $event.preventDefault()"></div>
 }
-@if (formVisible()) {
+@if (store.formVisible()) {
   <div
     class="app-modal-shell"
     [class.app-modal-shell--embedded-slot]="embedded()"
@@ -110,7 +110,7 @@
         <div>
           <p class="app-dialog-eyebrow">Planning</p>
           <h3 class="app-dialog-title">
-            {{ formMode === 'edit' ? 'Modifier un slot' : 'Ajouter un slot' }}
+            {{ store.formMode === 'edit' ? 'Modifier un slot' : 'Ajouter un slot' }}
           </h3>
           <p class="app-dialog-subtitle">
             Definis la cle, la plage horaire et les objectifs nutritionnels de ce slot.
@@ -121,10 +121,10 @@
         </button>
       </div>
       <div class="app-dialog-content slot-feature__dialog-content">
-        <app-slot-form [mode]="formMode"
-          [slot]="formInitialValue"
+        <app-slot-form [mode]="store.formMode"
+          [slot]="store.formInitialValue"
           [showHeading]="false"
-          [nutritionKeys]="nutritionKeys"
+          [nutritionKeys]="store.nutritionKeys"
           (submitted)="onFormSubmitted($event)"
           (menuClicked)="onMenuClicked()" />
       </div>

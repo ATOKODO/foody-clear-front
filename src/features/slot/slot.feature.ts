@@ -1,13 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  computed,
-  input,
-  output,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, inject, input, output, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -15,19 +7,14 @@ import {
   SlotFormMode,
   SlotFormValue,
 } from '../../components/slot/slot-form/slot-form';
-import {
-  SlotList,
-  SlotListItem,
-} from '../../components/slot/slot-list/slot-list';
-import { CycleNutritionValue } from '../../interfaces/cycle.interface';
-import { CreateSlotDto, Slot } from '../../interfaces/slot.interface';
-import { MetaService, NutritionKeyMeta } from '../../services/meta-service';
-import { SlotService } from '../../services/slot-service';
+import { SlotList, SlotListItem } from '../../components/slot/slot-list/slot-list';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import { SlotFeatureStore } from './slot.store';
 
 @Component({
   selector: 'app-slot-feature',
   imports: [MatButtonModule, MatCardModule, UiErrorPanel, SlotList, SlotForm],
+  providers: [SlotFeatureStore],
   templateUrl: './slot.feature.html',
   styleUrl: './slot.feature.scss',
   host: {
@@ -35,46 +22,31 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
   },
 })
 export class SlotFeature implements OnInit {
-  private readonly slotSrv = inject(SlotService);
-  private readonly metaSrv = inject(MetaService);
+  readonly store = inject(SlotFeatureStore);
   private readonly document = inject(DOCUMENT);
 
   readonly embedded = input(false);
   readonly dataChanged = output<void>();
-
-  private readonly slotsState = signal<Slot[]>([]);
-  readonly slotListItems = computed<SlotListItem[]>(() =>
-    this.slotsState().map((slot) => ({
-      id: String(slot.id),
-      key: slot.key,
-      title: slot.title,
-      sortOrder: slot.sortOrder,
-      startTime: slot.startTime ?? null,
-      endTime: slot.endTime ?? null,
-      nutritionValues: slot.nutritionValues ?? [],
-    })),
-  );
-  private readonly loadingState = signal(false);
-  private readonly savingState = signal(false);
-
-  readonly formVisible = signal(false);
-  formMode: SlotFormMode = 'add';
-  editingSlotId: number | null = null;
-  formInitialValue: Partial<SlotFormValue> | null = null;
-
-  lastResponse: unknown = null;
-  lastError: unknown = null;
-  private readonly loadingMetaState = signal(false);
-  lastMetaError: unknown = null;
-  nutritionKeys: NutritionKeyMeta[] = [];
   readonly embeddedDialogTopOffset = signal(0);
 
   ngOnInit(): void {
-    this.refresh();
+    this.store.refresh();
+  }
+
+  get loading(): boolean {
+    return this.store.loading;
+  }
+
+  get saving(): boolean {
+    return this.store.saving;
+  }
+
+  get loadingMeta(): boolean {
+    return this.store.loadingMeta;
   }
 
   onWindowResize(): void {
-    if (!this.formVisible() || !this.embedded()) {
+    if (!this.store.formVisible() || !this.embedded()) {
       return;
     }
 
@@ -82,47 +54,13 @@ export class SlotFeature implements OnInit {
   }
 
   refresh(): void {
-    this.loadNutritionKeys();
-    this.loadSlots();
-  }
-
-  get loading(): boolean {
-    return this.loadingState();
-  }
-
-  set loading(value: boolean) {
-    this.loadingState.set(value);
-  }
-
-  get saving(): boolean {
-    return this.savingState();
-  }
-
-  set saving(value: boolean) {
-    this.savingState.set(value);
-  }
-
-  get loadingMeta(): boolean {
-    return this.loadingMetaState();
-  }
-
-  set loadingMeta(value: boolean) {
-    this.loadingMetaState.set(value);
-  }
-
-  get slots(): Slot[] {
-    return this.slotsState();
-  }
-
-  set slots(value: Slot[]) {
-    this.slotsState.set(value);
+    this.store.refresh();
   }
 
   onAddRequested(): void {
-    this.formMode = 'add';
-    this.editingSlotId = null;
-    this.formInitialValue = null;
-    this.openForm();
+    if (this.store.onAddRequested()) {
+      this.syncEmbeddedDialogLayout();
+    }
   }
 
   openCreate(): void {
@@ -130,115 +68,25 @@ export class SlotFeature implements OnInit {
   }
 
   onEditRequested(item: SlotListItem): void {
-    const slotId = Number(item.id);
-    if (!Number.isFinite(slotId)) {
-      return;
+    if (this.store.onEditRequested(item)) {
+      this.syncEmbeddedDialogLayout();
     }
-
-    const slot = this.slots.find((value) => value.id === slotId);
-    if (!slot) {
-      return;
-    }
-
-    this.formMode = 'edit';
-    this.editingSlotId = slot.id;
-    this.formInitialValue = {
-      key: slot.key,
-      title: slot.title,
-      sortOrder: slot.sortOrder,
-      startTime: slot.startTime ?? null,
-      endTime: slot.endTime ?? null,
-      nutritionValues: this.getEditableNutritionValues(slot),
-    };
-    this.openForm();
   }
 
   onDeleteRequested(item: SlotListItem): void {
-    const slotId = Number(item.id);
-    if (!Number.isFinite(slotId)) {
-      return;
-    }
-
-    this.saving = true;
-    this.slotSrv.remove(slotId).subscribe({
-      next: () => {
-        this.lastResponse = { deleted: true, id: slotId };
-        this.lastError = null;
-        this.saving = false;
-        this.dataChanged.emit();
-
-        if (this.editingSlotId === slotId) {
-          this.onCancelForm();
-        }
-
-        this.loadSlots();
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.saving = false;
-      },
-    });
+    this.store.onDeleteRequested(item, () => this.dataChanged.emit());
   }
 
   onFormSubmitted(event: { mode: SlotFormMode; value: SlotFormValue }): void {
-    const payload = this.toCreateDto(event.value);
-    this.saving = true;
-
-    if (event.mode === 'edit' && this.editingSlotId !== null) {
-      this.slotSrv.update(this.editingSlotId, payload).subscribe({
-        next: (response) => {
-          this.lastResponse = response;
-          this.lastError = null;
-          this.saving = false;
-          this.closeForm();
-          this.dataChanged.emit();
-          this.loadSlots();
-        },
-        error: (error) => {
-          this.lastError = error;
-          this.saving = false;
-        },
-      });
-      return;
-    }
-
-    this.slotSrv.create(payload).subscribe({
-      next: (response) => {
-        this.lastResponse = response;
-        this.lastError = null;
-        this.saving = false;
-        this.closeForm();
-        this.dataChanged.emit();
-        this.loadSlots();
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.saving = false;
-      },
-    });
+    this.store.onFormSubmitted(event, () => this.dataChanged.emit());
   }
 
   onMenuClicked(): void {
-    this.lastResponse = {
-      info: 'Action menu slot-form capturee.',
-      at: new Date().toISOString(),
-    };
+    this.store.onMenuClicked();
   }
 
   onCancelForm(): void {
-    this.closeForm();
-  }
-
-  private openForm(): void {
-    this.formVisible.set(true);
-    this.syncEmbeddedDialogLayout();
-  }
-
-  private closeForm(): void {
-    this.formVisible.set(false);
-    this.formMode = 'add';
-    this.formInitialValue = null;
-    this.editingSlotId = null;
+    this.store.onCancelForm();
   }
 
   private syncEmbeddedDialogLayout(): void {
@@ -261,110 +109,5 @@ export class SlotFeature implements OnInit {
           : 0,
       );
     });
-  }
-
-  private loadNutritionKeys(): void {
-    this.loadingMeta = true;
-    this.metaSrv.getNutritionKeys().subscribe({
-      next: (nutritionKeys) => {
-        this.nutritionKeys = nutritionKeys;
-        this.lastMetaError = null;
-        this.loadingMeta = false;
-      },
-      error: (error) => {
-        this.lastMetaError = error;
-        this.loadingMeta = false;
-      },
-    });
-  }
-
-  private loadSlots(): void {
-    this.loading = true;
-    this.slotSrv.findAll().subscribe({
-      next: (response) => {
-        this.slots = response;
-        this.lastResponse = response;
-        this.lastError = null;
-        this.loading = false;
-
-        if (
-          this.editingSlotId !== null &&
-          !this.slots.some((slot) => slot.id === this.editingSlotId)
-        ) {
-          this.onCancelForm();
-        }
-      },
-      error: (error) => {
-        this.lastError = error;
-        this.loading = false;
-      },
-    });
-  }
-
-  private toCreateDto(value: SlotFormValue): CreateSlotDto {
-    return {
-      key: value.key.trim(),
-      title: value.title,
-      sortOrder: Number.isFinite(value.sortOrder)
-        ? Math.max(0, value.sortOrder)
-        : 0,
-      startTime: this.normalizeTime(value.startTime),
-      endTime: this.normalizeTime(value.endTime),
-      nutritionValues: this.normalizeNutritionValues(value.nutritionValues),
-    };
-  }
-
-  private normalizeNutritionValues(
-    values: CycleNutritionValue[],
-  ): CycleNutritionValue[] {
-    return values
-      .map((value) => ({
-        nutritionKey: value.nutritionKey.trim().toUpperCase(),
-        amount: Number.isFinite(value.amount) ? Math.max(0, value.amount) : 0,
-        unit: value.unit,
-        reference: value.reference,
-      }))
-      .filter((value) => value.nutritionKey !== '');
-  }
-
-  private getEditableNutritionValues(slot: Slot): CycleNutritionValue[] {
-    if (slot.nutritionValues && slot.nutritionValues.length > 0) {
-      return slot.nutritionValues.map((value) => ({
-        nutritionKey: value.nutritionKey,
-        amount: value.amount,
-        unit: value.unit,
-        reference: value.reference,
-      }));
-    }
-
-    return [
-      {
-        nutritionKey: 'PROTEIN',
-        amount: 0,
-        unit: 'G',
-        reference: 'PER_100G',
-      },
-      {
-        nutritionKey: 'CARBOHYDRATE',
-        amount: 0,
-        unit: 'G',
-        reference: 'PER_100G',
-      },
-      {
-        nutritionKey: 'FAT',
-        amount: 0,
-        unit: 'G',
-        reference: 'PER_100G',
-      },
-    ];
-  }
-
-  private normalizeTime(value: string | null | undefined): string | null {
-    if (!value) {
-      return null;
-    }
-
-    const trimmed = value.trim();
-    return trimmed === '' ? null : trimmed;
   }
 }
