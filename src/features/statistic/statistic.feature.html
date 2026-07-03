@@ -88,7 +88,7 @@
     data-testid="stat-view-switch"
     aria-label="Changer de vue statistiques"
   >
-    @for (view of views; track view) {
+    @for (view of views; track view.value) {
       <mat-button-toggle
         [value]="view.value"
         [attr.data-testid]="'stat-view-' + view.value"
@@ -131,7 +131,7 @@
           </div>
         </div>
         <div class="expense-timeline" data-testid="stat-expense-timeline">
-          @for (day of timeline.days; track day) {
+          @for (day of timeline.days; track day.dateLocal) {
             <button
               type="button"
               class="expense-bar"
@@ -176,7 +176,7 @@
         </div>
         @if (day.expenses.events.length > 0) {
           <div class="detail-list">
-            @for (event of day.expenses.events; track event) {
+            @for (event of day.expenses.events; track event.id) {
               <article
                 class="detail-item"
                 [attr.data-testid]="'stat-expense-event-' + event.id"
@@ -258,7 +258,7 @@
           [(ngModel)]="activeMetric"
           aria-label="Choisir la metrique"
         >
-          @for (metric of metricOptions; track metric) {
+          @for (metric of metricOptions; track metric.key) {
             <mat-button-toggle [value]="metric.key">
               {{ metric.label }}
             </mat-button-toggle>
@@ -267,7 +267,7 @@
       </div>
       @if (timelineResponse; as timeline) {
         <div class="target-timeline" data-testid="stat-target-timeline">
-          @for (day of timeline.days; track day) {
+          @for (day of timeline.days; track day.dateLocal) {
             <button
               type="button"
               class="target-bar"
@@ -358,7 +358,7 @@
             [(ngModel)]="selectedPriceProductId"
             (selectionChange)="onPriceProductChange()"
           >
-            @for (product of products; track product) {
+            @for (product of products; track product.id) {
               <mat-option [value]="product.id">
                 {{ product.name }} (#{{ product.id }})
               </mat-option>
@@ -469,7 +469,7 @@
       @if (priceHistoryResponse; as history) {
         @if (history.changes.length > 0) {
           <div class="price-timeline" data-testid="stat-price-timeline">
-            @for (change of history.changes; track change) {
+            @for (change of history.changes; track change.id) {
               <article
                 class="price-timeline__item"
                 [attr.data-testid]="'stat-price-change-' + change.id"

@@ -8,7 +8,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
-import { DateTime } from 'luxon';
 import {
   InventoryPurchaseEventSummary,
   ProductPriceHistoryStatsResponse,
@@ -19,9 +18,36 @@ import {
 import { Product, ProductService } from '../../services/product-service';
 import { StatisticService } from '../../services/statistic-service';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
-
-type StatisticView = 'expenses' | 'targets' | 'prices';
-type StatisticMetricKey = 'energyKcal' | 'proteins' | 'carbs' | 'lipids';
+import {
+  buildStatisticPriceCorrectionDto,
+  buildStatisticTimelineRequestKey,
+  findSelectedStatisticTimelineDay,
+  findStatisticMetricOption,
+  formatStatisticCurrency,
+  formatStatisticDate,
+  formatStatisticDateTime,
+  formatStatisticMetricValue,
+  formatStatisticPriceChangeUnit,
+  getStatisticBarHeight,
+  getStatisticExpenseMax,
+  getStatisticPurchaseEventStatusLabel,
+  getStatisticSelectedProductName,
+  getStatisticTargetActualHeight,
+  getStatisticTargetGoalHeight,
+  getStatisticTargetMax,
+  isStatisticDateRangeValid,
+  resolveSelectedStatisticTimelineDate,
+  resolveStatisticDateRange,
+  resolveStatisticPriceCorrectionDefaults,
+  resolveStatisticTimezone,
+} from './statistic.helpers';
+import {
+  STATISTIC_METRIC_OPTIONS,
+  STATISTIC_PRICE_UNIT_OPTIONS,
+  STATISTIC_VIEW_OPTIONS,
+  StatisticMetricKey,
+  StatisticView,
+} from './statistic.models';
 
 @Component({
   selector: 'app-statistic',
@@ -45,10 +71,12 @@ export class StatisticFeature implements OnInit {
   private readonly productService = inject(ProductService);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
 
+  private readonly initialDateRange = resolveStatisticDateRange(30);
+
   baseUrl = '';
-  timezone = DateTime.local().zoneName || 'UTC';
-  fromDateLocal = DateTime.local().minus({ days: 29 }).toFormat('yyyy-LL-dd');
-  toDateLocal = DateTime.local().toFormat('yyyy-LL-dd');
+  timezone = resolveStatisticTimezone();
+  fromDateLocal = this.initialDateRange.fromDateLocal;
+  toDateLocal = this.initialDateRange.toDateLocal;
 
   activeView: StatisticView = 'targets';
   activeMetric: StatisticMetricKey = 'energyKcal';
@@ -77,35 +105,9 @@ export class StatisticFeature implements OnInit {
   priceCorrectionRecalculatePurchases = true;
   private activeTimelineRequestKey: string | null = null;
 
-  readonly views: { value: StatisticView; label: string }[] = [
-    { value: 'targets', label: 'Objectifs' },
-    { value: 'expenses', label: 'Depenses' },
-    { value: 'prices', label: 'Prix produit' },
-  ];
-  readonly priceUnitOptions: ProductPriceUnit[] = [
-    'kg',
-    'g',
-    'l',
-    'ml',
-    'unite',
-    'paquet',
-    'bouteille',
-    'boite',
-    'sachet',
-    'canette',
-    'bocal',
-    'autre',
-  ];
-  readonly metricOptions: {
-    key: StatisticMetricKey;
-    label: string;
-    unit: string;
-  }[] = [
-    { key: 'energyKcal', label: 'Energie', unit: 'kcal' },
-    { key: 'proteins', label: 'Proteines', unit: 'g' },
-    { key: 'carbs', label: 'Glucides', unit: 'g' },
-    { key: 'lipids', label: 'Lipides', unit: 'g' },
-  ];
+  readonly views = STATISTIC_VIEW_OPTIONS;
+  readonly priceUnitOptions = STATISTIC_PRICE_UNIT_OPTIONS;
+  readonly metricOptions = STATISTIC_METRIC_OPTIONS;
 
   ngOnInit(): void {
     this.baseUrl = this.statisticService.baseUrl;
@@ -122,10 +124,9 @@ export class StatisticFeature implements OnInit {
   }
 
   applyQuickRange(days: number): void {
-    this.fromDateLocal = DateTime.local()
-      .minus({ days: days - 1 })
-      .toFormat('yyyy-LL-dd');
-    this.toDateLocal = DateTime.local().toFormat('yyyy-LL-dd');
+    const range = resolveStatisticDateRange(days);
+    this.fromDateLocal = range.fromDateLocal;
+    this.toDateLocal = range.toDateLocal;
     this.priceCorrectionFromDateLocal = this.fromDateLocal;
     this.loadTimeline();
     this.loadPriceHistory();
@@ -154,15 +155,16 @@ export class StatisticFeature implements OnInit {
   }
 
   submitPriceCorrection(): void {
-    if (
-      this.selectedPriceProductId == null ||
-      this.priceCorrectionPrice == null ||
-      !Number.isFinite(this.priceCorrectionPrice) ||
-      this.priceCorrectionPrice < 0 ||
-      this.priceCorrectionFromDateLocal.length !== 10 ||
-      (this.priceCorrectionToDateLocal !== '' &&
-        this.priceCorrectionToDateLocal < this.priceCorrectionFromDateLocal)
-    ) {
+    const dto = buildStatisticPriceCorrectionDto({
+      selectedProductId: this.selectedPriceProductId,
+      price: this.priceCorrectionPrice,
+      priceUnit: this.priceCorrectionPriceUnit,
+      fromDateLocal: this.priceCorrectionFromDateLocal,
+      toDateLocal: this.priceCorrectionToDateLocal,
+      recalculatePurchases: this.priceCorrectionRecalculatePurchases,
+    });
+
+    if (!dto) {
       this.priceCorrectionError = { message: 'Correction de prix invalide.' };
       return;
     }
@@ -170,17 +172,7 @@ export class StatisticFeature implements OnInit {
     this.correctingPrice = true;
     this.priceCorrectionError = null;
     this.statisticService
-      .correctProductPrice(
-        {
-          productId: this.selectedPriceProductId,
-          price: this.priceCorrectionPrice,
-          priceUnit: this.priceCorrectionPriceUnit,
-          effectiveFrom: this.priceCorrectionFromDateLocal,
-          effectiveTo: this.priceCorrectionToDateLocal || null,
-          recalculatePurchases: this.priceCorrectionRecalculatePurchases,
-        },
-        this.timezone,
-      )
+      .correctProductPrice(dto, this.timezone)
       .subscribe({
         next: (response) => {
           this.priceHistoryResponse = response.priceHistory;
@@ -199,59 +191,38 @@ export class StatisticFeature implements OnInit {
   }
 
   get selectedTimelineDay(): StatisticsTimelineDay | null {
-    if (!this.timelineResponse) {
-      return null;
-    }
-
-    const dateLocal =
-      this.selectedTimelineDateLocal ||
-      this.timelineResponse.days[0]?.dateLocal;
-    return (
-      this.timelineResponse.days.find((day) => day.dateLocal === dateLocal) ??
-      null
+    return findSelectedStatisticTimelineDay(
+      this.timelineResponse,
+      this.selectedTimelineDateLocal,
     );
   }
 
   get expenseMax(): number {
-    return Math.max(
-      1,
-      ...(this.timelineResponse?.days.map(
-        (day) => day.expenses.totalAmount,
-      ) ?? [0]),
-    );
+    return getStatisticExpenseMax(this.timelineResponse);
   }
 
   get targetMax(): number {
-    const values = (this.timelineResponse?.days ?? []).flatMap((day) => {
-      const actual = day.inputs.dayTotal[this.activeMetric];
-      const target = day.inputs.targets?.[this.activeMetric] ?? 0;
-      return [
-        typeof actual === 'number' ? actual : 0,
-        typeof target === 'number' ? target : 0,
-      ];
-    });
-    return Math.max(1, ...values);
+    return getStatisticTargetMax(this.timelineResponse, this.activeMetric);
   }
 
   get metricLabel(): string {
     return (
-      this.metricOptions.find((item) => item.key === this.activeMetric)
-        ?.label ?? this.activeMetric
+      findStatisticMetricOption(this.metricOptions, this.activeMetric)?.label ??
+      this.activeMetric
     );
   }
 
   get metricUnit(): string {
     return (
-      this.metricOptions.find((item) => item.key === this.activeMetric)?.unit ??
+      findStatisticMetricOption(this.metricOptions, this.activeMetric)?.unit ??
       ''
     );
   }
 
   get selectedProductName(): string {
-    return (
-      this.products.find(
-        (product) => product.id === this.selectedPriceProductId,
-      )?.name ?? 'Aucun produit'
+    return getStatisticSelectedProductName(
+      this.products,
+      this.selectedPriceProductId,
     );
   }
 
@@ -280,76 +251,43 @@ export class StatisticFeature implements OnInit {
   }
 
   getBarHeight(value: number, max: number): number {
-    return Math.max(6, Math.round((value / max) * 100));
+    return getStatisticBarHeight(value, max);
   }
 
   getTargetActualHeight(day: StatisticsTimelineDay): number {
-    const value = day.inputs.dayTotal[this.activeMetric];
-    return typeof value === 'number'
-      ? this.getBarHeight(value, this.targetMax)
-      : 6;
+    return getStatisticTargetActualHeight(
+      day,
+      this.activeMetric,
+      this.targetMax,
+    );
   }
 
   getTargetGoalHeight(day: StatisticsTimelineDay): number {
-    const value = day.inputs.targets?.[this.activeMetric] ?? 0;
-    return this.getBarHeight(value, this.targetMax);
+    return getStatisticTargetGoalHeight(day, this.activeMetric, this.targetMax);
   }
 
   formatCurrency(value: number | null | undefined): string {
-    const normalized =
-      typeof value === 'number' && Number.isFinite(value) ? value : 0;
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(normalized);
+    return formatStatisticCurrency(value);
   }
 
   formatMetricValue(value: unknown): string {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      return `${this.round(value)} ${this.metricUnit}`.trim();
-    }
-
-    if (typeof value === 'string' && value.trim() !== '') {
-      return value;
-    }
-
-    return '--';
+    return formatStatisticMetricValue(value, this.metricUnit);
   }
 
   formatDateTime(value: string | null | undefined): string {
-    if (!value) {
-      return '--';
-    }
-
-    const parsed = DateTime.fromISO(value, { setZone: true });
-    if (!parsed.isValid) {
-      return value;
-    }
-
-    return parsed.setZone(this.timezone).toFormat('dd/LL HH:mm');
+    return formatStatisticDateTime(value, this.timezone);
   }
 
   formatDate(value: string): string {
-    const parsed = DateTime.fromISO(value);
-    return parsed.isValid ? parsed.toFormat('dd/LL') : value;
+    return formatStatisticDate(value);
   }
 
   formatPriceChangeUnit(value: ProductPriceUnit | null | undefined): string {
-    return value ? `/${value}` : '';
+    return formatStatisticPriceChangeUnit(value);
   }
 
   getPurchaseEventStatusLabel(event: InventoryPurchaseEventSummary): string {
-    if (event.excludedFromStats || event.pricingStatus === 'excluded') {
-      return event.exclusionReason === 'refunded' ? 'rembourse' : 'exclu';
-    }
-
-    if (event.pricingStatus === 'free') {
-      return 'gratuit';
-    }
-
-    return event.pricingStatus === 'complete' ? 'complet' : 'prix incomplet';
+    return getStatisticPurchaseEventStatusLabel(event);
   }
 
   private updatePurchaseEventExclusion(
@@ -374,7 +312,10 @@ export class StatisticFeature implements OnInit {
           this.timelineResponse = response;
           this.savingPurchaseEventId = null;
           this.selectedTimelineDateLocal =
-            this.resolveSelectedTimelineDate(response);
+            resolveSelectedStatisticTimelineDate(
+              response,
+              this.selectedTimelineDateLocal,
+            );
           this.changeDetectorRef.detectChanges();
         },
         error: (error) => {
@@ -386,24 +327,28 @@ export class StatisticFeature implements OnInit {
   }
 
   private syncPriceCorrectionDefaults(): void {
-    const selected = this.products.find(
-      (product) => product.id === this.selectedPriceProductId,
+    const defaults = resolveStatisticPriceCorrectionDefaults(
+      this.products,
+      this.selectedPriceProductId,
+      {
+        price: this.priceCorrectionPrice,
+        priceUnit: this.priceCorrectionPriceUnit,
+      },
     );
-    this.priceCorrectionPrice =
-      typeof selected?.price === 'number' && Number.isFinite(selected.price)
-        ? selected.price
-        : this.priceCorrectionPrice;
-    this.priceCorrectionPriceUnit =
-      (selected?.priceUnit as ProductPriceUnit | null | undefined) ??
-      this.priceCorrectionPriceUnit;
+    this.priceCorrectionPrice = defaults.price;
+    this.priceCorrectionPriceUnit = defaults.priceUnit;
   }
 
   private loadTimeline(): void {
-    if (!this.isDateRangeValid()) {
+    if (!this.isCurrentDateRangeValid()) {
       return;
     }
 
-    const requestKey = this.buildTimelineRequestKey();
+    const requestKey = buildStatisticTimelineRequestKey(
+      this.fromDateLocal,
+      this.toDateLocal,
+      this.timezone,
+    );
     if (this.loadingTimeline && this.activeTimelineRequestKey === requestKey) {
       return;
     }
@@ -419,7 +364,10 @@ export class StatisticFeature implements OnInit {
           this.loadingTimeline = false;
           this.activeTimelineRequestKey = null;
           this.selectedTimelineDateLocal =
-            this.resolveSelectedTimelineDate(response);
+            resolveSelectedStatisticTimelineDate(
+              response,
+              this.selectedTimelineDateLocal,
+            );
           this.changeDetectorRef.detectChanges();
         },
         error: (error) => {
@@ -456,7 +404,7 @@ export class StatisticFeature implements OnInit {
   }
 
   private loadPriceHistory(): void {
-    if (!this.isDateRangeValid() || this.selectedPriceProductId == null) {
+    if (!this.isCurrentDateRangeValid() || this.selectedPriceProductId == null) {
       this.priceHistoryResponse = null;
       return;
     }
@@ -485,31 +433,7 @@ export class StatisticFeature implements OnInit {
       });
   }
 
-  private buildTimelineRequestKey(): string {
-    return `${this.fromDateLocal}|${this.toDateLocal}|${this.timezone}`;
-  }
-
-  private resolveSelectedTimelineDate(
-    response: StatisticsTimelineResponse,
-  ): string {
-    return this.selectedTimelineDateLocal &&
-      response.days.some(
-        (day) => day.dateLocal === this.selectedTimelineDateLocal,
-      )
-      ? this.selectedTimelineDateLocal
-      : (response.days[0]?.dateLocal ?? '');
-  }
-
-  private isDateRangeValid(): boolean {
-    return (
-      this.fromDateLocal.length === 10 &&
-      this.toDateLocal.length === 10 &&
-      this.toDateLocal >= this.fromDateLocal
-    );
-  }
-
-  private round(value: number): string {
-    const rounded = Math.round(value * 100) / 100;
-    return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+  private isCurrentDateRangeValid(): boolean {
+    return isStatisticDateRangeValid(this.fromDateLocal, this.toDateLocal);
   }
 }
