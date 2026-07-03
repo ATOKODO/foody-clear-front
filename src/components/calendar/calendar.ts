@@ -25,14 +25,11 @@ import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
 import { Slot } from '../../interfaces/slot.interface';
 import {
   InputDayMacroValue,
-  InputDayDaySetSlotSummary,
   InputDayItemSummary,
   InputDayItemsBySlotEntry,
   InputMonthResponse,
   InputDayResponse,
-  InputDaySlotSummary,
   InputDayTargetSource,
-  InputDayTemplateItemSummary,
   InputDayTotalsMacrosSummary,
   InputWeekResponse,
 } from '../../interfaces/input-day.interface';
@@ -43,6 +40,49 @@ import {
   generateDayHours,
   WEEKDAY_NAMES,
 } from '../../utils/calendar.utils';
+import {
+  buildCalendarInsertedProducts,
+  buildCalendarInsertedProductsByHour,
+  buildCalendarItemsBySlotEntriesFromResponse,
+  buildCalendarWeekTimelineBlocks,
+  isCalendarSlotOverlappingHour,
+  resolveCalendarDaySetSlots,
+  resolveCalendarDaySlots,
+  resolveCalendarItemsBySlotEntries,
+  resolveCalendarTemplateSlots,
+  resolvePendingCalendarTemplateItems,
+} from './calendar-data.helpers';
+import {
+  buildCalendarDayMacroCards,
+  buildCalendarDaySlotMacroGroups,
+  buildCalendarMacroComparisonsFromTotals,
+  buildCalendarMacroHighlights,
+  buildCalendarMonthAlertBadges,
+  formatCalendarCompactNumber,
+  formatCalendarInsertedAt,
+  formatCalendarItemTime,
+  formatCalendarQuantityLabel,
+  formatCalendarSlotRange,
+  getCalendarDayTargetSourcePillText,
+  getCalendarMetricEntries,
+  getCalendarTargetSourceBadgeText,
+  getCalendarTargetSourceText,
+  getCalendarTemplateSourceBadgeText,
+  normalizeCalendarTimezone,
+} from './calendar-format.helpers';
+import {
+  buildCalendarSlotTrackKey,
+  CalendarDayAssignmentHighlight,
+  CalendarDayEntryRow,
+  CalendarDayMacroCard,
+  CalendarDaySlotMacroGroup,
+  CalendarMacroComparison,
+  CalendarMacroMetricEntry,
+  CalendarMonthAlertBadge,
+  CalendarPlannedTemplateItem,
+  CalendarWeekMacroHighlight,
+  CalendarWeekTimelineBlock,
+} from './calendar.models';
 
 export interface CalendarDayClickEvent {
   view: CalendarView;
@@ -111,97 +151,6 @@ export interface CalendarRevertTemplateItemEvent {
   itemId: number;
 }
 
-interface CalendarWeekMacroHighlight {
-  key: string;
-  label: string;
-  value: string;
-  unit: string;
-  tone: 'energy' | 'proteins' | 'carbs' | 'lipids';
-}
-
-interface CalendarDayAssignmentHighlight {
-  title: string;
-  progress: string | null;
-  colorClass: string;
-}
-
-interface CalendarMacroMetricEntry {
-  key: string;
-  label: string;
-  value: string;
-  unit: string;
-}
-
-interface CalendarDayMacroCard {
-  key: string;
-  label: string;
-  consumed: string;
-  target: string;
-  delta: string;
-  unit: string;
-  tone: 'energy' | 'proteins' | 'carbs' | 'lipids';
-  status: 'under' | 'exact' | 'over' | 'neutral';
-}
-
-interface CalendarDaySlotMacroGroup {
-  key: string;
-  title: string;
-  rangeLabel: string;
-  cards: CalendarDayMacroCard[];
-}
-
-interface CalendarDayEntryRow {
-  id: number;
-  dateLocal: string;
-  timeLabel: string;
-  productName: string;
-  qtyLabel: string;
-  slotLabel: string;
-  item: CalendarInsertedProduct;
-}
-
-interface CalendarMacroComparison {
-  key: string;
-  label: string;
-  abbr: string;
-  value: string;
-  target: string;
-  percentage: string;
-  status: 'under' | 'exact' | 'over';
-  unit: string;
-  tone: 'energy' | 'proteins' | 'carbs' | 'lipids';
-}
-
-interface CalendarWeekTimelineBlock {
-  id: string;
-  kind: 'slot' | 'orphan';
-  title: string;
-  slotKey: string | null;
-  rangeLabel: string;
-  startMinute: number;
-  endMinute: number;
-  items: CalendarInsertedProduct[];
-  plannedItems: CalendarPlannedTemplateItem[];
-  tone: number;
-}
-
-interface CalendarPlannedTemplateItem {
-  id: number;
-  productName: string;
-  qtyLabel: string;
-  slotKey: string;
-  preferredMinute: number;
-  stockAvailable: boolean;
-  stockLabel: string;
-  inventoryId: number | null;
-}
-
-interface CalendarMonthAlertBadge {
-  key: string;
-  text: string;
-  tone: 'over' | 'projected' | 'template';
-}
-
 @Component({
   selector: 'app-calendar',
   imports: [MatButtonModule, MatButtonToggleModule, DecimalPipe],
@@ -258,38 +207,6 @@ export class Calendar implements OnInit, OnChanges {
   >();
   private readonly emptySlots: CalendarDaySlot[] = [];
   private readonly emptyWeekTimelineBlocks: CalendarWeekTimelineBlock[] = [];
-  private readonly weekMacroOrder = [
-    'energyKcal',
-    'proteins',
-    'carbs',
-    'lipids',
-  ];
-  private readonly monthMacroAlertLabels: Record<string, string> = {
-    energyKcal: 'Kcal',
-    proteins: 'P',
-    carbs: 'G',
-    lipids: 'L',
-  };
-  private readonly weekMacroDefinitions: Record<
-    string,
-    {
-      label: string;
-      abbr: string;
-      unit: string;
-      tone: CalendarWeekMacroHighlight['tone'];
-    }
-  > = {
-    energyKcal: {
-      label: 'Energie',
-      abbr: 'kcal',
-      unit: 'kcal',
-      tone: 'energy',
-    },
-    proteins: { label: 'Proteines', abbr: 'P', unit: 'g', tone: 'proteins' },
-    carbs: { label: 'Glucides', abbr: 'G', unit: 'g', tone: 'carbs' },
-    lipids: { label: 'Lipides', abbr: 'L', unit: 'g', tone: 'lipids' },
-  };
-
   ngOnInit(): void {
     this.applyInitialState();
     this.refreshView();
@@ -687,58 +604,27 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   formatItemTime(occurredAt: string | null, insertedAt: string): string {
-    const parsed = DateTime.fromISO(occurredAt?.trim() || insertedAt, {
-      setZone: true,
-    });
-    if (!parsed.isValid) {
-      return occurredAt?.trim() || insertedAt;
-    }
-
-    return parsed.setZone(this.normalizeTimezone()).toFormat('HH:mm');
+    return formatCalendarItemTime(
+      occurredAt,
+      insertedAt,
+      this.normalizeTimezone(),
+    );
   }
 
   formatInsertedAt(insertedAt: string): string {
-    const parsed = DateTime.fromISO(insertedAt, { setZone: true });
-    if (!parsed.isValid) {
-      return insertedAt;
-    }
-
-    return parsed.setZone(this.normalizeTimezone()).toFormat('HH:mm');
+    return formatCalendarInsertedAt(insertedAt, this.normalizeTimezone());
   }
 
   formatSlotRange(slot: CalendarDaySlot): string {
-    const start = this.formatClock(slot.startTime);
-    const end = this.formatClock(slot.endTime);
-
-    if (start && end) {
-      return `${start}-${end}`;
-    }
-
-    return start ?? end ?? 'horaire libre';
+    return formatCalendarSlotRange(slot);
   }
 
   getTargetSourceText(targetSource: InputDayTargetSource): string {
-    if (targetSource === 'cycle') {
-      return 'Cible du cycle';
-    }
-
-    if (targetSource === 'daySet') {
-      return 'Cible du day set';
-    }
-
-    return 'Aucune cible';
+    return getCalendarTargetSourceText(targetSource);
   }
 
   getTargetSourceBadgeText(targetSource: InputDayTargetSource): string {
-    if (targetSource === 'cycle') {
-      return 'Cibles cycle';
-    }
-
-    if (targetSource === 'daySet') {
-      return 'Cibles day set';
-    }
-
-    return 'Sans cible';
+    return getCalendarTargetSourceBadgeText(targetSource);
   }
 
   hasWeekDaySummaryData(day: CalendarDay): boolean {
@@ -950,15 +836,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDayTargetSourcePillText(targetSource: InputDayTargetSource): string {
-    if (targetSource === 'cycle') {
-      return 'Cible cycle assigne';
-    }
-
-    if (targetSource === 'daySet') {
-      return 'Cible day set';
-    }
-
-    return 'Sans cible';
+    return getCalendarDayTargetSourcePillText(targetSource);
   }
 
   getDayMacroCards(): CalendarDayMacroCard[] {
@@ -973,37 +851,9 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getDaySlotMacroGroups(): CalendarDaySlotMacroGroup[] {
-    const bySlot = this.inputDayResponse()?.totalsMacros?.bySlot ?? [];
-
-    return [...bySlot]
-      .sort(
-        (left, right) =>
-          left.slot.sortOrder - right.slot.sortOrder ||
-          left.slot.title.localeCompare(right.slot.title, 'fr'),
-      )
-      .map((entry) => {
-        const consumed = this.weekMacroOrder.reduce<
-          Record<string, InputDayMacroValue>
-        >((values, key) => {
-          const value = entry[key];
-          if (typeof value === 'number' || typeof value === 'string') {
-            values[key] = value;
-          }
-          return values;
-        }, {});
-
-        return {
-          key: `${entry.slot.slotId ?? entry.slot.slotKey}`,
-          title: entry.slot.title,
-          rangeLabel: this.formatSlotRange(entry.slot),
-          cards: this.buildDayMacroCards(
-            consumed,
-            entry.targets,
-            entry.deltaToTargets,
-          ),
-        };
-      })
-      .filter((group) => group.cards.length > 0);
+    return buildCalendarDaySlotMacroGroups(
+      this.inputDayResponse()?.totalsMacros?.bySlot ?? [],
+    );
   }
 
   toggleDaySlotStats(): void {
@@ -1100,20 +950,9 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getTemplateSourceBadgeText(response: InputDayResponse | null): string | null {
-    const source = response?.templateAssociation?.source;
-    if (source === 'manual') {
-      return 'Template manuel';
-    }
-
-    if (source === 'daySet') {
-      return 'Template day-set';
-    }
-
-    if (source === 'cycle') {
-      return 'Template cycle';
-    }
-
-    return null;
+    return getCalendarTemplateSourceBadgeText(
+      response?.templateAssociation?.source,
+    );
   }
 
   getPendingTemplateItemCount(response: InputDayResponse | null): number {
@@ -1157,96 +996,17 @@ export class Calendar implements OnInit, OnChanges {
       return [];
     }
 
-    const actualComparisons = new Map(
-      this.buildMacroComparisons(response).map((comparison) => [
-        comparison.key,
-        comparison,
-      ]),
+    return buildCalendarMonthAlertBadges(
+      this.buildMacroComparisons(response),
+      this.buildProjectedMacroComparisons(response),
+      this.getPendingTemplateItemCount(response),
     );
-    const projectedComparisons = new Map(
-      this.buildProjectedMacroComparisons(response).map((comparison) => [
-        comparison.key,
-        comparison,
-      ]),
-    );
-    const badges = this.weekMacroOrder.reduce<CalendarMonthAlertBadge[]>(
-      (accumulator, key) => {
-        const macroLabel = this.monthMacroAlertLabels[key] ?? key;
-        const actualComparison = actualComparisons.get(key);
-        if (actualComparison?.status === 'over') {
-          accumulator.push({
-            key: `${key}-actual`,
-            text: `${macroLabel} depasse`,
-            tone: 'over',
-          });
-          return accumulator;
-        }
-
-        const projectedComparison = projectedComparisons.get(key);
-        if (projectedComparison?.status === 'over') {
-          accumulator.push({
-            key: `${key}-projected`,
-            text: `${macroLabel} projete depasse`,
-            tone: 'projected',
-          });
-        }
-
-        return accumulator;
-      },
-      [],
-    );
-
-    const pendingTemplateItems = this.getPendingTemplateItemCount(response);
-    if (pendingTemplateItems > 0) {
-      badges.push({
-        key: 'template-pending',
-        text:
-          pendingTemplateItems === 1
-            ? 'Template en attente'
-            : `${pendingTemplateItems} templates en attente`,
-        tone: 'template',
-      });
-    }
-
-    return badges;
   }
 
   getDayMetricEntries(
     metrics: Record<string, number | InputDayMacroValue> | null | undefined,
   ): CalendarMacroMetricEntry[] {
-    if (!metrics) {
-      return [];
-    }
-
-    const entries = Object.entries(metrics).sort(([leftKey], [rightKey]) => {
-      const leftIndex = this.weekMacroOrder.indexOf(leftKey);
-      const rightIndex = this.weekMacroOrder.indexOf(rightKey);
-
-      if (leftIndex === -1 && rightIndex === -1) {
-        return leftKey.localeCompare(rightKey, 'fr');
-      }
-
-      if (leftIndex === -1) {
-        return 1;
-      }
-
-      if (rightIndex === -1) {
-        return -1;
-      }
-
-      return leftIndex - rightIndex;
-    });
-
-    return entries.map(([key, value]) => {
-      const definition = this.weekMacroDefinitions[key];
-
-      return {
-        key,
-        label: definition?.label ?? key,
-        value: this.formatMetricValue(value),
-        unit: definition?.unit ?? '',
-      };
-    });
+    return getCalendarMetricEntries(metrics);
   }
 
   getDayTemplateTimelineBlocks(): CalendarWeekTimelineBlock[] {
@@ -1405,7 +1165,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   trackBySlot(_: number, slot: CalendarDaySlot): string {
-    return `${slot.slotId ?? slot.slotKey ?? slot.title}-${slot.startTime ?? ''}-${slot.endTime ?? ''}`;
+    return buildCalendarSlotTrackKey(slot);
   }
 
   trackByInsertedProduct(_: number, product: CalendarInsertedProduct): number {
@@ -1569,15 +1329,12 @@ export class Calendar implements OnInit, OnChanges {
     response: InputDayResponse | null,
     fallbackEntries: InputDayItemsBySlotEntry[] = [],
   ): InputDayItemsBySlotEntry[] {
-    if (response?.itemsBySlot && response.itemsBySlot.length > 0) {
-      return response.itemsBySlot;
-    }
-
-    if (fallbackEntries.length > 0) {
-      return fallbackEntries;
-    }
-
-    return this.buildItemsBySlotEntriesFromResponse(response);
+    return resolveCalendarItemsBySlotEntries(
+      response,
+      fallbackEntries,
+      this.resolveDaySlotsForResponse(response),
+      this.normalizeTimezone(),
+    );
   }
 
   private resolveDaySlots(): CalendarDaySlot[] {
@@ -1587,262 +1344,29 @@ export class Calendar implements OnInit, OnChanges {
   private resolveDaySetSlotsForResponse(
     response: InputDayResponse | null,
   ): CalendarDaySlot[] {
-    const daySetSlots = response?.daySet?.slots ?? [];
-    const totalsSlots =
-      response?.totalsMacros?.bySlot.map((entry) => entry.slot) ?? [];
-
-    return this.mergeSlots(daySetSlots, totalsSlots).map((slot) => ({
-      slotId: slot.slotId,
-      slotKey: slot.slotKey,
-      title: slot.title,
-      sortOrder: slot.sortOrder,
-      startTime: slot.startTime ?? null,
-      endTime: slot.endTime ?? null,
-    }));
+    return resolveCalendarDaySetSlots(response);
   }
 
   private resolveTemplateSlotsForResponse(
     response: InputDayResponse | null,
   ): CalendarDaySlot[] {
-    const templateSlots = this.resolveTemplateCatalogSlots(response);
-
-    return templateSlots.map((slot) => ({
-      slotId: slot.slotId,
-      slotKey: slot.slotKey,
-      title: slot.title,
-      sortOrder: slot.sortOrder,
-      startTime: slot.startTime ?? null,
-      endTime: slot.endTime ?? null,
-    }));
+    return resolveCalendarTemplateSlots(response, this.slotCatalog());
   }
 
   private resolveDaySlotsForResponse(
     response: InputDayResponse | null,
   ): CalendarDaySlot[] {
-    const daySetSlots = response?.daySet?.slots ?? [];
-    const totalsSlots =
-      response?.totalsMacros?.bySlot.map((entry) => entry.slot) ?? [];
-    const legacySlots = response?.slots ?? [];
-    const templateSlots = this.resolveTemplateCatalogSlots(response);
-
-    const ordered = this.mergeSlots(
-      daySetSlots,
-      totalsSlots,
-      legacySlots,
-      templateSlots,
-    );
-    return ordered.map((slot) => ({
-      slotId: slot.slotId,
-      slotKey: slot.slotKey,
-      title: slot.title,
-      sortOrder: slot.sortOrder,
-      startTime: slot.startTime ?? null,
-      endTime: slot.endTime ?? null,
-    }));
-  }
-
-  private resolveTemplateCatalogSlots(
-    response: InputDayResponse | null,
-  ): InputDayDaySetSlotSummary[] {
-    const referencedSlotIds = new Set(
-      (response?.templateItems ?? [])
-        .map((item) => item.slotId)
-        .filter(
-          (slotId): slotId is number =>
-            typeof slotId === 'number' && slotId > 0,
-        ),
-    );
-    const referencedSlotKeys = new Set(
-      (response?.templateItems ?? [])
-        .map((item) => item.slotKey?.trim() ?? '')
-        .filter((slotKey) => slotKey !== ''),
-    );
-
-    return this.slotCatalog()
-      .filter(
-        (slot) =>
-          referencedSlotIds.has(slot.id) || referencedSlotKeys.has(slot.key),
-      )
-      .map((slot) => ({
-        slotId: slot.id,
-        slotKey: slot.key,
-        title: slot.title,
-        sortOrder: slot.sortOrder,
-        startTime: slot.startTime ?? null,
-        endTime: slot.endTime ?? null,
-        nutritionValue: null,
-      }));
-  }
-
-  private mergeSlots(
-    ...sources: InputDayDaySetSlotSummary[][]
-  ): InputDayDaySetSlotSummary[] {
-    const unique = new Map<string, InputDayDaySetSlotSummary>();
-
-    sources.forEach((slots) => {
-      slots.forEach((slot) => {
-        const key =
-          slot.slotId !== null ? `id:${slot.slotId}` : `key:${slot.slotKey}`;
-        if (!unique.has(key)) {
-          unique.set(key, slot);
-        }
-      });
-    });
-
-    return Array.from(unique.values()).sort(
-      (a, b) => a.sortOrder - b.sortOrder,
-    );
+    return resolveCalendarDaySlots(response, this.slotCatalog());
   }
 
   private buildItemsBySlotEntriesFromResponse(
     response: InputDayResponse | null,
   ): InputDayItemsBySlotEntry[] {
-    if (!response || response.items.length === 0) {
-      return [];
-    }
-
-    const slots = this.resolveDaySlotsForResponse(response);
-    if (slots.length === 0) {
-      return [];
-    }
-
-    const entries: InputDayItemsBySlotEntry[] = slots.map((slot) => ({
-      slot: this.toSlotSummary(slot),
-      items: [],
-    }));
-    const entryByKey = new Map(
-      entries.map((entry) => [entry.slot.slotKey, entry]),
+    return buildCalendarItemsBySlotEntriesFromResponse(
+      response,
+      this.resolveDaySlotsForResponse(response),
+      this.normalizeTimezone(),
     );
-
-    response.items.forEach((item) => {
-      const matchedSlot = this.resolveSlotForItem(item, slots);
-      if (!matchedSlot) {
-        return;
-      }
-
-      entryByKey.get(matchedSlot.slotKey)?.items.push(item);
-    });
-
-    return entries;
-  }
-
-  private toSlotSummary(slot: CalendarDaySlot): InputDaySlotSummary {
-    return {
-      slotId: slot.slotId,
-      slotKey: slot.slotKey,
-      title: slot.title,
-      sortOrder: slot.sortOrder,
-      startTime: slot.startTime ?? null,
-      endTime: slot.endTime ?? null,
-    };
-  }
-
-  private resolveSlotForItem(
-    item: InputDayItemSummary,
-    slots: CalendarDaySlot[],
-  ): CalendarDaySlot | null {
-    if (item.slotId !== null) {
-      const matchedById = slots.find((slot) => slot.slotId === item.slotId);
-      if (matchedById) {
-        return matchedById;
-      }
-    }
-
-    const trimmedSlotKey = item.slotKey?.trim() ?? '';
-    if (trimmedSlotKey !== '') {
-      const matchedByKey = slots.find(
-        (slot) => slot.slotKey === trimmedSlotKey,
-      );
-      if (matchedByKey) {
-        return matchedByKey;
-      }
-    }
-
-    return this.resolveSlotForTimestamp(this.resolveItemTimestamp(item), slots);
-  }
-
-  private resolveSlotForTimestamp(
-    timestamp: string | null,
-    slots: CalendarDaySlot[],
-  ): CalendarDaySlot | null {
-    if (!timestamp) {
-      return null;
-    }
-
-    const parsed = DateTime.fromISO(timestamp, { setZone: true });
-    if (!parsed.isValid) {
-      return null;
-    }
-
-    const localized = parsed.setZone(this.normalizeTimezone());
-    const secondsFromMidnight =
-      localized.hour * 3600 + localized.minute * 60 + localized.second;
-
-    return (
-      slots.find((slot) =>
-        this.isInSlotWindow(
-          secondsFromMidnight,
-          slot.startTime ?? null,
-          slot.endTime ?? null,
-        ),
-      ) ?? null
-    );
-  }
-
-  private isInSlotWindow(
-    secondsFromMidnight: number,
-    startTime: string | null,
-    endTime: string | null,
-  ): boolean {
-    if (!startTime || !endTime) {
-      return false;
-    }
-
-    const startSeconds = this.parseTimeToSeconds(startTime);
-    const endSeconds = this.parseTimeToSeconds(endTime);
-    if (startSeconds === null || endSeconds === null) {
-      return false;
-    }
-
-    if (startSeconds === endSeconds) {
-      return true;
-    }
-
-    if (startSeconds < endSeconds) {
-      return (
-        secondsFromMidnight >= startSeconds && secondsFromMidnight < endSeconds
-      );
-    }
-
-    return (
-      secondsFromMidnight >= startSeconds || secondsFromMidnight < endSeconds
-    );
-  }
-
-  private parseTimeToSeconds(value: string): number | null {
-    const parts = value.split(':');
-    if (parts.length < 2) {
-      return null;
-    }
-
-    const hours = Number(parts[0]);
-    const minutes = Number(parts[1]);
-    const seconds = Number((parts[2] ?? '0').split('.')[0]);
-    if (
-      !Number.isFinite(hours) ||
-      !Number.isFinite(minutes) ||
-      !Number.isFinite(seconds) ||
-      hours < 0 ||
-      hours > 23 ||
-      minutes < 0 ||
-      minutes > 59 ||
-      seconds < 0 ||
-      seconds > 59
-    ) {
-      return null;
-    }
-
-    return hours * 3600 + minutes * 60 + seconds;
   }
 
   private applyDaySlots(slots: CalendarDaySlot[]): void {
@@ -1869,85 +1393,13 @@ export class Calendar implements OnInit, OnChanges {
     hourStart: number,
     hourEnd: number,
   ): boolean {
-    const start = this.toMinutes(slot.startTime);
-    const end = this.toMinutes(slot.endTime);
-
-    if (start === null && end === null) {
-      return false;
-    }
-
-    const startMinutes = start ?? 0;
-    const endMinutes = end ?? 24 * 60;
-    if (endMinutes <= startMinutes) {
-      return false;
-    }
-
-    return startMinutes < hourEnd && endMinutes > hourStart;
-  }
-
-  private toMinutes(time: string | null | undefined): number | null {
-    if (!time) {
-      return null;
-    }
-
-    const parts = time.split(':');
-    if (parts.length < 2) {
-      return null;
-    }
-
-    const hour = Number(parts[0]);
-    const minute = Number(parts[1]);
-    if (!Number.isInteger(hour) || !Number.isInteger(minute)) {
-      return null;
-    }
-
-    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-      return null;
-    }
-
-    return hour * 60 + minute;
-  }
-
-  private formatClock(time: string | null | undefined): string | null {
-    if (!time) {
-      return null;
-    }
-
-    return time.length >= 5 ? time.slice(0, 5) : time;
-  }
-
-  private formatWeekMacroValue(value: InputDayMacroValue): string {
-    if (typeof value !== 'number') {
-      return '...';
-    }
-
-    return this.formatCompactNumber(value, Math.abs(value) >= 100 ? 0 : 1);
+    return isCalendarSlotOverlappingHour(slot, hourStart, hourEnd);
   }
 
   private buildMacroHighlights(
     dayTotal: Record<string, InputDayMacroValue> | null,
   ): CalendarWeekMacroHighlight[] {
-    if (!dayTotal) {
-      return [];
-    }
-
-    return this.weekMacroOrder.flatMap((key) => {
-      const definition = this.weekMacroDefinitions[key];
-      const value = dayTotal[key];
-      if (!definition || value === null || value === undefined) {
-        return [];
-      }
-
-      return [
-        {
-          key,
-          label: definition.label,
-          value: this.formatWeekMacroValue(value),
-          unit: definition.unit,
-          tone: definition.tone,
-        },
-      ];
-    });
+    return buildCalendarMacroHighlights(dayTotal);
   }
 
   private buildMacroComparisons(
@@ -1967,50 +1419,7 @@ export class Calendar implements OnInit, OnChanges {
   private buildMacroComparisonsFromTotals(
     totals: InputDayTotalsMacrosSummary | null,
   ): CalendarMacroComparison[] {
-    const dayTotal = totals?.dayTotal ?? null;
-    const targets = totals?.targets ?? null;
-    if (!dayTotal || !targets) {
-      return [];
-    }
-
-    return this.weekMacroOrder.flatMap((key) => {
-      const definition = this.weekMacroDefinitions[key];
-      const value = dayTotal[key];
-      const target = targets[key];
-      if (
-        !definition ||
-        typeof value !== 'number' ||
-        typeof target !== 'number'
-      ) {
-        return [];
-      }
-
-      const normalizedValue = this.roundComparisonNumber(value);
-      const normalizedTarget = this.roundComparisonNumber(target);
-      const percentage =
-        normalizedTarget > 0
-          ? this.roundComparisonNumber(
-              (normalizedValue / normalizedTarget) * 100,
-            )
-          : null;
-
-      return [
-        {
-          key,
-          label: definition.label,
-          abbr: definition.abbr,
-          value: this.formatMetricValue(normalizedValue),
-          target: this.formatMetricValue(normalizedTarget),
-          percentage: this.formatComparisonPercentage(percentage),
-          status: this.resolveMacroComparisonStatus(
-            normalizedValue,
-            normalizedTarget,
-          ),
-          unit: definition.unit,
-          tone: definition.tone,
-        },
-      ];
-    });
+    return buildCalendarMacroComparisonsFromTotals(totals);
   }
 
   private hasTemplateData(response: InputDayResponse | null): boolean {
@@ -2021,71 +1430,8 @@ export class Calendar implements OnInit, OnChanges {
     );
   }
 
-  private resolveMacroComparisonStatus(
-    value: number,
-    target: number,
-  ): CalendarMacroComparison['status'] {
-    if (target === 0) {
-      return value > 0 ? 'over' : 'exact';
-    }
-
-    if (value > target) {
-      return 'over';
-    }
-
-    if (value === target) {
-      return 'exact';
-    }
-
-    return 'under';
-  }
-
-  private formatComparisonPercentage(percentage: number | null): string {
-    if (percentage === null) {
-      return 'Cible 0';
-    }
-
-    return `${this.formatCompactNumber(percentage, 2)}%`;
-  }
-
-  private roundComparisonNumber(value: number): number {
-    return Math.round(value * 100) / 100;
-  }
-
-  private formatMetricValue(
-    value: number | InputDayMacroValue | null | undefined,
-  ): string {
-    if (typeof value === 'number') {
-      return this.formatCompactNumber(value, Math.abs(value) >= 100 ? 0 : 1);
-    }
-
-    if (typeof value === 'string' && value.trim() !== '') {
-      return value;
-    }
-
-    return '--';
-  }
-
-  private formatSignedMetricValue(
-    value: number | InputDayMacroValue | null | undefined,
-  ): string {
-    if (typeof value === 'number') {
-      const formatted = this.formatCompactNumber(
-        value,
-        Math.abs(value) >= 100 ? 0 : 1,
-      );
-      return value > 0 ? `+${formatted}` : formatted;
-    }
-
-    if (typeof value === 'string' && value.trim() !== '') {
-      return value;
-    }
-
-    return '--';
-  }
-
   private formatQuantityLabel(value: number): string {
-    return this.formatCompactNumber(value, Math.abs(value) >= 100 ? 0 : 2);
+    return formatCalendarQuantityLabel(value);
   }
 
   private buildDayMacroCards(
@@ -2093,65 +1439,7 @@ export class Calendar implements OnInit, OnChanges {
     targets: Record<string, number> | null | undefined,
     deltas: Record<string, InputDayMacroValue> | null | undefined,
   ): CalendarDayMacroCard[] {
-    const keys = new Set<string>([
-      ...Object.keys(consumedValues ?? {}),
-      ...Object.keys(targets ?? {}),
-      ...Object.keys(deltas ?? {}),
-    ]);
-
-    return Array.from(keys)
-      .sort((leftKey, rightKey) => {
-        const leftIndex = this.weekMacroOrder.indexOf(leftKey);
-        const rightIndex = this.weekMacroOrder.indexOf(rightKey);
-
-        if (leftIndex === -1 && rightIndex === -1) {
-          return leftKey.localeCompare(rightKey, 'fr');
-        }
-        if (leftIndex === -1) {
-          return 1;
-        }
-        if (rightIndex === -1) {
-          return -1;
-        }
-        return leftIndex - rightIndex;
-      })
-      .map((key) => {
-        const definition = this.weekMacroDefinitions[key];
-        const consumed = consumedValues?.[key];
-        const target = targets?.[key];
-        const delta = deltas?.[key];
-
-        return {
-          key,
-          label: definition?.label ?? key,
-          consumed: this.formatMetricValue(consumed ?? null),
-          target: this.formatMetricValue(target ?? null),
-          delta: this.formatSignedMetricValue(delta ?? null),
-          unit: definition?.unit ?? '',
-          tone: definition?.tone ?? 'energy',
-          status: this.resolveDayMacroCardStatus(consumed, target, delta),
-        };
-      });
-  }
-
-  private resolveDayMacroCardStatus(
-    consumed: InputDayMacroValue | undefined,
-    target: number | undefined,
-    delta: InputDayMacroValue | undefined,
-  ): CalendarDayMacroCard['status'] {
-    if (typeof delta === 'number') {
-      if (delta === 0) {
-        return 'exact';
-      }
-
-      return delta > 0 ? 'over' : 'under';
-    }
-
-    if (typeof consumed === 'number' && typeof target === 'number') {
-      return this.resolveMacroComparisonStatus(consumed, target);
-    }
-
-    return 'neutral';
+    return buildCalendarDayMacroCards(consumedValues, targets, deltas);
   }
 
   private resolveCurrentDayInsertedProducts(
@@ -2170,14 +1458,7 @@ export class Calendar implements OnInit, OnChanges {
     value: number,
     maximumFractionDigits: number,
   ): string {
-    const hasFraction = Math.abs(value % 1) > Number.EPSILON;
-
-    return new Intl.NumberFormat('fr-FR', {
-      minimumFractionDigits: hasFraction
-        ? Math.min(1, maximumFractionDigits)
-        : 0,
-      maximumFractionDigits,
-    }).format(value);
+    return formatCalendarCompactNumber(value, maximumFractionDigits);
   }
 
   private applyDayInsertedProducts(
@@ -2206,27 +1487,13 @@ export class Calendar implements OnInit, OnChanges {
     dateLocal: string,
     slots: CalendarDaySlot[],
   ): Map<number, CalendarInsertedProduct[]> {
-    const items = this.buildCalendarInsertedProducts(
+    return buildCalendarInsertedProductsByHour(
       entries,
       responseItems,
       dateLocal,
       slots,
+      this.normalizeTimezone(),
     );
-    const byHour = new Map<number, CalendarInsertedProduct[]>();
-
-    items.forEach((item) => {
-      const minute = this.resolveCalendarInsertedProductMinute(item);
-      if (minute === null) {
-        return;
-      }
-
-      const hour = Math.floor(minute / 60);
-      const products = byHour.get(hour) ?? [];
-      products.push(item);
-      byHour.set(hour, products);
-    });
-
-    return byHour;
   }
 
   private buildCalendarInsertedProducts(
@@ -2235,74 +1502,13 @@ export class Calendar implements OnInit, OnChanges {
     dateLocal: string,
     slots: CalendarDaySlot[],
   ): CalendarInsertedProduct[] {
-    const items =
-      responseItems.length > 0
-        ? responseItems
-        : entries.flatMap((entry) => entry.items);
-    const slotByItemId = new Map<
-      number,
-      { slotTitle: string; slotKey: string }
-    >();
-
-    entries.forEach((entry) => {
-      entry.items.forEach((item) => {
-        slotByItemId.set(item.id, {
-          slotTitle: entry.slot.title,
-          slotKey: entry.slot.slotKey,
-        });
-      });
-    });
-
-    const insertedProducts = items.flatMap((item) => {
-      const timestamp = this.resolveItemTimestamp(item);
-      if (!timestamp) {
-        return [];
-      }
-
-      const parsed = DateTime.fromISO(timestamp, { setZone: true });
-      if (!parsed.isValid) {
-        return [];
-      }
-
-      const slot =
-        slotByItemId.get(item.id) ??
-        this.resolveCalendarSlotInfo(
-          this.resolveSlotForItem(item, slots),
-          item,
-        );
-
-      return [
-        {
-          id: item.id,
-          dateLocal,
-          productId: item.productId,
-          productName: item.productName,
-          qty: item.qty,
-          occurredAt: item.occurredAt,
-          insertedAt: item.insertedAt,
-          slotId: item.slotId,
-          slotTitle: slot?.slotTitle ?? 'Sans slot',
-          slotKey: slot?.slotKey ?? item.slotKey?.trim() ?? '-',
-          templateItemId: item.templateItemId ?? null,
-        },
-      ];
-    });
-
-    insertedProducts.sort((left, right) => {
-      const leftMinute = this.resolveCalendarInsertedProductMinute(left);
-      const rightMinute = this.resolveCalendarInsertedProductMinute(right);
-      if (
-        leftMinute !== null &&
-        rightMinute !== null &&
-        leftMinute !== rightMinute
-      ) {
-        return leftMinute - rightMinute;
-      }
-
-      return left.id - right.id;
-    });
-
-    return insertedProducts;
+    return buildCalendarInsertedProducts(
+      entries,
+      responseItems,
+      dateLocal,
+      slots,
+      this.normalizeTimezone(),
+    );
   }
 
   private buildWeekTimelineBlocks(
@@ -2311,301 +1517,21 @@ export class Calendar implements OnInit, OnChanges {
     insertedProducts: CalendarInsertedProduct[],
     plannedItems: CalendarPlannedTemplateItem[] = [],
   ): CalendarWeekTimelineBlock[] {
-    const blocks: CalendarWeekTimelineBlock[] = [];
-    const slotKeys = new Set(slots.map((slot) => slot.slotKey));
-    const productsBySlotKey = new Map<string, CalendarInsertedProduct[]>();
-    const plannedItemsBySlotKey = new Map<
-      string,
-      CalendarPlannedTemplateItem[]
-    >();
-
-    insertedProducts.forEach((product) => {
-      if (!slotKeys.has(product.slotKey)) {
-        return;
-      }
-
-      const products = productsBySlotKey.get(product.slotKey) ?? [];
-      products.push(product);
-      productsBySlotKey.set(product.slotKey, products);
-    });
-
-    plannedItems.forEach((item) => {
-      if (!slotKeys.has(item.slotKey)) {
-        return;
-      }
-
-      const slotItems = plannedItemsBySlotKey.get(item.slotKey) ?? [];
-      slotItems.push(item);
-      plannedItemsBySlotKey.set(item.slotKey, slotItems);
-    });
-
-    slots.forEach((slot, index) => {
-      const block = this.buildWeekTimelineSlotBlock(
-        dateLocal,
-        slot,
-        productsBySlotKey.get(slot.slotKey) ?? [],
-        plannedItemsBySlotKey.get(slot.slotKey) ?? [],
-        index,
-        slots.length,
-      );
-
-      if (block) {
-        blocks.push(block);
-      }
-    });
-
-    const orphanProducts = insertedProducts.filter(
-      (product) => !slotKeys.has(product.slotKey),
-    );
-    const orphanPlannedItems = plannedItems.filter(
-      (item) => !slotKeys.has(item.slotKey),
-    );
-    const orphanProductsByHour = new Map<number, CalendarInsertedProduct[]>();
-    const orphanPlannedItemsByHour = new Map<
-      number,
-      CalendarPlannedTemplateItem[]
-    >();
-    orphanProducts.forEach((product) => {
-      const minute = this.resolveCalendarInsertedProductMinute(product);
-      const startMinute = minute === null ? 0 : Math.floor(minute / 60) * 60;
-      const products = orphanProductsByHour.get(startMinute) ?? [];
-      products.push(product);
-      orphanProductsByHour.set(startMinute, products);
-    });
-    orphanPlannedItems.forEach((item) => {
-      const startMinute = Math.floor(item.preferredMinute / 60) * 60;
-      const items = orphanPlannedItemsByHour.get(startMinute) ?? [];
-      items.push(item);
-      orphanPlannedItemsByHour.set(startMinute, items);
-    });
-
-    const orphanStartMinutes = new Set([
-      ...orphanProductsByHour.keys(),
-      ...orphanPlannedItemsByHour.keys(),
-    ]);
-    orphanStartMinutes.forEach((startMinute) => {
-      const products = orphanProductsByHour.get(startMinute) ?? [];
-      const preferredItems = orphanPlannedItemsByHour.get(startMinute) ?? [];
-      const endMinute = this.normalizeTimelineEndMinute(
-        startMinute,
-        Math.max(
-          startMinute + 60,
-          ...products.map(
-            (product) =>
-              (this.resolveCalendarInsertedProductMinute(product) ??
-                startMinute) + 30,
-          ),
-          ...preferredItems.map((item) => item.preferredMinute + 30),
-        ),
-      );
-
-      blocks.push({
-        id: `orphan:${dateLocal}:${startMinute}`,
-        kind: 'orphan',
-        title: 'Non rattache a un slot',
-        slotKey: null,
-        rangeLabel: `${this.formatMinutesClock(startMinute)}-${this.formatMinutesClock(endMinute)}`,
-        startMinute,
-        endMinute,
-        items: products,
-        plannedItems: preferredItems,
-        tone: 4,
-      });
-    });
-
-    return blocks.sort(
-      (left, right) =>
-        left.startMinute - right.startMinute ||
-        left.endMinute - right.endMinute ||
-        left.title.localeCompare(right.title, 'fr'),
-    );
-  }
-
-  private buildWeekTimelineSlotBlock(
-    dateLocal: string,
-    slot: CalendarDaySlot,
-    items: CalendarInsertedProduct[],
-    plannedItems: CalendarPlannedTemplateItem[],
-    index: number,
-    slotCount: number,
-  ): CalendarWeekTimelineBlock | null {
-    const {
-      startMinute: slotStart,
-      endMinute: slotEnd,
-      estimated,
-    } = this.resolveTimelineSlotWindow(slot, index, slotCount);
-    const firstItemMinute =
-      items.length > 0
-        ? this.resolveCalendarInsertedProductMinute(items[0])
-        : null;
-    const lastItemMinute =
-      items.length > 0
-        ? this.resolveCalendarInsertedProductMinute(items[items.length - 1])
-        : null;
-
-    const startMinute = slotStart ?? firstItemMinute;
-    if (startMinute === null) {
-      return null;
-    }
-
-    const endMinute = this.normalizeTimelineEndMinute(
-      startMinute,
-      slotEnd ??
-        (lastItemMinute !== null ? lastItemMinute + 30 : startMinute + 60),
-    );
-
-    return {
-      id: `slot:${dateLocal}:${slot.slotId ?? slot.slotKey}`,
-      kind: 'slot',
-      title: slot.title,
-      slotKey: slot.slotKey,
-      rangeLabel: this.formatTimelineSlotRange(slotStart, slotEnd, estimated),
-      startMinute,
-      endMinute,
-      items,
+    return buildCalendarWeekTimelineBlocks(
+      dateLocal,
+      slots,
+      insertedProducts,
       plannedItems,
-      tone: index % 4,
-    };
+      this.normalizeTimezone(),
+    );
   }
 
-  private resolveTimelineSlotWindow(
-    slot: CalendarDaySlot,
-    index: number,
-    slotCount: number,
-  ): { startMinute: number; endMinute: number; estimated: boolean } {
-    const configuredStart = this.toMinutes(slot.startTime);
-    const configuredEnd = this.toMinutes(slot.endTime);
-
-    if (
-      configuredStart !== null &&
-      configuredEnd !== null &&
-      configuredEnd > configuredStart
-    ) {
-      return {
-        startMinute: configuredStart,
-        endMinute: configuredEnd,
-        estimated: false,
-      };
-    }
-
-    if (configuredStart !== null) {
-      return {
-        startMinute: configuredStart,
-        endMinute: Math.min(24 * 60, configuredStart + 60),
-        estimated: true,
-      };
-    }
-
-    if (configuredEnd !== null) {
-      return {
-        startMinute: Math.max(0, configuredEnd - 120),
-        endMinute: configuredEnd,
-        estimated: true,
-      };
-    }
-
-    const firstFallbackMinute = 8 * 60;
-    const lastFallbackMinute = 20 * 60;
-    const rawFallbackStart =
-      slotCount <= 1
-        ? 12 * 60
-        : firstFallbackMinute +
-          (index * (lastFallbackMinute - firstFallbackMinute)) /
-            (slotCount - 1);
-    const fallbackStart = Math.round(rawFallbackStart / 30) * 30;
-
-    return {
-      startMinute: fallbackStart,
-      endMinute: Math.min(24 * 60, fallbackStart + 60),
-      estimated: true,
-    };
-  }
-
-  private formatTimelineSlotRange(
-    startMinute: number,
-    endMinute: number,
-    estimated: boolean,
-  ): string {
-    const range =
-      this.formatMinutesClock(startMinute) +
-      '-' +
-      this.formatMinutesClock(endMinute);
-    return estimated ? range + ' · estimé' : range;
-  }
 
   private resolvePendingTemplateItems(
     response: InputDayResponse | null,
     slots: CalendarDaySlot[],
   ): CalendarPlannedTemplateItem[] {
-    if (!response) {
-      return [];
-    }
-
-    const enteredTemplateItemIds = new Set(
-      response.items
-        .map((item) => item.templateItemId)
-        .filter(
-          (templateItemId): templateItemId is number =>
-            typeof templateItemId === 'number' && templateItemId > 0,
-        ),
-    );
-
-    return (response.templateItems ?? []).flatMap((item) => {
-      if (
-        item.status !== 'pending' ||
-        item.convertedItemId !== null ||
-        enteredTemplateItemIds.has(item.id)
-      ) {
-        return [];
-      }
-
-      const slot = this.resolveSlotForTemplateItem(item, slots);
-      const preferredMinute = this.resolveTemplatePreferredMinute(
-        item.preferredTime,
-      );
-
-      const unitLabel = item.qtyUnit ? ' ' + item.qtyUnit : '';
-      const availableStock =
-        item.stockByInventory.find((stock) => stock.enoughStock) ?? null;
-      return [
-        {
-          id: item.id,
-          productName: item.productName,
-          qtyLabel: this.formatCompactNumber(item.qty, 2) + unitLabel,
-          slotKey: slot?.slotKey ?? '',
-          preferredMinute,
-          stockAvailable: availableStock !== null,
-          stockLabel: availableStock
-            ? `Disponible dans ${availableStock.inventoryName}`
-            : 'Stock insuffisant',
-          inventoryId: availableStock?.inventoryId ?? null,
-        },
-      ];
-    });
-  }
-
-  private resolveTemplatePreferredMinute(
-    value: string | null | undefined,
-  ): number {
-    const preferredMinute = this.toMinutes(value?.trim() || '06:00:00');
-    return preferredMinute ?? 6 * 60;
-  }
-
-  private resolveSlotForTemplateItem(
-    item: InputDayTemplateItemSummary,
-    slots: CalendarDaySlot[],
-  ): CalendarDaySlot | null {
-    if (item.slotId !== null) {
-      const slotById = slots.find((slot) => slot.slotId === item.slotId);
-      if (slotById) {
-        return slotById;
-      }
-    }
-
-    const slotKey = item.slotKey?.trim();
-    return slotKey
-      ? (slots.find((slot) => slot.slotKey === slotKey) ?? null)
-      : null;
+    return resolvePendingCalendarTemplateItems(response, slots);
   }
 
   getDayTemplateBlockEmptyText(block: CalendarWeekTimelineBlock): string {
@@ -2625,65 +1551,6 @@ export class Calendar implements OnInit, OnChanges {
     return 'Aucun template prevu sur cette plage.';
   }
 
-  private normalizeTimelineEndMinute(
-    startMinute: number,
-    endMinute: number,
-  ): number {
-    return Math.max(startMinute + 30, Math.min(24 * 60, endMinute));
-  }
-
-  private formatMinutesClock(totalMinutes: number): string {
-    const clamped = Math.max(0, Math.min(24 * 60, totalMinutes));
-    const hours = Math.floor(clamped / 60);
-    const minutes = clamped % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  }
-
-  private resolveCalendarInsertedProductMinute(
-    product: CalendarInsertedProduct,
-  ): number | null {
-    const parsed = DateTime.fromISO(
-      product.occurredAt?.trim() || product.insertedAt,
-      { setZone: true },
-    );
-    if (!parsed.isValid) {
-      return null;
-    }
-
-    const localized = parsed.setZone(this.normalizeTimezone());
-    return localized.hour * 60 + localized.minute;
-  }
-
-  private resolveItemTimestamp(item: InputDayItemSummary): string | null {
-    const occurredAt = item.occurredAt?.trim();
-    if (occurredAt) {
-      return occurredAt;
-    }
-
-    return item.insertedAt?.trim() || null;
-  }
-
-  private resolveCalendarSlotInfo(
-    slot: CalendarDaySlot | null,
-    item: InputDayItemSummary,
-  ): { slotTitle: string; slotKey: string } | null {
-    if (slot) {
-      return {
-        slotTitle: slot.title,
-        slotKey: slot.slotKey,
-      };
-    }
-
-    const slotKey = item.slotKey?.trim();
-    if (!slotKey) {
-      return null;
-    }
-
-    return {
-      slotTitle: slotKey,
-      slotKey,
-    };
-  }
 
   private buildOccurredAtForTime(
     dateLocal: string,
@@ -2794,7 +1661,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   private normalizeTimezone(): string {
-    const candidate = this.inputDayTimezone().trim() || 'UTC';
-    return DateTime.now().setZone(candidate).isValid ? candidate : 'UTC';
+    return normalizeCalendarTimezone(this.inputDayTimezone());
   }
+
 }
