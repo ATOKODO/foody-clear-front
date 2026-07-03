@@ -18,7 +18,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, ParamMap } from '@angular/router';
-import { DateTime } from 'luxon';
 import {
   Calendar,
   CalendarConvertTemplateItemEvent,
@@ -54,33 +53,27 @@ import { InputDayService } from '../../services/input-day-service';
 import { SlotService } from '../../services/slot-service';
 import { InputDayFeature } from '../input-day/input-day.feature';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import { SegmentedToggle } from '../../app/ui/segmented-toggle/segmented-toggle';
 import {
-  SegmentedToggle,
-  SegmentedToggleOption,
-} from '../../app/ui/segmented-toggle/segmented-toggle';
-
-type PlanningCalendarController = Pick<
-  Calendar,
-  | 'currentView'
-  | 'currentViewLabel'
-  | 'goToToday'
-  | 'navigate'
-  | 'switchView'
-  | 'activateDayView'
-  | 'currentDate'
-  | 'getViewLabel'
->;
-
-const PLANNING_CALENDAR_VIEW_OPTIONS: readonly SegmentedToggleOption<CalendarView>[] =
-  [
-    { value: 'day', label: 'Jour', testId: 'planning-view-day' },
-    { value: 'week', label: 'Semaine', testId: 'planning-view-week' },
-    { value: 'month', label: 'Mois', testId: 'planning-view-month' },
-    { value: 'year', label: 'Année', testId: 'planning-view-year' },
-  ];
-
-const AUTO_REFRESH_THROTTLE_MS = 30_000;
-const PLANNING_DATA_CACHE_MS = 60_000;
+  PLANNING_CALENDAR_VIEW_OPTIONS,
+  type PlanningActiveModal,
+  type PlanningCalendarController,
+  type PlanningInputDataKind,
+  type PlanningInputDataRequest,
+} from './planning.models';
+import {
+  getPlanningFallbackCalendarViewLabel,
+  isPlanningDateLocal,
+  resolvePlanningCalendarDateLocal,
+  resolvePlanningCalendarView,
+  resolvePlanningExternalEntrySlots,
+  resolvePlanningHourClickDateLocal,
+  resolvePlanningTimezone,
+  shouldSkipPlanningInputDataRequest,
+  shouldThrottlePlanningAutoRefresh,
+  shouldUseRecentPlanningData,
+  stringifyPlanningDebugValue,
+} from './planning.helpers';
 
 @Component({
   selector: 'app-planning',
@@ -134,10 +127,14 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   inputMonthResponse: InputMonthResponse | null = null;
   inputDayItemsBySlot: InputDayItemsBySlotEntry[] = [];
   slots: Slot[] = [];
-  inputDayTimezone = DateTime.local().zoneName || 'UTC';
+  inputDayTimezone = resolvePlanningTimezone();
   readonly calendarViewOptions = PLANNING_CALENDAR_VIEW_OPTIONS;
-  readonly initialCalendarDateLocal = this.resolveInitialCalendarDateLocal();
-  readonly initialCalendarView = this.resolveInitialCalendarView();
+  readonly initialCalendarDateLocal = resolvePlanningCalendarDateLocal(
+    this.route.snapshot.queryParamMap,
+  );
+  readonly initialCalendarView = resolvePlanningCalendarView(
+    this.route.snapshot.queryParamMap,
+  );
   calendarHeaderLabel = 'Chargement...';
 
   currentCalendarView: CalendarView = this.initialCalendarView;
@@ -145,9 +142,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   currentRangeFromLocal: string | null = null;
   currentRangeToLocal: string | null = null;
 
-  private readonly activeModalState = signal<
-    'actions' | 'assignment' | 'items' | null
-  >(null);
+  private readonly activeModalState = signal<PlanningActiveModal>(null);
   clickedDateLocal = '';
   selectedModalDateLocal = '';
   selectedOccurredAt: string | null = null;
@@ -212,11 +207,11 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.savingAssignmentState.set(value);
   }
 
-  get activeModal(): 'actions' | 'assignment' | 'items' | null {
+  get activeModal(): PlanningActiveModal {
     return this.activeModalState();
   }
 
-  set activeModal(value: 'actions' | 'assignment' | 'items' | null) {
+  set activeModal(value: PlanningActiveModal) {
     this.activeModalState.set(value);
   }
 
@@ -310,7 +305,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   getCalendarViewLabel(view: CalendarView): string {
     return (
       this.calendarRef()?.getViewLabel(view) ??
-      this.getFallbackCalendarViewLabel(view)
+      getPlanningFallbackCalendarViewLabel(view)
     );
   }
 
@@ -328,10 +323,10 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   onCalendarHourClick(event: CalendarHourClickEvent): void {
-    const dateLocal =
-      event.dateLocal.trim() !== ''
-        ? event.dateLocal
-        : (DateTime.fromISO(event.currentDateIso).toISODate() ?? '');
+    const dateLocal = resolvePlanningHourClickDateLocal(
+      event.dateLocal,
+      event.currentDateIso,
+    );
 
     if (event.view === 'day' || event.view === 'week') {
       this.openItemsModal(dateLocal, event.occurredAt, null);
@@ -423,7 +418,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   get canSubmitModal(): boolean {
     return (
       this.modalSelectedCycleId !== null &&
-      this.isDateLocal(this.modalStartDateLocal) &&
+      isPlanningDateLocal(this.modalStartDateLocal) &&
       this.cycles.some((cycle) => cycle.id === this.modalSelectedCycleId)
     );
   }
@@ -542,8 +537,14 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     force = false,
     options: { includeCycles?: boolean } = {},
   ): void {
-    if (!force && this.shouldThrottleAutomaticRefresh()) {
-      return;
+    if (!force) {
+      const throttle = shouldThrottlePlanningAutoRefresh(
+        this.lastAutomaticRefreshAt,
+      );
+      this.lastAutomaticRefreshAt = throttle.lastAutomaticRefreshAt;
+      if (throttle.throttled) {
+        return;
+      }
     }
 
     if (options.includeCycles ?? true) {
@@ -555,7 +556,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   private loadSlots(force = false): void {
-    if (!force && this.shouldUseRecentData(this.lastSlotsLoadedAt)) {
+    if (!force && shouldUseRecentPlanningData(this.lastSlotsLoadedAt)) {
       return;
     }
 
@@ -580,7 +581,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   private loadCycles(force = false): void {
-    if (!force && this.shouldUseRecentData(this.lastCyclesLoadedAt)) {
+    if (!force && shouldUseRecentPlanningData(this.lastCyclesLoadedAt)) {
       return;
     }
 
@@ -612,7 +613,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     toDateLocal: string,
     force = false,
   ): void {
-    if (!this.isDateLocal(fromDateLocal) || !this.isDateLocal(toDateLocal)) {
+    if (!isPlanningDateLocal(fromDateLocal) || !isPlanningDateLocal(toDateLocal)) {
       return;
     }
 
@@ -624,7 +625,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     if (
       !force &&
       this.lastAssignmentsLoadedKey === requestKey &&
-      this.shouldUseRecentData(this.lastAssignmentsLoadedAt)
+      shouldUseRecentPlanningData(this.lastAssignmentsLoadedAt)
     ) {
       return;
     }
@@ -742,153 +743,146 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   private loadInputDay(dateLocal: string, force = false): void {
-    if (!this.isDateLocal(dateLocal)) {
-      this.clearInputDayState();
+    const request = this.prepareInputDataRequest('day', dateLocal, force);
+    if (!request) {
       return;
     }
-
-    const timezone = this.resolveTimezone();
-    const requestKey = `day:${dateLocal}:${timezone}`;
-    if (this.shouldSkipInputDataRequest(requestKey, force)) {
-      return;
-    }
-
-    const requestId = ++this.inputDayRequestId;
-    this.loadingDayItems = true;
-    this.inputDataRequestKey = requestKey;
-    this.dayItemsError = null;
-    this.inputDayResponse = null;
-    this.inputMonthResponse = null;
-    this.inputWeekResponse = null;
-    this.inputDayItemsBySlot = [];
 
     this.inputDayService
-      .getInputDay(dateLocal, timezone)
+      .getInputDay(dateLocal, request.timezone)
       .subscribe({
         next: (response) => {
-          if (requestId !== this.inputDayRequestId) {
+          if (this.isStaleInputDataRequest(request.requestId)) {
             return;
           }
+
           this.inputDayResponse = response;
           this.inputDayTimezone =
-            response.timezone?.trim() || timezone;
+            response.timezone?.trim() || request.timezone;
           this.inputDayItemsBySlot = response.itemsBySlot ?? [];
-          this.markInputDataLoaded(requestKey);
-          this.loadingDayItems = false;
-          this.inputDataRequestKey = null;
+          this.completeInputDataRequest(request.requestKey);
         },
         error: (error) => {
-          if (requestId !== this.inputDayRequestId) {
+          if (this.isStaleInputDataRequest(request.requestId)) {
             return;
           }
-          this.inputDayResponse = null;
-          this.inputWeekResponse = null;
-          this.inputDayItemsBySlot = [];
-          this.dayItemsError = error;
-          this.loadingDayItems = false;
-          this.inputDataRequestKey = null;
+
+          this.failInputDataRequest(error);
         },
       });
   }
 
   private loadInputMonth(dateLocal: string, force = false): void {
-    if (!this.isDateLocal(dateLocal)) {
-      this.clearInputDayState();
+    const request = this.prepareInputDataRequest('month', dateLocal, force);
+    if (!request) {
       return;
     }
-
-    const timezone = this.resolveTimezone();
-    const requestKey = `month:${dateLocal}:${timezone}`;
-    if (this.shouldSkipInputDataRequest(requestKey, force)) {
-      return;
-    }
-
-    const requestId = ++this.inputDayRequestId;
-    this.loadingDayItems = true;
-    this.inputDataRequestKey = requestKey;
-    this.dayItemsError = null;
-    this.inputDayResponse = null;
-    this.inputMonthResponse = null;
-    this.inputWeekResponse = null;
-    this.inputDayItemsBySlot = [];
 
     this.inputDayService
-      .getInputMonth(dateLocal, timezone)
+      .getInputMonth(dateLocal, request.timezone)
       .subscribe({
         next: (response) => {
-          if (requestId !== this.inputDayRequestId) {
+          if (this.isStaleInputDataRequest(request.requestId)) {
             return;
           }
 
           this.inputMonthResponse = response;
           this.inputDayTimezone =
-            response.timezone?.trim() || timezone;
-          this.markInputDataLoaded(requestKey);
-          this.loadingDayItems = false;
-          this.inputDataRequestKey = null;
+            response.timezone?.trim() || request.timezone;
+          this.completeInputDataRequest(request.requestKey);
         },
         error: (error) => {
-          if (requestId !== this.inputDayRequestId) {
+          if (this.isStaleInputDataRequest(request.requestId)) {
             return;
           }
 
-          this.inputMonthResponse = null;
-          this.inputDayItemsBySlot = [];
-          this.dayItemsError = error;
-          this.loadingDayItems = false;
-          this.inputDataRequestKey = null;
+          this.failInputDataRequest(error);
         },
       });
   }
 
   private loadInputWeek(startDateLocal: string, force = false): void {
-    if (!this.isDateLocal(startDateLocal)) {
-      this.clearInputDayState();
+    const request = this.prepareInputDataRequest(
+      'week',
+      startDateLocal,
+      force,
+    );
+    if (!request) {
       return;
     }
 
-    const timezone = this.resolveTimezone();
-    const requestKey = `week:${startDateLocal}:${timezone}`;
-    if (this.shouldSkipInputDataRequest(requestKey, force)) {
-      return;
+    this.inputDayService
+      .getInputWeek(startDateLocal, request.timezone)
+      .subscribe({
+        next: (response) => {
+          if (this.isStaleInputDataRequest(request.requestId)) {
+            return;
+          }
+
+          this.inputWeekResponse = response;
+          this.inputDayTimezone =
+            response.timezone?.trim() || request.timezone;
+          this.completeInputDataRequest(request.requestKey);
+        },
+        error: (error) => {
+          if (this.isStaleInputDataRequest(request.requestId)) {
+            return;
+          }
+
+          this.failInputDataRequest(error);
+        },
+      });
+  }
+
+  private prepareInputDataRequest(
+    kind: PlanningInputDataKind,
+    dateLocal: string,
+    force: boolean,
+  ): PlanningInputDataRequest | null {
+    if (!isPlanningDateLocal(dateLocal)) {
+      this.clearInputDayState();
+      return null;
+    }
+
+    const timezone = resolvePlanningTimezone();
+    const requestKey = `${kind}:${dateLocal}:${timezone}`;
+    if (shouldSkipPlanningInputDataRequest({
+      requestKey,
+      force,
+      inputDataRequestKey: this.inputDataRequestKey,
+      lastInputDataLoadedKey: this.lastInputDataLoadedKey,
+      lastInputDataLoadedAt: this.lastInputDataLoadedAt,
+    })) {
+      return null;
     }
 
     const requestId = ++this.inputDayRequestId;
     this.loadingDayItems = true;
     this.inputDataRequestKey = requestKey;
     this.dayItemsError = null;
-    this.inputMonthResponse = null;
     this.inputDayResponse = null;
+    this.inputMonthResponse = null;
     this.inputWeekResponse = null;
     this.inputDayItemsBySlot = [];
 
-    this.inputDayService
-      .getInputWeek(startDateLocal, timezone)
-      .subscribe({
-        next: (response) => {
-          if (requestId !== this.inputDayRequestId) {
-            return;
-          }
+    return { requestId, requestKey, timezone };
+  }
 
-          this.inputWeekResponse = response;
-          this.inputDayTimezone =
-            response.timezone?.trim() || timezone;
-          this.markInputDataLoaded(requestKey);
-          this.loadingDayItems = false;
-          this.inputDataRequestKey = null;
-        },
-        error: (error) => {
-          if (requestId !== this.inputDayRequestId) {
-            return;
-          }
+  private isStaleInputDataRequest(requestId: number): boolean {
+    return requestId !== this.inputDayRequestId;
+  }
 
-          this.inputWeekResponse = null;
-          this.inputDayItemsBySlot = [];
-          this.dayItemsError = error;
-          this.loadingDayItems = false;
-          this.inputDataRequestKey = null;
-        },
-      });
+  private completeInputDataRequest(requestKey: string): void {
+    this.markInputDataLoaded(requestKey);
+    this.loadingDayItems = false;
+    this.inputDataRequestKey = null;
+  }
+
+  private failInputDataRequest(error: unknown): void {
+    this.inputDayItemsBySlot = [];
+    this.dayItemsError = error;
+    this.loadingDayItems = false;
+    this.inputDataRequestKey = null;
   }
 
   private clearInputDayState(): void {
@@ -898,7 +892,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.inputWeekResponse = null;
     this.inputMonthResponse = null;
     this.inputDayItemsBySlot = [];
-    this.inputDayTimezone = DateTime.local().zoneName || 'UTC';
+    this.inputDayTimezone = resolvePlanningTimezone();
     this.loadingDayItems = false;
     this.dayItemsError = null;
   }
@@ -908,7 +902,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     occurredAt: string | null,
     sourceAssignment: CycleAssignment | null,
   ): void {
-    if (!this.isDateLocal(dateLocal)) {
+    if (!isPlanningDateLocal(dateLocal)) {
       return;
     }
 
@@ -925,7 +919,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     dateLocal: string,
     sourceAssignment: CycleAssignment | null,
   ): void {
-    if (!this.isDateLocal(dateLocal)) {
+    if (!isPlanningDateLocal(dateLocal)) {
       return;
     }
 
@@ -945,7 +939,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   private openExternalMealEntry(dateLocal: string, occurredAt: string | null): void {
-    if (!this.isDateLocal(dateLocal)) {
+    if (!isPlanningDateLocal(dateLocal)) {
       return;
     }
 
@@ -954,7 +948,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
         apiBaseUrl: this.baseUrl,
         dateLocal,
         occurredAt,
-        timezone: this.resolveTimezone(),
+        timezone: resolvePlanningTimezone(),
         slots: this.resolveExternalEntrySlots(dateLocal),
       })
       .subscribe((result) => {
@@ -969,7 +963,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     occurredAt: string | null,
     itemId: number | null,
   ): void {
-    if (!this.isDateLocal(dateLocal)) {
+    if (!isPlanningDateLocal(dateLocal)) {
       return;
     }
 
@@ -982,37 +976,13 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   private resolveExternalEntrySlots(dateLocal: string) {
-    const response = this.findInputDayResponseForDate(dateLocal);
-    const responseSlots = response?.slots ?? response?.daySet?.slots ?? [];
-    if (responseSlots.length > 0) {
-      return responseSlots;
-    }
-
-    return this.slots.map((slot) => ({
-      slotId: slot.id,
-      slotKey: slot.key,
-      title: slot.title,
-      sortOrder: slot.sortOrder,
-      startTime: slot.startTime ?? null,
-      endTime: slot.endTime ?? null,
-      nutritionValue: null,
-    }));
-  }
-
-  private findInputDayResponseForDate(dateLocal: string): InputDayResponse | null {
-    if (this.inputDayResponse?.dateLocal === dateLocal) {
-      return this.inputDayResponse;
-    }
-
-    return (
-      this.inputWeekResponse?.days.find((day) => day.dateLocal === dateLocal) ??
-      this.inputMonthResponse?.days.find((day) => day.dateLocal === dateLocal) ??
-      null
-    );
-  }
-
-  private isDateLocal(value: string): boolean {
-    return value.length === 10 && DateTime.fromISO(value).isValid;
+    return resolvePlanningExternalEntrySlots({
+      dateLocal,
+      slots: this.slots,
+      inputDayResponse: this.inputDayResponse,
+      inputWeekResponse: this.inputWeekResponse,
+      inputMonthResponse: this.inputMonthResponse,
+    });
   }
 
   private onMutationSuccess(response: unknown): void {
@@ -1028,41 +998,6 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.setLastError(error);
     this.modalError = error;
     this.savingAssignment = false;
-  }
-
-  private resolveTimezone(): string {
-    return DateTime.local().zoneName || 'UTC';
-  }
-
-  private shouldThrottleAutomaticRefresh(): boolean {
-    const now = Date.now();
-    if (now - this.lastAutomaticRefreshAt < AUTO_REFRESH_THROTTLE_MS) {
-      return true;
-    }
-
-    this.lastAutomaticRefreshAt = now;
-    return false;
-  }
-
-  private shouldUseRecentData(lastLoadedAt: number): boolean {
-    return (
-      lastLoadedAt > 0 && Date.now() - lastLoadedAt < PLANNING_DATA_CACHE_MS
-    );
-  }
-
-  private shouldSkipInputDataRequest(
-    requestKey: string,
-    force: boolean,
-  ): boolean {
-    if (this.inputDataRequestKey === requestKey) {
-      return true;
-    }
-
-    return (
-      !force &&
-      this.lastInputDataLoadedKey === requestKey &&
-      this.shouldUseRecentData(this.lastInputDataLoadedAt)
-    );
   }
 
   private markInputDataLoaded(requestKey: string): void {
@@ -1098,24 +1033,12 @@ export class PlanningFeature implements OnInit, AfterViewInit {
 
   private setLastResponse(value: unknown): void {
     this.lastResponse = value;
-    this.lastResponseText = this.stringifyDebugValue(value);
+    this.lastResponseText = stringifyPlanningDebugValue(value);
   }
 
   private setLastError(value: unknown): void {
     this.lastError = value;
-    this.lastErrorText = value === null ? '' : this.stringifyDebugValue(value);
-  }
-
-  private stringifyDebugValue(value: unknown): string {
-    if (value === null) {
-      return 'null';
-    }
-
-    try {
-      return JSON.stringify(value, null, 2);
-    } catch {
-      return String(value);
-    }
+    this.lastErrorText = value === null ? '' : stringifyPlanningDebugValue(value);
   }
 
   private syncCalendarHeaderState(): void {
@@ -1159,54 +1082,9 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   private updateRequestedCalendarState(queryParamMap: ParamMap): void {
-    this.requestedCalendarView = this.resolveCalendarView(queryParamMap);
-    this.requestedCalendarDateLocal = this.resolveCalendarDateLocal(queryParamMap);
-  }
-
-  private resolveInitialCalendarView(): CalendarView {
-    return this.resolveCalendarView(this.route.snapshot.queryParamMap);
-  }
-
-  private resolveInitialCalendarDateLocal(): string {
-    return this.resolveCalendarDateLocal(this.route.snapshot.queryParamMap);
-  }
-
-  private resolveCalendarView(queryParamMap: ParamMap): CalendarView {
-    const requestedView = queryParamMap.get('view');
-    return this.isCalendarView(requestedView) ? requestedView : 'month';
-  }
-
-  private resolveCalendarDateLocal(queryParamMap: ParamMap): string {
-    const requestedDateLocal = queryParamMap.get('date') ?? '';
-    if (this.isDateLocal(requestedDateLocal)) {
-      return requestedDateLocal;
-    }
-
-    return DateTime.local().toFormat('yyyy-LL-dd');
-  }
-
-  private isCalendarView(value: string | null): value is CalendarView {
-    return (
-      value === 'day' ||
-      value === 'week' ||
-      value === 'month' ||
-      value === 'year'
+    this.requestedCalendarView = resolvePlanningCalendarView(queryParamMap);
+    this.requestedCalendarDateLocal = resolvePlanningCalendarDateLocal(
+      queryParamMap,
     );
-  }
-
-  private getFallbackCalendarViewLabel(view: CalendarView): string {
-    if (view === 'year') {
-      return 'Année';
-    }
-
-    if (view === 'month') {
-      return 'Mois';
-    }
-
-    if (view === 'week') {
-      return 'Semaine';
-    }
-
-    return 'Jour';
   }
 }
