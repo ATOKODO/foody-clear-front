@@ -1,15 +1,26 @@
 <section class="app-page app-page--wide stat-page" data-testid="statistic-page">
-  <header class="stat-hero" data-testid="statistic-page">
-    <div>
-      <p class="stat-eyebrow">Foody Clear</p>
-      <h1>Statistics</h1>
-      <p class="stat-subtitle">
-        Timeline des achats, progression sur les objectifs et evolution du prix
-        des products.
-      </p>
-    </div>
+  <mat-card appearance="outlined" class="stat-card stat-toolbar-card">
+  <div class="stat-toolbar-card__top">
+    <p>Adjust the period, timezone and analysis mode from one place.</p>
+    <mat-button-toggle-group
+      [(ngModel)]="activeView"
+      class="stat-view-switch"
+      data-testid="stat-view-switch"
+      aria-label="Change statistics view"
+    >
+      @for (view of views; track view.value) {
+        <mat-button-toggle
+          [value]="view.value"
+          [attr.data-testid]="'stat-view-' + view.value"
+        >
+          {{ view.label }}
+        </mat-button-toggle>
+      }
+    </mat-button-toggle-group>
+  </div>
 
-    <div class="stat-hero__actions">
+  <div class="stat-toolbar-card__controls">
+    <div class="stat-toolbar-card__actions">
       <button
         mat-stroked-button
         type="button"
@@ -42,25 +53,18 @@
         [disabled]="loadingTimeline"
         (click)="refresh()"
       >
-        Actualiser
+        Refresh
       </button>
     </div>
-  </header>
 
-  <mat-card appearance="outlined" class="stat-card">
     <div class="stat-filters">
       <mat-form-field appearance="fill">
-        <mat-label>Base URL API</mat-label>
-        <input matInput [(ngModel)]="baseUrl" (blur)="onBaseUrlChange()" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>Du</mat-label>
+        <mat-label>From</mat-label>
         <input matInput type="date" [(ngModel)]="fromDateLocal" />
       </mat-form-field>
 
       <mat-form-field appearance="fill">
-        <mat-label>Au</mat-label>
+        <mat-label>To</mat-label>
         <input matInput type="date" [(ngModel)]="toDateLocal" />
       </mat-form-field>
 
@@ -77,26 +81,11 @@
         [disabled]="loadingTimeline"
         (click)="refresh()"
       >
-        Charger
+        Load
       </button>
     </div>
-  </mat-card>
-
-  <mat-button-toggle-group
-    [(ngModel)]="activeView"
-    class="stat-view-switch"
-    data-testid="stat-view-switch"
-    aria-label="Changer de vue statistiques"
-  >
-    @for (view of views; track view.value) {
-      <mat-button-toggle
-        [value]="view.value"
-        [attr.data-testid]="'stat-view-' + view.value"
-      >
-        {{ view.label }}
-      </mat-button-toggle>
-    }
-  </mat-button-toggle-group>
+  </div>
+</mat-card>
 
   @if (loadingTimeline || loadingPriceHistory || loadingProducts) {
     <mat-progress-bar mode="indeterminate" />

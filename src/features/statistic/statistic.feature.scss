@@ -22,15 +22,12 @@
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  align-items: end;
+  align-items: center;
 }
 
-.stat-eyebrow {
-  margin: 0 0 0.25rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--stat-accent);
+.stat-hero__copy {
+  display: grid;
+  gap: 0.25rem;
 }
 
 .stat-hero h1,
@@ -38,19 +35,20 @@
   margin: 0;
 }
 
-.stat-subtitle,
 .stat-card__head p,
 .target-detail-meta p,
 .detail-item p,
-.empty-copy {
+.empty-copy,
+.stat-toolbar-card__top p {
   margin: 0;
   color: var(--stat-muted);
 }
 
-.stat-hero__actions,
 .stat-filters,
 .stat-grid,
-.stat-card__head {
+.stat-card__head,
+.stat-toolbar-card__top,
+.stat-toolbar-card__actions {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
@@ -63,6 +61,25 @@
   backdrop-filter: blur(14px);
   padding: 1rem;
   box-shadow: var(--app-shadow-sm);
+}
+
+.stat-toolbar-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.stat-toolbar-card__top {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-toolbar-card__controls {
+  display: grid;
+  gap: 1rem;
+}
+
+.stat-toolbar-card__actions {
+  align-items: center;
 }
 
 .stat-card__head {
@@ -102,6 +119,18 @@
 
 .stat-view-switch {
   width: fit-content;
+}
+
+.stat-filters {
+  align-items: end;
+}
+
+.stat-filters > * {
+  flex: 1 1 12rem;
+}
+
+.stat-filters button {
+  flex: 0 0 auto;
 }
 
 .expense-timeline,
@@ -257,9 +286,20 @@
     padding: 0;
   }
 
-  .stat-hero {
+  .stat-hero,
+  .stat-toolbar-card__top {
     align-items: start;
     flex-direction: column;
+  }
+
+  .stat-view-switch,
+  .stat-toolbar-card__actions,
+  .stat-filters button {
+    width: 100%;
+  }
+
+  .stat-toolbar-card__actions button {
+    width: 100%;
   }
 
   .expense-bar,
