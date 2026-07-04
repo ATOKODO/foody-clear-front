@@ -6,17 +6,18 @@
   display: block;
 }
 
-.template-list-layout {
-  display: grid;
-  gap: 1rem;
-  align-items: start;
-  grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
-}
-
 .template-master__content {
   display: grid;
   gap: 1rem;
-  padding: 1rem;
+}
+
+.template-master__count-badge {
+  border-radius: 999px;
+  background: rgb(241 245 249);
+  color: rgb(71 85 105);
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .template-master__table-wrap {
@@ -129,15 +130,15 @@
 }
 
 .template-master__action--edit {
-  border-color: #8c7600;
-  background: #ffe167;
-  color: #544600;
+  border-color: #4d8078;
+  background: #c6fbf2;
+  color: #003732;
 }
 
 .template-master__action--delete {
-  border-color: #de3731;
-  background: #ff897e;
-  color: #690005;
+  border-color: rgb(239 68 68 / 0.7);
+  background: rgb(254 226 226);
+  color: rgb(127 29 29);
 }
 
 .template-detail {
@@ -192,12 +193,6 @@
 
 :host-context(.dark) .template-master__meta {
   color: rgb(148 163 184);
-}
-
-@media (max-width: 1280px) {
-  .template-list-layout {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 640px) {

@@ -1,0 +1,25 @@
+<div
+  class="master-detail-layout"
+  [style.--master-detail-side-width]="sideWidth()">
+  <section
+    class="master-detail-layout__side"
+    [attr.aria-label]="sideAriaLabel()">
+    <div class="master-detail-layout__side-header">
+      <div>
+        <h3>{{ sideTitle() }}</h3>
+        @if (sideSubtitle(); as subtitle) {
+          <p>{{ subtitle }}</p>
+        }
+      </div>
+      <ng-content select="[side-actions]" />
+    </div>
+
+    <ng-content select="[side-content]" />
+  </section>
+
+  <section
+    class="master-detail-layout__detail"
+    [attr.aria-label]="detailAriaLabel()">
+    <ng-content select="[detail-content]" />
+  </section>
+</div>

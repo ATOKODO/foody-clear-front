@@ -38,7 +38,7 @@
             mat-stroked-button
             type="button"
             class="shopping-list-action shopping-list-action--primary"
-            (click)="store.createList()"
+            (click)="store.openCreateListEditor()"
             [disabled]="store.saving">
             Ajouter
           </button>
@@ -69,112 +69,58 @@
       </div>
 
       @if (store.activeView === 'list') {
-        <div class="shopping-list-layout">
-          <section class="shopping-list-side-panel" aria-label="Listes de course">
-            <div class="shopping-list-section-header">
-              <div>
-                <h3>Listes</h3>
-                <p>Selectionne une liste active et gere ses lignes.</p>
-              </div>
-            </div>
-
-            <div class="shopping-list-stack">
-              @for (list of store.shoppingLists; track list.id) {
-                <button
-                  type="button"
-                  class="shopping-list-list-card"
-                  [class.is-active]="store.selectedList?.id === list.id"
-                  (click)="store.selectList(list.id)">
-                  <span class="shopping-list-list-card__title">{{ list.name }}</span>
-                  <span class="shopping-list-list-card__meta">
-                    {{ list.items.length }} ligne(s) - {{ store.countChecked(list) }} cochee(s)
-                  </span>
-                  <span class="shopping-list-list-card__status">
-                    {{ list.items.length === 0 ? 'Vide' : 'En cours' }}
-                  </span>
-                </button>
-              } @empty {
-                <p class="shopping-list-empty">Aucune liste.</p>
-              }
-            </div>
-          </section>
-
-          <section class="shopping-list-workspace" aria-label="Detail de la liste de course">
-            @if (store.selectedList; as list) {
-              <div class="shopping-list-workspace__header">
-                <div>
-                  <h3>{{ list.name }}</h3>
-                  <p>{{ list.items.length }} ligne(s), {{ store.checkedItemCount }} prete(s) a convertir.</p>
-                </div>
-                <div class="shopping-list-inline-actions">
+        <app-master-detail-layout
+          sideTitle="Listes"
+          sideSubtitle="Selectionne une liste active et gere ses lignes."
+          sideAriaLabel="Listes de course"
+          detailAriaLabel="Detail de la liste de course">
+          <div side-content class="shopping-list-stack">
+            @for (list of store.shoppingLists; track list.id) {
+              <div
+                class="shopping-list-list-card"
+                [class.is-active]="store.selectedList?.id === list.id"
+                tabindex="0"
+                role="button"
+                (click)="store.selectList(list.id)"
+                (keydown.enter)="store.selectList(list.id)"
+                (keydown.space)="store.selectList(list.id); $event.preventDefault()">
+                <span class="shopping-list-list-card__title">{{ list.name }}</span>
+                <span class="shopping-list-list-card__meta">
+                  {{ list.items.length }} ligne(s) - {{ store.countChecked(list) }} cochee(s)
+                </span>
+                <span class="shopping-list-list-card__status">
+                  {{ list.items.length === 0 ? 'Vide' : 'En cours' }}
+                </span>
+                <div class="shopping-list-list-card__actions" (click)="$event.stopPropagation()">
                   <button
                     mat-stroked-button
                     type="button"
                     class="shopping-list-action shopping-list-action--secondary"
-                    (click)="store.renameSelectedList()"
-                    [disabled]="store.saving || !list.name.trim()">
-                    Renommer
+                    (click)="store.openSelectedListEditor(list.id)"
+                    [disabled]="store.saving">
+                    Modifier
                   </button>
                   <button
                     mat-stroked-button
                     type="button"
                     class="shopping-list-action shopping-list-action--danger"
-                    (click)="store.deleteSelectedList()"
+                    (click)="store.selectList(list.id); store.deleteSelectedList()"
                     [disabled]="store.saving">
-                    Supprimer
+                    Retirer
                   </button>
                 </div>
               </div>
+            } @empty {
+              <p class="shopping-list-empty">Aucune liste.</p>
+            }
+          </div>
 
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Nom de la liste</mat-label>
-                <input matInput [(ngModel)]="list.name" />
-              </mat-form-field>
-
-              <div class="shopping-list-editor-card">
-                <div class="shopping-list-editor-card__header">
-                  <div>
-                    <h4>Ajouter un produit</h4>
-                    <p>Choisis dans la meme table produit que l'inventory.</p>
-                  </div>
-                </div>
-
-                <div class="shopping-list-add-row">
-                  <div class="shopping-list-product-pick">
-                    <span>Produit</span>
-                    <strong>{{ store.resolveDraftProductName() }}</strong>
-                    <button
-                      mat-stroked-button
-                      type="button"
-                      class="shopping-list-action shopping-list-action--secondary"
-                      (click)="store.openProductPicker()"
-                      [disabled]="store.saving || store.loading">
-                      Choisir
-                    </button>
-                  </div>
-
-                  <mat-form-field appearance="fill">
-                    <mat-label>Quantite</mat-label>
-                    <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="store.draftItemQty" />
-                  </mat-form-field>
-
-                  <mat-form-field appearance="fill">
-                    <mat-label>Unite</mat-label>
-                    <mat-select [(ngModel)]="store.draftItemQtyUnit">
-                      @for (unit of store.getDraftQtyUnitOptions(); track unit.value) {
-                        <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-
-                  <button
-                    mat-stroked-button
-                    type="button"
-                    class="shopping-list-action shopping-list-action--primary"
-                    (click)="store.addItemToSelectedList()"
-                    [disabled]="store.saving || store.draftItemProductId === null || store.draftItemQty <= 0">
-                    Ajouter
-                  </button>
+          <div detail-content>
+            @if (store.selectedList; as list) {
+              <div class="shopping-list-workspace__header">
+                <div>
+                  <h3>{{ list.name }}</h3>
+                  <p>{{ list.items.length }} ligne(s), {{ store.checkedItemCount }} cochee(s).</p>
                 </div>
               </div>
 
@@ -182,80 +128,288 @@
                 <div class="shopping-list-table-card__header">
                   <div>
                     <h4>Produits de la liste</h4>
-                    <p>Coche ce qui doit etre envoye vers l'inventory.</p>
-                  </div>
-                  <div class="shopping-list-inline-actions">
-                    <button
-                      mat-stroked-button
-                      type="button"
-                      class="shopping-list-action shopping-list-action--secondary"
-                      (click)="store.setAllChecked(true)"
-                      [disabled]="store.saving || list.items.length === 0">
-                      Tout cocher
-                    </button>
-                    <button
-                      mat-stroked-button
-                      type="button"
-                      class="shopping-list-action shopping-list-action--secondary"
-                      (click)="store.setAllChecked(false)"
-                      [disabled]="store.saving || list.items.length === 0">
-                      Tout decocher
-                    </button>
+                    <p>Affichage en lecture seule. Utilise Modifier dans la colonne de gauche pour editer.</p>
                   </div>
                 </div>
 
-                <div class="shopping-list-lines">
+                <div class="shopping-list-template-lines">
                   @for (item of list.items; track item.id) {
-                    <div class="shopping-list-line-card" [class.is-checked]="item.checked">
-                      <mat-checkbox
-                        [ngModel]="item.checked"
-                        (ngModelChange)="store.toggleItem(item, $event)"
-                        [disabled]="store.saving">
-                      </mat-checkbox>
-
-                      <div class="shopping-list-line-card__product">
-                        <strong>{{ store.resolveProductName(item) }}</strong>
-                        <span>Produit #{{ item.productId }}</span>
-                      </div>
-
-                      <mat-form-field appearance="fill">
-                        <mat-label>Quantite</mat-label>
-                        <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="item.qty" />
-                      </mat-form-field>
-
-                      <mat-form-field appearance="fill">
-                        <mat-label>Unite</mat-label>
-                        <mat-select [(ngModel)]="item.qtyUnit">
-                          @for (unit of store.getItemQtyUnitOptions(item); track unit.value) {
-                            <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-
-                      <div class="shopping-list-line-card__actions">
-                        <button
-                          mat-stroked-button
-                          type="button"
-                          class="shopping-list-action shopping-list-action--secondary"
-                          (click)="store.saveItem(item)"
-                          [disabled]="store.saving">
-                          Modifier
-                        </button>
-                        <button
-                          mat-stroked-button
-                          type="button"
-                          class="shopping-list-action shopping-list-action--danger"
-                          (click)="store.removeItem(item.id)"
-                          [disabled]="store.saving">
-                          Retirer
-                        </button>
-                      </div>
+                    <div class="shopping-list-template-line" [class.is-checked]="item.checked">
+                      <strong>{{ store.resolveProductName(item) }}</strong>
+                      <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }} - {{ item.checked ? 'Cochee' : 'A prendre' }}</span>
                     </div>
                   } @empty {
                     <p class="shopping-list-empty">Aucun produit dans cette liste.</p>
                   }
                 </div>
               </div>
+
+            } @else {
+              <p class="shopping-list-empty shopping-list-empty--large">Selectionne ou cree une liste pour commencer.</p>
+            }
+          </div>
+        </app-master-detail-layout>
+      } @else {
+        <app-master-detail-layout
+          sideTitle="Modeles"
+          sideSubtitle="Listes recurrentes pretes a relancer."
+          sideAriaLabel="Modeles de course"
+          detailAriaLabel="Detail du modele de course">
+          <div side-content class="shopping-list-stack">
+            @for (template of store.templates; track template.id) {
+              <div
+                class="shopping-list-list-card"
+                [class.is-active]="store.selectedTemplate?.id === template.id"
+                tabindex="0"
+                role="button"
+                (click)="store.selectTemplate(template.id)"
+                (keydown.enter)="store.selectTemplate(template.id)"
+                (keydown.space)="store.selectTemplate(template.id); $event.preventDefault()">
+                <span class="shopping-list-list-card__title">{{ template.name }}</span>
+                <span class="shopping-list-list-card__meta">{{ template.items.length }} produit(s)</span>
+                <span class="shopping-list-list-card__status shopping-list-list-card__status--template">Modele</span>
+                <div class="shopping-list-list-card__actions" (click)="$event.stopPropagation()">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="shopping-list-action shopping-list-action--secondary"
+                    (click)="store.openSelectedTemplateEditor(template.id)"
+                    [disabled]="store.saving">
+                    Modifier
+                  </button>
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="shopping-list-action shopping-list-action--danger"
+                    (click)="store.selectTemplate(template.id); store.deleteSelectedTemplate()"
+                    [disabled]="store.saving">
+                    Retirer
+                  </button>
+                </div>
+              </div>
+            } @empty {
+              <p class="shopping-list-empty">Aucun modele.</p>
+            }
+          </div>
+
+          <div detail-content>
+            @if (store.selectedTemplate; as template) {
+              <div class="shopping-list-workspace__header">
+                <div>
+                  <h3>{{ template.name }}</h3>
+                  <p>{{ template.items.length }} ligne(s) dans ce modele.</p>
+                </div>
+              </div>
+
+              <div class="shopping-list-table-card">
+                <div class="shopping-list-table-card__header">
+                  <div>
+                    <h4>Produits du modele</h4>
+                    <p>Contenu qui sera copie dans la nouvelle liste.</p>
+                  </div>
+                </div>
+
+                <div class="shopping-list-template-lines">
+                  @for (item of template.items; track item.productId) {
+                    <div class="shopping-list-template-line">
+                      <strong>{{ store.resolveProductName(item) }}</strong>
+                      <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }}</span>
+                    </div>
+                  } @empty {
+                    <p class="shopping-list-empty">Ce modele est vide.</p>
+                  }
+                </div>
+              </div>
+            } @else {
+              <p class="shopping-list-empty shopping-list-empty--large">Aucun modele selectionne.</p>
+            }
+          </div>
+        </app-master-detail-layout>
+      }
+    </div>
+  </mat-card>
+
+  @if (store.isListEditorOpen) {
+    <button
+      type="button"
+      class="shopping-list-modal-backdrop"
+      aria-label="Fermer l'edition de liste"
+      (click)="store.closeListEditor()">
+    </button>
+  }
+
+  @if (store.isListEditorOpen) {
+    <div class="shopping-list-modal-shell" role="dialog" aria-modal="true" aria-label="Editer une liste de course">
+      <mat-card class="shopping-list-modal-card shopping-list-modal-card--wide">
+        <div class="shopping-list-modal-card__header">
+          <div>
+            <p class="shopping-list-panel__eyebrow">Courses</p>
+            <h3>{{ store.listEditorMode === 'create' ? 'Creer une liste' : 'Modifier la liste' }}</h3>
+            <p>Edite le nom et les produits depuis cette modale.</p>
+          </div>
+          <button
+            mat-stroked-button
+            type="button"
+            class="shopping-list-action shopping-list-action--secondary"
+            (click)="store.closeListEditor()"
+            [disabled]="store.saving">
+            Fermer
+          </button>
+        </div>
+
+        <div class="shopping-list-modal-card__body">
+          @if (store.listEditorMode === 'create') {
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Nom de la liste</mat-label>
+              <input matInput [(ngModel)]="store.draftListName" />
+            </mat-form-field>
+            <button
+              mat-stroked-button
+              type="button"
+              class="shopping-list-action shopping-list-action--primary"
+              (click)="store.saveListEditor()"
+              [disabled]="store.saving">
+              Creer la liste
+            </button>
+          } @else if (store.selectedList; as list) {
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Nom de la liste</mat-label>
+              <input matInput [(ngModel)]="list.name" />
+            </mat-form-field>
+            <button
+              mat-stroked-button
+              type="button"
+              class="shopping-list-action shopping-list-action--primary"
+              (click)="store.saveListEditor()"
+              [disabled]="store.saving || !list.name.trim()">
+              Sauvegarder le nom
+            </button>
+
+            <div class="shopping-list-editor-card">
+              <div class="shopping-list-editor-card__header">
+                <div>
+                  <h4>Ajouter un produit</h4>
+                  <p>Choisis dans la meme table produit que l'inventory.</p>
+                </div>
+              </div>
+
+              <div class="shopping-list-add-row">
+                <div class="shopping-list-product-pick">
+                  <span>Produit</span>
+                  <strong>{{ store.resolveDraftProductName() }}</strong>
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="shopping-list-action shopping-list-action--secondary"
+                    (click)="store.openProductPicker()"
+                    [disabled]="store.saving || store.loading">
+                    Choisir
+                  </button>
+                </div>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Quantite</mat-label>
+                  <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="store.draftItemQty" />
+                </mat-form-field>
+
+                <mat-form-field appearance="fill">
+                  <mat-label>Unite</mat-label>
+                  <mat-select [(ngModel)]="store.draftItemQtyUnit">
+                    @for (unit of store.getDraftQtyUnitOptions(); track unit.value) {
+                      <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="shopping-list-action shopping-list-action--primary"
+                  (click)="store.addItemToSelectedList()"
+                  [disabled]="store.saving || store.draftItemProductId === null || store.draftItemQty <= 0">
+                  Ajouter
+                </button>
+              </div>
+            </div>
+
+            <div class="shopping-list-table-card">
+              <div class="shopping-list-table-card__header">
+                <div>
+                  <h4>Produits de la liste</h4>
+                  <p>Coche ce qui doit etre envoye vers l'inventory.</p>
+                </div>
+                <div class="shopping-list-inline-actions">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="shopping-list-action shopping-list-action--secondary"
+                    (click)="store.setAllChecked(true)"
+                    [disabled]="store.saving || list.items.length === 0">
+                    Tout cocher
+                  </button>
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="shopping-list-action shopping-list-action--secondary"
+                    (click)="store.setAllChecked(false)"
+                    [disabled]="store.saving || list.items.length === 0">
+                    Tout decocher
+                  </button>
+                </div>
+              </div>
+
+              <div class="shopping-list-lines">
+                @for (item of list.items; track item.id) {
+                  <div class="shopping-list-line-card" [class.is-checked]="item.checked">
+                    <mat-checkbox
+                      [ngModel]="item.checked"
+                      (ngModelChange)="store.toggleItem(item, $event)"
+                      [disabled]="store.saving">
+                    </mat-checkbox>
+
+                    <div class="shopping-list-line-card__product">
+                      <strong>{{ store.resolveProductName(item) }}</strong>
+                      <span>Produit #{{ item.productId }}</span>
+                    </div>
+
+                    <mat-form-field appearance="fill">
+                      <mat-label>Quantite</mat-label>
+                      <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="item.qty" />
+                    </mat-form-field>
+
+                    <mat-form-field appearance="fill">
+                      <mat-label>Unite</mat-label>
+                      <mat-select [(ngModel)]="item.qtyUnit">
+                        @for (unit of store.getItemQtyUnitOptions(item); track unit.value) {
+                          <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+
+                    <div class="shopping-list-line-card__actions">
+                      <button
+                        mat-stroked-button
+                        type="button"
+                        class="shopping-list-action shopping-list-action--secondary"
+                        (click)="store.saveItem(item)"
+                        [disabled]="store.saving">
+                        Modifier
+                      </button>
+                      <button
+                        mat-stroked-button
+                        type="button"
+                        class="shopping-list-action shopping-list-action--danger"
+                        (click)="store.removeItem(item.id)"
+                        [disabled]="store.saving">
+                        Retirer
+                      </button>
+                    </div>
+                  </div>
+                } @empty {
+                  <p class="shopping-list-empty">Aucun produit dans cette liste.</p>
+                }
+              </div>
+            </div>
 
               <div class="shopping-list-bottom-grid">
                 <section class="shopping-list-convert-card">
@@ -310,118 +464,80 @@
                   </button>
                 </section>
               </div>
-            } @else {
-              <p class="shopping-list-empty shopping-list-empty--large">Selectionne ou cree une liste pour commencer.</p>
-            }
-          </section>
+          }
         </div>
-      } @else {
-        <div class="shopping-list-layout">
-          <section class="shopping-list-side-panel" aria-label="Modeles de course">
-            <div class="shopping-list-section-header">
-              <div>
-                <h3>Modeles</h3>
-                <p>Listes recurrentes pretes a relancer.</p>
-              </div>
-            </div>
-
-            <div class="shopping-list-stack">
-              @for (template of store.templates; track template.id) {
-                <button
-                  type="button"
-                  class="shopping-list-list-card"
-                  [class.is-active]="store.selectedTemplate?.id === template.id"
-                  (click)="store.selectTemplate(template.id)">
-                  <span class="shopping-list-list-card__title">{{ template.name }}</span>
-                  <span class="shopping-list-list-card__meta">{{ template.items.length }} produit(s)</span>
-                  <span class="shopping-list-list-card__status shopping-list-list-card__status--template">Modele</span>
-                </button>
-              } @empty {
-                <p class="shopping-list-empty">Aucun modele.</p>
-              }
-            </div>
-          </section>
-
-          <section class="shopping-list-workspace" aria-label="Detail du modele de course">
-            @if (store.selectedTemplate; as template) {
-              <div class="shopping-list-workspace__header">
-                <div>
-                  <h3>{{ template.name }}</h3>
-                  <p>{{ template.items.length }} ligne(s) dans ce modele.</p>
-                </div>
-                <div class="shopping-list-inline-actions">
-                  <button
-                    mat-stroked-button
-                    type="button"
-                    class="shopping-list-action shopping-list-action--secondary"
-                    (click)="store.renameSelectedTemplate()"
-                    [disabled]="store.saving || !template.name.trim()">
-                    Renommer
-                  </button>
-                  <button
-                    mat-stroked-button
-                    type="button"
-                    class="shopping-list-action shopping-list-action--danger"
-                    (click)="store.deleteSelectedTemplate()"
-                    [disabled]="store.saving">
-                    Supprimer
-                  </button>
-                </div>
-              </div>
-
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Nom du modele</mat-label>
-                <input matInput [(ngModel)]="template.name" />
-              </mat-form-field>
-
-              <div class="shopping-list-template-create">
-                <div>
-                  <h4>Creer une liste depuis ce modele</h4>
-                  <p>Tu peux personnaliser le nom avant de generer la liste.</p>
-                </div>
-                <div class="shopping-list-template-create__form">
-                  <mat-form-field appearance="fill" class="w-full">
-                    <mat-label>Nom de la nouvelle liste</mat-label>
-                    <input matInput [(ngModel)]="store.templateCreateListName" />
-                  </mat-form-field>
-                  <button
-                    mat-stroked-button
-                    type="button"
-                    class="shopping-list-action shopping-list-action--primary"
-                    (click)="store.createListFromTemplate()"
-                    [disabled]="store.saving || template.items.length === 0">
-                    Creer la liste
-                  </button>
-                </div>
-              </div>
-
-              <div class="shopping-list-table-card">
-                <div class="shopping-list-table-card__header">
-                  <div>
-                    <h4>Produits du modele</h4>
-                    <p>Contenu qui sera copie dans la nouvelle liste.</p>
-                  </div>
-                </div>
-
-                <div class="shopping-list-template-lines">
-                  @for (item of template.items; track item.productId) {
-                    <div class="shopping-list-template-line">
-                      <strong>{{ store.resolveProductName(item) }}</strong>
-                      <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }}</span>
-                    </div>
-                  } @empty {
-                    <p class="shopping-list-empty">Ce modele est vide.</p>
-                  }
-                </div>
-              </div>
-            } @else {
-              <p class="shopping-list-empty shopping-list-empty--large">Aucun modele selectionne.</p>
-            }
-          </section>
-        </div>
-      }
+      </mat-card>
     </div>
-  </mat-card>
+  }
+
+  @if (store.isTemplateEditorOpen) {
+    <button
+      type="button"
+      class="shopping-list-modal-backdrop"
+      aria-label="Fermer l'edition de modele"
+      (click)="store.closeTemplateEditor()">
+    </button>
+  }
+
+  @if (store.isTemplateEditorOpen) {
+    <div class="shopping-list-modal-shell" role="dialog" aria-modal="true" aria-label="Editer un modele de course">
+      <mat-card class="shopping-list-modal-card">
+        <div class="shopping-list-modal-card__header">
+          <div>
+            <p class="shopping-list-panel__eyebrow">Modele</p>
+            <h3>Modifier le modele</h3>
+            <p>Le contenu reste consultable a droite, les actions sont dans la side list.</p>
+          </div>
+          <button
+            mat-stroked-button
+            type="button"
+            class="shopping-list-action shopping-list-action--secondary"
+            (click)="store.closeTemplateEditor()"
+            [disabled]="store.saving">
+            Fermer
+          </button>
+        </div>
+
+        <div class="shopping-list-modal-card__body">
+          @if (store.selectedTemplate; as template) {
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Nom du modele</mat-label>
+              <input matInput [(ngModel)]="template.name" />
+            </mat-form-field>
+            <button
+              mat-stroked-button
+              type="button"
+              class="shopping-list-action shopping-list-action--primary"
+              (click)="store.saveTemplateEditor()"
+              [disabled]="store.saving || !template.name.trim()">
+              Sauvegarder le modele
+            </button>
+
+            <div class="shopping-list-template-create">
+              <div>
+                <h4>Creer une liste depuis ce modele</h4>
+                <p>Tu peux personnaliser le nom avant de generer la liste.</p>
+              </div>
+              <div class="shopping-list-template-create__form">
+                <mat-form-field appearance="fill" class="w-full">
+                  <mat-label>Nom de la nouvelle liste</mat-label>
+                  <input matInput [(ngModel)]="store.templateCreateListName" />
+                </mat-form-field>
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="shopping-list-action shopping-list-action--primary"
+                  (click)="store.createListFromTemplate()"
+                  [disabled]="store.saving || template.items.length === 0">
+                  Creer la liste
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </mat-card>
+    </div>
+  }
 
   @if (store.isProductPickerOpen) {
     <button

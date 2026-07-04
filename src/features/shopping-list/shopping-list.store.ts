@@ -45,6 +45,8 @@ export class ShoppingListStore {
   templateCreateListName = '';
   selectedInventoryId: number | null = null;
   activeView: ShoppingListView = 'list';
+  listEditorMode: 'create' | 'edit' = 'create';
+
 
   private readonly shoppingListsState = signal<ShoppingList[]>([]);
   private readonly templatesState = signal<ShoppingListTemplate[]>([]);
@@ -56,6 +58,8 @@ export class ShoppingListStore {
   private readonly savingState = signal(false);
   private readonly lastErrorState = signal<unknown>(null);
   private readonly productPickerOpenState = signal(false);
+  private readonly listEditorOpenState = signal(false);
+  private readonly templateEditorOpenState = signal(false);
 
   private readonly selectedListState = computed<ShoppingList | null>(() => {
     const selectedId = this.selectedListIdState();
@@ -121,6 +125,14 @@ export class ShoppingListStore {
     return this.productPickerOpenState();
   }
 
+  get isListEditorOpen(): boolean {
+    return this.listEditorOpenState();
+  }
+
+  get isTemplateEditorOpen(): boolean {
+    return this.templateEditorOpenState();
+  }
+
   get productPickerSelectedIds(): string[] {
     return this.draftItemProductId == null
       ? []
@@ -137,6 +149,62 @@ export class ShoppingListStore {
 
   onActiveViewChange(view: ShoppingListView): void {
     this.activeView = view;
+  }
+
+  openCreateListEditor(): void {
+    if (this.loading || this.saving) {
+      return;
+    }
+
+    this.listEditorMode = 'create';
+    this.draftListName = buildDefaultListName(this.shoppingLists.length);
+    this.resetDraftItem();
+    this.listEditorOpenState.set(true);
+  }
+
+  openSelectedListEditor(id = this.selectedList?.id ?? null): void {
+    if (id == null || this.loading || this.saving) {
+      return;
+    }
+
+    this.selectList(id);
+    this.listEditorMode = 'edit';
+    this.resetDraftItem();
+    this.listEditorOpenState.set(true);
+  }
+
+  closeListEditor(): void {
+    if (!this.saving) {
+      this.listEditorOpenState.set(false);
+    }
+  }
+
+  openSelectedTemplateEditor(id = this.selectedTemplate?.id ?? null): void {
+    if (id == null || this.loading || this.saving) {
+      return;
+    }
+
+    this.selectTemplate(id);
+    this.templateEditorOpenState.set(true);
+  }
+
+  closeTemplateEditor(): void {
+    if (!this.saving) {
+      this.templateEditorOpenState.set(false);
+    }
+  }
+
+  saveListEditor(): void {
+    if (this.listEditorMode === 'create') {
+      this.createList();
+      return;
+    }
+
+    this.renameSelectedList();
+  }
+
+  saveTemplateEditor(): void {
+    this.renameSelectedTemplate();
   }
 
   openProductPicker(): void {
@@ -164,7 +232,11 @@ export class ShoppingListStore {
   onEscapeKey(): void {
     if (this.isProductPickerOpen) {
       this.closeProductPicker();
+      return;
     }
+
+    this.closeListEditor();
+    this.closeTemplateEditor();
   }
 
   resolveDraftProductName(): string {
@@ -197,6 +269,7 @@ export class ShoppingListStore {
       next: (created) => {
         this.upsertShoppingList(created, true);
         this.draftListName = '';
+        this.listEditorOpenState.set(false);
         this.savingState.set(false);
       },
       error: (error) => this.finishWithError(error),
@@ -213,6 +286,7 @@ export class ShoppingListStore {
     this.shoppingListSrv.update(selectedList.id, { name: selectedList.name }).subscribe({
       next: (updated) => {
         this.upsertShoppingList(updated);
+        this.listEditorOpenState.set(false);
         this.savingState.set(false);
       },
       error: (error) => this.finishWithError(error),
@@ -391,6 +465,7 @@ export class ShoppingListStore {
       .subscribe({
         next: (updated) => {
           this.upsertTemplate(updated);
+          this.templateEditorOpenState.set(false);
           this.savingState.set(false);
         },
         error: (error) => this.finishWithError(error),

@@ -34,7 +34,7 @@
             mat-stroked-button
             type="button"
             class="meal-prep-action meal-prep-action--primary"
-            (click)="startNewDish()"
+            (click)="openCreateDishEditor()"
             [disabled]="saving">
             Nouveau plat
           </button>
@@ -43,7 +43,7 @@
             mat-stroked-button
             type="button"
             class="meal-prep-action meal-prep-action--primary"
-            (click)="startNewMeal()"
+            (click)="openCreateMealEditor()"
             [disabled]="saving">
             Nouveau repas
           </button>
@@ -82,118 +82,72 @@
       </div>
 
       @if (activeView === 'dish') {
-        <div class="meal-prep-layout">
-          <section class="meal-prep-list-panel" aria-label="Plats prepares">
-            <div class="meal-prep-section-header">
-              <div>
-                <h3>Plats</h3>
-                <p>Base reutilisable pour tes repas.</p>
+        <app-master-detail-layout
+          sideTitle="Plats"
+          sideSubtitle="Base reutilisable pour tes repas."
+          sideAriaLabel="Plats prepares">
+          <div side-content class="meal-prep-stack">
+            @for (dish of sortedDishes; track dish.id) {
+              <div
+                class="meal-prep-list-card"
+                [class.is-active]="selectedDish?.id === dish.id"
+                tabindex="0"
+                role="button"
+                (click)="selectDish(dish.id)"
+                (keydown.enter)="selectDish(dish.id)"
+                (keydown.space)="selectDish(dish.id); $event.preventDefault()">
+                <span class="meal-prep-list-card__title">{{ dish.name }}</span>
+                <span class="meal-prep-list-card__meta">{{ dish.items.length }} ligne(s)</span>
+                <span
+                  class="meal-prep-list-card__status"
+                  [class.is-ready]="dish.availability?.isInStock">
+                  {{ dish.availability?.isInStock ? 'En stock' : 'Stock incomplet' }}
+                </span>
+                <div class="meal-prep-list-card__actions" (click)="$event.stopPropagation()">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="meal-prep-action meal-prep-action--secondary"
+                    (click)="openSelectedDishEditor(dish.id)"
+                    [disabled]="saving">
+                    Modifier
+                  </button>
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="meal-prep-action meal-prep-action--danger"
+                    (click)="selectDish(dish.id); deleteSelectedDish()"
+                    [disabled]="saving">
+                    Retirer
+                  </button>
+                </div>
               </div>
-            </div>
+            } @empty {
+              <p class="meal-prep-empty">Aucun plat.</p>
+            }
+          </div>
 
-            <div class="meal-prep-stack">
-              @for (dish of sortedDishes; track dish.id) {
-                <button
-                  type="button"
-                  class="meal-prep-list-card"
-                  [class.is-active]="selectedDish?.id === dish.id"
-                  (click)="selectDish(dish.id)">
-                  <span class="meal-prep-list-card__title">{{ dish.name }}</span>
-                  <span class="meal-prep-list-card__meta">{{ dish.items.length }} ligne(s)</span>
-                  <span
-                    class="meal-prep-list-card__status"
-                    [class.is-ready]="dish.availability?.isInStock">
-                    {{ dish.availability?.isInStock ? 'En stock' : 'Stock incomplet' }}
-                  </span>
-                </button>
-              } @empty {
-                <p class="meal-prep-empty">Aucun plat.</p>
-              }
-            </div>
-          </section>
-
-          <section class="meal-prep-workspace">
-            <div class="meal-prep-workspace__header">
-              <div>
-                <h3>{{ editingDishId === null ? 'Creer un plat' : 'Modifier le plat' }}</h3>
-                <p>Choisis les produits avec la meme table de recherche que l'inventory.</p>
-              </div>
-              <div class="meal-prep-inline-actions">
+          <div detail-content>
+            @if (selectedDish; as dish) {
+              <div class="meal-prep-workspace__header">
+                <div>
+                  <h3>{{ dish.name }}</h3>
+                  <p>{{ dish.items.length }} ligne(s) dans ce plat.</p>
+                </div>
                 <button
                   mat-stroked-button
                   type="button"
                   class="meal-prep-action meal-prep-action--secondary"
                   (click)="createShoppingListFromSelectedDish()"
-                  [disabled]="selectedDish === null || saving">
+                  [disabled]="saving">
                   Liste de course
                 </button>
-                <button
-                  mat-stroked-button
-                  color="warn"
-                  type="button"
-                  class="meal-prep-action meal-prep-action--danger"
-                  (click)="deleteSelectedDish()"
-                  [disabled]="selectedDish === null || saving">
-                  Supprimer
-                </button>
-              </div>
-            </div>
-
-            <div class="meal-prep-editor-card">
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Nom du plat</mat-label>
-                <input matInput [(ngModel)]="dishDraftName" placeholder="Pates a la bolognaise" />
-              </mat-form-field>
-
-              <div class="meal-prep-lines">
-                @for (line of dishDraftLines; track $index) {
-                  <div class="meal-prep-line-card">
-                    <div class="meal-prep-line-card__source">
-                      <span class="meal-prep-line-card__label">Produit</span>
-                      <strong>{{ resolveProductName(line.productId) }}</strong>
-                      <button
-                        mat-stroked-button
-                        type="button"
-                        class="meal-prep-action meal-prep-action--secondary"
-                        (click)="openDishProductPicker($index)"
-                        [disabled]="saving || loading">
-                        Choisir
-                      </button>
-                    </div>
-                    <mat-form-field appearance="fill">
-                      <mat-label>Quantite</mat-label>
-                      <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="line.qty" />
-                    </mat-form-field>
-                    <mat-form-field appearance="fill">
-                      <mat-label>Unite</mat-label>
-                      <mat-select [(ngModel)]="line.qtyUnit">
-                        @for (unit of getDishQtyUnitOptions(line); track unit.value) {
-                          <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                    <button mat-stroked-button color="warn" type="button" (click)="removeDishLine($index)" [disabled]="saving">
-                      Retirer
-                    </button>
-                  </div>
-                }
               </div>
 
-              <div class="meal-prep-inline-actions meal-prep-inline-actions--footer">
-                <button mat-stroked-button type="button" (click)="addDishLine()" [disabled]="saving">
-                  Ajouter une ligne
-                </button>
-                <button mat-raised-button color="primary" type="button" (click)="saveDish()" [disabled]="!canSaveDish() || saving">
-                  {{ editingDishId === null ? 'Creer le plat' : 'Sauvegarder le plat' }}
-                </button>
-              </div>
-            </div>
-
-            @if (selectedDish; as dish) {
               <div class="meal-prep-detail-card">
                 <div class="meal-prep-detail-card__header">
                   <div>
-                    <h4>{{ dish.name }}</h4>
+                    <h4>Contenu du plat</h4>
                     <p>{{ dish.availability?.isInStock ? 'Pret avec le stock actuel' : 'Achats necessaires' }}</p>
                   </div>
                   <span class="meal-prep-badge">
@@ -207,146 +161,83 @@
                       <span>{{ item.product?.name ?? ('Produit #' + item.productId) }}</span>
                       <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }}</span>
                     </div>
+                  } @empty {
+                    <p class="meal-prep-empty">Aucune ligne dans ce plat.</p>
                   }
                 </div>
               </div>
+            } @else {
+              <p class="meal-prep-empty meal-prep-empty--large">Selectionne ou cree un plat.</p>
             }
-          </section>
-        </div>
+          </div>
+        </app-master-detail-layout>
       } @else {
-        <div class="meal-prep-layout">
-          <section class="meal-prep-list-panel" aria-label="Repas prepares">
-            <div class="meal-prep-section-header">
-              <div>
-                <h3>Repas</h3>
-                <p>Assemblage final de plats et produits.</p>
+        <app-master-detail-layout
+          sideTitle="Repas"
+          sideSubtitle="Assemblage final de plats et produits."
+          sideAriaLabel="Repas prepares">
+          <div side-content class="meal-prep-stack">
+            @for (meal of sortedMeals; track meal.id) {
+              <div
+                class="meal-prep-list-card"
+                [class.is-active]="selectedMeal?.id === meal.id"
+                tabindex="0"
+                role="button"
+                (click)="selectMeal(meal.id)"
+                (keydown.enter)="selectMeal(meal.id)"
+                (keydown.space)="selectMeal(meal.id); $event.preventDefault()">
+                <span class="meal-prep-list-card__title">{{ meal.name }}</span>
+                <span class="meal-prep-list-card__meta">{{ meal.items.length }} ligne(s)</span>
+                <span
+                  class="meal-prep-list-card__status"
+                  [class.is-ready]="meal.availability?.isInStock">
+                  {{ meal.availability?.isInStock ? 'En stock' : 'Stock incomplet' }}
+                </span>
+                <div class="meal-prep-list-card__actions" (click)="$event.stopPropagation()">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="meal-prep-action meal-prep-action--secondary"
+                    (click)="openSelectedMealEditor(meal.id)"
+                    [disabled]="saving">
+                    Modifier
+                  </button>
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="meal-prep-action meal-prep-action--danger"
+                    (click)="selectMeal(meal.id); deleteSelectedMeal()"
+                    [disabled]="saving">
+                    Retirer
+                  </button>
+                </div>
               </div>
-            </div>
+            } @empty {
+              <p class="meal-prep-empty">Aucun repas.</p>
+            }
+          </div>
 
-            <div class="meal-prep-stack">
-              @for (meal of sortedMeals; track meal.id) {
-                <button
-                  type="button"
-                  class="meal-prep-list-card"
-                  [class.is-active]="selectedMeal?.id === meal.id"
-                  (click)="selectMeal(meal.id)">
-                  <span class="meal-prep-list-card__title">{{ meal.name }}</span>
-                  <span class="meal-prep-list-card__meta">{{ meal.items.length }} ligne(s)</span>
-                  <span
-                    class="meal-prep-list-card__status"
-                    [class.is-ready]="meal.availability?.isInStock">
-                    {{ meal.availability?.isInStock ? 'En stock' : 'Stock incomplet' }}
-                  </span>
-                </button>
-              } @empty {
-                <p class="meal-prep-empty">Aucun repas.</p>
-              }
-            </div>
-          </section>
-
-          <section class="meal-prep-workspace">
-            <div class="meal-prep-workspace__header">
-              <div>
-                <h3>{{ editingMealId === null ? 'Creer un repas' : 'Modifier le repas' }}</h3>
-                <p>Ajoute un plat existant ou choisis un produit via la modale.</p>
-              </div>
-              <div class="meal-prep-inline-actions">
+          <div detail-content>
+            @if (selectedMeal; as meal) {
+              <div class="meal-prep-workspace__header">
+                <div>
+                  <h3>{{ meal.name }}</h3>
+                  <p>{{ meal.items.length }} ligne(s) dans ce repas.</p>
+                </div>
                 <button
                   mat-stroked-button
                   type="button"
                   class="meal-prep-action meal-prep-action--secondary"
                   (click)="createShoppingListFromSelectedMeal()"
-                  [disabled]="selectedMeal === null || saving">
+                  [disabled]="saving">
                   Liste de course
                 </button>
-                <button
-                  mat-stroked-button
-                  color="warn"
-                  type="button"
-                  class="meal-prep-action meal-prep-action--danger"
-                  (click)="deleteSelectedMeal()"
-                  [disabled]="selectedMeal === null || saving">
-                  Supprimer
-                </button>
-              </div>
-            </div>
-
-            <div class="meal-prep-editor-card">
-              <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Nom du repas</mat-label>
-                <input matInput [(ngModel)]="mealDraftName" placeholder="Repas cinema" />
-              </mat-form-field>
-
-              <div class="meal-prep-lines">
-                @for (line of mealDraftLines; track $index) {
-                  <div class="meal-prep-line-card meal-prep-line-card--meal">
-                    <mat-form-field appearance="fill">
-                      <mat-label>Type</mat-label>
-                      <mat-select [ngModel]="line.itemType" (ngModelChange)="onMealItemTypeChange(line, $event)">
-                        <mat-option value="dish">Plat</mat-option>
-                        <mat-option value="product">Produit</mat-option>
-                      </mat-select>
-                    </mat-form-field>
-
-                    @if (line.itemType === 'dish') {
-                      <mat-form-field appearance="fill" class="meal-prep-line-card__dish-select">
-                        <mat-label>Plat</mat-label>
-                        <mat-select [ngModel]="line.dishId" (ngModelChange)="onMealDishChange(line, $event)">
-                          <mat-option [value]="null">Selectionner</mat-option>
-                          @for (dish of sortedDishes; track dish.id) {
-                            <mat-option [value]="dish.id">{{ dish.name }}</mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-                    } @else {
-                      <div class="meal-prep-line-card__source">
-                        <span class="meal-prep-line-card__label">Produit</span>
-                        <strong>{{ resolveProductName(line.productId) }}</strong>
-                        <button
-                          mat-stroked-button
-                          type="button"
-                          class="meal-prep-action meal-prep-action--secondary"
-                          (click)="openMealProductPicker($index)"
-                          [disabled]="saving || loading">
-                          Choisir
-                        </button>
-                      </div>
-                    }
-
-                    <mat-form-field appearance="fill">
-                      <mat-label>Quantite</mat-label>
-                      <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="line.qty" />
-                    </mat-form-field>
-                    <mat-form-field appearance="fill">
-                      <mat-label>Unite</mat-label>
-                      <mat-select [(ngModel)]="line.qtyUnit">
-                        @for (unit of getMealQtyUnitOptions(line); track unit.value) {
-                          <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
-                        }
-                      </mat-select>
-                    </mat-form-field>
-                    <button mat-stroked-button color="warn" type="button" (click)="removeMealLine($index)" [disabled]="saving">
-                      Retirer
-                    </button>
-                  </div>
-                }
               </div>
 
-              <div class="meal-prep-inline-actions meal-prep-inline-actions--footer">
-                <button mat-stroked-button type="button" (click)="addMealLine()" [disabled]="saving">
-                  Ajouter une ligne
-                </button>
-                <button mat-raised-button color="primary" type="button" (click)="saveMeal()" [disabled]="!canSaveMeal() || saving">
-                  {{ editingMealId === null ? 'Creer le repas' : 'Sauvegarder le repas' }}
-                </button>
-              </div>
-            </div>
-
-            @if (selectedMeal; as meal) {
               <div class="meal-prep-detail-card">
                 <div class="meal-prep-detail-card__header">
                   <div>
-                    <h4>{{ meal.name }}</h4>
+                    <h4>Contenu du repas</h4>
                     <p>{{ meal.availability?.isInStock ? 'Pret avec le stock actuel' : 'Achats necessaires' }}</p>
                   </div>
                   <span class="meal-prep-badge">
@@ -360,16 +251,181 @@
                       <span>{{ resolveTypeLabel(item.itemType) }} - {{ resolveLineLabel(item) }}</span>
                       <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }}</span>
                     </div>
+                  } @empty {
+                    <p class="meal-prep-empty">Aucune ligne dans ce repas.</p>
                   }
                 </div>
               </div>
+            } @else {
+              <p class="meal-prep-empty meal-prep-empty--large">Selectionne ou cree un repas.</p>
             }
-          </section>
-        </div>
+          </div>
+        </app-master-detail-layout>
       }
     </div>
   </mat-card>
 </section>
+
+@if (isEditorOpen) {
+  <div
+    class="modal-backdrop modal-backdrop--meal-prep"
+    tabindex="0"
+    role="button"
+    aria-label="Fermer l'edition"
+    (click)="closeEditor()"
+    (keydown.enter)="closeEditor()"
+    (keydown.space)="closeEditor(); $event.preventDefault()"></div>
+}
+@if (isEditorOpen) {
+  <div class="modal-shell modal-shell--meal-prep" data-testid="meal-prep-editor-dialog">
+    <mat-card class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
+      <mat-card-header>
+        <mat-card-title>
+          @if (activeView === 'dish') {
+            {{ editingDishId === null ? 'Creer un plat' : 'Modifier le plat' }}
+          } @else {
+            {{ editingMealId === null ? 'Creer un repas' : 'Modifier le repas' }}
+          }
+        </mat-card-title>
+        <mat-card-subtitle>
+          @if (activeView === 'dish') {
+            Choisis les produits avec la meme table de recherche que l'inventory.
+          } @else {
+            Ajoute un plat existant ou choisis un produit via la modale.
+          }
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="space-y-4 pt-2">
+        @if (activeView === 'dish') {
+          <div class="meal-prep-editor-card meal-prep-editor-card--modal">
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Nom du plat</mat-label>
+              <input matInput [(ngModel)]="dishDraftName" placeholder="Pates a la bolognaise" />
+            </mat-form-field>
+
+            <div class="meal-prep-lines">
+              @for (line of dishDraftLines; track $index) {
+                <div class="meal-prep-line-card">
+                  <div class="meal-prep-line-card__source">
+                    <span class="meal-prep-line-card__label">Produit</span>
+                    <strong>{{ resolveProductName(line.productId) }}</strong>
+                    <button
+                      mat-stroked-button
+                      type="button"
+                      class="meal-prep-action meal-prep-action--secondary"
+                      (click)="openDishProductPicker($index)"
+                      [disabled]="saving || loading">
+                      Choisir
+                    </button>
+                  </div>
+                  <mat-form-field appearance="fill">
+                    <mat-label>Quantite</mat-label>
+                    <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="line.qty" />
+                  </mat-form-field>
+                  <mat-form-field appearance="fill">
+                    <mat-label>Unite</mat-label>
+                    <mat-select [(ngModel)]="line.qtyUnit">
+                      @for (unit of getDishQtyUnitOptions(line); track unit.value) {
+                        <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <button mat-stroked-button color="warn" type="button" (click)="removeDishLine($index)" [disabled]="saving">
+                    Retirer
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="meal-prep-editor-card meal-prep-editor-card--modal">
+            <mat-form-field appearance="fill" class="w-full">
+              <mat-label>Nom du repas</mat-label>
+              <input matInput [(ngModel)]="mealDraftName" placeholder="Repas cinema" />
+            </mat-form-field>
+
+            <div class="meal-prep-lines">
+              @for (line of mealDraftLines; track $index) {
+                <div class="meal-prep-line-card meal-prep-line-card--meal">
+                  <mat-form-field appearance="fill">
+                    <mat-label>Type</mat-label>
+                    <mat-select [ngModel]="line.itemType" (ngModelChange)="onMealItemTypeChange(line, $event)">
+                      <mat-option value="dish">Plat</mat-option>
+                      <mat-option value="product">Produit</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  @if (line.itemType === 'dish') {
+                    <mat-form-field appearance="fill" class="meal-prep-line-card__dish-select">
+                      <mat-label>Plat</mat-label>
+                      <mat-select [ngModel]="line.dishId" (ngModelChange)="onMealDishChange(line, $event)">
+                        <mat-option [value]="null">Selectionner</mat-option>
+                        @for (dish of sortedDishes; track dish.id) {
+                          <mat-option [value]="dish.id">{{ dish.name }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                  } @else {
+                    <div class="meal-prep-line-card__source">
+                      <span class="meal-prep-line-card__label">Produit</span>
+                      <strong>{{ resolveProductName(line.productId) }}</strong>
+                      <button
+                        mat-stroked-button
+                        type="button"
+                        class="meal-prep-action meal-prep-action--secondary"
+                        (click)="openMealProductPicker($index)"
+                        [disabled]="saving || loading">
+                        Choisir
+                      </button>
+                    </div>
+                  }
+
+                  <mat-form-field appearance="fill">
+                    <mat-label>Quantite</mat-label>
+                    <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="line.qty" />
+                  </mat-form-field>
+                  <mat-form-field appearance="fill">
+                    <mat-label>Unite</mat-label>
+                    <mat-select [(ngModel)]="line.qtyUnit">
+                      @for (unit of getMealQtyUnitOptions(line); track unit.value) {
+                        <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <button mat-stroked-button color="warn" type="button" (click)="removeMealLine($index)" [disabled]="saving">
+                    Retirer
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </mat-card-content>
+
+      <mat-card-actions align="end" class="gap-2 px-4 pb-4">
+        <button mat-stroked-button type="button" (click)="closeEditor()" [disabled]="saving">
+          Annuler
+        </button>
+        @if (activeView === 'dish') {
+          <button mat-stroked-button type="button" (click)="addDishLine()" [disabled]="saving">
+            Ajouter une ligne
+          </button>
+          <button mat-raised-button color="primary" type="button" (click)="saveDish()" [disabled]="!canSaveDish() || saving">
+            {{ editingDishId === null ? 'Creer le plat' : 'Sauvegarder le plat' }}
+          </button>
+        } @else {
+          <button mat-stroked-button type="button" (click)="addMealLine()" [disabled]="saving">
+            Ajouter une ligne
+          </button>
+          <button mat-raised-button color="primary" type="button" (click)="saveMeal()" [disabled]="!canSaveMeal() || saving">
+            {{ editingMealId === null ? 'Creer le repas' : 'Sauvegarder le repas' }}
+          </button>
+        }
+      </mat-card-actions>
+    </mat-card>
+  </div>
+}
 
 @if (isProductPickerOpen) {
   <div

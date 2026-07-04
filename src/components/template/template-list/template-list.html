@@ -1,15 +1,14 @@
 <div class="template-list-shell" data-testid="template-list">
-  <div class="template-list-layout">
-    <mat-card appearance="outlined" class="template-master rounded-xl">
-      <mat-card-content class="template-master__content">
-        <div class="flex items-center justify-between gap-2">
-          <p class="text-sm font-semibold text-slate-900">Modeles existants</p>
-          <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
-            {{ sortedTemplates.length }}
-          </span>
-        </div>
+  <app-master-detail-layout
+    sideTitle="Modeles existants"
+    sideAriaLabel="Modeles existants"
+    sideWidth="24rem">
+    <span side-actions class="template-master__count-badge">
+      {{ sortedTemplates.length }}
+    </span>
 
-        @if (sortedTemplates.length > 0) {
+    <div side-content class="template-master__content">
+      @if (sortedTemplates.length > 0) {
           <div class="template-master__table-wrap">
             <table class="template-master__table w-full">
               <thead>
@@ -77,11 +76,10 @@
             >
             Aucun modele disponible.
           </div>
-        }
-      </mat-card-content>
-    </mat-card>
+      }
+    </div>
 
-    <div class="template-detail">
+    <div detail-content class="template-detail">
       @if (selectedTemplate(); as template) {
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-header>
@@ -307,7 +305,7 @@
         </mat-card>
       }
     </div>
-  </div>
+  </app-master-detail-layout>
 </div>
 
 

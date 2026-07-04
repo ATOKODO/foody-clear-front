@@ -143,14 +143,6 @@
   color: rgb(6 95 70);
 }
 
-.meal-prep-layout {
-  display: grid;
-  grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
-  gap: 1rem;
-  align-items: start;
-}
-
-.meal-prep-list-panel,
 .meal-prep-workspace,
 .meal-prep-editor-card,
 .meal-prep-detail-card {
@@ -159,7 +151,6 @@
   background: white;
 }
 
-.meal-prep-list-panel,
 .meal-prep-workspace {
   display: grid;
   gap: 0.875rem;
@@ -355,8 +346,7 @@
 }
 
 :host-context(.dark) .meal-prep-panel,
-:host-context(.dark) .meal-prep-list-panel,
-:host-context(.dark) .meal-prep-workspace,
+:host-context(.dark) :host-context(.dark) .meal-prep-workspace,
 :host-context(.dark) .meal-prep-editor-card,
 :host-context(.dark) .meal-prep-detail-card,
 :host-context(.dark) .meal-prep-list-card {
@@ -407,7 +397,6 @@
 }
 
 @media (max-width: 1100px) {
-  .meal-prep-layout,
   .meal-prep-line-card,
   .meal-prep-line-card--meal {
     grid-template-columns: 1fr;
@@ -446,4 +435,31 @@
   .meal-prep-panel__content {
     padding-inline: 0.75rem;
   }
+}
+
+.meal-prep-list-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.meal-prep-empty--large {
+  display: grid;
+  min-height: 16rem;
+  place-items: center;
+  border: 1px dashed rgb(203 213 225);
+  border-radius: 0.75rem;
+  background: rgb(248 250 252);
+  text-align: center;
+}
+
+.meal-prep-editor-card--modal {
+  border: 0;
+  padding: 0;
+}
+
+:host-context(.dark) .meal-prep-empty--large {
+  border-color: var(--app-border);
+  background: var(--app-form-field-bg);
 }

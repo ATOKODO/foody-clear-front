@@ -137,14 +137,6 @@
   font-weight: 600;
 }
 
-.shopping-list-layout {
-  display: grid;
-  grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr);
-  gap: 1rem;
-  align-items: start;
-}
-
-.shopping-list-side-panel,
 .shopping-list-workspace,
 .shopping-list-editor-card,
 .shopping-list-table-card,
@@ -155,7 +147,6 @@
   background: white;
 }
 
-.shopping-list-side-panel,
 .shopping-list-workspace,
 .shopping-list-editor-card,
 .shopping-list-table-card,
@@ -416,7 +407,6 @@
 }
 
 @media (max-width: 1100px) {
-  .shopping-list-layout,
   .shopping-list-bottom-grid {
     grid-template-columns: 1fr;
   }
@@ -464,8 +454,7 @@
 
 
 :host-context(.dark) .shopping-list-panel,
-:host-context(.dark) .shopping-list-side-panel,
-:host-context(.dark) .shopping-list-workspace,
+:host-context(.dark) :host-context(.dark) .shopping-list-workspace,
 :host-context(.dark) .shopping-list-editor-card,
 :host-context(.dark) .shopping-list-table-card,
 :host-context(.dark) .shopping-list-convert-card,
@@ -588,4 +577,31 @@
 :host-context(.dark) ::ng-deep .shopping-list-panel input::placeholder,
 :host-context(.dark) ::ng-deep .shopping-list-modal-card input::placeholder {
   color: rgb(148 163 184);
+}
+
+.shopping-list-list-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.shopping-list-template-line.is-checked {
+  border-color: rgb(134 239 172);
+  background: rgb(240 253 244);
+}
+
+.shopping-list-modal-card--wide {
+  width: min(100%, 82rem);
+}
+
+.shopping-list-modal-card__body {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+:host-context(.dark) .shopping-list-template-line.is-checked {
+  border-color: rgb(34 197 94 / 0.45);
+  background: rgb(20 83 45 / 0.28);
 }

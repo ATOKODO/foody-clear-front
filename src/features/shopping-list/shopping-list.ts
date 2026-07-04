@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 import { SegmentedToggle } from '../../app/ui/segmented-toggle/segmented-toggle';
 import { ProductList } from '../../components/product/product-list/product-list';
+import { MasterDetailLayout } from '../../components/shared/master-detail-layout/master-detail-layout';
 import { ShoppingListStore } from './shopping-list.store';
 
 @Component({
@@ -25,6 +26,7 @@ import { ShoppingListStore } from './shopping-list.store';
     MatInputModule,
     MatSelectModule,
     ProductList,
+    MasterDetailLayout,
     SegmentedToggle,
     UiErrorPanel,
   ],

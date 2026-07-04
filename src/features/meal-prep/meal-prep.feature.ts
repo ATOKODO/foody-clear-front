@@ -13,6 +13,7 @@ import {
   ProductList,
   ProductListItem,
 } from '../../components/product/product-list/product-list';
+import { MasterDetailLayout } from '../../components/shared/master-detail-layout/master-detail-layout';
 import {
   MealPrepEntryType,
   PreparedDish,
@@ -71,6 +72,7 @@ import {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MasterDetailLayout,
     SegmentedToggle,
     UiErrorPanel,
     ProductList,
@@ -109,6 +111,7 @@ export class MealPrepFeature implements OnInit {
   private readonly lastErrorState = signal<unknown>(null);
   private readonly shoppingListFeedbackState = signal<string | null>(null);
   private readonly productPickerTargetState = signal<ProductPickerTarget | null>(null);
+  private readonly editorOpenState = signal(false);
 
   readonly selectedDishState = computed(
     () =>
@@ -172,6 +175,10 @@ export class MealPrepFeature implements OnInit {
 
   get isProductPickerOpen(): boolean {
     return this.productPickerTarget !== null;
+  }
+
+  get isEditorOpen(): boolean {
+    return this.editorOpenState();
   }
 
   get productPickerSelectedIds(): string[] {
@@ -260,7 +267,10 @@ export class MealPrepFeature implements OnInit {
   onEscapeKey(): void {
     if (this.isProductPickerOpen) {
       this.closeProductPicker();
+      return;
     }
+
+    this.closeEditor();
   }
 
   onViewChange(view: MealPrepView): void {
@@ -280,6 +290,48 @@ export class MealPrepFeature implements OnInit {
       next: ({ dishes, meals, products }) => this.handleScreenLoaded(dishes, meals, products),
       error: (error) => this.finishWithError(error, this.loadingState),
     });
+  }
+
+  openCreateDishEditor(): void {
+    if (this.saving) {
+      return;
+    }
+
+    this.startNewDish();
+    this.editorOpenState.set(true);
+  }
+
+  openSelectedDishEditor(id = this.selectedDish?.id ?? null): void {
+    if (id == null || this.saving) {
+      return;
+    }
+
+    this.selectDish(id);
+    this.editorOpenState.set(true);
+  }
+
+  openCreateMealEditor(): void {
+    if (this.saving) {
+      return;
+    }
+
+    this.startNewMeal();
+    this.editorOpenState.set(true);
+  }
+
+  openSelectedMealEditor(id = this.selectedMeal?.id ?? null): void {
+    if (id == null || this.saving) {
+      return;
+    }
+
+    this.selectMeal(id);
+    this.editorOpenState.set(true);
+  }
+
+  closeEditor(): void {
+    if (!this.saving) {
+      this.editorOpenState.set(false);
+    }
   }
 
   selectDish(id: number): void {
@@ -350,6 +402,7 @@ export class MealPrepFeature implements OnInit {
       next: (dish) => {
         this.dishesState.set(upsertById(this.dishes, dish));
         this.selectDish(dish.id);
+        this.editorOpenState.set(false);
         this.savingState.set(false);
       },
       error: (error) => this.finishWithError(error, this.savingState),
@@ -372,6 +425,7 @@ export class MealPrepFeature implements OnInit {
       next: (meal) => {
         this.mealsState.set(upsertById(this.meals, meal));
         this.selectMeal(meal.id);
+        this.editorOpenState.set(false);
         this.savingState.set(false);
       },
       error: (error) => this.finishWithError(error, this.savingState),
