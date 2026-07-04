@@ -2,12 +2,12 @@
   @if (showSearch) {
     <div class="product-list__search-row">
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="product-list__search-field">
-        <mat-label>Rechercher un produit</mat-label>
+        <mat-label>Rechercher un product</mat-label>
         <input
           #productListSearchInput
           matInput
           type="search"
-          placeholder="Nom, barcode, categorie, produit generique ou tag"
+          placeholder="Nom, barcode, category, generic product ou tag"
           [value]="searchTerm()"
           (input)="onSearchTermChange(productListSearchInput.value)"
           data-testid="product-list-search"
@@ -24,13 +24,13 @@
         <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
         <td mat-cell *matCellDef="let item" class="w-14" (click)="$event.stopPropagation()">
           <mat-checkbox [checked]="isSelected(item.id)"
-            [attr.aria-label]="'Selectionner ' + item.name"
+            [attr.aria-label]="'Select ' + item.name"
             (click)="onCheckboxClick($event, item)" />
         </td>
       </ng-container>
 
       <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Produit</th>
+        <th mat-header-cell *matHeaderCellDef>Product</th>
         <td mat-cell *matCellDef="let item">
           <div class="product-table__name">
             <strong>{{ item.name }}</strong>
@@ -40,12 +40,12 @@
 
 
       <ng-container matColumnDef="category">
-        <th mat-header-cell *matHeaderCellDef>Categorie</th>
+        <th mat-header-cell *matHeaderCellDef>Category</th>
         <td mat-cell *matCellDef="let item">{{ getLinkedEntityDisplay(item.category) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="genericProduct">
-        <th mat-header-cell *matHeaderCellDef>Produit generique</th>
+        <th mat-header-cell *matHeaderCellDef>Product generic</th>
         <td mat-cell *matCellDef="let item">{{ getLinkedEntityDisplay(item.genericProduct) }}</td>
       </ng-container>
 
@@ -55,17 +55,17 @@
       </ng-container>
 
       <ng-container matColumnDef="unit">
-        <th mat-header-cell *matHeaderCellDef>Unite</th>
+        <th mat-header-cell *matHeaderCellDef>Unit</th>
         <td mat-cell *matCellDef="let item">{{ getUnitDisplay(item) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="availableQty">
-        <th mat-header-cell *matHeaderCellDef>Disponible</th>
+        <th mat-header-cell *matHeaderCellDef>Available</th>
         <td mat-cell *matCellDef="let item">{{ getAvailableQuantityDisplay(item) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="price">
-        <th mat-header-cell *matHeaderCellDef>Prix</th>
+        <th mat-header-cell *matHeaderCellDef>Price</th>
         <td mat-cell *matCellDef="let item">{{ getPriceDisplay(item) }}</td>
       </ng-container>
 
@@ -93,7 +93,7 @@
               class="product-table__action product-table__action--edit"
               [attr.data-testid]="'product-edit-' + item.id"
               (click)="onEditClick(item)">
-              Modifier
+              Edit
             </button>
             <button
               mat-stroked-button
@@ -102,7 +102,7 @@
               class="product-table__action product-table__action--delete"
               [attr.data-testid]="'product-delete-' + item.id"
               (click)="onDeleteClick(item)">
-              Retirer
+              Remove
             </button>
           </div>
         </td>
@@ -126,13 +126,13 @@
 
 @if (!embedded()) {
   <section
-    aria-label="Liste des produits"
+    aria-label="Liste des products"
     data-testid="product-list"
     class="w-full"
     [class]="compact() ? '' : 'mx-auto max-w-6xl py-4'">
     <mat-card class="overflow-hidden rounded-2xl" [class.shadow-none]="compact()">
       <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-6">
-        <h2 class="text-base font-semibold text-slate-900">Produits</h2>
+        <h2 class="text-base font-semibold text-slate-900">Products</h2>
         @if (isManageMode) {
           <button
             mat-raised-button
@@ -141,7 +141,7 @@
             data-testid="product-add"
             class="add-btn"
             (click)="onAddClick()">
-            Ajouter
+            Add
           </button>
         }
       </div>
@@ -152,13 +152,13 @@
         } @else if (hasActiveSearch && hasSourceItems) {
           <mat-card appearance="outlined" class="rounded-xl">
             <mat-card-content class="p-4 text-sm text-slate-600">
-              Aucun produit ne correspond a la recherche.
+              No product matches the search.
             </mat-card-content>
           </mat-card>
         } @else {
           <mat-card appearance="outlined" class="rounded-xl">
             <mat-card-content class="p-4 text-sm text-slate-600">
-              Aucun produit disponible.
+              No product available.
             </mat-card-content>
           </mat-card>
         }
@@ -171,9 +171,9 @@
     @if (hasItems) {
       <ng-container [ngTemplateOutlet]="tableContent" />
     } @else if (hasActiveSearch && hasSourceItems) {
-      <p class="product-list__empty text-sm text-slate-600">Aucun produit ne correspond a la recherche.</p>
+      <p class="product-list__empty text-sm text-slate-600">No product matches the search.</p>
     } @else {
-      <p class="product-list__empty text-sm text-slate-600">Aucun produit disponible.</p>
+      <p class="product-list__empty text-sm text-slate-600">No product available.</p>
     }
   </div>
 }

@@ -1,8 +1,8 @@
 <div class="space-y-6" data-testid="template-form">
   <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
     <mat-form-field appearance="fill" class="w-full">
-      <mat-label>Titre du template</mat-label>
-      <input matInput [(ngModel)]="draftTitle" placeholder="Jour training" />
+      <mat-label>Template title</mat-label>
+      <input matInput [(ngModel)]="draftTitle" placeholder="Training day" />
     </mat-form-field>
 
     <button
@@ -13,7 +13,7 @@
       (click)="onTemplateSave()"
       [disabled]="!canSaveTemplate"
     >
-      {{ mode() === "edit" ? "Sauvegarder" : "Creer" }}
+      {{ mode() === "edit" ? "Save" : "Create" }}
     </button>
 
     @if (template()) {
@@ -25,21 +25,21 @@
         (click)="onTemplateDelete()"
         [disabled]="savingTemplate() || savingItem()"
       >
-        Supprimer
+        Delete
       </button>
     }
   </div>
 
   <p class="text-sm text-slate-600">
-    Le template peut contenir des produits simples, des plats et des repas.
-    La conversion reste previsionnelle tant qu'elle n'est pas appliquee dans le jour.
+    Le template peut contenir des products simples, des dishs et des meals.
+    La conversion reste previsionnelle tant qu'elle n'est pas appliquee dans le day.
   </p>
 
   @if (template(); as template) {
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
         <mat-card-title>
-          {{ itemDraft.id !== null ? "Modifier une ligne" : "Ajouter une ligne" }}
+          {{ itemDraft.id !== null ? "Edit line" : "Add line" }}
         </mat-card-title>
         <mat-card-subtitle>{{ template.title }}</mat-card-subtitle>
       </mat-card-header>
@@ -51,20 +51,20 @@
               [ngModel]="itemDraft.itemType"
               (ngModelChange)="updateItemDraft({ itemType: $event })"
             >
-              <mat-option value="product">Produit</mat-option>
+              <mat-option value="product">Product</mat-option>
               <mat-option value="dish">Plat</mat-option>
-              <mat-option value="meal">Repas</mat-option>
+              <mat-option value="meal">Meals</mat-option>
             </mat-select>
           </mat-form-field>
 
           @if (itemDraft.itemType === 'product') {
             <mat-form-field appearance="fill" class="w-full md:col-span-2 xl:col-span-2">
-              <mat-label>Produit</mat-label>
+              <mat-label>Product</mat-label>
               <mat-select
                 [ngModel]="itemDraft.productId"
                 (ngModelChange)="updateItemDraft({ productId: $event })"
               >
-                <mat-option [value]="null">Selectionner</mat-option>
+                <mat-option [value]="null">Select</mat-option>
                 @for (product of sortedProducts; track product.id) {
                   <mat-option [value]="product.id">{{ product.name }}</mat-option>
                 }
@@ -79,7 +79,7 @@
                 [ngModel]="itemDraft.dishId"
                 (ngModelChange)="updateItemDraft({ dishId: $event })"
               >
-                <mat-option [value]="null">Selectionner</mat-option>
+                <mat-option [value]="null">Select</mat-option>
                 @for (dish of sortedDishes; track dish.id) {
                   <mat-option [value]="dish.id">{{ dish.name }}</mat-option>
                 }
@@ -89,12 +89,12 @@
 
           @if (itemDraft.itemType === 'meal') {
             <mat-form-field appearance="fill" class="w-full md:col-span-2 xl:col-span-2">
-              <mat-label>Repas</mat-label>
+              <mat-label>Meals</mat-label>
               <mat-select
                 [ngModel]="itemDraft.mealId"
                 (ngModelChange)="updateItemDraft({ mealId: $event })"
               >
-                <mat-option [value]="null">Selectionner</mat-option>
+                <mat-option [value]="null">Select</mat-option>
                 @for (meal of sortedMeals; track meal.id) {
                   <mat-option [value]="meal.id">{{ meal.name }}</mat-option>
                 }
@@ -103,7 +103,7 @@
           }
 
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Quantite</mat-label>
+            <mat-label>Quantity</mat-label>
             <input
               matInput
               type="number"
@@ -114,7 +114,7 @@
             />
           </mat-form-field>
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Unite</mat-label>
+            <mat-label>Unit</mat-label>
             <mat-select
               [ngModel]="itemDraft.qtyUnit"
               (ngModelChange)="updateItemDraft({ qtyUnit: $event })"
@@ -127,12 +127,12 @@
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Slot explicite</mat-label>
+            <mat-label>Explicit slot</mat-label>
             <mat-select
               [ngModel]="itemDraft.slotId"
               (ngModelChange)="updateItemDraft({ slotId: $event })"
             >
-              <mat-option [value]="null">Sans slot</mat-option>
+              <mat-option [value]="null">No slot</mat-option>
               @for (slot of sortedSlots; track slot.id) {
                 <mat-option [value]="slot.id">
                   {{ slot.sortOrder }}. {{ slot.title }} ({{ slot.key }})
@@ -141,7 +141,7 @@
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>slotKey libre</mat-label>
+            <mat-label>free slotKey</mat-label>
             <input
               matInput
               [ngModel]="itemDraft.slotKey"
@@ -151,7 +151,7 @@
           </mat-form-field>
           @if (itemDraft.slotId === null) {
             <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Heure de preference</mat-label>
+              <mat-label>Preferred time</mat-label>
               <input
                 matInput
                 type="time"
@@ -173,7 +173,7 @@
             (click)="resetItemDraft()"
             [disabled]="savingTemplate() || savingItem()"
           >
-            Reinitialiser
+            Reset
           </button>
           <button
             mat-raised-button
@@ -183,15 +183,15 @@
             (click)="onItemSave()"
             [disabled]="!canSaveItem"
           >
-            {{ itemDraft.id !== null ? "Mettre a jour" : "Ajouter" }}
+            {{ itemDraft.id !== null ? "Update" : "Add" }}
           </button>
         </div>
       </mat-card-content>
     </mat-card>
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
-        <mat-card-title>Lignes du template</mat-card-title>
-        <mat-card-subtitle>Edition dans la modale</mat-card-subtitle>
+        <mat-card-title>Template lines</mat-card-title>
+        <mat-card-subtitle>Edit in modal</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content class="pt-2">
         @if (template.items.length > 0) {
@@ -199,10 +199,10 @@
             <table class="min-w-full text-sm">
               <thead class="bg-slate-50 text-left text-slate-700">
                 <tr>
-                  <th class="px-3 py-2">Element</th>
+                  <th class="px-3 py-2">Item</th>
                   <th class="px-3 py-2">Qty</th>
                   <th class="px-3 py-2">Slot</th>
-                  <th class="px-3 py-2">Stock global</th>
+                  <th class="px-3 py-2">Global stock</th>
                   <th class="px-3 py-2 text-right">Actions</th>
                 </tr>
               </thead>
@@ -252,7 +252,7 @@
                           (click)="editItem(item)"
                           [disabled]="savingTemplate() || savingItem()"
                         >
-                          Modifier
+                          Edit
                         </button>
                         <button
                           mat-stroked-button
@@ -262,7 +262,7 @@
                           (click)="onItemDelete(item.id)"
                           [disabled]="savingTemplate() || savingItem()"
                         >
-                          Retirer
+                          Remove
                         </button>
                       </div>
                     </td>
@@ -273,7 +273,7 @@
           </div>
         } @else {
           <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-            Aucune ligne dans ce template.
+            No ligne dans ce template.
           </p>
         }
       </mat-card-content>

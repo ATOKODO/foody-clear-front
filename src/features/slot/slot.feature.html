@@ -3,7 +3,7 @@
     <div class="app-status-row">
       @if (store.loading) {
         <span class="app-status-pill app-status-pill--neutral">
-          Chargement...
+          Loading...
         </span>
       }
       @if (store.saving) {
@@ -39,14 +39,14 @@
       <div class="bg-slate-900 px-6 py-5 text-white">
         <h2 class="text-xl font-semibold">Slots</h2>
         <p class="mt-1 text-sm text-slate-300">
-          Plages horaires, ordre et cibles nutritionnelles par slot.
+          Slots horaires, ordre et cibles nutritionnelles par slot.
         </p>
       </div>
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
           @if (store.loading) {
             <span class="app-status-pill app-status-pill--neutral">
-              Chargement...
+              Loading...
             </span>
           }
           @if (store.saving) {
@@ -87,7 +87,7 @@
     [style.--slot-dialog-top-offset.px]="embeddedDialogTopOffset()"
     tabindex="0"
     role="button"
-    aria-label="Fermer la modale"
+    aria-label="Close la modale"
     (click)="onCancelForm()"
     (keydown.enter)="onCancelForm()"
     (keydown.space)="onCancelForm(); $event.preventDefault()"></div>
@@ -110,14 +110,14 @@
         <div>
           <p class="app-dialog-eyebrow">Planning</p>
           <h3 class="app-dialog-title">
-            {{ store.formMode === 'edit' ? 'Modifier un slot' : 'Ajouter un slot' }}
+            {{ store.formMode === 'edit' ? 'Edit un slot' : 'Add un slot' }}
           </h3>
           <p class="app-dialog-subtitle">
             Definis la cle, la plage horaire et les objectifs nutritionnels de ce slot.
           </p>
         </div>
         <button mat-stroked-button type="button" (click)="onCancelForm()">
-          Fermer
+          Close
         </button>
       </div>
       <div class="app-dialog-content slot-feature__dialog-content">

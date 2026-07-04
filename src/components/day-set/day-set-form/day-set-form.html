@@ -4,7 +4,7 @@
   [class.py-8]="!inDialog()"
   [class.px-3]="inDialog()"
   [class.py-4]="inDialog()"
-  aria-label="Ajouter ou modifier un day set">
+  aria-label="Add ou modifier un day set">
   @if (showHeading()) {
     <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
       <h2 class="text-xl font-medium">{{ heading }}</h2>
@@ -21,7 +21,7 @@
     <mat-form-field appearance="fill" class="dsf-field w-full">
       <mat-label>Template associe</mat-label>
       <mat-select [(ngModel)]="selectedTemplateId" [ngModelOptions]="{ standalone: true }">
-        <mat-option [value]="null">Aucun template</mat-option>
+        <mat-option [value]="null">No template</mat-option>
         @for (template of templates(); track template) {
           <mat-option [value]="template.id">
             {{ template.title }}
@@ -34,7 +34,7 @@
       <div class="flex items-center justify-between gap-3">
         <h3 class="text-base font-semibold text-slate-900">Nutrition values</h3>
         <button mat-stroked-button type="button" (click)="addNutritionValue()">
-          Ajouter une valeur
+          Add une valeur
         </button>
       </div>
 
@@ -60,7 +60,7 @@
             </mat-select>
             @if (nutritionKeys().length === 0) {
               <mat-hint>
-                Aucune cle meta disponible
+                No cle meta disponible
               </mat-hint>
             }
           </mat-form-field>
@@ -99,7 +99,7 @@
           </mat-form-field>
           <div class="md:col-span-1 md:pt-2">
             <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
-              Retirer
+              Remove
             </button>
           </div>
         </div>

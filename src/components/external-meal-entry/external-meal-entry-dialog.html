@@ -1,9 +1,9 @@
 <div class="external-entry-dialog" data-testid="external-entry-dialog">
   <div class="external-entry-dialog__header">
     <div>
-      <p class="external-entry-dialog__eyebrow">Entree exterieure</p>
+      <p class="external-entry-dialog__eyebrow">Entry externale</p>
       <h3 class="external-entry-dialog__title">{{ title() }}</h3>
-      <p class="external-entry-dialog__subtitle">Repas non prevu, sans impact sur le stock.</p>
+      <p class="external-entry-dialog__subtitle">Meals non prevu, sans impact sur le stock.</p>
     </div>
   </div>
 
@@ -25,7 +25,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="fill">
-          <mat-label>Repas / slot</mat-label>
+          <mat-label>Meals / slot</mat-label>
           <mat-select formControlName="slotKey">
             <mat-option [value]="null">Sans slot</mat-option>
             @for (slot of slotOptions; track slot.slotKey) {
@@ -39,7 +39,7 @@
 
       <div class="external-entry-dialog__grid">
         <mat-form-field appearance="fill">
-          <mat-label>Nom du repas / plat</mat-label>
+          <mat-label>Nom du meals / dish</mat-label>
           <input matInput type="text" formControlName="name" data-testid="external-entry-name" />
         </mat-form-field>
 
@@ -116,7 +116,7 @@
   }
 
   <mat-dialog-actions align="end" class="external-entry-dialog__actions">
-    <button mat-stroked-button type="button" (click)="cancel()" [disabled]="saving">Annuler</button>
+    <button mat-stroked-button type="button" (click)="cancel()" [disabled]="saving">Cancel</button>
     <button
       mat-raised-button
       color="primary"
@@ -124,7 +124,7 @@
       data-testid="external-entry-submit"
       (click)="submit()"
       [disabled]="!canSubmit">
-      Ajouter
+      Add
     </button>
   </mat-dialog-actions>
 </div>

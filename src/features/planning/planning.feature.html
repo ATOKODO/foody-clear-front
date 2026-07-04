@@ -6,7 +6,7 @@
         data-testid="planning-today"
         class="planning-feature__today-button"
         (click)="goToCalendarToday()">
-        Aujourd'hui
+        Today
       </button>
 
       <div class="planning-feature__period-switcher">
@@ -14,7 +14,7 @@
           type="button"
           data-testid="planning-prev"
           class="planning-feature__nav-button"
-          aria-label="Periode precedente"
+          aria-label="Previous period"
           (click)="navigateCalendar('prev')">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -29,7 +29,7 @@
           type="button"
           data-testid="planning-next"
           class="planning-feature__nav-button"
-          aria-label="Periode suivante"
+          aria-label="Next period"
           (click)="navigateCalendar('next')">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -43,13 +43,13 @@
         class="planning-feature__refresh-button"
         (click)="refreshPlanningData(true)"
         [disabled]="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment">
-        Rafraichir
+        Refresh
       </button>
     </div>
 
     <app-segmented-toggle [value]="currentCalendarView"
       [options]="calendarViewOptions"
-      [ariaLabel]="'Selection de la vue calendrier'"
+      [ariaLabel]="'Select calendar view'"
       [testId]="'planning-view-toggle'"
       [name]="'planning-view-toggle'"
       [maxWidth]="'46rem'"
@@ -62,22 +62,22 @@
       <div class="planning-feature__status-bar">
         @if (loadingCycles) {
           <span class="app-status-pill app-status-pill--neutral">
-            Chargement cycles...
+            Loading cycles...
           </span>
         }
         @if (loadingAssignments) {
           <span class="app-status-pill app-status-pill--info">
-            Chargement planning...
+            Loading planning...
           </span>
         }
         @if (loadingDayItems) {
           <span class="app-status-pill app-status-pill--success">
             {{
             currentCalendarView === 'month'
-            ? 'Chargement input-month...'
+            ? 'Loading input-month...'
             : currentCalendarView === 'week'
-            ? 'Chargement input-week...'
-            : 'Chargement input-day...'
+            ? 'Loading input-week...'
+            : 'Loading input-day...'
             }}
           </span>
         }
@@ -128,7 +128,7 @@
 </section>
 
 @if (activeModal) {
-  <div class="modal-backdrop" tabindex="0" role="button" aria-label="Fermer la modale" (click)="closeActiveModal()" (keydown.enter)="closeActiveModal()" (keydown.space)="closeActiveModal(); $event.preventDefault()"></div>
+  <div class="modal-backdrop" tabindex="0" role="button" aria-label="Close la modale" (click)="closeActiveModal()" (keydown.enter)="closeActiveModal()" (keydown.space)="closeActiveModal(); $event.preventDefault()"></div>
 }
 @if (activeModal) {
   <div class="modal-shell" [attr.data-testid]="'planning-modal-' + activeModal">
@@ -144,9 +144,9 @@
           <div class="planning-actions-modal__header">
             <div class="planning-actions-modal__copy">
               <p class="planning-actions-modal__eyebrow">Planning</p>
-              <h3 class="planning-actions-modal__title">Actions du jour</h3>
+              <h3 class="planning-actions-modal__title">Day actions</h3>
               <p class="planning-actions-modal__description">
-                Choisis si tu veux modifier le cycle du jour ou ouvrir l'editeur d'entrees.
+                Choisis si tu veux modifier le cycle du day ou ouvrir l'editeur d'entrees.
               </p>
             </div>
             <div class="planning-actions-modal__date-pill">
@@ -172,9 +172,9 @@
               </span>
               <span class="planning-action-card__content">
                 <span class="planning-action-card__label">Cycle</span>
-                <span class="planning-action-card__title">Gerer le cycle</span>
+                <span class="planning-action-card__title">Manage cycle</span>
                 <span class="planning-action-card__text">
-                  Ajouter, changer ou retirer l'assignation active pour cette date.
+                  Add, changer ou retirer l'assignation active pour cette date.
                 </span>
               </span>
               <span class="planning-action-card__arrow" aria-hidden="true">
@@ -194,8 +194,8 @@
                 </svg>
               </span>
               <span class="planning-action-card__content">
-                <span class="planning-action-card__label">Journee</span>
-                <span class="planning-action-card__title">Modifier la journee</span>
+                <span class="planning-action-card__label">Day</span>
+                <span class="planning-action-card__title">Edit la day</span>
                 <span class="planning-action-card__text">
                   Acceder directement a l'editeur des entrees pour cette date et ce contexte horaire.
                 </span>
@@ -217,10 +217,10 @@
                 </svg>
               </span>
               <span class="planning-action-card__content">
-                <span class="planning-action-card__label">Exterieur</span>
-                <span class="planning-action-card__title">Ajouter un repas externe</span>
+                <span class="planning-action-card__label">External</span>
+                <span class="planning-action-card__title">Add un meals externe</span>
                 <span class="planning-action-card__text">
-                  Ajouter un restaurant ou repas non prevu, avec macros et depense sans stock.
+                  Add un restaurant ou meals non prevu, avec macros et depense sans stock.
                 </span>
               </span>
               <span class="planning-action-card__arrow" aria-hidden="true">
@@ -236,7 +236,7 @@
               type="button"
               class="planning-actions-modal__close"
               (click)="closeActiveModal()">
-              Fermer
+              Close
             </button>
           </div>
         </div>
@@ -244,7 +244,7 @@
       @if (activeModal === 'assignment') {
         <mat-card-header class="planning-assignment-modal__header">
           <mat-card-title>
-            {{ editingAssignment ? 'Modifier un assignement' : 'Assigner un cycle' }}
+            {{ editingAssignment ? 'Edit un assignement' : 'Assigner un cycle' }}
           </mat-card-title>
           @if (editingAssignment) {
             <mat-card-subtitle>
@@ -279,7 +279,7 @@
         </mat-card-content>
         <mat-card-actions align="end" class="planning-assignment-modal__actions gap-2">
           <button mat-stroked-button type="button" (click)="closeActiveModal()" [disabled]="savingAssignment">
-            Annuler
+            Cancel
           </button>
           @if (editingAssignment) {
             <button
@@ -288,7 +288,7 @@
               type="button"
               (click)="removeAssignmentFromModal()"
               [disabled]="savingAssignment">
-              Retirer
+              Remove
             </button>
           }
           <button
@@ -303,14 +303,14 @@
       }
       @if (activeModal === 'items') {
         <mat-card-header>
-          <mat-card-title>Items du jour</mat-card-title>
+          <mat-card-title>Items du day</mat-card-title>
           <mat-card-subtitle>
             <button
               mat-stroked-button
               type="button"
               data-testid="planning-items-external-entry"
               (click)="openExternalEntryFromItems()">
-              Entree exterieure
+              Entry externale
             </button>
           </mat-card-subtitle>
         </mat-card-header>
@@ -325,7 +325,7 @@
         </mat-card-content>
         <mat-card-actions align="end" class="gap-2 px-4 pb-4">
           <button mat-stroked-button type="button" (click)="closeActiveModal()">
-            Fermer
+            Close
           </button>
         </mat-card-actions>
       }

@@ -8,8 +8,7 @@
 }
 
 .home-dashboard__hero,
-.home-panel,
-.home-dashboard__kpi {
+.home-panel {
   border: 1px solid var(--app-border);
   border-radius: 0.5rem;
   background: var(--app-surface-raised);
@@ -94,33 +93,6 @@ button.home-dashboard__hero-link {
   color: var(--app-text-strong);
 }
 
-.home-dashboard__overview {
-  display: grid;
-  grid-template-columns: minmax(16rem, 1.4fr) repeat(4, minmax(10rem, 1fr));
-  gap: 0.75rem;
-}
-
-.home-dashboard__kpi {
-  display: grid;
-  min-height: 7rem;
-  align-content: space-between;
-  gap: 0.5rem;
-  padding: 0.95rem;
-}
-
-.home-dashboard__kpi strong {
-  color: var(--app-text-strong);
-  font-size: 1.35rem;
-  font-weight: 850;
-  line-height: 1.1;
-}
-
-.home-dashboard__kpi small {
-  color: var(--app-text-muted);
-  font-size: 0.78rem;
-  line-height: 1.35;
-}
-
 .home-dashboard__main-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(22rem, 0.75fr);
@@ -166,6 +138,13 @@ button.home-dashboard__hero-link {
   margin: 0;
   color: var(--app-text-muted);
   font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.home-panel__summary {
+  margin: 0.35rem 0 0;
+  color: var(--app-text-muted);
+  font-size: 0.78rem;
   line-height: 1.45;
 }
 
@@ -510,14 +489,6 @@ button.home-dashboard__hero-link {
 }
 
 @media (max-width: 1180px) {
-  .home-dashboard__overview {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .home-dashboard__kpi--wide {
-    grid-column: span 2;
-  }
-
   .home-dashboard__main-grid {
     grid-template-columns: 1fr;
   }

@@ -2,7 +2,7 @@
   <section class="app-page app-page--wide">
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="bg-slate-900 px-4 py-4 text-white sm:px-6 sm:py-5">
-        <h2 class="text-xl font-semibold">Saisie du jour</h2>
+        <h2 class="text-xl font-semibold">Entry du day</h2>
         <p class="mt-1 text-sm text-slate-300">
           Gestion des items, du template actif et des totaux quotidiens.
         </p>
@@ -21,7 +21,7 @@
       class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3"
     >
       <div>
-        <h2 class="text-lg font-semibold text-slate-900">Elements du jour</h2>
+        <h2 class="text-lg font-semibold text-slate-900">Elements du day</h2>
         <p class="text-sm text-slate-500">
           {{ selectedDateLabel }}
         </p>
@@ -35,7 +35,7 @@
           loading || !hasValidSelectedDate || initialDateError !== null
         "
       >
-        Rafraichir
+        Refresh
       </button>
     </div>
     <ng-container *ngTemplateOutlet="inputDayContent" />
@@ -73,7 +73,7 @@
 
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
-        <mat-card-title>Contexte du jour</mat-card-title>
+        <mat-card-title>Contexte du day</mat-card-title>
         <mat-card-subtitle>
           {{
             isStandaloneMode
@@ -148,7 +148,7 @@
               [(ngModel)]="selectedSlotId"
               [ngModelOptions]="{ standalone: true }"
             >
-              <mat-option [value]="null">Sans slot</mat-option>
+              <mat-option [value]="null">No slot</mat-option>
               @for (slot of availableSlots; track slot) {
                 <mat-option [value]="slot.slotId">
                   {{ slot.sortOrder }}. {{ slot.title }} ({{
@@ -180,7 +180,7 @@
                 loading || !hasValidSelectedDate || initialDateError !== null
               "
             >
-              Rafraichir
+              Refresh
             </button>
             @if (isStandaloneMode) {
               <button mat-stroked-button type="button" (click)="fillDemo()">
@@ -206,7 +206,7 @@
     <p
       class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
     >
-      Selectionne au moins un inventory pour afficher les produits, les modeles
+      Select au moins un inventory pour afficher les products, les templates
       et les elements saisis.
     </p>
   } @else {
@@ -227,13 +227,13 @@
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-header>
           <mat-card-title>{{
-            isEditingItem ? "Modifier une entree" : "Ajouter des entrees"
+            isEditingItem ? "Edit une entree" : "Add des entrees"
           }}</mat-card-title>
           <mat-card-subtitle>
             {{
               isEditingItem
                 ? "Edition complete via PATCH /items/:itemId"
-                : "Selectionne un inventory, choisis les produits puis renseigne les details communs."
+                : "Select un inventory, choisis les products puis renseigne les details communs."
             }}
           </mat-card-subtitle>
         </mat-card-header>
@@ -242,7 +242,7 @@
             <p
               class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
             >
-              Impossible de charger les produits.
+              Impossible de charger les products.
             </p>
           }
           @if (inventoriesError) {
@@ -256,7 +256,7 @@
             <p
               class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
             >
-              Impossible de charger les produits de l'inventory selectionne.
+              Impossible de charger les products de l'inventory selectionne.
             </p>
           }
           @if (isEditingItem) {
@@ -288,13 +288,13 @@
                   {{ selectedInventoriesLabel }}
                 </p>
                 <p class="mt-1 text-xs text-slate-500">
-                  La selection d'inventories se fait dans Contexte du jour.
+                  La selection d'inventories se fait dans Contexte du day.
                 </p>
               </div>
               <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Produit</mat-label>
+                <mat-label>Product</mat-label>
                 <mat-select formControlName="productId">
-                  <mat-option [value]="null">Selectionner</mat-option>
+                  <mat-option [value]="null">Select</mat-option>
                   @for (product of editorProductOptions; track product) {
                     <mat-option [value]="+product.id">
                       {{ product.name }} (#{{ product.id }})
@@ -304,12 +304,12 @@
                 @if (!hasSelectedInventories) {
                   <mat-hint>
                     Choisis d'abord au moins un inventory dans le contexte du
-                    jour.
+                    day.
                   </mat-hint>
                 }
               </mat-form-field>
               <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Quantite</mat-label>
+                <mat-label>Quantity</mat-label>
                 <input
                   matInput
                   type="number"
@@ -319,7 +319,7 @@
                 />
               </mat-form-field>
               <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Unite</mat-label>
+                <mat-label>Unit</mat-label>
                 <mat-select formControlName="qtyUnit">
                   <mat-option [value]="null">Auto</mat-option>
                   @for (unit of qtyUnitOptions; track unit) {
@@ -330,12 +330,12 @@
                 </mat-select>
               </mat-form-field>
               <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Slot explicite</mat-label>
+                <mat-label>Explicit slot</mat-label>
                 <mat-select
                   formControlName="slotId"
                   (selectionChange)="onItemEditorSlotIdChange($event.value)"
                 >
-                  <mat-option [value]="null">Sans slot</mat-option>
+                  <mat-option [value]="null">No slot</mat-option>
                   @for (slot of availableSlots; track slot) {
                     <mat-option [value]="slot.slotId">
                       {{ slot.sortOrder }}. {{ slot.title }} ({{
@@ -346,7 +346,7 @@
                 </mat-select>
               </mat-form-field>
               <mat-form-field appearance="fill" class="w-full">
-                <mat-label>slotKey libre</mat-label>
+                <mat-label>free slotKey</mat-label>
                 <input
                   matInput
                   type="text"
@@ -369,7 +369,7 @@
                 type="button"
                 (click)="resetItemEditor()"
               >
-                Annuler edition
+                Cancel edition
               </button>
               <button
                 mat-stroked-button
@@ -379,7 +379,7 @@
                 (click)="removeItem()"
                 [disabled]="loading"
               >
-                Supprimer
+                Delete
               </button>
               <button
                 mat-raised-button
@@ -389,14 +389,14 @@
                 (click)="submitItemEditor()"
                 [disabled]="!canSubmitItemEditor"
               >
-                Enregistrer l entree
+                Save l entree
               </button>
             </div>
           } @else {
             @if (hasSelectedInventories) {
               @if (loadingInventoryProducts) {
                 <p class="text-sm text-slate-500">
-                  Chargement des produits des inventories...
+                  Loading des products des inventories...
                 </p>
               }
               <app-product-list
@@ -421,8 +421,8 @@
                         {{ selectedProductRows.length }}
                         {{
                           selectedProductRows.length > 1
-                            ? "produits selectionnes"
-                            : "produit selectionne"
+                            ? "products selectionnes"
+                            : "product selectionne"
                         }}
                         depuis {{ selectedInventoriesLabel }}.
                       </p>
@@ -450,7 +450,7 @@
                       />
                     </mat-form-field>
                     <mat-form-field appearance="fill" class="w-full">
-                      <mat-label>slotKey libre</mat-label>
+                      <mat-label>free slotKey</mat-label>
                       <input
                         matInput
                         type="text"
@@ -460,8 +460,8 @@
                       />
                       @if (selectedSlotId !== null) {
                         <mat-hint>
-                          Le slot choisi dans le contexte du jour sera applique
-                          a tous les produits.
+                          Le slot choisi dans le contexte du day sera applique
+                          a tous les products.
                         </mat-hint>
                       }
                     </mat-form-field>
@@ -471,7 +471,7 @@
                   <table class="w-full min-w-[640px] text-sm">
                     <thead class="bg-slate-50 text-left text-slate-700">
                       <tr>
-                        <th class="px-3 py-2">Produit</th>
+                        <th class="px-3 py-2">Product</th>
                         <th class="px-3 py-2">Qty</th>
                         <th class="px-3 py-2">QtyUnit</th>
                         <th class="px-3 py-2 text-right">Action</th>
@@ -493,7 +493,7 @@
                           </td>
                           <td class="px-3 py-2">
                             <mat-form-field appearance="fill" class="w-full">
-                              <mat-label>Quantite</mat-label>
+                              <mat-label>Quantity</mat-label>
                               <input
                                 matInput
                                 type="number"
@@ -506,7 +506,7 @@
                           </td>
                           <td class="px-3 py-2">
                             <mat-form-field appearance="fill" class="w-full">
-                              <mat-label>Unite</mat-label>
+                              <mat-label>Unit</mat-label>
                               <mat-select
                                 [(ngModel)]="row.qtyUnit"
                                 [ngModelOptions]="{ standalone: true }"
@@ -527,7 +527,7 @@
                               type="button"
                               (click)="removeSelectedProduct(row.productId)"
                             >
-                              Retirer
+                              Remove
                             </button>
                           </td>
                         </tr>
@@ -549,7 +549,7 @@
                     data-testid="input-day-reset-create"
                     (click)="resetCreateComposer()"
                   >
-                    Reinitialiser
+                    Reset
                   </button>
                   <button
                     mat-raised-button
@@ -566,7 +566,7 @@
                 <p
                   class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
                 >
-                  Selectionne un ou plusieurs produits pour afficher les champs
+                  Select un ou plusieurs products pour afficher les champs
                   de saisie et preparer l'ajout.
                 </p>
               }
@@ -574,8 +574,8 @@
               <p
                 class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
               >
-                Selectionne au moins un inventory dans le contexte du jour pour
-                afficher ses produits.
+                Select au moins un inventory dans le contexte du day pour
+                afficher ses products.
               </p>
             }
           }
@@ -586,7 +586,7 @@
       <div class="space-y-3">
         @if (isStandaloneMode) {
           <h3 class="text-base font-semibold text-slate-900">
-            Resume de la journee
+            Resume de la day
           </h3>
         }
         @if (isStandaloneMode) {
@@ -613,13 +613,13 @@
                   </p>
                   <p class="text-sm text-slate-700">
                     Du {{ assignment.startDateLocal }} au
-                    {{ assignment.endDateLocal }} (jour
+                    {{ assignment.endDateLocal }} (day
                     {{ assignment.dayIndex }})
                   </p>
                 </div>
               } @else {
                 <p class="text-sm text-slate-600">
-                  Aucune assignation pour cette date.
+                  No assignation pour cette date.
                 </p>
               }
             </mat-card-content>
@@ -649,7 +649,7 @@
                     </div>
                   } @else {
                     <p class="text-xs text-slate-500">
-                      Aucune cible nutritionnelle definie pour ce daySet.
+                      No cible nutritionnelle definie pour ce daySet.
                     </p>
                   }
                   <div
@@ -704,11 +704,11 @@
               } @else {
                 @if (response.totalsMacros?.targetSource === "cycle") {
                   <p class="text-sm text-slate-600">
-                    Aucun daySet actif pour cette journee. Les cibles
+                    No daySet actif pour cette day. Les cibles
                     quotidiennes proviennent du cycle.
                   </p>
                 } @else {
-                  <p class="text-sm text-slate-600">Aucun daySet retourne.</p>
+                  <p class="text-sm text-slate-600">No daySet retourne.</p>
                 }
               }
             </mat-card-content>
@@ -738,7 +738,7 @@
                       [ngModelOptions]="{ standalone: true }"
                       (ngModelChange)="onManualTemplateSelectionChange($event)"
                     >
-                      <mat-option [value]="null">Aucun override</mat-option>
+                      <mat-option [value]="null">No override</mat-option>
                       @for (template of templates; track template) {
                         <mat-option [value]="template.id">
                           {{ template.title }}
@@ -753,7 +753,7 @@
                       data-testid="input-day-template-clear"
                       (click)="clearManualTemplateOverride()"
                     >
-                      Retirer le remplacement
+                      Remove le remplacement
                     </button>
                   }
                 </div>
@@ -777,13 +777,13 @@
                   <table class="min-w-full text-sm">
                     <thead class="bg-slate-50 text-left text-slate-700">
                       <tr>
-                        <th class="px-3 py-2">Produit</th>
+                        <th class="px-3 py-2">Product</th>
                         <th class="px-3 py-2">Qty</th>
                         <th class="px-3 py-2">Slot</th>
                         <th class="px-3 py-2">Statut</th>
-                        <th class="px-3 py-2">Stock global</th>
+                        <th class="px-3 py-2">Global stock</th>
                         <th class="px-3 py-2">Selection active</th>
-                        <th class="px-3 py-2">Inventaires</th>
+                        <th class="px-3 py-2">Inventories</th>
                         <th class="px-3 py-2 text-right">Actions</th>
                       </tr>
                     </thead>
@@ -904,7 +904,7 @@
                               </p>
                             } @else {
                               <p class="text-xs text-slate-500">
-                                Selectionne au moins un inventory.
+                                Select au moins un inventory.
                               </p>
                             }
                           </td>
@@ -968,7 +968,7 @@
                 </div>
               } @else {
                 <p class="text-sm text-slate-600">
-                  Aucune ligne template pour cette journee.
+                  No ligne template pour cette day.
                 </p>
               }
             </mat-card-content>
@@ -982,7 +982,7 @@
                 <table class="min-w-full text-sm">
                   <thead class="bg-slate-50 text-left text-slate-700">
                     <tr>
-                      <th class="px-3 py-2">Produit</th>
+                      <th class="px-3 py-2">Product</th>
                       <th class="px-3 py-2">Inventory</th>
                       <th class="px-3 py-2">Qty</th>
                       <th class="px-3 py-2">occurredAt</th>
@@ -1059,7 +1059,7 @@
                               class="input-day-edit-item"
                               (click)="startEditingItem(item.id)"
                             >
-                              Modifier
+                              Edit
                             </button>
                             <button
                               mat-stroked-button
@@ -1068,7 +1068,7 @@
                               class="input-day-delete-item"
                               (click)="removeItem(item.id)"
                             >
-                              Supprimer
+                              Delete
                             </button>
                           </div>
                         </td>
@@ -1079,7 +1079,7 @@
               </div>
             } @else {
               <p class="text-sm text-slate-600">
-                Aucun item saisi pour cette journee.
+                No item saisi pour cette day.
               </p>
             }
           </mat-card-content>
@@ -1087,7 +1087,7 @@
         @if (isEditingItem) {
           <mat-card appearance="outlined" class="rounded-xl" data-testid="input-day-edit-item-card">
             <mat-card-header>
-              <mat-card-title>Modifier une entree</mat-card-title>
+              <mat-card-title>Edit une entree</mat-card-title>
               <mat-card-subtitle>Edition complete via PATCH /items/:itemId</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content class="space-y-4 pt-2">
@@ -1119,13 +1119,13 @@
                   {{ selectedInventoriesLabel }}
                 </p>
                 <p class="mt-1 text-xs text-slate-500">
-                  La selection d'inventories se fait dans Contexte du jour.
+                  La selection d'inventories se fait dans Contexte du day.
                 </p>
               </div>
               <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Produit</mat-label>
+                <mat-label>Product</mat-label>
                 <mat-select formControlName="productId">
-                  <mat-option [value]="null">Selectionner</mat-option>
+                  <mat-option [value]="null">Select</mat-option>
                   @for (product of editorProductOptions; track product) {
                     <mat-option [value]="+product.id">
                       {{ product.name }} (#{{ product.id }})
@@ -1135,12 +1135,12 @@
                 @if (!hasSelectedInventories) {
                   <mat-hint>
                     Choisis d'abord au moins un inventory dans le contexte du
-                    jour.
+                    day.
                   </mat-hint>
                 }
               </mat-form-field>
               <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Quantite</mat-label>
+                <mat-label>Quantity</mat-label>
                 <input
                   matInput
                   type="number"
@@ -1150,7 +1150,7 @@
                 />
               </mat-form-field>
               <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Unite</mat-label>
+                <mat-label>Unit</mat-label>
                 <mat-select formControlName="qtyUnit">
                   <mat-option [value]="null">Auto</mat-option>
                   @for (unit of qtyUnitOptions; track unit) {
@@ -1161,12 +1161,12 @@
                 </mat-select>
               </mat-form-field>
               <mat-form-field appearance="fill" class="w-full">
-                <mat-label>Slot explicite</mat-label>
+                <mat-label>Explicit slot</mat-label>
                 <mat-select
                   formControlName="slotId"
                   (selectionChange)="onItemEditorSlotIdChange($event.value)"
                 >
-                  <mat-option [value]="null">Sans slot</mat-option>
+                  <mat-option [value]="null">No slot</mat-option>
                   @for (slot of availableSlots; track slot) {
                     <mat-option [value]="slot.slotId">
                       {{ slot.sortOrder }}. {{ slot.title }} ({{
@@ -1177,7 +1177,7 @@
                 </mat-select>
               </mat-form-field>
               <mat-form-field appearance="fill" class="w-full">
-                <mat-label>slotKey libre</mat-label>
+                <mat-label>free slotKey</mat-label>
                 <input
                   matInput
                   type="text"
@@ -1200,7 +1200,7 @@
                 type="button"
                 (click)="resetItemEditor()"
               >
-                Annuler edition
+                Cancel edition
               </button>
               <button
                 mat-stroked-button
@@ -1210,7 +1210,7 @@
                 (click)="removeItem()"
                 [disabled]="loading"
               >
-                Supprimer
+                Delete
               </button>
               <button
                 mat-raised-button
@@ -1220,7 +1220,7 @@
                 (click)="submitItemEditor()"
                 [disabled]="!canSubmitItemEditor"
               >
-                Enregistrer l entree
+                Save l entree
               </button>
             </div>
             </mat-card-content>
@@ -1242,7 +1242,7 @@
                       <p
                         class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
                       >
-                        Total jour
+                        Total day
                       </p>
                       <div class="space-y-1 text-sm text-slate-700">
                         @for (
@@ -1279,7 +1279,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-slate-500">Aucune cible.</p>
+                        <p class="text-sm text-slate-500">No cible.</p>
                       }
                     </div>
                     <div class="rounded-lg border border-slate-200 p-3">
@@ -1303,7 +1303,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-slate-500">Aucun delta.</p>
+                        <p class="text-sm text-slate-500">No delta.</p>
                       }
                     </div>
                   </div>
@@ -1324,7 +1324,7 @@
                       <p
                         class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
                       >
-                        Total jour
+                        Total day
                       </p>
                       <div class="space-y-1 text-sm text-slate-700">
                         @for (
@@ -1361,7 +1361,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-slate-500">Aucune cible.</p>
+                        <p class="text-sm text-slate-500">No cible.</p>
                       }
                     </div>
                     <div class="rounded-lg border border-slate-200 p-3">
@@ -1385,7 +1385,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-slate-500">Aucun delta.</p>
+                        <p class="text-sm text-slate-500">No delta.</p>
                       }
                     </div>
                   </div>

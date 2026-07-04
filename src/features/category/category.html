@@ -5,7 +5,7 @@
         <span
           class="app-status-pill app-status-pill--neutral"
           >
-          Chargement...
+          Loading...
         </span>
       }
       @if (store.saving()) {
@@ -34,7 +34,7 @@
       <div class="flex items-center justify-between bg-slate-900 px-6 py-5 text-white">
         <div>
           <h2 class="text-xl font-semibold">Categories</h2>
-          <p class="mt-1 text-sm text-slate-300">Structure, alertes et seuils par categorie.</p>
+          <p class="mt-1 text-sm text-slate-300">Structure, alertes et seuils par category.</p>
         </div>
         <button
           mat-raised-button
@@ -42,7 +42,7 @@
           type="button"
           (click)="store.refresh()"
           >
-          Rafraichir
+          Refresh
         </button>
       </div>
       <div class="space-y-4 p-4 sm:p-6">
@@ -51,7 +51,7 @@
             <span
               class="app-status-pill app-status-pill--neutral"
               >
-              Chargement...
+              Loading...
             </span>
           }
           @if (store.saving()) {
@@ -83,7 +83,7 @@
     class="app-modal-backdrop"
     tabindex="0"
     role="button"
-    aria-label="Fermer la modale"
+    aria-label="Close la modale"
     (click)="store.cancelForm()"
     (keydown.enter)="store.cancelForm()"
     (keydown.space)="store.cancelForm(); $event.preventDefault()"
@@ -100,12 +100,12 @@
       >
       <div class="app-dialog-header">
         <div>
-          <p class="app-dialog-eyebrow">Catalogue</p>
+          <p class="app-dialog-eyebrow">Catalog</p>
           <h3 class="app-dialog-title">{{ store.dialogTitle() }}</h3>
           <p class="app-dialog-subtitle">{{ store.dialogSubtitle() }}</p>
         </div>
         <button mat-stroked-button type="button" (click)="store.cancelForm()">
-          Fermer
+          Close
         </button>
       </div>
       <div class="app-dialog-content">

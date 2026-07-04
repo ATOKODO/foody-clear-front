@@ -12,7 +12,7 @@
           (click)="onRefreshRequested()"
           [disabled]="loading || loadingProducts || loadingInventoryProducts || saving"
           >
-          Rafraichir
+          Refresh
         </button>
 
         <button
@@ -23,7 +23,7 @@
           (click)="onAddRequested()"
           [disabled]="loading || loadingProducts || loadingInventoryProducts || saving"
           >
-          Ajouter un inventaire
+          Add un inventory
         </button>
       </div>
     </div>
@@ -35,12 +35,12 @@
           >
           @if (loading) {
             <span class="app-status-pill app-status-pill--neutral">
-              Chargement...
+              Loading...
             </span>
           }
           @if (loadingProducts) {
             <span class="app-status-pill app-status-pill--info">
-              Produits...
+              Products...
             </span>
           }
           @if (saving) {
@@ -51,7 +51,7 @@
           @if (loadingInventoryProducts) {
             <span
               class="app-status-pill app-status-pill--info">
-              Produits lies...
+              Products lies...
             </span>
           }
         </div>
@@ -71,7 +71,7 @@
 </section>
 
 @if (formVisible) {
-  <div class="modal-backdrop modal-backdrop--inventory" tabindex="0" role="button" aria-label="Fermer la modale" (click)="closeFormModal()" (keydown.enter)="closeFormModal()" (keydown.space)="closeFormModal(); $event.preventDefault()"></div>
+  <div class="modal-backdrop modal-backdrop--inventory" tabindex="0" role="button" aria-label="Close la modale" (click)="closeFormModal()" (keydown.enter)="closeFormModal()" (keydown.space)="closeFormModal(); $event.preventDefault()"></div>
 }
 @if (formVisible) {
   <div class="modal-shell modal-shell--inventory" data-testid="inventory-dialog">
@@ -98,14 +98,14 @@
               inventory-form-under-name
               class="inventory-manage-products mt-4 space-y-4 rounded-xl border border-slate-200 bg-white p-5">
               <div>
-                <h3 class="text-base font-semibold text-slate-900">Gerer les produits</h3>
+                <h3 class="text-base font-semibold text-slate-900">Manage products</h3>
                 <p class="mt-1 text-sm text-slate-600">
                   Modifie les quantites existantes, retire des lignes ou vide tout l'inventory.
                 </p>
               </div>
               @if (loadingInventoryProducts) {
                 <p class="text-sm text-slate-500">
-                  Chargement des produits lies...
+                  Loading des products lies...
                 </p>
               }
               @if (manageProductRows.length > 0) {
@@ -113,10 +113,10 @@
                   <table class="inventory-products-table w-full min-w-[820px] text-sm">
                     <thead class="bg-slate-50 text-left text-slate-700">
                       <tr>
-                        <th class="px-3 py-2">Produit</th>
-                        <th class="px-3 py-2">Qty actuelle</th>
+                        <th class="px-3 py-2">Product</th>
+                        <th class="px-3 py-2">Current qty</th>
                         <th class="px-3 py-2">Stock normalise</th>
-                        <th class="px-3 py-2">Nouvelle qty</th>
+                        <th class="px-3 py-2">New qty</th>
                         <th class="px-3 py-2 text-right">Action</th>
                       </tr>
                     </thead>
@@ -133,7 +133,7 @@
                           <td class="px-3 py-2">
                             <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
                               <mat-form-field appearance="fill" class="w-full">
-                                <mat-label>Quantite</mat-label>
+                                <mat-label>Quantity</mat-label>
                                 <input
                                   matInput
                                   type="number"
@@ -144,7 +144,7 @@
                                   (ngModelChange)="onManagedProductQtyChange()" />
                               </mat-form-field>
                               <mat-form-field appearance="fill" class="w-full">
-                                <mat-label>Unite</mat-label>
+                                <mat-label>Unit</mat-label>
                                 <mat-select
                                   [(ngModel)]="row.qtyUnit"
                                   [ngModelOptions]="{ standalone: true }"
@@ -169,7 +169,7 @@
                               color="warn"
                               type="button"
                               (click)="removeManagedProduct(row.productId)">
-                              Retirer de la liste
+                              Remove from list
                             </button>
                           </td>
                         </tr>
@@ -179,7 +179,7 @@
                 </div>
               } @else {
                 <p class="text-sm text-slate-600">
-                  Aucun produit lie a cet inventory.
+                  No product lie a cet inventory.
                 </p>
               }
               @if (manageProductsFormError) {
@@ -194,7 +194,7 @@
                   type="button"
                   (click)="emptyInventory()"
                   [disabled]="saving || editingInventoryProducts.length === 0">
-                  Vider l'inventory
+                  Empty inventory
                 </button>
                 <button
                   mat-raised-button
@@ -202,7 +202,7 @@
                   type="button"
                   (click)="saveManagedProducts()"
                   [disabled]="!canSaveManagedProducts">
-                  Enregistrer
+                  Save
                 </button>
               </div>
             </section>
@@ -212,9 +212,9 @@
           <section class="space-y-4 border-t border-slate-200 px-4 pb-6 sm:px-8">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h3 class="text-base font-semibold text-slate-900">Produits initiaux</h3>
+                <h3 class="text-base font-semibold text-slate-900">Initial products</h3>
                 <p class="text-sm text-slate-600">
-                  Selectionne les produits a lier a l'inventory des sa creation.
+                  Select les products a lier a l'inventory des sa creation.
                 </p>
               </div>
               <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
@@ -222,7 +222,7 @@
               </span>
             </div>
             @if (loadingProducts) {
-              <p class="text-sm text-slate-500">Chargement des produits...</p>
+              <p class="text-sm text-slate-500">Loading des products...</p>
             }
             <app-product-list [mode]="'select-multi'"
               [products]="productListItems"
@@ -234,7 +234,7 @@
                 <table class="w-full min-w-[760px] text-sm">
                   <thead class="bg-slate-50 text-left text-slate-700">
                     <tr>
-                      <th class="px-3 py-2">Produit</th>
+                      <th class="px-3 py-2">Product</th>
                       <th class="px-3 py-2">Qty</th>
                       <th class="px-3 py-2">Stats</th>
                       <th class="px-3 py-2 text-right">Action</th>
@@ -248,7 +248,7 @@
                         <td class="px-3 py-2">
                           <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
                             <mat-form-field appearance="fill" class="w-full">
-                              <mat-label>Quantite</mat-label>
+                              <mat-label>Quantity</mat-label>
                               <input
                                 matInput
                                 type="number"
@@ -259,7 +259,7 @@
                                 (ngModelChange)="onCreateProductQtyChange()" />
                             </mat-form-field>
                             <mat-form-field appearance="fill" class="w-full">
-                              <mat-label>Unite</mat-label>
+                              <mat-label>Unit</mat-label>
                               <mat-select
                                 [(ngModel)]="row.qtyUnit"
                                 [ngModelOptions]="{ standalone: true }"
@@ -298,7 +298,7 @@
                             color="warn"
                             type="button"
                             (click)="removeCreateSelectedProduct(row.productId)">
-                            Retirer
+                            Remove
                           </button>
                         </td>
                       </tr>
@@ -308,7 +308,7 @@
               </div>
             } @else {
               <p class="text-sm text-slate-600">
-                Selectionne un ou plusieurs produits puis renseigne leur quantite initiale.
+                Select un ou plusieurs products puis renseigne leur quantite initiale.
               </p>
             }
             @if (createProductsFormError) {
@@ -321,7 +321,7 @@
       </mat-card-content>
       <mat-card-actions class="flex justify-center px-4 pb-6">
         <button mat-stroked-button type="button" (click)="closeFormModal()" [disabled]="saving">
-          Annuler
+          Cancel
         </button>
       </mat-card-actions>
     </mat-card>
@@ -329,20 +329,20 @@
 }
 
 @if (isAddProductsModalOpen) {
-  <div class="modal-backdrop modal-backdrop--nested" tabindex="0" role="button" aria-label="Fermer la modale" (click)="closeActiveModal()" (keydown.enter)="closeActiveModal()" (keydown.space)="closeActiveModal(); $event.preventDefault()"></div>
+  <div class="modal-backdrop modal-backdrop--nested" tabindex="0" role="button" aria-label="Close la modale" (click)="closeActiveModal()" (keydown.enter)="closeActiveModal()" (keydown.space)="closeActiveModal(); $event.preventDefault()"></div>
 }
 @if (isAddProductsModalOpen) {
   <div class="modal-shell modal-shell--nested" data-testid="inventory-add-products-dialog">
     <mat-card class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
       <mat-card-header>
-        <mat-card-title>Ajouter des produits</mat-card-title>
+        <mat-card-title>Add des products</mat-card-title>
         <mat-card-subtitle>
-          Tu peux ajouter du stock sur n'importe quel produit, y compris un produit deja present dans l'inventory.
+          Tu peux ajouter du stock sur n'importe quel product, y compris un product deja present dans l'inventory.
         </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content class="space-y-4 pt-2">
         @if (loadingProducts) {
-          <p class="text-sm text-slate-500">Chargement des produits...</p>
+          <p class="text-sm text-slate-500">Loading des products...</p>
         }
         <app-product-list [mode]="'select-multi'"
           [products]="addableProductListItems"
@@ -354,7 +354,7 @@
             <table class="w-full min-w-[760px] text-sm">
               <thead class="bg-slate-50 text-left text-slate-700">
                 <tr>
-                  <th class="px-3 py-2">Produit</th>
+                  <th class="px-3 py-2">Product</th>
                   <th class="px-3 py-2">Qty</th>
                   <th class="px-3 py-2">Stats</th>
                   <th class="px-3 py-2 text-right">Action</th>
@@ -368,7 +368,7 @@
                     <td class="px-3 py-2">
                       <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
                         <mat-form-field appearance="fill" class="w-full">
-                          <mat-label>Quantite</mat-label>
+                          <mat-label>Quantity</mat-label>
                           <input
                             matInput
                             type="number"
@@ -379,7 +379,7 @@
                             (ngModelChange)="onAddProductQtyChange()" />
                         </mat-form-field>
                         <mat-form-field appearance="fill" class="w-full">
-                          <mat-label>Unite</mat-label>
+                          <mat-label>Unit</mat-label>
                           <mat-select
                             [(ngModel)]="row.qtyUnit"
                             [ngModelOptions]="{ standalone: true }"
@@ -418,7 +418,7 @@
                         color="warn"
                         type="button"
                         (click)="removeAddSelectedProduct(row.productId)">
-                        Retirer
+                        Remove
                       </button>
                     </td>
                   </tr>
@@ -428,7 +428,7 @@
           </div>
         } @else {
           <p class="text-sm text-slate-600">
-            Selectionne un ou plusieurs produits puis renseigne la quantite a ajouter.
+            Select un ou plusieurs products puis renseigne la quantite a ajouter.
           </p>
         }
         @if (addProductsFormError) {
@@ -439,7 +439,7 @@
       </mat-card-content>
       <mat-card-actions align="end" class="gap-2 px-4 pb-4">
         <button mat-stroked-button type="button" (click)="closeActiveModal()" [disabled]="saving">
-          Annuler
+          Cancel
         </button>
         <button
           mat-raised-button
@@ -447,7 +447,7 @@
           type="button"
           (click)="onAddSelectedProducts()"
           [disabled]="!canAddSelectedProducts">
-          Ajouter
+          Add
         </button>
       </mat-card-actions>
     </mat-card>

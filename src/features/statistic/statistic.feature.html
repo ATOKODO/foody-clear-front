@@ -2,10 +2,10 @@
   <header class="stat-hero" data-testid="statistic-page">
     <div>
       <p class="stat-eyebrow">Foody Clear</p>
-      <h1>Statistiques</h1>
+      <h1>Statistics</h1>
       <p class="stat-subtitle">
         Timeline des achats, progression sur les objectifs et evolution du prix
-        des produits.
+        des products.
       </p>
     </div>
 
@@ -16,7 +16,7 @@
         data-testid="stat-quick-7"
         (click)="applyQuickRange(7)"
       >
-        7 jours
+        7 days
       </button>
       <button
         mat-stroked-button
@@ -24,7 +24,7 @@
         data-testid="stat-quick-30"
         (click)="applyQuickRange(30)"
       >
-        30 jours
+        30 days
       </button>
       <button
         mat-stroked-button
@@ -32,7 +32,7 @@
         data-testid="stat-quick-90"
         (click)="applyQuickRange(90)"
       >
-        90 jours
+        90 days
       </button>
       <button
         mat-raised-button
@@ -123,7 +123,7 @@
       <mat-card appearance="outlined" class="stat-card">
         <div class="stat-card__head">
           <div>
-            <h2>Timeline des depenses</h2>
+            <h2>Timeline des spending</h2>
             <p>
               {{ timeline.fromDateLocal }} au {{ timeline.toDateLocal }} |
               {{ timeline.timezone }}
@@ -240,7 +240,7 @@
           </div>
         } @else {
           <p class="empty-copy" data-testid="stat-empty-expenses">
-            Aucun achat sur cette journee.
+            No achat sur cette daynee.
           </p>
         }
       </mat-card>
@@ -251,8 +251,8 @@
     <mat-card appearance="outlined" class="stat-card">
       <div class="stat-card__head">
         <div>
-          <h2>Objectifs / saisie du jour</h2>
-          <p>Comparaison journaliere entre reel et cible.</p>
+          <h2>Objectifs / saisie du day</h2>
+          <p>Comparaison daynaliere entre reel et cible.</p>
         </div>
         <mat-button-toggle-group
           [(ngModel)]="activeMetric"
@@ -323,7 +323,7 @@
         <div class="target-detail-meta">
           @if (day.inputs.assignment) {
             <p>
-              Cycle: {{ day.inputs.assignment.cycleTitle }} (jour
+              Cycle: {{ day.inputs.assignment.cycleTitle }} (day
               {{ day.inputs.assignment.dayIndex }})
             </p>
           }
@@ -346,7 +346,7 @@
     <mat-card appearance="outlined" class="stat-card">
       <div class="stat-card__head">
         <div>
-          <h2>Evolution du prix produit</h2>
+          <h2>Evolution du prix product</h2>
           <p>Historique versionne des prix avec delta absolu et pourcentage.</p>
         </div>
       </div>
@@ -516,13 +516,13 @@
           </div>
         } @else {
           <p class="empty-copy" data-testid="stat-empty-price-changes">
-            Aucun changement de prix pour {{ selectedProductName }} sur cette
+            No changement de prix pour {{ selectedProductName }} sur cette
             periode.
           </p>
         }
       } @else {
         <p class="empty-copy" data-testid="stat-empty-price-history">
-          Aucun historique de prix disponible pour {{ selectedProductName }} sur
+          No historique de prix disponible pour {{ selectedProductName }} sur
           cette periode.
         </p>
       }

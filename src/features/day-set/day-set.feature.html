@@ -3,7 +3,7 @@
     <div class="app-status-row">
       @if (loading) {
         <span class="app-status-pill app-status-pill--neutral">
-          Chargement...
+          Loading...
         </span>
       }
       @if (saving) {
@@ -39,14 +39,14 @@
       <div class="bg-slate-900 px-6 py-5 text-white">
         <h2 class="text-xl font-semibold">Day sets</h2>
         <p class="mt-1 text-sm text-slate-300">
-          Journees type, cibles nutritionnelles et templates associes.
+          Template days, cibles nutritionnelles et templates associes.
         </p>
       </div>
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
           @if (loading) {
             <span class="app-status-pill app-status-pill--neutral">
-              Chargement...
+              Loading...
             </span>
           }
           @if (saving) {
@@ -87,7 +87,7 @@
     [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset()"
     tabindex="0"
     role="button"
-    aria-label="Fermer la modale"
+    aria-label="Close la modale"
     (click)="onCancelForm()"
     (keydown.enter)="onCancelForm()"
     (keydown.space)="onCancelForm(); $event.preventDefault()"></div>
@@ -110,14 +110,14 @@
         <div>
           <p class="app-dialog-eyebrow">Planning</p>
           <h3 class="app-dialog-title">
-            {{ formMode === 'edit' ? 'Modifier un day set' : 'Ajouter un day set' }}
+            {{ formMode === 'edit' ? 'Edit un day set' : 'Add un day set' }}
           </h3>
           <p class="app-dialog-subtitle">
-            Compose une journee type, ses slots et ses cibles nutritionnelles.
+            Compose une day type, ses slots et ses cibles nutritionnelles.
           </p>
         </div>
         <button mat-stroked-button type="button" (click)="onCancelForm()">
-          Fermer
+          Close
         </button>
       </div>
       <div class="app-dialog-content day-set-feature__dialog-content">

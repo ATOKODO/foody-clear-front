@@ -24,7 +24,7 @@
           [disabled]="activeViewBusy"
           data-testid="catalogue-refresh-action"
           >
-          Rafraichir
+          Refresh
         </button>
 
         <button
@@ -49,7 +49,7 @@
                 <span
                   class="app-status-pill app-status-pill--neutral"
                   >
-                  Chargement...
+                  Loading...
                 </span>
               }
               @if (saving) {
@@ -119,7 +119,7 @@
       </div>
 
       <button mat-stroked-button type="button" (click)="onCancelForm()" [disabled]="saving">
-        Fermer
+        Close
       </button>
     </div>
 

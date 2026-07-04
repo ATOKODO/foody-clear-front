@@ -16,11 +16,11 @@
       <span class="app-shell__brand-mark">FC</span>
       <span class="app-shell__brand-copy">
         <span class="app-shell__brand-title">Foody Clear</span>
-        <span class="app-shell__brand-subtitle">Pilotage nutrition & operations</span>
+        <span class="app-shell__brand-subtitle">Nutrition & operations control</span>
       </span>
     </a>
 
-    <nav class="app-shell__navigation" aria-label="Navigation principale">
+    <nav class="app-shell__navigation" aria-label="Main navigation">
       @for (group of navigationGroups; track group) {
         <section class="app-shell__group">
           <p class="app-shell__group-label">{{ group.label }}</p>
@@ -53,7 +53,7 @@
           type="button"
           class="app-shell__menu-button"
           (click)="openMobileNavigation()"
-          aria-label="Ouvrir la navigation"
+          aria-label="Open navigation"
           aria-controls="app-navigation"
           >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">
@@ -99,7 +99,7 @@
         </span>
 
         <span class="app-theme-toggle__copy">
-          <span class="app-theme-toggle__title">{{ isDarkMode ? 'Theme sombre' : 'Theme clair' }}</span>
+          <span class="app-theme-toggle__title">{{ isDarkMode ? 'Dark theme' : 'Light theme' }}</span>
           <span class="app-theme-toggle__subtitle">{{ themeToggleLabel }}</span>
         </span>
       </button>

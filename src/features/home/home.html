@@ -2,9 +2,9 @@
   <header class="home-dashboard__hero">
     <div class="home-dashboard__hero-copy">
       <p class="home-dashboard__eyebrow">Foody Clear</p>
-      <h1 class="home-dashboard__title">Tableau de bord</h1>
+      <h1 class="home-dashboard__title">Dashboard</h1>
       <p class="home-dashboard__description">
-        {{ todayLabel }} · vue jour, objectifs et depenses consolides.
+        {{ todayLabel }} · day view, goals and consolidated spending.
       </p>
     </div>
 
@@ -16,10 +16,10 @@
         [disabled]="loading"
         (click)="refreshDashboard()"
       >
-        Actualiser
+        Refresh
       </button>
       <a routerLink="/product" class="home-dashboard__hero-link">
-        Ouvrir le catalogue
+        Open catalog
       </a>
       <button
         type="button"
@@ -28,14 +28,14 @@
         [disabled]="loading"
         (click)="openExternalMealEntry()"
       >
-        Entree exterieure
+        External entry
       </button>
       <a
         routerLink="/planning"
         [queryParams]="planningTodayQueryParams"
         class="home-dashboard__hero-link home-dashboard__hero-link--secondary"
       >
-        Voir le planning
+        View planning
       </a>
     </div>
   </header>
@@ -48,47 +48,20 @@
     <app-ui-error-panel [error]="dayError || timelineError" />
   }
 
-  <section class="home-dashboard__overview" aria-label="Synthese du jour">
-    <article class="home-dashboard__kpi home-dashboard__kpi--wide">
-      <span class="home-dashboard__kpi-label">Cycle</span>
-      <strong>{{ activeCycleLabel }}</strong>
-      <small>{{ activeDaySetLabel }}</small>
-    </article>
-    <article class="home-dashboard__kpi">
-      <span class="home-dashboard__kpi-label">Elements saisis</span>
-      <strong>{{ enteredItemCount }}</strong>
-      <small>{{ convertedTemplateItems.length }} depuis template</small>
-    </article>
-    <article class="home-dashboard__kpi">
-      <span class="home-dashboard__kpi-label">A convertir</span>
-      <strong>{{ pendingTemplateItems.length }}</strong>
-      <small>lignes previsionnelles</small>
-    </article>
-    <article class="home-dashboard__kpi">
-      <span class="home-dashboard__kpi-label">Depenses</span>
-      <strong>{{ todayExpenseTotal }}</strong>
-      <small>{{ purchaseCount }} achat(s), {{ incompletePurchaseCount }} incomplet(s)</small>
-    </article>
-    <article class="home-dashboard__kpi">
-      <span class="home-dashboard__kpi-label">Source objectifs</span>
-      <strong>{{ targetSourceLabel }}</strong>
-      <small>{{ todayDateLocal }} · {{ timezone }}</small>
-    </article>
-  </section>
 
   <section class="home-dashboard__main-grid">
     <article class="home-panel home-panel--schedule">
       <div class="home-panel__header">
         <div>
-          <p class="home-panel__eyebrow">Planning jour</p>
-          <h2>Ce qui est prevu aujourd'hui</h2>
+          <p class="home-panel__eyebrow">Day planning</p>
+          <h2>What is planned today</h2>
         </div>
         <a
           routerLink="/planning"
           [queryParams]="planningTodayQueryParams"
           class="home-panel__link"
         >
-          Ouvrir
+          Open
         </a>
       </div>
 
@@ -103,7 +76,7 @@
               <div class="home-schedule__content">
                 @if (row.plannedItems.length > 0) {
                   <div class="home-schedule__group">
-                    <span class="home-schedule__group-label">Prevu</span>
+                    <span class="home-schedule__group-label">Planned</span>
                     @for (item of row.plannedItems; track item.id) {
                       <div class="home-schedule__item home-schedule__item--planned">
                         <span class="home-schedule__item-main">
@@ -124,7 +97,7 @@
                               [disabled]="loadingDay"
                               (click)="revertTemplateItem(item)"
                             >
-                              Remettre cote template
+                              Restore to template
                             </button>
                           } @else {
                             <button
@@ -133,7 +106,7 @@
                               [disabled]="!canConvertTemplateItem(item) || loadingDay"
                               (click)="convertTemplateItem(item)"
                             >
-                              Convertir
+                              Convert
                             </button>
                           }
                         </span>
@@ -143,7 +116,7 @@
                 }
                 @if (row.items.length > 0) {
                   <div class="home-schedule__group">
-                    <span class="home-schedule__group-label">Saisi</span>
+                    <span class="home-schedule__group-label">Entered</span>
                     @for (item of row.items; track item.id) {
                       <div class="home-schedule__item">
                         <span>
@@ -156,14 +129,14 @@
                   </div>
                 }
                 @if (row.plannedItems.length === 0 && row.items.length === 0) {
-                  <p class="home-schedule__empty">Rien de prevu sur ce slot.</p>
+                  <p class="home-schedule__empty">Nothing planned for this slot.</p>
                 }
               </div>
             </article>
           }
         </div>
       } @else {
-        <p class="home-panel__empty">Aucun planning retourne pour aujourd'hui.</p>
+        <p class="home-panel__empty">No planning returned for today.</p>
       }
     </article>
 
@@ -171,8 +144,8 @@
       <article class="home-panel home-panel--day-entries">
         <div class="home-panel__header">
           <div>
-            <p class="home-panel__eyebrow">Resume rapide</p>
-            <h2>Entrees du jour</h2>
+            <p class="home-panel__eyebrow">Quick summary</p>
+            <h2>Today's entries</h2>
           </div>
           <span class="home-panel__count">{{ dayEntryRows.length }} items</span>
         </div>
@@ -200,16 +173,22 @@
             }
           </div>
         } @else {
-          <p class="home-panel__empty">Aucune entree saisie aujourd'hui.</p>
+          <p class="home-panel__empty">No entries submitted today.</p>
         }
       </article>
 
       <article class="home-panel">
         <div class="home-panel__header">
           <div>
-            <p class="home-panel__eyebrow">Objectifs</p>
-            <h2>Progression du jour</h2>
+            <p class="home-panel__eyebrow">Goals</p>
+            <h2>Today's progress</h2>
+            <p class="home-panel__summary">
+              Source {{ targetSourceLabel }} · {{ todayDateLocal }} · {{ timezone }}
+            </p>
           </div>
+          <span class="home-panel__count">
+            {{ enteredItemCount }} entered · {{ pendingTemplateItems.length }} pending
+          </span>
         </div>
         <div class="home-macro-grid">
           @for (macro of macroCards; track macro.key) {
@@ -222,7 +201,7 @@
                 <span class="home-macro__fill" [style.width.%]="macro.progress"></span>
               </div>
               <div class="home-macro__meta">
-                <span>Cible {{ macro.target }}</span>
+                <span>Target {{ macro.target }}</span>
                 <span>Delta {{ macro.delta }}</span>
               </div>
             </article>
@@ -233,8 +212,11 @@
       <article class="home-panel">
         <div class="home-panel__header">
           <div>
-            <p class="home-panel__eyebrow">Achats</p>
-            <h2>Depenses du jour</h2>
+            <p class="home-panel__eyebrow">Purchases</p>
+            <h2>Today's spending</h2>
+            <p class="home-panel__summary">
+              {{ todayExpenseTotal }} · {{ purchaseCount }} purchases · {{ incompletePurchaseCount }} incomplete
+            </p>
           </div>
           <a routerLink="/statistic" class="home-panel__link">Details</a>
         </div>
@@ -253,7 +235,7 @@
             }
           </div>
         } @else {
-          <p class="home-panel__empty">Aucun achat rattache a aujourd'hui.</p>
+          <p class="home-panel__empty">No purchases linked to today.</p>
         }
       </article>
     </aside>
@@ -262,8 +244,8 @@
   <section class="home-panel home-panel--editor">
     <div class="home-panel__header">
       <div>
-        <p class="home-panel__eyebrow">Saisie rapide</p>
-        <h2>Remplir la journee</h2>
+        <p class="home-panel__eyebrow">Enterede rapide</p>
+        <h2>Fill the day</h2>
       </div>
     </div>
     @defer (on interaction(quickEntryTrigger)) {
@@ -277,14 +259,14 @@
     } @placeholder {
       <div class="home-editor-launch">
         <p class="home-panel__empty">
-          Charge l'editeur a la demande pour garder le tableau de bord reactif.
+          Load the editor on demand to keep the dashboard responsive.
         </p>
         <button
           #quickEntryTrigger
           type="button"
           class="home-editor-launch__button"
         >
-          Ouvrir la saisie rapide
+          Open quick entry
         </button>
       </div>
     }

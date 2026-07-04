@@ -4,7 +4,7 @@
       [value]="store.activeView"
       [options]="store.viewOptions"
       (valueChange)="store.onActiveViewChange($event)"
-      ariaLabel="Selection de la vue liste ou modele de course"
+      ariaLabel="Select list or template view"
       data-testid="shopping-list-view-toggle"
       name="shopping-list-view"
       maxWidth="24rem"
@@ -16,7 +16,7 @@
       <div>
         <p class="shopping-list-panel__eyebrow">Courses</p>
         <h2 class="shopping-list-panel__title">
-          {{ store.activeView === 'list' ? 'Liste de course' : 'Modele de course' }}
+          {{ store.activeView === 'list' ? 'Shopping list' : 'Shopping template' }}
         </h2>
         <p class="shopping-list-panel__subtitle">
           {{ store.activeView === 'list'
@@ -31,7 +31,7 @@
           class="shopping-list-action shopping-list-action--secondary"
           (click)="store.loadScreen()"
           [disabled]="store.loading || store.saving">
-          Rafraichir
+          Refresh
         </button>
         @if (store.activeView === 'list') {
           <button
@@ -40,7 +40,7 @@
             class="shopping-list-action shopping-list-action--primary"
             (click)="store.openCreateListEditor()"
             [disabled]="store.saving">
-            Ajouter
+            Add
           </button>
         }
       </div>
@@ -70,9 +70,9 @@
 
       @if (store.activeView === 'list') {
         <app-master-detail-layout
-          sideTitle="Listes"
+          sideTitle="Lists"
           sideSubtitle="Selectionne une liste active et gere ses lignes."
-          sideAriaLabel="Listes de course"
+          sideAriaLabel="Shopping lists"
           detailAriaLabel="Detail de la liste de course">
           <div side-content class="shopping-list-stack">
             @for (list of store.shoppingLists; track list.id) {
@@ -98,7 +98,7 @@
                     class="shopping-list-action shopping-list-action--secondary"
                     (click)="store.openSelectedListEditor(list.id)"
                     [disabled]="store.saving">
-                    Modifier
+                    Edit
                   </button>
                   <button
                     mat-stroked-button
@@ -106,7 +106,7 @@
                     class="shopping-list-action shopping-list-action--danger"
                     (click)="store.selectList(list.id); store.deleteSelectedList()"
                     [disabled]="store.saving">
-                    Retirer
+                    Remove
                   </button>
                 </div>
               </div>
@@ -127,8 +127,8 @@
               <div class="shopping-list-table-card">
                 <div class="shopping-list-table-card__header">
                   <div>
-                    <h4>Produits de la liste</h4>
-                    <p>Affichage en lecture seule. Utilise Modifier dans la colonne de gauche pour editer.</p>
+                    <h4>List items</h4>
+                    <p>Affichage en lecture seule. Utilise Edit dans la colonne de gauche pour editer.</p>
                   </div>
                 </div>
 
@@ -151,9 +151,9 @@
         </app-master-detail-layout>
       } @else {
         <app-master-detail-layout
-          sideTitle="Modeles"
-          sideSubtitle="Listes recurrentes pretes a relancer."
-          sideAriaLabel="Modeles de course"
+          sideTitle="Templates"
+          sideSubtitle="Lists recurrentes pretes a relancer."
+          sideAriaLabel="Templates de course"
           detailAriaLabel="Detail du modele de course">
           <div side-content class="shopping-list-stack">
             @for (template of store.templates; track template.id) {
@@ -167,7 +167,7 @@
                 (keydown.space)="store.selectTemplate(template.id); $event.preventDefault()">
                 <span class="shopping-list-list-card__title">{{ template.name }}</span>
                 <span class="shopping-list-list-card__meta">{{ template.items.length }} produit(s)</span>
-                <span class="shopping-list-list-card__status shopping-list-list-card__status--template">Modele</span>
+                <span class="shopping-list-list-card__status shopping-list-list-card__status--template">Template</span>
                 <div class="shopping-list-list-card__actions" (click)="$event.stopPropagation()">
                   <button
                     mat-stroked-button
@@ -175,7 +175,7 @@
                     class="shopping-list-action shopping-list-action--secondary"
                     (click)="store.openSelectedTemplateEditor(template.id)"
                     [disabled]="store.saving">
-                    Modifier
+                    Edit
                   </button>
                   <button
                     mat-stroked-button
@@ -183,7 +183,7 @@
                     class="shopping-list-action shopping-list-action--danger"
                     (click)="store.selectTemplate(template.id); store.deleteSelectedTemplate()"
                     [disabled]="store.saving">
-                    Retirer
+                    Remove
                   </button>
                 </div>
               </div>
@@ -204,7 +204,7 @@
               <div class="shopping-list-table-card">
                 <div class="shopping-list-table-card__header">
                   <div>
-                    <h4>Produits du modele</h4>
+                    <h4>Template items</h4>
                     <p>Contenu qui sera copie dans la nouvelle liste.</p>
                   </div>
                 </div>
@@ -233,7 +233,7 @@
     <button
       type="button"
       class="shopping-list-modal-backdrop"
-      aria-label="Fermer l'edition de liste"
+      aria-label="Close l'edition de liste"
       (click)="store.closeListEditor()">
     </button>
   }
@@ -244,7 +244,7 @@
         <div class="shopping-list-modal-card__header">
           <div>
             <p class="shopping-list-panel__eyebrow">Courses</p>
-            <h3>{{ store.listEditorMode === 'create' ? 'Creer une liste' : 'Modifier la liste' }}</h3>
+            <h3>{{ store.listEditorMode === 'create' ? 'Create une liste' : 'Edit la liste' }}</h3>
             <p>Edite le nom et les produits depuis cette modale.</p>
           </div>
           <button
@@ -253,7 +253,7 @@
             class="shopping-list-action shopping-list-action--secondary"
             (click)="store.closeListEditor()"
             [disabled]="store.saving">
-            Fermer
+            Close
           </button>
         </div>
 
@@ -269,7 +269,7 @@
               class="shopping-list-action shopping-list-action--primary"
               (click)="store.saveListEditor()"
               [disabled]="store.saving">
-              Creer la liste
+              Create la liste
             </button>
           } @else if (store.selectedList; as list) {
             <mat-form-field appearance="fill" class="w-full">
@@ -288,14 +288,14 @@
             <div class="shopping-list-editor-card">
               <div class="shopping-list-editor-card__header">
                 <div>
-                  <h4>Ajouter un produit</h4>
+                  <h4>Add product</h4>
                   <p>Choisis dans la meme table produit que l'inventory.</p>
                 </div>
               </div>
 
               <div class="shopping-list-add-row">
                 <div class="shopping-list-product-pick">
-                  <span>Produit</span>
+                  <span>Product</span>
                   <strong>{{ store.resolveDraftProductName() }}</strong>
                   <button
                     mat-stroked-button
@@ -308,12 +308,12 @@
                 </div>
 
                 <mat-form-field appearance="fill">
-                  <mat-label>Quantite</mat-label>
+                  <mat-label>Quantity</mat-label>
                   <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="store.draftItemQty" />
                 </mat-form-field>
 
                 <mat-form-field appearance="fill">
-                  <mat-label>Unite</mat-label>
+                  <mat-label>Unit</mat-label>
                   <mat-select [(ngModel)]="store.draftItemQtyUnit">
                     @for (unit of store.getDraftQtyUnitOptions(); track unit.value) {
                       <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
@@ -327,7 +327,7 @@
                   class="shopping-list-action shopping-list-action--primary"
                   (click)="store.addItemToSelectedList()"
                   [disabled]="store.saving || store.draftItemProductId === null || store.draftItemQty <= 0">
-                  Ajouter
+                  Add
                 </button>
               </div>
             </div>
@@ -335,7 +335,7 @@
             <div class="shopping-list-table-card">
               <div class="shopping-list-table-card__header">
                 <div>
-                  <h4>Produits de la liste</h4>
+                  <h4>List items</h4>
                   <p>Coche ce qui doit etre envoye vers l'inventory.</p>
                 </div>
                 <div class="shopping-list-inline-actions">
@@ -369,16 +369,16 @@
 
                     <div class="shopping-list-line-card__product">
                       <strong>{{ store.resolveProductName(item) }}</strong>
-                      <span>Produit #{{ item.productId }}</span>
+                      <span>Product #{{ item.productId }}</span>
                     </div>
 
                     <mat-form-field appearance="fill">
-                      <mat-label>Quantite</mat-label>
+                      <mat-label>Quantity</mat-label>
                       <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="item.qty" />
                     </mat-form-field>
 
                     <mat-form-field appearance="fill">
-                      <mat-label>Unite</mat-label>
+                      <mat-label>Unit</mat-label>
                       <mat-select [(ngModel)]="item.qtyUnit">
                         @for (unit of store.getItemQtyUnitOptions(item); track unit.value) {
                           <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
@@ -393,7 +393,7 @@
                         class="shopping-list-action shopping-list-action--secondary"
                         (click)="store.saveItem(item)"
                         [disabled]="store.saving">
-                        Modifier
+                        Edit
                       </button>
                       <button
                         mat-stroked-button
@@ -401,7 +401,7 @@
                         class="shopping-list-action shopping-list-action--danger"
                         (click)="store.removeItem(item.id)"
                         [disabled]="store.saving">
-                        Retirer
+                        Remove
                       </button>
                     </div>
                   </div>
@@ -474,7 +474,7 @@
     <button
       type="button"
       class="shopping-list-modal-backdrop"
-      aria-label="Fermer l'edition de modele"
+      aria-label="Close l'edition de modele"
       (click)="store.closeTemplateEditor()">
     </button>
   }
@@ -484,8 +484,8 @@
       <mat-card class="shopping-list-modal-card">
         <div class="shopping-list-modal-card__header">
           <div>
-            <p class="shopping-list-panel__eyebrow">Modele</p>
-            <h3>Modifier le modele</h3>
+            <p class="shopping-list-panel__eyebrow">Template</p>
+            <h3>Edit le modele</h3>
             <p>Le contenu reste consultable a droite, les actions sont dans la side list.</p>
           </div>
           <button
@@ -494,7 +494,7 @@
             class="shopping-list-action shopping-list-action--secondary"
             (click)="store.closeTemplateEditor()"
             [disabled]="store.saving">
-            Fermer
+            Close
           </button>
         </div>
 
@@ -515,7 +515,7 @@
 
             <div class="shopping-list-template-create">
               <div>
-                <h4>Creer une liste depuis ce modele</h4>
+                <h4>Create une liste depuis ce modele</h4>
                 <p>Tu peux personnaliser le nom avant de generer la liste.</p>
               </div>
               <div class="shopping-list-template-create__form">
@@ -529,7 +529,7 @@
                   class="shopping-list-action shopping-list-action--primary"
                   (click)="store.createListFromTemplate()"
                   [disabled]="store.saving || template.items.length === 0">
-                  Creer la liste
+                  Create la liste
                 </button>
               </div>
             </div>
@@ -543,7 +543,7 @@
     <button
       type="button"
       class="shopping-list-modal-backdrop"
-      aria-label="Fermer la selection produit"
+      aria-label="Close la selection produit"
       (click)="store.closeProductPicker()">
     </button>
   }
@@ -562,7 +562,7 @@
             type="button"
             class="shopping-list-action shopping-list-action--secondary"
             (click)="store.closeProductPicker()">
-            Fermer
+            Close
           </button>
         </div>
         <app-product-list

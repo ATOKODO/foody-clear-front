@@ -27,7 +27,7 @@
           class="meal-prep-action meal-prep-action--secondary"
           (click)="loadScreen()"
           [disabled]="loading || saving">
-          Rafraichir
+          Refresh
         </button>
         @if (activeView === 'dish') {
           <button
@@ -110,7 +110,7 @@
                     class="meal-prep-action meal-prep-action--secondary"
                     (click)="openSelectedDishEditor(dish.id)"
                     [disabled]="saving">
-                    Modifier
+                    Edit
                   </button>
                   <button
                     mat-stroked-button
@@ -118,7 +118,7 @@
                     class="meal-prep-action meal-prep-action--danger"
                     (click)="selectDish(dish.id); deleteSelectedDish()"
                     [disabled]="saving">
-                    Retirer
+                    Remove
                   </button>
                 </div>
               </div>
@@ -140,7 +140,7 @@
                   class="meal-prep-action meal-prep-action--secondary"
                   (click)="createShoppingListFromSelectedDish()"
                   [disabled]="saving">
-                  Liste de course
+                  Shopping list
                 </button>
               </div>
 
@@ -158,7 +158,7 @@
                 <div class="meal-prep-detail-card__body">
                   @for (item of dish.items; track item.id) {
                     <div class="meal-prep-detail-row">
-                      <span>{{ item.product?.name ?? ('Produit #' + item.productId) }}</span>
+                      <span>{{ item.product?.name ?? ('Product #' + item.productId) }}</span>
                       <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }}</span>
                     </div>
                   } @empty {
@@ -200,7 +200,7 @@
                     class="meal-prep-action meal-prep-action--secondary"
                     (click)="openSelectedMealEditor(meal.id)"
                     [disabled]="saving">
-                    Modifier
+                    Edit
                   </button>
                   <button
                     mat-stroked-button
@@ -208,7 +208,7 @@
                     class="meal-prep-action meal-prep-action--danger"
                     (click)="selectMeal(meal.id); deleteSelectedMeal()"
                     [disabled]="saving">
-                    Retirer
+                    Remove
                   </button>
                 </div>
               </div>
@@ -230,7 +230,7 @@
                   class="meal-prep-action meal-prep-action--secondary"
                   (click)="createShoppingListFromSelectedMeal()"
                   [disabled]="saving">
-                  Liste de course
+                  Shopping list
                 </button>
               </div>
 
@@ -271,7 +271,7 @@
     class="modal-backdrop modal-backdrop--meal-prep"
     tabindex="0"
     role="button"
-    aria-label="Fermer l'edition"
+    aria-label="Close l'edition"
     (click)="closeEditor()"
     (keydown.enter)="closeEditor()"
     (keydown.space)="closeEditor(); $event.preventDefault()"></div>
@@ -282,9 +282,9 @@
       <mat-card-header>
         <mat-card-title>
           @if (activeView === 'dish') {
-            {{ editingDishId === null ? 'Creer un plat' : 'Modifier le plat' }}
+            {{ editingDishId === null ? 'Create un plat' : 'Edit le plat' }}
           } @else {
-            {{ editingMealId === null ? 'Creer un repas' : 'Modifier le repas' }}
+            {{ editingMealId === null ? 'Create un repas' : 'Edit le repas' }}
           }
         </mat-card-title>
         <mat-card-subtitle>
@@ -308,7 +308,7 @@
               @for (line of dishDraftLines; track $index) {
                 <div class="meal-prep-line-card">
                   <div class="meal-prep-line-card__source">
-                    <span class="meal-prep-line-card__label">Produit</span>
+                    <span class="meal-prep-line-card__label">Product</span>
                     <strong>{{ resolveProductName(line.productId) }}</strong>
                     <button
                       mat-stroked-button
@@ -320,11 +320,11 @@
                     </button>
                   </div>
                   <mat-form-field appearance="fill">
-                    <mat-label>Quantite</mat-label>
+                    <mat-label>Quantity</mat-label>
                     <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="line.qty" />
                   </mat-form-field>
                   <mat-form-field appearance="fill">
-                    <mat-label>Unite</mat-label>
+                    <mat-label>Unit</mat-label>
                     <mat-select [(ngModel)]="line.qtyUnit">
                       @for (unit of getDishQtyUnitOptions(line); track unit.value) {
                         <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
@@ -332,7 +332,7 @@
                     </mat-select>
                   </mat-form-field>
                   <button mat-stroked-button color="warn" type="button" (click)="removeDishLine($index)" [disabled]="saving">
-                    Retirer
+                    Remove
                   </button>
                 </div>
               }
@@ -352,7 +352,7 @@
                     <mat-label>Type</mat-label>
                     <mat-select [ngModel]="line.itemType" (ngModelChange)="onMealItemTypeChange(line, $event)">
                       <mat-option value="dish">Plat</mat-option>
-                      <mat-option value="product">Produit</mat-option>
+                      <mat-option value="product">Product</mat-option>
                     </mat-select>
                   </mat-form-field>
 
@@ -368,7 +368,7 @@
                     </mat-form-field>
                   } @else {
                     <div class="meal-prep-line-card__source">
-                      <span class="meal-prep-line-card__label">Produit</span>
+                      <span class="meal-prep-line-card__label">Product</span>
                       <strong>{{ resolveProductName(line.productId) }}</strong>
                       <button
                         mat-stroked-button
@@ -382,11 +382,11 @@
                   }
 
                   <mat-form-field appearance="fill">
-                    <mat-label>Quantite</mat-label>
+                    <mat-label>Quantity</mat-label>
                     <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="line.qty" />
                   </mat-form-field>
                   <mat-form-field appearance="fill">
-                    <mat-label>Unite</mat-label>
+                    <mat-label>Unit</mat-label>
                     <mat-select [(ngModel)]="line.qtyUnit">
                       @for (unit of getMealQtyUnitOptions(line); track unit.value) {
                         <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
@@ -394,7 +394,7 @@
                     </mat-select>
                   </mat-form-field>
                   <button mat-stroked-button color="warn" type="button" (click)="removeMealLine($index)" [disabled]="saving">
-                    Retirer
+                    Remove
                   </button>
                 </div>
               }
@@ -409,17 +409,17 @@
         </button>
         @if (activeView === 'dish') {
           <button mat-stroked-button type="button" (click)="addDishLine()" [disabled]="saving">
-            Ajouter une ligne
+            Add une ligne
           </button>
           <button mat-raised-button color="primary" type="button" (click)="saveDish()" [disabled]="!canSaveDish() || saving">
-            {{ editingDishId === null ? 'Creer le plat' : 'Sauvegarder le plat' }}
+            {{ editingDishId === null ? 'Create le plat' : 'Sauvegarder le plat' }}
           </button>
         } @else {
           <button mat-stroked-button type="button" (click)="addMealLine()" [disabled]="saving">
-            Ajouter une ligne
+            Add une ligne
           </button>
           <button mat-raised-button color="primary" type="button" (click)="saveMeal()" [disabled]="!canSaveMeal() || saving">
-            {{ editingMealId === null ? 'Creer le repas' : 'Sauvegarder le repas' }}
+            {{ editingMealId === null ? 'Create le repas' : 'Sauvegarder le repas' }}
           </button>
         }
       </mat-card-actions>
@@ -432,7 +432,7 @@
     class="modal-backdrop modal-backdrop--meal-prep"
     tabindex="0"
     role="button"
-    aria-label="Fermer la selection de produit"
+    aria-label="Close la selection de produit"
     (click)="closeProductPicker()"
     (keydown.enter)="closeProductPicker()"
     (keydown.space)="closeProductPicker(); $event.preventDefault()"></div>
