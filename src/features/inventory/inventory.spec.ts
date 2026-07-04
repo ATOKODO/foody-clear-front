@@ -159,9 +159,9 @@ describe('Inventory', () => {
     expect(element.querySelector('[data-testid="inventory-panel-title"]')?.textContent)
       .toContain('Inventories');
     expect(element.querySelector('[data-testid="inventory-add-action"]')?.textContent)
-      .toContain('Ajouter un inventaire');
-    expect(element.querySelector('[data-testid="inventory-list-embedded"]')).not.toBeNull();
-    expect(element.querySelector('[data-testid="inventory-list"]')).toBeNull();
+      .toContain('Add inventory');
+    expect(element.querySelector('[data-testid="inventory-select-4"]')).not.toBeNull();
+    expect(element.textContent).toContain('Current stock');
   });
 
   it('should use backend productCount in inventory list items', () => {
@@ -208,7 +208,7 @@ describe('Inventory', () => {
     await fixture.whenStable();
 
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('[data-testid="inventory-row-6"]')).not.toBeNull();
+    expect(element.querySelector('[data-testid="inventory-select-6"]')).not.toBeNull();
     expect(element.textContent).toContain('Stock async');
     expect(element.textContent).not.toContain('Chargement...');
     expect(element.textContent).not.toContain('Produits...');

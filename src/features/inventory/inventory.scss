@@ -38,16 +38,39 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.75rem 0.875rem 0.75rem 1.5rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid rgb(226 232 240 / 0.92);
   background: rgb(246 249 252 / 0.92);
 }
 
-.inventory-panel__title {
+.inventory-panel__eyebrow,
+.inventory-panel__title,
+.inventory-panel__subtitle,
+.inventory-workspace__header h3,
+.inventory-workspace__header p,
+.inventory-detail-card__header h4,
+.inventory-detail-card__header p {
   margin: 0;
+}
+
+.inventory-panel__eyebrow {
+  color: #4d8078;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.inventory-panel__title {
   color: #0f172a;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.inventory-panel__subtitle {
+  margin-top: 0.2rem;
+  max-width: 46rem;
+  color: rgb(71 85 105);
+  font-size: 0.9rem;
 }
 
 .inventory-panel__actions {
@@ -76,10 +99,166 @@
   color: #003913;
 }
 
+.inventory-action--danger {
+  border-color: rgb(239 68 68 / 0.7);
+  background: rgb(254 226 226);
+  color: rgb(127 29 29);
+}
+
 .inventory-panel__content {
   display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.inventory-summary,
+.inventory-workspace__header,
+.inventory-detail-card__header,
+.inventory-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.inventory-summary {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.inventory-summary span {
+  border-radius: 999px;
+  background: rgb(241 245 249);
+  color: rgb(15 23 42);
+  padding: 0.4rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.inventory-stack,
+.inventory-detail-list {
+  display: grid;
   gap: 0.75rem;
-  padding: 0.625rem 1rem 0.75rem;
+}
+
+.inventory-list-card {
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.5rem;
+  background: rgb(255 255 255);
+  text-align: left;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.inventory-list-card:hover,
+.inventory-list-card.is-active {
+  border-color: #4d8078;
+  background: rgb(240 253 250);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.06);
+}
+
+.inventory-list-card__title {
+  color: rgb(15 23 42);
+  font-weight: 700;
+}
+
+.inventory-list-card__meta,
+.inventory-empty {
+  color: rgb(100 116 139);
+  font-size: 0.875rem;
+}
+
+.inventory-list-card__status {
+  width: fit-content;
+  border-radius: 999px;
+  background: rgb(220 252 231);
+  color: rgb(22 101 52);
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.inventory-list-card__status--empty {
+  background: rgb(255 237 213);
+  color: rgb(154 52 18);
+}
+
+.inventory-list-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.inventory-workspace,
+.inventory-detail-card {
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
+  background: white;
+}
+
+.inventory-workspace__header,
+.inventory-detail-card__header {
+  justify-content: space-between;
+}
+
+.inventory-workspace__header h3,
+.inventory-detail-card__header h4 {
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.inventory-workspace__header p,
+.inventory-detail-card__header p {
+  margin-top: 0.15rem;
+  color: rgb(100 116 139);
+  font-size: 0.85rem;
+}
+
+.inventory-detail-card {
+  display: grid;
+  gap: 0.875rem;
+  padding: 0.875rem;
+}
+
+.inventory-detail-row {
+  justify-content: space-between;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.5rem;
+  background: rgb(248 250 252);
+}
+
+.inventory-detail-row__product {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.inventory-detail-row__product strong,
+.inventory-detail-row__qty strong,
+.inventory-detail-row__normalized strong {
+  color: rgb(15 23 42);
+}
+
+.inventory-detail-row__product span,
+.inventory-detail-row__qty span,
+.inventory-detail-row__normalized span {
+  color: rgb(100 116 139);
+  font-size: 0.8rem;
+}
+
+.inventory-detail-row__qty,
+.inventory-detail-row__normalized {
+  display: grid;
+  justify-items: end;
+  text-align: right;
+}
+
+.inventory-empty--large {
+  padding: 0.75rem 0;
 }
 
 .modal-backdrop {
@@ -157,6 +336,49 @@
   color: #ecfccb;
 }
 
+:host-context(.dark) .inventory-action--danger {
+  border-color: rgb(248 113 113 / 0.4);
+  background: rgb(127 29 29 / 0.32);
+  color: rgb(254 226 226);
+}
+
+:host-context(.dark) .inventory-panel__eyebrow,
+:host-context(.dark) .inventory-panel__title,
+:host-context(.dark) .inventory-workspace__header h3,
+:host-context(.dark) .inventory-detail-card__header h4,
+:host-context(.dark) .inventory-detail-row__product strong,
+:host-context(.dark) .inventory-detail-row__qty strong,
+:host-context(.dark) .inventory-detail-row__normalized strong,
+:host-context(.dark) .inventory-summary span,
+:host-context(.dark) .inventory-list-card__title {
+  color: rgb(226 232 240);
+}
+
+:host-context(.dark) .inventory-panel__subtitle,
+:host-context(.dark) .inventory-workspace__header p,
+:host-context(.dark) .inventory-detail-card__header p,
+:host-context(.dark) .inventory-list-card__meta,
+:host-context(.dark) .inventory-empty,
+:host-context(.dark) .inventory-detail-row__product span,
+:host-context(.dark) .inventory-detail-row__qty span,
+:host-context(.dark) .inventory-detail-row__normalized span {
+  color: rgb(148 163 184);
+}
+
+:host-context(.dark) .inventory-summary span,
+:host-context(.dark) .inventory-list-card,
+:host-context(.dark) .inventory-detail-card,
+:host-context(.dark) .inventory-detail-row {
+  border-color: var(--app-border);
+  background: rgb(15 23 42 / 0.82);
+}
+
+:host-context(.dark) .inventory-list-card:hover,
+:host-context(.dark) .inventory-list-card.is-active {
+  background: rgb(13 148 136 / 0.18);
+  border-color: rgb(45 212 191 / 0.55);
+}
+
 @media (max-width: 640px) {
   .inventory-page {
     min-height: auto;
@@ -182,5 +404,16 @@
 
   .inventory-panel__content {
     padding-inline: 0.75rem;
+  }
+
+  .inventory-detail-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .inventory-detail-row__qty,
+  .inventory-detail-row__normalized {
+    justify-items: start;
+    text-align: left;
   }
 }

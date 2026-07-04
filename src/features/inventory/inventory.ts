@@ -11,10 +11,8 @@ import {
   InventoryFormMode,
   InventoryFormValue,
 } from '../../components/inventory/inventory-form/inventory-form';
-import {
-  InventoryList,
-  InventoryListItem,
-} from '../../components/inventory/inventory-list/inventory-list';
+import type { InventoryListItem } from '../../components/inventory/inventory-list/inventory-list';
+import { MasterDetailLayout } from '../../components/shared/master-detail-layout/master-detail-layout';
 import {
   ProductList,
   ProductListItem,
@@ -59,9 +57,9 @@ import {
     MatInputModule,
     MatSelectModule,
     UiErrorPanel,
-    InventoryList,
     InventoryForm,
     ProductList,
+    MasterDetailLayout,
   ],
   templateUrl: './inventory.html',
   styleUrl: './inventory.scss',
@@ -93,6 +91,9 @@ export class Inventory implements OnInit {
   private readonly activeModalState = signal<'add-products' | null>(null);
   private readonly formInitialValueState = signal<Partial<InventoryFormValue> | null>(null);
   private readonly manageProductRowsState = signal<InventoryManagedProductRow[]>([]);
+  private readonly selectedInventoryIdState = signal<number | null>(null);
+  private readonly selectedInventoryProductsState = signal<InventoryProduct[]>([]);
+  private readonly loadingSelectedInventoryProductsState = signal(false);
 
   editingInventoryId: number | null = null;
   editingInventoryProducts: InventoryProduct[] = [];
@@ -217,6 +218,48 @@ export class Inventory implements OnInit {
     return this.productListItemsState();
   }
 
+  get selectedInventoryId(): number | null {
+    return this.selectedInventoryIdState();
+  }
+
+  set selectedInventoryId(value: number | null) {
+    this.selectedInventoryIdState.set(value);
+  }
+
+  get selectedInventoryProducts(): InventoryProduct[] {
+    return this.selectedInventoryProductsState();
+  }
+
+  set selectedInventoryProducts(value: InventoryProduct[]) {
+    this.selectedInventoryProductsState.set(value);
+  }
+
+  get loadingSelectedInventoryProducts(): boolean {
+    return this.loadingSelectedInventoryProductsState();
+  }
+
+  set loadingSelectedInventoryProducts(value: boolean) {
+    this.loadingSelectedInventoryProductsState.set(value);
+  }
+
+  get selectedInventory(): InventoryListItem | null {
+    const inventoryId = this.selectedInventoryId;
+    if (inventoryId === null) {
+      return null;
+    }
+
+    return this.inventoryListItems.find((item) => Number(item.id) === inventoryId) ?? null;
+  }
+
+  get selectedInventoryRecord(): InventoryApiModel | null {
+    const inventoryId = this.selectedInventoryId;
+    if (inventoryId === null) {
+      return null;
+    }
+
+    return this.inventories.find((inventory) => inventory.id === inventoryId) ?? null;
+  }
+
   get addableProductListItems(): ProductListItem[] {
     return this.productListItems;
   }
@@ -262,6 +305,10 @@ export class Inventory implements OnInit {
     if (this.editingInventoryId !== null) {
       this.loadInventoryProducts(this.editingInventoryId);
     }
+
+    if (this.selectedInventoryId !== null) {
+      this.loadSelectedInventoryProducts(this.selectedInventoryId);
+    }
   }
 
   onAddRequested(): void {
@@ -292,6 +339,34 @@ export class Inventory implements OnInit {
     this.clearProductSelections();
     this.formVisible = true;
     this.loadInventoryProducts(inventory.id);
+  }
+
+  selectInventory(itemId: string | number): void {
+    const inventoryId = Number(itemId);
+    if (!Number.isInteger(inventoryId) || inventoryId < 1) {
+      return;
+    }
+
+    this.selectedInventoryId = inventoryId;
+    this.selectedInventoryProducts =
+      this.inventories.find((inventory) => inventory.id === inventoryId)?.inventoryProducts ?? [];
+    this.loadSelectedInventoryProducts(inventoryId);
+  }
+
+  openSelectedInventoryEditor(): void {
+    if (!this.selectedInventory) {
+      return;
+    }
+
+    this.onEditRequested(this.selectedInventory);
+  }
+
+  deleteSelectedInventory(): void {
+    if (!this.selectedInventory) {
+      return;
+    }
+
+    this.onDeleteRequested(this.selectedInventory);
   }
 
   onDeleteRequested(item: InventoryListItem): void {
@@ -587,6 +662,7 @@ export class Inventory implements OnInit {
         this.lastError = null;
         this.loading = false;
         this.refreshEditingInventoryState();
+        this.syncSelectedInventoryState();
         this.syncSelectionsToAvailableProducts();
       },
       error: (error) => {
@@ -634,6 +710,30 @@ export class Inventory implements OnInit {
     });
   }
 
+  private loadSelectedInventoryProducts(inventoryId: number): void {
+    this.loadingSelectedInventoryProducts = true;
+    this.inventorySrv.findProducts(inventoryId).subscribe({
+      next: (response) => {
+        if (this.selectedInventoryId !== inventoryId) {
+          return;
+        }
+
+        this.selectedInventoryProducts = extractInventoryProductsFromResponse(response);
+        this.lastError = null;
+        this.loadingSelectedInventoryProducts = false;
+      },
+      error: (error) => {
+        if (this.selectedInventoryId !== inventoryId) {
+          return;
+        }
+
+        this.selectedInventoryProducts = [];
+        this.lastError = error;
+        this.loadingSelectedInventoryProducts = false;
+      },
+    });
+  }
+
   private refreshEditingInventoryState(): void {
     if (this.editingInventoryId === null) {
       return;
@@ -648,6 +748,27 @@ export class Inventory implements OnInit {
     }
 
     this.formInitialValue = toInventoryFormValue(currentInventory);
+  }
+
+  private syncSelectedInventoryState(): void {
+    if (this.inventoryListItems.length === 0) {
+      this.selectedInventoryId = null;
+      this.selectedInventoryProducts = [];
+      this.loadingSelectedInventoryProducts = false;
+      return;
+    }
+
+    const inventoryId = this.selectedInventoryId;
+    const hasCurrent =
+      inventoryId !== null && this.inventoryListItems.some((item) => Number(item.id) === inventoryId);
+    const nextInventoryId = hasCurrent
+      ? (inventoryId as number)
+      : Number(this.inventoryListItems[0].id);
+
+    this.selectedInventoryId = nextInventoryId;
+    this.selectedInventoryProducts =
+      this.inventories.find((inventory) => inventory.id === nextInventoryId)?.inventoryProducts ?? [];
+    this.loadSelectedInventoryProducts(nextInventoryId);
   }
 
   private clearProductSelections(): void {

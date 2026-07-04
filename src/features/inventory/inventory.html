@@ -1,7 +1,13 @@
 <section class="app-page inventory-page" data-testid="inventory-page">
   <mat-card class="inventory-panel" data-testid="inventory-panel">
     <div class="inventory-panel__header">
-      <h2 class="inventory-panel__title" data-testid="inventory-panel-title">Inventories</h2>
+      <div>
+        <p class="inventory-panel__eyebrow">Inventory</p>
+        <h2 class="inventory-panel__title" data-testid="inventory-panel-title">Inventories</h2>
+        <p class="inventory-panel__subtitle">
+          Select a stock location and inspect its current products in read-only mode.
+        </p>
+      </div>
 
       <div class="inventory-panel__actions">
         <button
@@ -10,8 +16,7 @@
           class="inventory-action inventory-action--secondary"
           data-testid="inventory-refresh-action"
           (click)="onRefreshRequested()"
-          [disabled]="loading || loadingProducts || loadingInventoryProducts || saving"
-          >
+          [disabled]="loading || loadingProducts || loadingInventoryProducts || saving || loadingSelectedInventoryProducts">
           Refresh
         </button>
 
@@ -21,38 +26,29 @@
           class="inventory-action inventory-action--primary"
           data-testid="inventory-add-action"
           (click)="onAddRequested()"
-          [disabled]="loading || loadingProducts || loadingInventoryProducts || saving"
-          >
-          Add un inventory
+          [disabled]="loading || loadingProducts || loadingInventoryProducts || saving">
+          Add inventory
         </button>
       </div>
     </div>
 
     <div class="inventory-panel__content">
-      @if (loading || loadingProducts || saving || loadingInventoryProducts) {
-        <div
-          class="app-status-row"
-          >
+      @if (loading || loadingProducts || saving || loadingInventoryProducts || loadingSelectedInventoryProducts) {
+        <div class="app-status-row">
           @if (loading) {
-            <span class="app-status-pill app-status-pill--neutral">
-              Loading...
-            </span>
+            <span class="app-status-pill app-status-pill--neutral">Loading...</span>
           }
           @if (loadingProducts) {
-            <span class="app-status-pill app-status-pill--info">
-              Products...
-            </span>
+            <span class="app-status-pill app-status-pill--info">Products...</span>
           }
           @if (saving) {
-            <span class="app-status-pill app-status-pill--saving">
-              Sauvegarde...
-            </span>
+            <span class="app-status-pill app-status-pill--saving">Saving...</span>
           }
           @if (loadingInventoryProducts) {
-            <span
-              class="app-status-pill app-status-pill--info">
-              Products lies...
-            </span>
+            <span class="app-status-pill app-status-pill--info">Loading editor stock...</span>
+          }
+          @if (loadingSelectedInventoryProducts) {
+            <span class="app-status-pill app-status-pill--info">Loading selected inventory...</span>
           }
         </div>
       }
@@ -61,11 +57,101 @@
         <app-ui-error-panel [error]="lastError" />
       }
 
-      <app-inventory-list mode="manage"
-        [inventories]="inventoryListItems"
-        [embedded]="true"
-        (editRequested)="onEditRequested($event)"
-        (deleteRequested)="onDeleteRequested($event)" />
+      <div class="inventory-summary">
+        <span>{{ inventoryListItems.length }} inventories</span>
+        <span>{{ products.length }} products in catalog</span>
+      </div>
+
+      <app-master-detail-layout
+        sideTitle="Inventories"
+        sideSubtitle="Select an inventory and manage it from the left actions."
+        sideAriaLabel="Inventories"
+        detailAriaLabel="Inventory details">
+        <div side-content class="inventory-stack">
+          @for (inventory of inventoryListItems; track inventory.id) {
+            <div
+              class="inventory-list-card"
+              [class.is-active]="selectedInventory?.id === inventory.id"
+              tabindex="0"
+              role="button"
+              [attr.data-testid]="'inventory-select-' + inventory.id"
+              (click)="selectInventory(inventory.id)"
+              (keydown.enter)="selectInventory(inventory.id)"
+              (keydown.space)="selectInventory(inventory.id); $event.preventDefault()">
+              <span class="inventory-list-card__title">{{ inventory.name }}</span>
+              <span class="inventory-list-card__meta">{{ inventory.productCount }} linked product(s)</span>
+              <span class="inventory-list-card__status" [class.inventory-list-card__status--empty]="inventory.productCount === 0">
+                {{ inventory.productCount === 0 ? 'Empty' : 'Stocked' }}
+              </span>
+              <div class="inventory-list-card__actions" (click)="$event.stopPropagation()">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="inventory-action inventory-action--secondary"
+                  (click)="onEditRequested(inventory)"
+                  [disabled]="saving">
+                  Edit
+                </button>
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="inventory-action inventory-action--danger"
+                  (click)="onDeleteRequested(inventory)"
+                  [disabled]="saving">
+                  Remove
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <p class="inventory-empty">No inventory available.</p>
+          }
+        </div>
+
+        <div detail-content>
+          @if (selectedInventory; as inventory) {
+            <div class="inventory-workspace__header">
+              <div>
+                <h3>{{ inventory.name }}</h3>
+                <p>{{ inventory.productCount }} linked product(s) in this inventory.</p>
+              </div>
+            </div>
+
+            <div class="inventory-detail-card">
+              <div class="inventory-detail-card__header">
+                <div>
+                  <h4>Current stock</h4>
+                  <p>Read-only view. Use Edit in the left column to manage quantities.</p>
+                </div>
+              </div>
+
+              <div class="inventory-detail-list">
+                @if (selectedInventoryProducts.length > 0) {
+                  @for (item of selectedInventoryProducts; track item.id) {
+                    <div class="inventory-detail-row">
+                      <div class="inventory-detail-row__product">
+                        <strong>{{ item.product?.name ?? ('Product #' + item.productId) }}</strong>
+                        <span>Inventory item #{{ item.id }}</span>
+                      </div>
+                      <div class="inventory-detail-row__qty">
+                        <strong>{{ item.qtyOnHandInUnits }}</strong>
+                        <span>on hand</span>
+                      </div>
+                      <div class="inventory-detail-row__normalized">
+                        <strong>{{ item.qtyOnHandNormalized }}</strong>
+                        <span>normalized</span>
+                      </div>
+                    </div>
+                  }
+                } @else {
+                  <p class="inventory-empty">No linked products in this inventory.</p>
+                }
+              </div>
+            </div>
+          } @else {
+            <p class="inventory-empty inventory-empty--large">Select or create an inventory to start.</p>
+          }
+        </div>
+      </app-master-detail-layout>
     </div>
   </mat-card>
 </section>
