@@ -549,13 +549,13 @@
   }
 
   @if (store.isProductPickerOpen) {
-    <div class="shopping-list-modal-shell" role="dialog" aria-modal="true" aria-label="Selectionner un produit">
-      <mat-card class="shopping-list-modal-card">
+    <div class="shopping-list-modal-shell shopping-list-modal-shell--picker" role="dialog" aria-modal="true" aria-label="Select a product">
+      <mat-card class="shopping-list-modal-card shopping-list-modal-card--picker">
         <div class="shopping-list-modal-card__header">
           <div>
-            <p class="shopping-list-panel__eyebrow">Selection produit</p>
-            <h3>Choisir un produit</h3>
-            <p>Recherche puis selectionne le produit a ajouter a la liste.</p>
+            <p class="shopping-list-panel__eyebrow">Product selection</p>
+            <h3>Choose a product</h3>
+            <p>Search and select the product to add to the list.</p>
           </div>
           <button
             mat-stroked-button
@@ -565,14 +565,16 @@
             Close
           </button>
         </div>
-        <app-product-list
-          mode="select-single"
-          [products]="store.productListItems"
-          [selectedIds]="store.productPickerSelectedIds"
-          [embedded]="true"
-          [compact]="true"
-          (selected)="store.onProductPicked($event)"
-        />
+        <div class="shopping-list-modal-card__body shopping-list-modal-card__body--picker">
+          <app-product-list
+            mode="select-single"
+            [products]="store.productListItems"
+            [selectedIds]="store.productPickerSelectedIds"
+            [embedded]="true"
+            [compact]="true"
+            (selected)="store.onProductPicked($event)"
+          />
+        </div>
       </mat-card>
     </div>
   }
