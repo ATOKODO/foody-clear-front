@@ -18,7 +18,7 @@
       >
         Refresh
       </button>
-      <a routerLink="/product" class="home-dashboard__hero-link">
+      <a routerLink="/product" class="home-dashboard__hero-link home-dashboard__hero-link--primary">
         Open catalog
       </a>
       <button
@@ -59,7 +59,7 @@
         <a
           routerLink="/planning"
           [queryParams]="planningTodayQueryParams"
-          class="home-panel__link"
+          class="home-panel__link home-panel__link--secondary"
         >
           Open
         </a>
@@ -102,7 +102,7 @@
                           } @else {
                             <button
                               type="button"
-                              class="home-schedule__action"
+                              class="home-schedule__action home-schedule__action--secondary"
                               [disabled]="!canConvertTemplateItem(item) || loadingDay"
                               (click)="convertTemplateItem(item)"
                             >
