@@ -72,19 +72,19 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
     description: 'Stocks et achats',
     entries: [
       {
-        id: 'inventory',
-        path: '/inventory',
-        label: 'Inventaires',
-        shortLabel: 'IN',
-        description: "Stocks, quantites et mouvements d'ajout",
-        featured: true,
-      },
-      {
         id: 'shopping-list',
         path: '/shopping-list',
         label: 'Listes de course',
         shortLabel: 'LC',
         description: "Preparation d'achats, checklists et conversion en stock",
+        featured: true,
+      },
+      {
+        id: 'inventory',
+        path: '/inventory',
+        label: 'Inventaires',
+        shortLabel: 'IN',
+        description: "Stocks, quantites et mouvements d'ajout",
         featured: true,
       },
       {
@@ -102,6 +102,14 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
     label: 'Planning',
     description: 'Cycles, gabarits et calendrier',
     entries: [
+      {
+        id: 'template',
+        path: '/template',
+        label: 'Modeles',
+        shortLabel: 'TP',
+        description: 'Journees previsionnelles et verification stock',
+        featured: true,
+      },
       {
         id: 'cycle',
         path: '/cycle',
@@ -123,14 +131,6 @@ export const APP_NAVIGATION: AppNavigationGroup[] = [
         label: 'Plages horaires',
         shortLabel: 'SL',
         description: 'Plages de repas et cibles par slot',
-      },
-      {
-        id: 'template',
-        path: '/template',
-        label: 'Modeles',
-        shortLabel: 'TP',
-        description: 'Journees previsionnelles et verification stock',
-        featured: true,
       },
       {
         id: 'planning',
@@ -170,10 +170,6 @@ export const APP_SIDEBAR_NAVIGATION: AppNavigationGroup[] = [
     description: 'Acces rapides aux modules principaux',
     entries: APP_NAVIGATION_ENTRIES.filter(({ entry }) => entry.featured).map(({ entry }) => entry),
   },
-  ...APP_NAVIGATION.map((group) => ({
-    ...group,
-    entries: group.entries.filter((entry) => !entry.featured),
-  })).filter((group) => group.entries.length > 0),
 ];
 
 export function findNavigationContextByUrl(

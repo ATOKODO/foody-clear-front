@@ -377,9 +377,11 @@
 }
 
 .shopping-list-modal-card {
+  display: flex;
+  flex-direction: column;
   width: min(100%, 68rem);
-  max-height: min(86vh, 52rem);
-  overflow: auto;
+  max-height: min(82vh, 44rem);
+  overflow: hidden;
   border: 1px solid rgb(226 232 240 / 0.92);
   border-radius: 0.75rem;
   background: rgb(255 255 255 / 0.98);
@@ -592,12 +594,13 @@
 }
 
 .shopping-list-modal-card--wide {
-  width: min(100%, 82rem);
+  width: min(100%, 68rem);
 }
 
 .shopping-list-modal-card__body {
   display: grid;
   gap: 1rem;
+  overflow: auto;
   padding: 1rem;
 }
 
