@@ -1,7 +1,8 @@
 <div class="template-list-shell" data-testid="template-list">
   <app-master-detail-layout
-    sideTitle="Modeles existants"
-    sideAriaLabel="Modeles existants"
+    sideTitle="Templates"
+    sideSubtitle="Select a template and review its read-only details."
+    sideAriaLabel="Templates"
     sideWidth="24rem">
     <span side-actions class="template-master__count-badge">
       {{ sortedTemplates.length }}
@@ -9,73 +10,47 @@
 
     <div side-content class="template-master__content">
       @if (sortedTemplates.length > 0) {
-          <div class="template-master__table-wrap">
-            <table class="template-master__table w-full">
-              <thead>
-                <tr>
-                  <th>Modele</th>
-                  <th class="template-master__count-head">Lignes</th>
-                  <th class="template-master__actions-head">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (template of sortedTemplates; track template) {
-                  <tr
-                    [attr.data-testid]="'template-select-' + template.id"
-                    class="template-master__row"
-                    [class.template-master__row--active]="template.id === selectedTemplateId()"
-                    [class.template-master__row--selectable]="!busy"
-                    tabindex="0"
-                    role="button"
-                    (click)="onTemplateClick(template.id)"
-                    (keydown)="onTemplateKeydown($event, template.id)"
-                    >
-                    <td class="template-master__cell template-master__cell--main">
-                      <div class="template-master__summary">
-                        <p class="template-master__title">{{ template.title }}</p>
-                        <p class="template-master__meta">
-                          {{ template.items.length }} ligne(s) template
-                        </p>
-                      </div>
-                    </td>
-                    <td class="template-master__cell template-master__cell--count">
-                      {{ template.items.length }}
-                    </td>
-                    <td class="template-master__cell template-master__cell--actions" (click)="$event.stopPropagation()">
-                      <div class="template-master__actions">
-                        <button
-                          mat-stroked-button
-                          type="button"
-                          class="template-master__action template-master__action--edit"
-                          [attr.data-testid]="template.id === selectedTemplateId() ? 'template-edit' : 'template-edit-' + template.id"
-                          (click)="onEditClick(template.id)"
-                          [disabled]="busy"
-                          >
-                          Modifier
-                        </button>
-                        <button
-                          mat-stroked-button
-                          type="button"
-                          class="template-master__action template-master__action--delete"
-                          [attr.data-testid]="'template-delete-' + template.id"
-                          (click)="onDeleteClick(template.id)"
-                          [disabled]="busy"
-                          >
-                          Retirer
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <div
-            class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-600"
-            >
-            Aucun modele disponible.
-          </div>
+        <div class="template-master__stack">
+          @for (template of sortedTemplates; track template) {
+            <div
+              [attr.data-testid]="'template-select-' + template.id"
+              class="template-master__card"
+              [class.is-active]="template.id === selectedTemplateId()"
+              [class.is-disabled]="busy"
+              tabindex="0"
+              role="button"
+              (click)="onTemplateClick(template.id)"
+              (keydown)="onTemplateKeydown($event, template.id)">
+              <span class="template-master__card-title">{{ template.title }}</span>
+              <span class="template-master__card-meta">{{ template.items.length }} template line(s)</span>
+              <span class="template-master__card-status">Template</span>
+              <div class="template-master__card-actions" (click)="$event.stopPropagation()">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="template-master__action template-master__action--edit"
+                  [attr.data-testid]="template.id === selectedTemplateId() ? 'template-edit' : 'template-edit-' + template.id"
+                  (click)="onEditClick(template.id)"
+                  [disabled]="busy">
+                  Edit
+                </button>
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="template-master__action template-master__action--delete"
+                  [attr.data-testid]="'template-delete-' + template.id"
+                  (click)="onDeleteClick(template.id)"
+                  [disabled]="busy">
+                  Remove
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="template-master__empty">
+          No template available.
+        </div>
       }
     </div>
 
