@@ -44,7 +44,11 @@
     "zone.js": "~0.15.0"
   },
   "overrides": {
-    "vite": "^8.0.5"
+    "vite": "^8.0.5",
+    "@ngrx/signals": {
+      "@angular/common": "$@angular/common",
+      "@angular/core": "$@angular/core"
+    }
   },
   "devDependencies": {
     "@angular/build": "^22.0.3",
