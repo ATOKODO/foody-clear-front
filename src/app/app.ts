@@ -66,7 +66,7 @@ export class App {
   }
 
   get themeToggleLabel(): string {
-    return this.isDarkMode ? 'Passer en clair' : 'Passer en sombre';
+    return this.isDarkMode ? 'Switch to light' : 'Switch to dark';
   }
 
   getEntryQueryParams(entry: AppNavigationEntry): Params | null {

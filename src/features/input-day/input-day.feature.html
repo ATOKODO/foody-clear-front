@@ -2,9 +2,9 @@
   <section class="app-page app-page--wide">
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="bg-slate-900 px-4 py-4 text-white sm:px-6 sm:py-5">
-        <h2 class="text-xl font-semibold">Entry du day</h2>
+        <h2 class="text-xl font-semibold">Day entries</h2>
         <p class="mt-1 text-sm text-slate-300">
-          Gestion des items, du template actif et des totaux quotidiens.
+          Manage entries, the active template, and daily totals.
         </p>
       </div>
       <div class="space-y-5 p-3 sm:space-y-6 sm:p-6">
@@ -21,7 +21,7 @@
       class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3"
     >
       <div>
-        <h2 class="text-lg font-semibold text-slate-900">Elements du day</h2>
+        <h2 class="text-lg font-semibold text-slate-900">Day entries</h2>
         <p class="text-sm text-slate-500">
           {{ selectedDateLabel }}
         </p>
@@ -73,12 +73,12 @@
 
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
-        <mat-card-title>Contexte du day</mat-card-title>
+        <mat-card-title>Day context</mat-card-title>
         <mat-card-subtitle>
           {{
             isStandaloneMode
-              ? "Date, timezone, inventories et slot batch"
-              : "Inventories et slot batch"
+              ? "Date, timezone, inventories, and batch slot"
+              : "Inventories and batch slot"
           }}
         </mat-card-subtitle>
       </mat-card-header>
@@ -206,8 +206,7 @@
     <p
       class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
     >
-      Select au moins un inventory pour afficher les products, les templates
-      et les elements saisis.
+      Select at least one inventory to display products, templates, and entered items.
     </p>
   } @else {
     @if (isEmbeddedMode) {
@@ -216,7 +215,7 @@
           [value]="activeEmbeddedSection"
           [options]="embeddedSectionOptions"
           (valueChange)="onActiveEmbeddedSectionChange($event)"
-          ariaLabel="Selection de la vue input day active"
+          ariaLabel="Select active day input view"
           data-testid="input-day-section-toggle"
           name="input-day-section"
           maxWidth="28rem"
@@ -227,13 +226,13 @@
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-header>
           <mat-card-title>{{
-            isEditingItem ? "Edit une entree" : "Add des entrees"
+            isEditingItem ? "Edit entry" : "Add entries"
           }}</mat-card-title>
           <mat-card-subtitle>
             {{
               isEditingItem
                 ? "Edition complete via PATCH /items/:itemId"
-                : "Select un inventory, choisis les products puis renseigne les details communs."
+                : "Select an inventory, choose products, then fill in the shared details."
             }}
           </mat-card-subtitle>
         </mat-card-header>
@@ -288,7 +287,7 @@
                   {{ selectedInventoriesLabel }}
                 </p>
                 <p class="mt-1 text-xs text-slate-500">
-                  La selection d'inventories se fait dans Contexte du day.
+                  La selection d'inventories se fait dans Day context.
                 </p>
               </div>
               <mat-form-field appearance="fill" class="w-full">
@@ -303,8 +302,7 @@
                 </mat-select>
                 @if (!hasSelectedInventories) {
                   <mat-hint>
-                    Choisis d'abord au moins un inventory dans le contexte du
-                    day.
+                    Choose at least one inventory first in Day context.
                   </mat-hint>
                 }
               </mat-form-field>
@@ -389,14 +387,14 @@
                 (click)="submitItemEditor()"
                 [disabled]="!canSubmitItemEditor"
               >
-                Save l entree
+                Save entry
               </button>
             </div>
           } @else {
             @if (hasSelectedInventories) {
               @if (loadingInventoryProducts) {
                 <p class="text-sm text-slate-500">
-                  Loading des products des inventories...
+                  Loading inventory products...
                 </p>
               }
               <app-product-list
@@ -415,14 +413,14 @@
                   <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p class="text-sm font-semibold text-slate-900">
-                        Details communs
+                        Shared details
                       </p>
                       <p class="text-sm text-slate-600">
                         {{ selectedProductRows.length }}
                         {{
                           selectedProductRows.length > 1
-                            ? "products selectionnes"
-                            : "product selectionne"
+                            ? "selected products"
+                            : "selected product"
                         }}
                         depuis {{ selectedInventoriesLabel }}.
                       </p>
@@ -460,8 +458,7 @@
                       />
                       @if (selectedSlotId !== null) {
                         <mat-hint>
-                          Le slot choisi dans le contexte du day sera applique
-                          a tous les products.
+                          The slot selected in Day context will be applied to all products.
                         </mat-hint>
                       }
                     </mat-form-field>
@@ -566,16 +563,14 @@
                 <p
                   class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
                 >
-                  Select un ou plusieurs products pour afficher les champs
-                  de saisie et preparer l'ajout.
+                  Select one or more products to show the entry fields and prepare the add action.
                 </p>
               }
             } @else {
               <p
                 class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
               >
-                Select au moins un inventory dans le contexte du day pour
-                afficher ses products.
+                Select at least one inventory in Day context to show its products.
               </p>
             }
           }
@@ -605,7 +600,7 @@
               @if (response.assignment; as assignment) {
                 <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <p class="text-sm font-semibold text-slate-900">
-                    Cycle actif
+                    Active cycle
                   </p>
                   <p class="text-sm text-slate-700">
                     Cycle #{{ assignment.cycleId }} -
@@ -720,7 +715,7 @@
               <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p class="text-sm font-semibold text-slate-900">
-                    Template associe
+                    Associated template
                   </p>
                   <p class="text-sm text-slate-600">
                     {{ activeTemplateLabel }}
@@ -731,7 +726,7 @@
                     appearance="fill"
                     class="w-full min-w-[16rem] sm:w-72"
                   >
-                    <mat-label>Remplacement template</mat-label>
+                    <mat-label>Template override</mat-label>
                     <mat-select
                       data-testid="input-day-template-select"
                       [ngModel]="manualTemplateSelectionId"
@@ -753,7 +748,7 @@
                       data-testid="input-day-template-clear"
                       (click)="clearManualTemplateOverride()"
                     >
-                      Remove le remplacement
+                      Remove override
                     </button>
                   }
                 </div>
@@ -832,8 +827,8 @@
                             >
                               {{
                                 item.status === "converted"
-                                  ? "Converti"
-                                  : "Previsionnel"
+                                  ? "Converted"
+                                  : "Planned"
                               }}
                             </span>
                           </td>
@@ -856,7 +851,7 @@
                               {{
                                 item.stockAvailability.enoughStock
                                   ? "Stock OK"
-                                  : "Stock insuffisant"
+                                  : "Low stock"
                               }}
                             </span>
                             <p class="mt-2 text-xs text-slate-600">
@@ -866,13 +861,13 @@
                                     .totalAvailableNormalized
                                 )
                               }}
-                              dispo /
+                              available /
                               {{
                                 formatNutritionAmount(
                                   item.stockAvailability.requestedQtyNormalized
                                 )
                               }}
-                              demande
+                              requested
                             </p>
                           </td>
                           <td class="px-3 py-2">
@@ -904,7 +899,7 @@
                               </p>
                             } @else {
                               <p class="text-xs text-slate-500">
-                                Select au moins un inventory.
+                                Select at least one inventory.
                               </p>
                             }
                           </td>
@@ -913,7 +908,7 @@
                               <summary
                                 class="cursor-pointer text-xs font-medium text-slate-700"
                               >
-                                Voir
+                                View
                               </summary>
                               <div class="mt-2 space-y-1">
                                 @for (
@@ -954,10 +949,10 @@
                             >
                               {{
                                 item.status === "converted"
-                                  ? "Deja converti"
+                                  ? "Already converted"
                                   : isConvertingTemplateItem(item)
-                                    ? "Conversion..."
-                                    : "Convertir"
+                                    ? "Converting..."
+                                    : "Convert"
                               }}
                             </button>
                           </td>
@@ -968,7 +963,7 @@
                 </div>
               } @else {
                 <p class="text-sm text-slate-600">
-                  No ligne template pour cette day.
+                  No template line for this day.
                 </p>
               }
             </mat-card-content>
@@ -976,7 +971,7 @@
         }
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-content class="space-y-3 p-4">
-            <p class="text-sm font-semibold text-slate-900">Elements saisis</p>
+            <p class="text-sm font-semibold text-slate-900">Entered items</p>
             @if (response.items.length > 0) {
               <div class="overflow-x-auto rounded-lg border border-slate-200">
                 <table class="min-w-full text-sm">
@@ -1079,7 +1074,7 @@
               </div>
             } @else {
               <p class="text-sm text-slate-600">
-                No item saisi pour cette day.
+                No item logged for this day.
               </p>
             }
           </mat-card-content>
@@ -1087,7 +1082,7 @@
         @if (isEditingItem) {
           <mat-card appearance="outlined" class="rounded-xl" data-testid="input-day-edit-item-card">
             <mat-card-header>
-              <mat-card-title>Edit une entree</mat-card-title>
+              <mat-card-title>Edit entry</mat-card-title>
               <mat-card-subtitle>Edition complete via PATCH /items/:itemId</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content class="space-y-4 pt-2">
@@ -1119,7 +1114,7 @@
                   {{ selectedInventoriesLabel }}
                 </p>
                 <p class="mt-1 text-xs text-slate-500">
-                  La selection d'inventories se fait dans Contexte du day.
+                  La selection d'inventories se fait dans Day context.
                 </p>
               </div>
               <mat-form-field appearance="fill" class="w-full">
@@ -1134,8 +1129,7 @@
                 </mat-select>
                 @if (!hasSelectedInventories) {
                   <mat-hint>
-                    Choisis d'abord au moins un inventory dans le contexte du
-                    day.
+                    Choose at least one inventory first in Day context.
                   </mat-hint>
                 }
               </mat-form-field>
@@ -1220,7 +1214,7 @@
                 (click)="submitItemEditor()"
                 [disabled]="!canSubmitItemEditor"
               >
-                Save l entree
+                Save entry
               </button>
             </div>
             </mat-card-content>

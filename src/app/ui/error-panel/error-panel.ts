@@ -32,7 +32,7 @@ export class UiErrorPanel {
   readonly error = input<unknown>(null);
   readonly title = input('Une erreur est survenue');
   readonly message = input<string | null>(null);
-  readonly detailsLabel = input('Voir les details techniques');
+  readonly detailsLabel = input('View technical details');
 
   get resolvedMessage(): string {
     const explicitMessage = this.message()?.trim();

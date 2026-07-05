@@ -8,7 +8,7 @@
       }
       @if (store.saving) {
         <span class="app-status-pill app-status-pill--saving">
-          Sauvegarde...
+          Saving...
         </span>
       }
       @if (store.loadingMeta) {
@@ -51,7 +51,7 @@
           }
           @if (store.saving) {
             <span class="app-status-pill app-status-pill--saving">
-              Sauvegarde...
+              Saving...
             </span>
           }
           @if (store.loadingMeta) {
@@ -113,7 +113,7 @@
             {{ store.formMode === 'edit' ? 'Edit un slot' : 'Add un slot' }}
           </h3>
           <p class="app-dialog-subtitle">
-            Definis la cle, la plage horaire et les objectifs nutritionnels de ce slot.
+            Define the key, time range, and nutrition targets for this slot.
           </p>
         </div>
         <button mat-stroked-button type="button" (click)="onCancelForm()">

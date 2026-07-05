@@ -58,27 +58,27 @@ interface ProductHubViewConfig {
 
 const PRODUCT_HUB_VIEW_CONFIG: Record<ProductHubView, ProductHubViewConfig> = {
   product: {
-    title: 'Produits',
-    addLabel: 'Ajouter un produit',
+    title: 'Products',
+    addLabel: 'Add product',
   },
   category: {
     title: 'Categories',
-    addLabel: 'Ajouter une categorie',
+    addLabel: 'Add category',
   },
   genericProduct: {
-    title: 'Produits generiques',
-    addLabel: 'Ajouter un produit generique',
+    title: 'Generic products',
+    addLabel: 'Add generic product',
   },
   tag: {
     title: 'Tags',
-    addLabel: 'Ajouter un tag',
+    addLabel: 'Add tag',
   },
 };
 
 const PRODUCT_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<ProductHubView>[] = [
-  { value: 'product', label: 'Produits' },
+  { value: 'product', label: 'Products' },
   { value: 'category', label: 'Categories' },
-  { value: 'genericProduct', label: 'Produits generiques' },
+  { value: 'genericProduct', label: 'Generic products' },
   { value: 'tag', label: 'Tags' },
 ];
 
@@ -369,13 +369,13 @@ export class Product implements OnInit {
   }
 
   get formDialogTitle(): string {
-    return this.formMode === 'edit' ? 'Modifier un produit' : 'Ajouter un produit';
+    return this.formMode === 'edit' ? 'Edit product' : 'Add product';
   }
 
   get formDialogSubtitle(): string {
     return this.formMode === 'edit'
-      ? 'Mettez a jour le produit sans quitter la liste.'
-      : 'Creez un produit dans une modale avec les relations deja selectionnables.';
+      ? 'Update the product without leaving the list.'
+      : 'Create a product in a modal with the related entities already available.';
   }
 
   private syncBaseUrls(): void {
@@ -812,7 +812,7 @@ export class Product implements OnInit {
 
   private resolveLinkedEntityName(value: unknown): string {
     if (!value || typeof value !== 'object') {
-      return 'Aucun';
+      return 'None';
     }
 
     const raw = value as Record<string, unknown>;
@@ -824,7 +824,7 @@ export class Product implements OnInit {
       }
     }
 
-    return 'Aucun';
+    return 'None';
   }
 
   private extractCategoriesFromResponse(value: unknown): CategoryApiModel[] {

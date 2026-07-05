@@ -157,7 +157,7 @@
 </section>
 
 @if (formVisible) {
-  <div class="modal-backdrop modal-backdrop--inventory" tabindex="0" role="button" aria-label="Close la modale" (click)="closeFormModal()" (keydown.enter)="closeFormModal()" (keydown.space)="closeFormModal(); $event.preventDefault()"></div>
+  <div class="modal-backdrop modal-backdrop--inventory" tabindex="0" role="button" aria-label="Close modal" (click)="closeFormModal()" (keydown.enter)="closeFormModal()" (keydown.space)="closeFormModal(); $event.preventDefault()"></div>
 }
 @if (formVisible) {
   <div class="modal-shell modal-shell--inventory" data-testid="inventory-dialog">
@@ -176,7 +176,7 @@
               type="button"
               (click)="openAddProductsModal()"
               [disabled]="saving || loadingProducts || loadingInventoryProducts">
-              Ouvrir l'ajout
+              Open add products
             </button>
           }
           @if (formMode === 'edit') {
@@ -186,12 +186,12 @@
               <div>
                 <h3 class="text-base font-semibold text-slate-900">Manage products</h3>
                 <p class="mt-1 text-sm text-slate-600">
-                  Modifie les quantites existantes, retire des lignes ou vide tout l'inventory.
+                  Update current quantities, remove lines, or empty the inventory.
                 </p>
               </div>
               @if (loadingInventoryProducts) {
                 <p class="text-sm text-slate-500">
-                  Loading des products lies...
+                  Loading linked products...
                 </p>
               }
               @if (manageProductRows.length > 0) {
@@ -201,7 +201,7 @@
                       <tr>
                         <th class="px-3 py-2">Product</th>
                         <th class="px-3 py-2">Current qty</th>
-                        <th class="px-3 py-2">Stock normalise</th>
+                        <th class="px-3 py-2">Normalized stock</th>
                         <th class="px-3 py-2">New qty</th>
                         <th class="px-3 py-2 text-right">Action</th>
                       </tr>
@@ -265,7 +265,7 @@
                 </div>
               } @else {
                 <p class="text-sm text-slate-600">
-                  No product lie a cet inventory.
+                  No product is linked to this inventory.
                 </p>
               }
               @if (manageProductsFormError) {
@@ -300,15 +300,15 @@
               <div>
                 <h3 class="text-base font-semibold text-slate-900">Initial products</h3>
                 <p class="text-sm text-slate-600">
-                  Select les products a lier a l'inventory des sa creation.
+                  Select products to link to the inventory when it is created.
                 </p>
               </div>
               <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                {{ createSelectedProductIds.length }} selectionne(s)
+                {{ createSelectedProductIds.length }} selected
               </span>
             </div>
             @if (loadingProducts) {
-              <p class="text-sm text-slate-500">Loading des products...</p>
+              <p class="text-sm text-slate-500">Loading products...</p>
             }
             <app-product-list [mode]="'select-multi'"
               [products]="productListItems"
@@ -394,7 +394,7 @@
               </div>
             } @else {
               <p class="text-sm text-slate-600">
-                Select un ou plusieurs products puis renseigne leur quantite initiale.
+                Select one or more products, then enter their starting quantity.
               </p>
             }
             @if (createProductsFormError) {
@@ -415,20 +415,20 @@
 }
 
 @if (isAddProductsModalOpen) {
-  <div class="modal-backdrop modal-backdrop--nested" tabindex="0" role="button" aria-label="Close la modale" (click)="closeActiveModal()" (keydown.enter)="closeActiveModal()" (keydown.space)="closeActiveModal(); $event.preventDefault()"></div>
+  <div class="modal-backdrop modal-backdrop--nested" tabindex="0" role="button" aria-label="Close modal" (click)="closeActiveModal()" (keydown.enter)="closeActiveModal()" (keydown.space)="closeActiveModal(); $event.preventDefault()"></div>
 }
 @if (isAddProductsModalOpen) {
   <div class="modal-shell modal-shell--nested" data-testid="inventory-add-products-dialog">
     <mat-card class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
       <mat-card-header>
-        <mat-card-title>Add des products</mat-card-title>
+        <mat-card-title>Add products</mat-card-title>
         <mat-card-subtitle>
-          Tu peux ajouter du stock sur n'importe quel product, y compris un product deja present dans l'inventory.
+          You can add stock for any product, including one already present in the inventory.
         </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content class="space-y-4 pt-2">
         @if (loadingProducts) {
-          <p class="text-sm text-slate-500">Loading des products...</p>
+          <p class="text-sm text-slate-500">Loading products...</p>
         }
         <app-product-list [mode]="'select-multi'"
           [products]="addableProductListItems"
@@ -514,7 +514,7 @@
           </div>
         } @else {
           <p class="text-sm text-slate-600">
-            Select un ou plusieurs products puis renseigne la quantite a ajouter.
+            Select one or more products, then enter the quantity to add.
           </p>
         }
         @if (addProductsFormError) {

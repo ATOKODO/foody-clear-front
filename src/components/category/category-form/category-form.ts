@@ -73,7 +73,7 @@ export class CategoryForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode() === 'edit' ? 'Modifier Categorie' : 'Ajouter Categorie';
+    return this.mode() === 'edit' ? 'Edit category' : 'Add category';
   }
 
   onMenuClick(): void {

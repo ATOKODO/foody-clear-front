@@ -50,12 +50,12 @@ export interface MealDraftForm {
 }
 
 export const MEAL_PREP_VIEW_OPTIONS: readonly SegmentedToggleOption<MealPrepView>[] = [
-  { value: 'dish', label: 'Plats' },
-  { value: 'meal', label: 'Repas' },
+  { value: 'dish', label: 'Dishes' },
+  { value: 'meal', label: 'Meals' },
 ];
 
 const DISH_QTY_UNIT_OPTIONS: readonly QtyUnitOption[] = [
-  { value: 'unit', label: 'Unite' },
+  { value: 'unit', label: 'Unit' },
 ];
 
 export function buildMealPrepProductListItems(
@@ -323,20 +323,20 @@ export function resolveProductPickerSelectedIds(
 
 export function resolveMealLineLabel(line: PreparedMealItem): string {
   if (line.itemType === 'dish') {
-    return line.dish?.name ?? `Plat #${line.dishId ?? '-'}`;
+    return line.dish?.name ?? `Dish #${line.dishId ?? '-'}`;
   }
 
-  return line.product?.name ?? `Produit #${line.productId ?? '-'}`;
+  return line.product?.name ?? `Product #${line.productId ?? '-'}`;
 }
 
 export function resolveMealPrepTypeLabel(type: MealPrepEntryType): string {
   if (type === 'dish') {
-    return 'Plat';
+    return 'Dish';
   }
   if (type === 'meal') {
-    return 'Repas';
+    return 'Meal';
   }
-  return 'Produit';
+  return 'Product';
 }
 
 export function resolveMealPrepAvailabilityLabel(
@@ -353,7 +353,7 @@ export function resolveMealPrepProductName(
   productId: number | null,
   products: Product[],
 ): string {
-  return resolveProduct(productId, products)?.name ?? 'Aucun produit selectionne';
+  return resolveProduct(productId, products)?.name ?? 'No product selected';
 }
 
 export function resolveNextSelectionId<T extends { id: number }>(
@@ -399,7 +399,7 @@ function buildProductQtyUnitOptions(product: Product | null): QtyUnitOption[] {
   const options: QtyUnitOption[] = [
     {
       value: 'unit',
-      label: product ? `Unite produit (${product.unitType})` : 'Unite produit',
+      label: product ? `Product unit (${product.unitType})` : 'Product unit',
     },
   ];
 

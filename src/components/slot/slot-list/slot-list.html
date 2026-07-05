@@ -7,7 +7,7 @@
     @if (hasItems) {
       <ng-container [ngTemplateOutlet]="tableContent" />
     } @else {
-      <p class="sl-empty text-sm text-slate-600">Aucun slot disponible.</p>
+      <p class="sl-empty text-sm text-slate-600">No slot available.</p>
     }
   } @else {
     <mat-card class="overflow-hidden rounded-2xl">
@@ -21,7 +21,7 @@
             data-testid="slot-add"
             class="add-btn"
             (click)="onAddClick()">
-            Ajouter
+            Add
           </button>
         }
       </div>
@@ -32,7 +32,7 @@
       } @else {
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-content class="p-4 text-sm text-slate-600">
-            Aucun slot disponible.
+            No slot available.
           </mat-card-content>
         </mat-card>
       }
@@ -47,7 +47,7 @@
           <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
           <td mat-cell *matCellDef="let item" class="w-14" (click)="$event.stopPropagation()">
             <mat-checkbox [checked]="isSelected(item.id)"
-              [attr.aria-label]="'Selectionner ' + item.title"
+              [attr.aria-label]="'Select ' + item.title"
               (click)="onCheckboxClick($event, item)" />
           </td>
         </ng-container>
@@ -91,7 +91,7 @@
                 class="sl-action sl-action--edit"
                 [attr.data-testid]="'slot-edit-' + item.id"
                 (click)="onEditClick(item)">
-                Modifier
+                Edit
               </button>
               <button
                 mat-stroked-button
@@ -99,7 +99,7 @@
                 class="sl-action sl-action--delete"
                 [attr.data-testid]="'slot-delete-' + item.id"
                 (click)="onDeleteClick(item)">
-                Retirer
+                Remove
               </button>
             </div>
           </td>

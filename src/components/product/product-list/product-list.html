@@ -2,12 +2,12 @@
   @if (showSearch) {
     <div class="product-list__search-row">
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="product-list__search-field">
-        <mat-label>Rechercher un product</mat-label>
+        <mat-label>Search for a product</mat-label>
         <input
           #productListSearchInput
           matInput
           type="search"
-          placeholder="Nom, barcode, category, generic product ou tag"
+          placeholder="Name, barcode, category, generic product or tag"
           [value]="searchTerm()"
           (input)="onSearchTermChange(productListSearchInput.value)"
           data-testid="product-list-search"
@@ -45,7 +45,7 @@
       </ng-container>
 
       <ng-container matColumnDef="genericProduct">
-        <th mat-header-cell *matHeaderCellDef>Product generic</th>
+        <th mat-header-cell *matHeaderCellDef>Generic product</th>
         <td mat-cell *matCellDef="let item">{{ getLinkedEntityDisplay(item.genericProduct) }}</td>
       </ng-container>
 

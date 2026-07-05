@@ -58,9 +58,9 @@ export class ExternalMealEntryDialog {
   readonly data = inject<ExternalMealEntryDialogData>(MAT_DIALOG_DATA);
 
   readonly paymentStatuses: { value: ExternalMealEntryPaymentStatus; label: string }[] = [
-    { value: 'paid', label: 'Paye' },
-    { value: 'free', label: 'Offert' },
-    { value: 'refunded', label: 'Rembourse' },
+    { value: 'paid', label: 'Paid' },
+    { value: 'free', label: 'Free' },
+    { value: 'refunded', label: 'Refunded' },
   ];
 
   readonly slotOptions = this.resolveSlotOptions(this.data.slots ?? []);
@@ -95,7 +95,7 @@ export class ExternalMealEntryDialog {
   saving = false;
   error: unknown = null;
 
-  readonly title = computed(() => 'Ajouter une entree exterieure');
+  readonly title = computed(() => 'Add external entry');
 
   constructor() {
     if (this.data.apiBaseUrl?.trim()) {

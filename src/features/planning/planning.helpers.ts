@@ -89,18 +89,18 @@ export function getPlanningFallbackCalendarViewLabel(
   view: CalendarView,
 ): string {
   if (view === 'year') {
-    return 'Année';
+    return 'Year';
   }
 
   if (view === 'month') {
-    return 'Mois';
+    return 'Month';
   }
 
   if (view === 'week') {
-    return 'Semaine';
+    return 'Week';
   }
 
-  return 'Jour';
+  return 'Day';
 }
 
 export function shouldThrottlePlanningAutoRefresh(

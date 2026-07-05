@@ -83,7 +83,7 @@ export function formatInputDaySelectedDateLabel(dateLocal: string): string {
     return dateLocal;
   }
 
-  return parsed.toFormat('EEEE d LLLL yyyy', { locale: 'fr' });
+  return parsed.setLocale('en').toFormat('EEEE d LLLL yyyy');
 }
 
 export function resolveInputDayItemSlot(
@@ -106,7 +106,7 @@ export function resolveInputDayItemSlotTitle(
   availableSlots: readonly InputDayAvailableSlot[],
 ): string {
   const matchedSlot = resolveInputDayItemSlot(item, availableSlots);
-  return matchedSlot?.title ?? item.slotKey?.trim() ?? 'Sans slot';
+  return matchedSlot?.title ?? item.slotKey?.trim() ?? 'No slot';
 }
 
 export function resolveInputDayItemSlotKey(
@@ -126,7 +126,7 @@ export function resolveInputDayTemplateItemSlotTitle(
       ? availableSlots.find((slot) => slot.slotId === item.slotId) ?? null
       : null;
 
-  return matchedSlot?.title ?? item.slotKey?.trim() ?? 'Sans slot';
+  return matchedSlot?.title ?? item.slotKey?.trim() ?? 'No slot';
 }
 
 export function resolveInputDayTemplateItemSlotKey(
@@ -204,14 +204,14 @@ export function getInputDayTargetSourceText(
   targetSource: InputDayTargetSource,
 ): string {
   if (targetSource === 'cycle') {
-    return 'Cibles quotidiennes heritees du cycle (aucun day set actif).';
+    return 'Daily targets inherited from the cycle (no active day set).';
   }
 
   if (targetSource === 'daySet') {
-    return 'Cibles quotidiennes issues du day set actif.';
+    return 'Daily targets inherited from the active day set.';
   }
 
-  return 'Aucune cible quotidienne active.';
+  return 'No active daily target.';
 }
 
 export function getInputDaySlotMacroEntries(
@@ -660,7 +660,7 @@ function resolveInputDayTagNames(tags: unknown): string[] {
 
 function resolveInputDayLinkedEntityName(value: unknown): string {
   if (!value || typeof value !== 'object') {
-    return 'Aucun';
+    return 'None';
   }
 
   const raw = value as Record<string, unknown>;
@@ -672,5 +672,5 @@ function resolveInputDayLinkedEntityName(value: unknown): string {
     }
   }
 
-  return 'Aucun';
+  return 'None';
 }

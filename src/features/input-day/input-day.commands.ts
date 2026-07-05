@@ -210,21 +210,21 @@ export function buildInputDayItemEditorRequest({
   if (!isInputDayDateLocal(dateLocal)) {
     return {
       request: null,
-      error: "La date de l'entree doit etre au format YYYY-MM-DD.",
+      error: "Entry date must use YYYY-MM-DD format.",
     };
   }
 
   if (selectedInventoryIds.length === 0) {
     return {
       request: null,
-      error: "Selectionne au moins un inventory avant d'enregistrer l'entree.",
+      error: "Select at least one inventory before saving the entry.",
     };
   }
 
   const inventoryId = selectedInventoryIds[0];
   const productId = normalizePositiveInteger(value.productId);
   if (productId === null) {
-    return { request: null, error: 'Selectionne un produit.' };
+    return { request: null, error: 'Select a product.' };
   }
 
   const qty = value.qty ?? null;
@@ -370,11 +370,11 @@ function validateSelectedItemsPayload({
   }
 
   if (selectedInventoryIds.length === 0) {
-    return "Selectionne au moins un inventory avant d'ajouter des items.";
+    return "Select at least one inventory before adding items.";
   }
 
   if (selectedProductRows.length === 0) {
-    return 'Selectionne au moins un produit.';
+    return 'Select at least one product.';
   }
 
   const requestDateLocal = readString(value.dateLocal);

@@ -1,4 +1,4 @@
-<section class="mx-auto max-w-5xl px-4 py-8 text-gray-900" aria-label="Ajouter ou modifier un inventory">
+<section class="mx-auto max-w-5xl px-4 py-8 text-gray-900" aria-label="Add or edit an inventory">
   <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
     <h2 class="text-xl font-medium">{{ heading }}</h2>
     <div class="inventory-form__header-actions flex flex-wrap items-center gap-2">
@@ -11,7 +11,7 @@
     <div class="flex flex-col items-center">
       <div class="">
         <mat-form-field appearance="fill" class="w-full">
-          <mat-label>Nom *</mat-label>
+          <mat-label>Name *</mat-label>
           <input matInput type="text" formControlName="name" placeholder="Stock principal" />
         </mat-form-field>
         <div class="inventory-form__under-name">
@@ -21,7 +21,7 @@
 
       <div class="mt-6 w-50 flex items-start md:col-span-4 md:items-end">
         <button mat-raised-button color="primary" type="submit" class="w-full">
-          {{ mode() === 'edit' ? 'Mettre a jour' : 'Creer' }}
+          {{ mode() === 'edit' ? 'Update' : 'Create' }}
         </button>
       </div>
     </div>

@@ -85,8 +85,8 @@ export class GenericProductForm implements OnInit, OnChanges {
 
   get heading(): string {
     return this.mode() === 'edit'
-      ? 'Modifier Generic Product'
-      : 'Ajouter Generic Product';
+      ? 'Edit generic product'
+      : 'Add generic product';
   }
 
   onMenuClick(): void {

@@ -21,8 +21,8 @@ export interface QtyUnitOption {
 }
 
 export const SHOPPING_LIST_VIEW_OPTIONS: readonly SegmentedToggleOption<ShoppingListView>[] = [
-  { value: 'list', label: 'Liste de course' },
-  { value: 'template', label: 'Modele de course' },
+  { value: 'list', label: 'Shopping list' },
+  { value: 'template', label: 'Shopping template' },
 ];
 
 const ALLOWED_QTY_UNITS: readonly ProductQuantityInputUnit[] = [
@@ -45,7 +45,7 @@ export function countCheckedItems(list: ShoppingList | null): number {
 }
 
 export function buildDefaultListName(listCount: number): string {
-  return `Liste de course ${listCount + 1}`;
+  return `Shopping list ${listCount + 1}`;
 }
 
 export function toProductListItems(products: Product[]): ProductListItem[] {
@@ -55,7 +55,7 @@ export function toProductListItems(products: Product[]): ProductListItem[] {
 export function resolveProductName(
   item: Pick<ShoppingListItem | ShoppingListTemplateItem, 'product' | 'productId'>,
 ): string {
-  return item.product?.name?.trim() || `Produit #${item.productId}`;
+  return item.product?.name?.trim() || `Product #${item.productId}`;
 }
 
 export function resolveDraftProductName(
@@ -63,11 +63,11 @@ export function resolveDraftProductName(
   productId: number | null,
 ): string {
   if (productId == null) {
-    return 'Aucun produit selectionne';
+    return 'No product selected';
   }
 
   return (
-    products.find((item) => item.id === productId)?.name ?? `Produit #${productId}`
+    products.find((item) => item.id === productId)?.name ?? `Product #${productId}`
   );
 }
 
@@ -98,14 +98,14 @@ export function buildQtyUnitOptions(
   };
 
   const unitType = product?.unitType?.trim();
-  pushOption('unit', unitType ? `Unite produit (${unitType})` : 'Unite produit');
+  pushOption('unit', unitType ? `Product unit (${unitType})` : 'Product unit');
 
   const portionUnit = normalizeQtyUnit(product?.portionUnit);
   if (portionUnit) {
     pushOption(portionUnit, toTitleCase(portionUnit));
   }
 
-  pushOption('g', 'G (Gramme)');
+  pushOption('g', 'G (Gram)');
 
   return options;
 }

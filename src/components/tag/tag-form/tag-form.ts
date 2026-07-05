@@ -58,7 +58,7 @@ export class TagForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode() === 'edit' ? 'Modifier Tag' : 'Ajouter Tag';
+    return this.mode() === 'edit' ? 'Edit tag' : 'Add tag';
   }
 
   onMenuClick(): void {

@@ -57,7 +57,7 @@ export class InventoryForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode() === 'edit' ? 'Modifier Inventory' : 'Ajouter Inventory';
+    return this.mode() === 'edit' ? 'Edit inventory' : 'Add inventory';
   }
 
   onMenuClick(): void {

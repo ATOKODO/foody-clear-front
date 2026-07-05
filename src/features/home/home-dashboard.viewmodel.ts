@@ -41,7 +41,7 @@ export function getActiveCycleLabel(
   timelineDay: StatisticsTimelineDay | null,
 ): string {
   const assignment = inputDayResponse?.assignment ?? timelineDay?.inputs.assignment;
-  return assignment?.cycleTitle ?? 'Aucun cycle actif';
+  return assignment?.cycleTitle ?? 'No active cycle';
 }
 
 export function getActiveDaySetLabel(
@@ -49,7 +49,7 @@ export function getActiveDaySetLabel(
   timelineDay: StatisticsTimelineDay | null,
 ): string {
   const daySet = inputDayResponse?.daySet ?? timelineDay?.inputs.daySet;
-  return daySet?.title ?? 'Aucun day set';
+  return daySet?.title ?? 'No day set';
 }
 
 export function getEnteredItemCount(
@@ -133,8 +133,8 @@ export function buildHomeScheduleRows(
   if (orphanItems.length > 0 || orphanPlannedItems.length > 0) {
     rows.push({
       key: 'without-slot',
-      title: 'Non rattache a un slot',
-      rangeLabel: 'Sans plage horaire',
+      title: 'Unassigned to a slot',
+      rangeLabel: 'No time range',
       items: orphanItems,
       plannedItems: orphanPlannedItems,
     });
@@ -216,7 +216,7 @@ export function getTargetSourceLabel(
     return 'Cycle';
   }
 
-  return 'Aucune cible';
+  return 'No target';
 }
 
 export function formatCurrency(value: number | null | undefined): string {
@@ -257,7 +257,7 @@ export function getPurchaseEventLabel(
   event: InventoryPurchaseEventSummary,
 ): string {
   if (event.excludedFromStats || event.pricingStatus === 'excluded') {
-    return event.exclusionReason === 'refunded' ? 'Rembourse' : 'Exclu';
+    return event.exclusionReason === 'refunded' ? 'Refunded' : 'Excluded';
   }
 
   if (event.pricingStatus === 'free') {
@@ -279,7 +279,7 @@ export function getTemplateStockLabel(
     return 'Converti';
   }
 
-  return item.stockAvailability.enoughStock ? 'Stock OK' : 'Stock insuffisant';
+  return item.stockAvailability.enoughStock ? 'Stock OK' : 'Low stock';
 }
 
 export function getTemplateSlotLabel(
@@ -295,7 +295,7 @@ export function getTemplateSlotLabel(
   }
 
   const slotKey = item.slotKey?.trim();
-  return slotKey ? `Slot ${slotKey}` : 'Non rattache a un slot';
+  return slotKey ? `Slot ${slotKey}` : 'Unassigned to a slot';
 }
 
 export function canConvertTemplateItem(
@@ -406,7 +406,7 @@ function getItemSlotLabel(
   }
 
   const slotKey = item.slotKey?.trim();
-  return slotKey ? `Slot ${slotKey}` : 'Non rattache a un slot';
+  return slotKey ? `Slot ${slotKey}` : 'Unassigned to a slot';
 }
 
 function getExternalEntrySlotLabel(
@@ -419,7 +419,7 @@ function getExternalEntrySlotLabel(
   }
 
   const slotKey = entry.slotKey?.trim();
-  return slotKey ? `Slot ${slotKey}` : 'Non rattache a un slot';
+  return slotKey ? `Slot ${slotKey}` : 'Unassigned to a slot';
 }
 
 function formatExternalEntryMacros(entry: ExternalMealEntrySummary): string {
@@ -429,11 +429,11 @@ function formatExternalEntryMacros(entry: ExternalMealEntrySummary): string {
 
 function getExternalPaymentLabel(entry: ExternalMealEntrySummary): string {
   if (entry.paymentStatus === 'free') {
-    return 'Offert';
+    return 'Free';
   }
 
   if (entry.paymentStatus === 'refunded') {
-    return 'Rembourse';
+    return 'Refunded';
   }
 
   return formatCurrency(entry.priceAmount ?? 0);

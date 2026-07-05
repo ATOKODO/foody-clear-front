@@ -251,7 +251,7 @@ export class TemplateForm implements OnInit, OnChanges {
       }
     }
 
-    return item.slotKey?.trim() || 'Sans slot';
+    return item.slotKey?.trim() || 'No slot';
   }
 
   resolveTemplateItemLabel(item: TemplateItem): string {
@@ -331,7 +331,7 @@ export class TemplateForm implements OnInit, OnChanges {
     };
 
     const unitType = product?.unitType?.trim();
-    pushOption('unit', unitType ? `Unite produit (${unitType})` : 'Unite produit');
+    pushOption('unit', unitType ? `Product unit (${unitType})` : 'Product unit');
 
     const portionUnit = this.normalizePortionQtyUnit(product?.portionUnit);
     if (portionUnit) {

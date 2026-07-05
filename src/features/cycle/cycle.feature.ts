@@ -199,7 +199,7 @@ export class CycleFeature implements OnInit {
   get slotListItems(): SlotListItem[] { return this.slotListItemsState(); }
   get templateListItems(): TemplateSummary[] { return this.templateListItemsState(); }
 
-  get formDialogTitle(): string { return this.formMode === 'edit' ? 'Modifier un cycle' : 'Ajouter un cycle'; }
+  get formDialogTitle(): string { return this.formMode === 'edit' ? 'Edit cycle' : 'Add cycle'; }
 
   get activeViewConfig(): CycleHubViewConfig { return CYCLE_HUB_VIEW_CONFIG[this.activeView]; }
 
@@ -237,7 +237,7 @@ export class CycleFeature implements OnInit {
   get formDialogSubtitle(): string {
     return this.formMode === 'edit'
       ? 'Les changements sont appliques sans quitter la liste.'
-      : 'Creez un cycle sans descendre en bas de page.';
+      : 'Create a cycle without leaving the top of the page.';
   }
 
   get impactEffectiveDateLocal(): string {

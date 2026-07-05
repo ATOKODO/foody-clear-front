@@ -66,8 +66,8 @@ export function getCalendarTargetSourceText(
 ): string {
   const labels: Record<InputDayTargetSource, string> = {
     cycle: 'Cible du cycle',
-    daySet: 'Cible du day set',
-    none: 'Aucune cible',
+    daySet: 'Day set target',
+    none: 'No target',
   };
   return labels[targetSource] ?? labels.none;
 }
@@ -77,7 +77,7 @@ export function getCalendarTargetSourceBadgeText(
 ): string {
   const labels: Record<InputDayTargetSource, string> = {
     cycle: 'Cibles cycle',
-    daySet: 'Cibles day set',
+    daySet: 'Day set targets',
     none: 'Sans cible',
   };
   return labels[targetSource] ?? labels.none;
@@ -88,7 +88,7 @@ export function getCalendarDayTargetSourcePillText(
 ): string {
   const labels: Record<InputDayTargetSource, string> = {
     cycle: 'Cible cycle assigne',
-    daySet: 'Cible day set',
+    daySet: 'Day set target',
     none: 'Sans cible',
   };
   return labels[targetSource] ?? labels.none;

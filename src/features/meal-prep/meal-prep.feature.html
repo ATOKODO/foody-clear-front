@@ -4,7 +4,7 @@
       [value]="activeView"
       [options]="viewOptions"
       (valueChange)="onViewChange($event)"
-      ariaLabel="Selection de la vue plats ou repas"
+      ariaLabel="Select dishes or meals view"
       data-testid="meal-prep-view-toggle"
       name="meal-prep-view"
       maxWidth="18rem"
@@ -15,9 +15,9 @@
     <div class="meal-prep-panel__header">
       <div>
         <p class="meal-prep-panel__eyebrow">Meal prep</p>
-        <h2 class="meal-prep-panel__title">Preparation de repas</h2>
+        <h2 class="meal-prep-panel__title">Meal prep</h2>
         <p class="meal-prep-panel__subtitle">
-          Compose des plats, assemble des repas et genere les achats manquants depuis un seul espace.
+          Compose dishes, assemble meals, and generate missing shopping from one place.
         </p>
       </div>
       <div class="meal-prep-panel__actions">
@@ -36,7 +36,7 @@
             class="meal-prep-action meal-prep-action--primary"
             (click)="openCreateDishEditor()"
             [disabled]="saving">
-            Nouveau plat
+            New dish
           </button>
         } @else {
           <button
@@ -45,7 +45,7 @@
             class="meal-prep-action meal-prep-action--primary"
             (click)="openCreateMealEditor()"
             [disabled]="saving">
-            Nouveau repas
+            New meal
           </button>
         }
       </div>
@@ -55,10 +55,10 @@
       @if (loading || saving) {
         <div class="app-status-row">
           @if (loading) {
-            <span class="app-status-pill app-status-pill--neutral">Chargement...</span>
+            <span class="app-status-pill app-status-pill--neutral">Loading...</span>
           }
           @if (saving) {
-            <span class="app-status-pill app-status-pill--saving">Sauvegarde...</span>
+            <span class="app-status-pill app-status-pill--saving">Saving...</span>
           }
         </div>
       }
@@ -75,17 +75,17 @@
 
       <div class="meal-prep-toolbar">
         <div class="meal-prep-summary">
-          <span>{{ dishes.length }} plat(s)</span>
-          <span>{{ meals.length }} repas</span>
-          <span>{{ products.length }} produit(s)</span>
+          <span>{{ dishes.length }} dish(es)</span>
+          <span>{{ meals.length }} meals</span>
+          <span>{{ products.length }} product(s)</span>
         </div>
       </div>
 
       @if (activeView === 'dish') {
         <app-master-detail-layout
-          sideTitle="Plats"
-          sideSubtitle="Base reutilisable pour tes repas."
-          sideAriaLabel="Plats prepares">
+          sideTitle="Dishes"
+          sideSubtitle="Reusable base for your meals."
+          sideAriaLabel="Dishes prepares">
           <div side-content class="meal-prep-stack">
             @for (dish of sortedDishes; track dish.id) {
               <div
@@ -97,11 +97,11 @@
                 (keydown.enter)="selectDish(dish.id)"
                 (keydown.space)="selectDish(dish.id); $event.preventDefault()">
                 <span class="meal-prep-list-card__title">{{ dish.name }}</span>
-                <span class="meal-prep-list-card__meta">{{ dish.items.length }} ligne(s)</span>
+                <span class="meal-prep-list-card__meta">{{ dish.items.length }} line(s)</span>
                 <span
                   class="meal-prep-list-card__status"
                   [class.is-ready]="dish.availability?.isInStock">
-                  {{ dish.availability?.isInStock ? 'En stock' : 'Stock incomplet' }}
+                  {{ dish.availability?.isInStock ? 'In stock' : 'Incomplete stock' }}
                 </span>
                 <div class="meal-prep-list-card__actions" (click)="$event.stopPropagation()">
                   <button
@@ -123,7 +123,7 @@
                 </div>
               </div>
             } @empty {
-              <p class="meal-prep-empty">Aucun plat.</p>
+              <p class="meal-prep-empty">No dish yet.</p>
             }
           </div>
 
@@ -132,7 +132,7 @@
               <div class="meal-prep-workspace__header">
                 <div>
                   <h3>{{ dish.name }}</h3>
-                  <p>{{ dish.items.length }} ligne(s) dans ce plat.</p>
+                  <p>{{ dish.items.length }} line(s) in this dish.</p>
                 </div>
                 <button
                   mat-stroked-button
@@ -147,11 +147,11 @@
               <div class="meal-prep-detail-card">
                 <div class="meal-prep-detail-card__header">
                   <div>
-                    <h4>Contenu du plat</h4>
-                    <p>{{ dish.availability?.isInStock ? 'Pret avec le stock actuel' : 'Achats necessaires' }}</p>
+                    <h4>Dish contents</h4>
+                    <p>{{ dish.availability?.isInStock ? 'Ready with current stock' : 'Shopping needed' }}</p>
                   </div>
                   <span class="meal-prep-badge">
-                    {{ resolveAvailabilityLabel(dish.availability?.maxPreparations) }} possible(s)
+                    {{ resolveAvailabilityLabel(dish.availability?.maxPreparations) }} possible
                   </span>
                 </div>
 
@@ -162,20 +162,20 @@
                       <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }}</span>
                     </div>
                   } @empty {
-                    <p class="meal-prep-empty">Aucune ligne dans ce plat.</p>
+                    <p class="meal-prep-empty">No lines in this dish.</p>
                   }
                 </div>
               </div>
             } @else {
-              <p class="meal-prep-empty meal-prep-empty--large">Selectionne ou cree un plat.</p>
+              <p class="meal-prep-empty meal-prep-empty--large">Select or create a dish.</p>
             }
           </div>
         </app-master-detail-layout>
       } @else {
         <app-master-detail-layout
-          sideTitle="Repas"
-          sideSubtitle="Assemblage final de plats et produits."
-          sideAriaLabel="Repas prepares">
+          sideTitle="Meals"
+          sideSubtitle="Final assembly of dishes and products."
+          sideAriaLabel="Meals prepares">
           <div side-content class="meal-prep-stack">
             @for (meal of sortedMeals; track meal.id) {
               <div
@@ -187,11 +187,11 @@
                 (keydown.enter)="selectMeal(meal.id)"
                 (keydown.space)="selectMeal(meal.id); $event.preventDefault()">
                 <span class="meal-prep-list-card__title">{{ meal.name }}</span>
-                <span class="meal-prep-list-card__meta">{{ meal.items.length }} ligne(s)</span>
+                <span class="meal-prep-list-card__meta">{{ meal.items.length }} line(s)</span>
                 <span
                   class="meal-prep-list-card__status"
                   [class.is-ready]="meal.availability?.isInStock">
-                  {{ meal.availability?.isInStock ? 'En stock' : 'Stock incomplet' }}
+                  {{ meal.availability?.isInStock ? 'In stock' : 'Incomplete stock' }}
                 </span>
                 <div class="meal-prep-list-card__actions" (click)="$event.stopPropagation()">
                   <button
@@ -213,7 +213,7 @@
                 </div>
               </div>
             } @empty {
-              <p class="meal-prep-empty">Aucun repas.</p>
+              <p class="meal-prep-empty">No meal yet.</p>
             }
           </div>
 
@@ -222,7 +222,7 @@
               <div class="meal-prep-workspace__header">
                 <div>
                   <h3>{{ meal.name }}</h3>
-                  <p>{{ meal.items.length }} ligne(s) dans ce repas.</p>
+                  <p>{{ meal.items.length }} line(s) in this meal.</p>
                 </div>
                 <button
                   mat-stroked-button
@@ -237,11 +237,11 @@
               <div class="meal-prep-detail-card">
                 <div class="meal-prep-detail-card__header">
                   <div>
-                    <h4>Contenu du repas</h4>
-                    <p>{{ meal.availability?.isInStock ? 'Pret avec le stock actuel' : 'Achats necessaires' }}</p>
+                    <h4>Meal contents</h4>
+                    <p>{{ meal.availability?.isInStock ? 'Ready with current stock' : 'Shopping needed' }}</p>
                   </div>
                   <span class="meal-prep-badge">
-                    {{ resolveAvailabilityLabel(meal.availability?.maxPreparations) }} possible(s)
+                    {{ resolveAvailabilityLabel(meal.availability?.maxPreparations) }} possible
                   </span>
                 </div>
 
@@ -252,12 +252,12 @@
                       <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }}</span>
                     </div>
                   } @empty {
-                    <p class="meal-prep-empty">Aucune ligne dans ce repas.</p>
+                    <p class="meal-prep-empty">No lines in this meal.</p>
                   }
                 </div>
               </div>
             } @else {
-              <p class="meal-prep-empty meal-prep-empty--large">Selectionne ou cree un repas.</p>
+              <p class="meal-prep-empty meal-prep-empty--large">Select or create a meal.</p>
             }
           </div>
         </app-master-detail-layout>
@@ -271,7 +271,7 @@
     class="modal-backdrop modal-backdrop--meal-prep"
     tabindex="0"
     role="button"
-    aria-label="Close l'edition"
+    aria-label="Close editor"
     (click)="closeEditor()"
     (keydown.enter)="closeEditor()"
     (keydown.space)="closeEditor(); $event.preventDefault()"></div>
@@ -282,16 +282,16 @@
       <mat-card-header>
         <mat-card-title>
           @if (activeView === 'dish') {
-            {{ editingDishId === null ? 'Create un plat' : 'Edit le plat' }}
+            {{ editingDishId === null ? 'Create dish' : 'Edit dish' }}
           } @else {
-            {{ editingMealId === null ? 'Create un repas' : 'Edit le repas' }}
+            {{ editingMealId === null ? 'Create meal' : 'Edit meal' }}
           }
         </mat-card-title>
         <mat-card-subtitle>
           @if (activeView === 'dish') {
-            Choisis les produits avec la meme table de recherche que l'inventory.
+            Choose products with the same search list used in inventory.
           } @else {
-            Ajoute un plat existant ou choisis un produit via la modale.
+            Add an existing dish or choose a product from the modal.
           }
         </mat-card-subtitle>
       </mat-card-header>
@@ -300,8 +300,8 @@
         @if (activeView === 'dish') {
           <div class="meal-prep-editor-card meal-prep-editor-card--modal">
             <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Nom du plat</mat-label>
-              <input matInput [(ngModel)]="dishDraftName" placeholder="Pates a la bolognaise" />
+              <mat-label>Dish name</mat-label>
+              <input matInput [(ngModel)]="dishDraftName" placeholder="Spaghetti bolognese" />
             </mat-form-field>
 
             <div class="meal-prep-lines">
@@ -316,7 +316,7 @@
                       class="meal-prep-action meal-prep-action--secondary"
                       (click)="openDishProductPicker($index)"
                       [disabled]="saving || loading">
-                      Choisir
+                      Choose
                     </button>
                   </div>
                   <mat-form-field appearance="fill">
@@ -341,8 +341,8 @@
         } @else {
           <div class="meal-prep-editor-card meal-prep-editor-card--modal">
             <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Nom du repas</mat-label>
-              <input matInput [(ngModel)]="mealDraftName" placeholder="Repas cinema" />
+              <mat-label>Meal name</mat-label>
+              <input matInput [(ngModel)]="mealDraftName" placeholder="Movie night meal" />
             </mat-form-field>
 
             <div class="meal-prep-lines">
@@ -351,16 +351,16 @@
                   <mat-form-field appearance="fill">
                     <mat-label>Type</mat-label>
                     <mat-select [ngModel]="line.itemType" (ngModelChange)="onMealItemTypeChange(line, $event)">
-                      <mat-option value="dish">Plat</mat-option>
+                      <mat-option value="dish">Dish</mat-option>
                       <mat-option value="product">Product</mat-option>
                     </mat-select>
                   </mat-form-field>
 
                   @if (line.itemType === 'dish') {
                     <mat-form-field appearance="fill" class="meal-prep-line-card__dish-select">
-                      <mat-label>Plat</mat-label>
+                      <mat-label>Dish</mat-label>
                       <mat-select [ngModel]="line.dishId" (ngModelChange)="onMealDishChange(line, $event)">
-                        <mat-option [value]="null">Selectionner</mat-option>
+                        <mat-option [value]="null">Select</mat-option>
                         @for (dish of sortedDishes; track dish.id) {
                           <mat-option [value]="dish.id">{{ dish.name }}</mat-option>
                         }
@@ -376,7 +376,7 @@
                         class="meal-prep-action meal-prep-action--secondary"
                         (click)="openMealProductPicker($index)"
                         [disabled]="saving || loading">
-                        Choisir
+                        Choose
                       </button>
                     </div>
                   }
@@ -405,21 +405,21 @@
 
       <mat-card-actions align="end" class="gap-2 px-4 pb-4">
         <button mat-stroked-button type="button" (click)="closeEditor()" [disabled]="saving">
-          Annuler
+          Cancel
         </button>
         @if (activeView === 'dish') {
           <button mat-stroked-button type="button" (click)="addDishLine()" [disabled]="saving">
-            Add une ligne
+            Add line
           </button>
           <button mat-raised-button color="primary" type="button" (click)="saveDish()" [disabled]="!canSaveDish() || saving">
-            {{ editingDishId === null ? 'Create le plat' : 'Sauvegarder le plat' }}
+            {{ editingDishId === null ? 'Create dish' : 'Save dish' }}
           </button>
         } @else {
           <button mat-stroked-button type="button" (click)="addMealLine()" [disabled]="saving">
-            Add une ligne
+            Add line
           </button>
           <button mat-raised-button color="primary" type="button" (click)="saveMeal()" [disabled]="!canSaveMeal() || saving">
-            {{ editingMealId === null ? 'Create le repas' : 'Sauvegarder le repas' }}
+            {{ editingMealId === null ? 'Create meal' : 'Save meal' }}
           </button>
         }
       </mat-card-actions>
@@ -432,7 +432,7 @@
     class="modal-backdrop modal-backdrop--meal-prep"
     tabindex="0"
     role="button"
-    aria-label="Close la selection de produit"
+    aria-label="Close product picker"
     (click)="closeProductPicker()"
     (keydown.enter)="closeProductPicker()"
     (keydown.space)="closeProductPicker(); $event.preventDefault()"></div>
@@ -441,14 +441,14 @@
   <div class="modal-shell modal-shell--meal-prep" data-testid="meal-prep-product-picker-dialog">
     <mat-card class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
       <mat-card-header>
-        <mat-card-title>Choisir un produit</mat-card-title>
+        <mat-card-title>Choose a product</mat-card-title>
         <mat-card-subtitle>
-          Recherche par nom, categorie, produit generique, barcode ou tag.
+          Search by name, category, generic product, barcode, or tag.
         </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content class="space-y-4 pt-2">
         @if (loading) {
-          <p class="text-sm text-slate-500">Chargement des produits...</p>
+          <p class="text-sm text-slate-500">Loading products...</p>
         }
         <app-product-list
           [mode]="'select-single'"
@@ -460,7 +460,7 @@
       </mat-card-content>
       <mat-card-actions align="end" class="gap-2 px-4 pb-4">
         <button mat-stroked-button type="button" (click)="closeProductPicker()">
-          Annuler
+          Cancel
         </button>
       </mat-card-actions>
     </mat-card>

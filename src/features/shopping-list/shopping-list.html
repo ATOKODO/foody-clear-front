@@ -20,8 +20,8 @@
         </h2>
         <p class="shopping-list-panel__subtitle">
           {{ store.activeView === 'list'
-            ? 'Prepare tes achats, coche les lignes recuperees et convertis-les vers un inventory.'
-            : 'Transforme tes listes recurrentes en modeles rapides a relancer.' }}
+            ? 'Prepare your shopping, check off collected items, and convert them into an inventory.'
+            : 'Turn your recurring lists into quick-to-run templates.' }}
         </p>
       </div>
       <div class="shopping-list-panel__actions">
@@ -50,10 +50,10 @@
       @if (store.loading || store.saving) {
         <div class="app-status-row">
           @if (store.loading) {
-            <span class="app-status-pill app-status-pill--neutral">Chargement...</span>
+            <span class="app-status-pill app-status-pill--neutral">Loading...</span>
           }
           @if (store.saving) {
-            <span class="app-status-pill app-status-pill--saving">Sauvegarde...</span>
+            <span class="app-status-pill app-status-pill--saving">Saving...</span>
           }
         </div>
       }
@@ -71,9 +71,9 @@
       @if (store.activeView === 'list') {
         <app-master-detail-layout
           sideTitle="Lists"
-          sideSubtitle="Selectionne une liste active et gere ses lignes."
+          sideSubtitle="Select an active list and manage its items."
           sideAriaLabel="Shopping lists"
-          detailAriaLabel="Detail de la liste de course">
+          detailAriaLabel="Shopping list details">
           <div side-content class="shopping-list-stack">
             @for (list of store.shoppingLists; track list.id) {
               <div
@@ -86,10 +86,10 @@
                 (keydown.space)="store.selectList(list.id); $event.preventDefault()">
                 <span class="shopping-list-list-card__title">{{ list.name }}</span>
                 <span class="shopping-list-list-card__meta">
-                  {{ list.items.length }} ligne(s) - {{ store.countChecked(list) }} cochee(s)
+                  {{ list.items.length }} line(s) - {{ store.countChecked(list) }} checked
                 </span>
                 <span class="shopping-list-list-card__status">
-                  {{ list.items.length === 0 ? 'Vide' : 'En cours' }}
+                  {{ list.items.length === 0 ? 'Empty' : 'In progress' }}
                 </span>
                 <div class="shopping-list-list-card__actions" (click)="$event.stopPropagation()">
                   <button
@@ -111,7 +111,7 @@
                 </div>
               </div>
             } @empty {
-              <p class="shopping-list-empty">Aucune liste.</p>
+              <p class="shopping-list-empty">No list.</p>
             }
           </div>
 
@@ -120,7 +120,7 @@
               <div class="shopping-list-workspace__header">
                 <div>
                   <h3>{{ list.name }}</h3>
-                  <p>{{ list.items.length }} ligne(s), {{ store.checkedItemCount }} cochee(s).</p>
+                  <p>{{ list.items.length }} line(s), {{ store.checkedItemCount }} checked.</p>
                 </div>
               </div>
 
@@ -128,7 +128,7 @@
                 <div class="shopping-list-table-card__header">
                   <div>
                     <h4>List items</h4>
-                    <p>Affichage en lecture seule. Utilise Edit dans la colonne de gauche pour editer.</p>
+                    <p>Read-only display. Use Edit in the left column to make changes.</p>
                   </div>
                 </div>
 
@@ -136,25 +136,25 @@
                   @for (item of list.items; track item.id) {
                     <div class="shopping-list-template-line" [class.is-checked]="item.checked">
                       <strong>{{ store.resolveProductName(item) }}</strong>
-                      <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }} - {{ item.checked ? 'Cochee' : 'A prendre' }}</span>
+                      <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }} - {{ item.checked ? 'Checked' : 'To buy' }}</span>
                     </div>
                   } @empty {
-                    <p class="shopping-list-empty">Aucun produit dans cette liste.</p>
+                    <p class="shopping-list-empty">No product in this list.</p>
                   }
                 </div>
               </div>
 
             } @else {
-              <p class="shopping-list-empty shopping-list-empty--large">Selectionne ou cree une liste pour commencer.</p>
+              <p class="shopping-list-empty shopping-list-empty--large">Select or create a list to get started.</p>
             }
           </div>
         </app-master-detail-layout>
       } @else {
         <app-master-detail-layout
           sideTitle="Templates"
-          sideSubtitle="Lists recurrentes pretes a relancer."
-          sideAriaLabel="Templates de course"
-          detailAriaLabel="Detail du modele de course">
+          sideSubtitle="Recurring lists ready to rerun."
+          sideAriaLabel="Shopping templates"
+          detailAriaLabel="Shopping template details">
           <div side-content class="shopping-list-stack">
             @for (template of store.templates; track template.id) {
               <div
@@ -188,7 +188,7 @@
                 </div>
               </div>
             } @empty {
-              <p class="shopping-list-empty">Aucun modele.</p>
+              <p class="shopping-list-empty">No template.</p>
             }
           </div>
 
@@ -197,7 +197,7 @@
               <div class="shopping-list-workspace__header">
                 <div>
                   <h3>{{ template.name }}</h3>
-                  <p>{{ template.items.length }} ligne(s) dans ce modele.</p>
+                  <p>{{ template.items.length }} line(s) dans this template.</p>
                 </div>
               </div>
 
@@ -205,7 +205,7 @@
                 <div class="shopping-list-table-card__header">
                   <div>
                     <h4>Template items</h4>
-                    <p>Contenu qui sera copie dans la nouvelle liste.</p>
+                    <p>Content that will be copied into the new list.</p>
                   </div>
                 </div>
 
@@ -216,12 +216,12 @@
                       <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }}</span>
                     </div>
                   } @empty {
-                    <p class="shopping-list-empty">Ce modele est vide.</p>
+                    <p class="shopping-list-empty">This template is empty.</p>
                   }
                 </div>
               </div>
             } @else {
-              <p class="shopping-list-empty shopping-list-empty--large">Aucun modele selectionne.</p>
+              <p class="shopping-list-empty shopping-list-empty--large">No template selected.</p>
             }
           </div>
         </app-master-detail-layout>
@@ -282,7 +282,7 @@
               class="shopping-list-action shopping-list-action--primary"
               (click)="store.saveListEditor()"
               [disabled]="store.saving || !list.name.trim()">
-              Sauvegarder le nom
+              Save name
             </button>
 
             <div class="shopping-list-editor-card">
@@ -303,7 +303,7 @@
                     class="shopping-list-action shopping-list-action--secondary"
                     (click)="store.openProductPicker()"
                     [disabled]="store.saving || store.loading">
-                    Choisir
+                    Choose
                   </button>
                 </div>
 
@@ -406,7 +406,7 @@
                     </div>
                   </div>
                 } @empty {
-                  <p class="shopping-list-empty">Aucun produit dans cette liste.</p>
+                  <p class="shopping-list-empty">No product in this list.</p>
                 }
               </div>
             </div>
@@ -447,11 +447,11 @@
 
                 <section class="shopping-list-convert-card">
                   <div>
-                    <h4>Enregistrer en modele</h4>
+                    <h4>Save as template</h4>
                     <p>Conserve cette liste pour la recreer plus vite.</p>
                   </div>
                   <mat-form-field appearance="fill" class="w-full">
-                    <mat-label>Nom du modele</mat-label>
+                    <mat-label>Template name</mat-label>
                     <input matInput [(ngModel)]="store.templateDraftName" />
                   </mat-form-field>
                   <button
@@ -460,7 +460,7 @@
                     class="shopping-list-action shopping-list-action--primary"
                     (click)="store.saveAsTemplate()"
                     [disabled]="store.saving || list.items.length === 0">
-                    Sauvegarder le modele
+                    Save template
                   </button>
                 </section>
               </div>
@@ -474,18 +474,18 @@
     <button
       type="button"
       class="shopping-list-modal-backdrop"
-      aria-label="Close l'edition de modele"
+      aria-label="Close template editor"
       (click)="store.closeTemplateEditor()">
     </button>
   }
 
   @if (store.isTemplateEditorOpen) {
-    <div class="shopping-list-modal-shell" role="dialog" aria-modal="true" aria-label="Editer un modele de course">
+    <div class="shopping-list-modal-shell" role="dialog" aria-modal="true" aria-label="Edit shopping template">
       <mat-card class="shopping-list-modal-card">
         <div class="shopping-list-modal-card__header">
           <div>
             <p class="shopping-list-panel__eyebrow">Template</p>
-            <h3>Edit le modele</h3>
+            <h3>Edit template</h3>
             <p>Le contenu reste consultable a droite, les actions sont dans la side list.</p>
           </div>
           <button
@@ -501,7 +501,7 @@
         <div class="shopping-list-modal-card__body">
           @if (store.selectedTemplate; as template) {
             <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Nom du modele</mat-label>
+              <mat-label>Template name</mat-label>
               <input matInput [(ngModel)]="template.name" />
             </mat-form-field>
             <button
@@ -510,12 +510,12 @@
               class="shopping-list-action shopping-list-action--primary"
               (click)="store.saveTemplateEditor()"
               [disabled]="store.saving || !template.name.trim()">
-              Sauvegarder le modele
+              Save template
             </button>
 
             <div class="shopping-list-template-create">
               <div>
-                <h4>Create une liste depuis ce modele</h4>
+                <h4>Create une liste depuis this template</h4>
                 <p>Tu peux personnaliser le nom avant de generer la liste.</p>
               </div>
               <div class="shopping-list-template-create__form">

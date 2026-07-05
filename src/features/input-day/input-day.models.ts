@@ -67,12 +67,12 @@ export const INPUT_DAY_EMBEDDED_SECTION_OPTIONS: readonly SegmentedToggleOption<
   [
     {
       value: 'stock',
-      label: 'Produits en stock',
+      label: 'Products in stock',
       testId: 'input-day-section-stock',
     },
     {
       value: 'templates',
-      label: 'Modeles',
+      label: 'Templates',
       testId: 'input-day-section-templates',
     },
   ];

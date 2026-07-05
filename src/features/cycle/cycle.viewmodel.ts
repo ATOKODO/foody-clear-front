@@ -48,15 +48,15 @@ export interface CycleUpdateImpactOptions {
 export const CYCLE_HUB_VIEW_CONFIG: Record<CycleHubView, CycleHubViewConfig> = {
   cycle: {
     title: 'Cycles',
-    addLabel: 'Ajouter un cycle',
+    addLabel: 'Add cycle',
   },
   daySet: {
     title: 'Targets',
-    addLabel: 'Ajouter un day set',
+    addLabel: 'Add day set',
   },
   slot: {
     title: 'Slots',
-    addLabel: 'Ajouter un slot',
+    addLabel: 'Add slot',
   },
 };
 

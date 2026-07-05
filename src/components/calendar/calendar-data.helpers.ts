@@ -428,7 +428,7 @@ export function resolvePendingCalendarTemplateItems(
         stockAvailable: availableStock !== null,
         stockLabel: availableStock
           ? `Disponible dans ${availableStock.inventoryName}`
-          : 'Stock insuffisant',
+          : 'Low stock',
         inventoryId: availableStock?.inventoryId ?? null,
       },
     ];
@@ -605,7 +605,7 @@ function buildCalendarInsertedProduct(
       occurredAt: item.occurredAt,
       insertedAt: item.insertedAt,
       slotId: item.slotId,
-      slotTitle: slot?.slotTitle ?? 'Sans slot',
+      slotTitle: slot?.slotTitle ?? 'No slot',
       slotKey: slot?.slotKey ?? item.slotKey?.trim() ?? '-',
       templateItemId: item.templateItemId ?? null,
     },
@@ -747,7 +747,7 @@ function formatCalendarTimelineSlotRange(
     formatCalendarMinutesClock(startMinute) +
     '-' +
     formatCalendarMinutesClock(endMinute);
-  return estimated ? range + ' · estimé' : range;
+  return estimated ? range + ' · estimated' : range;
 }
 
 function buildCalendarOrphanTimelineBlocks(
@@ -788,7 +788,7 @@ function buildCalendarOrphanTimelineBlocks(
     return {
       id: `orphan:${dateLocal}:${startMinute}`,
       kind: 'orphan',
-      title: 'Non rattache a un slot',
+      title: 'Unassigned slot',
       slotKey: null,
       rangeLabel: `${formatCalendarMinutesClock(startMinute)}-${formatCalendarMinutesClock(endMinute)}`,
       startMinute,

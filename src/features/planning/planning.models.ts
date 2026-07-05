@@ -26,10 +26,10 @@ export interface PlanningInputDataRequest {
 
 export const PLANNING_CALENDAR_VIEW_OPTIONS: readonly SegmentedToggleOption<CalendarView>[] =
   [
-    { value: 'day', label: 'Jour', testId: 'planning-view-day' },
-    { value: 'week', label: 'Semaine', testId: 'planning-view-week' },
-    { value: 'month', label: 'Mois', testId: 'planning-view-month' },
-    { value: 'year', label: 'Année', testId: 'planning-view-year' },
+    { value: 'day', label: 'Day', testId: 'planning-view-day' },
+    { value: 'week', label: 'Week', testId: 'planning-view-week' },
+    { value: 'month', label: 'Month', testId: 'planning-view-month' },
+    { value: 'year', label: 'Year', testId: 'planning-view-year' },
   ];
 
 export const AUTO_REFRESH_THROTTLE_MS = 30_000;

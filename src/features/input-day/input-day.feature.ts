@@ -421,13 +421,13 @@ export class InputDayFeature implements OnInit, OnChanges {
   get activeTemplateLabel(): string {
     const templateAssociation = this.inputDayResponse?.templateAssociation;
     if (!templateAssociation) {
-      return 'Aucun template actif';
+      return 'No active template';
     }
 
     const sourceLabel =
       templateAssociation.source === 'manual'
-        ? 'override manuel'
-        : 'heritage day-set';
+        ? 'manual override'
+        : 'day set inheritance';
     return `${templateAssociation.template.title} (${sourceLabel})`;
   }
 
@@ -437,7 +437,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   get selectedInventoriesLabel(): string {
     if (!this.hasSelectedInventories) {
-      return 'Aucun inventory selectionne';
+      return 'No inventory selected';
     }
 
     return this.selectedInventoryIds
@@ -453,7 +453,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   get selectedBatchSlotLabel(): string {
     if (this.selectedSlotId === null) {
-      return 'Sans slot batch';
+      return 'No batch slot';
     }
 
     const slot =
@@ -480,8 +480,8 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   get createSelectedItemsLabel(): string {
     return this.selectedProductRows.length > 1
-      ? 'Ajouter les entrees selectionnees'
-      : 'Ajouter l entree selectionnee';
+      ? 'Add selected entries'
+      : 'Add selected entry';
   }
 
   get canSubmitItemEditor(): boolean {
@@ -614,7 +614,7 @@ export class InputDayFeature implements OnInit, OnChanges {
           },
           error: (error) => {
             this.lastError = error;
-            this.itemEditorError = "Impossible de creer l'entree.";
+            this.itemEditorError = "Unable to create the entry.";
             this.loading = false;
           },
         });
@@ -636,7 +636,7 @@ export class InputDayFeature implements OnInit, OnChanges {
         },
         error: (error) => {
           this.lastError = error;
-          this.itemEditorError = "Impossible de modifier l'entree.";
+          this.itemEditorError = "Unable to update the entry.";
           this.loading = false;
         },
       });
@@ -729,7 +729,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       },
       error: (error) => {
         this.lastError = error;
-        this.itemEditorError = "Impossible de supprimer l'entree.";
+        this.itemEditorError = "Unable to delete the entry.";
         this.loading = false;
       },
     });
@@ -850,7 +850,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     if (!this.hasSelectedInventories) {
       this.templateActionError =
-        'Selectionne au moins un inventory avant de convertir une ligne template.';
+        'Select at least one inventory before converting a template line.';
       return;
     }
 

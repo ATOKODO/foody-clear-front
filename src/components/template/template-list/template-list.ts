@@ -98,14 +98,14 @@ export class TemplateList {
 
   getTargetSourceText(targetSource: InputDayTargetSource): string {
     if (targetSource === 'daySet') {
-      return 'Comparaison avec un day set';
+      return 'Compared with a day set';
     }
 
     if (targetSource === 'cycle') {
-      return 'Comparaison avec un cycle';
+      return 'Compared with a cycle';
     }
 
-    return 'Aucune cible';
+    return 'No target';
   }
 
   getSlotMacroEntries(
@@ -141,10 +141,10 @@ export class TemplateList {
     }
 
     if (item.stockAvailability?.enoughStock === false) {
-      return 'Stock insuffisant';
+      return 'Low stock';
     }
 
-    return 'Stock inconnu';
+    return 'Unknown stock';
   }
 
   hasEntries(value: Record<string, unknown> | null | undefined): boolean {
@@ -153,18 +153,18 @@ export class TemplateList {
 
 
   resolveTemplateItemLabel(item: TemplateItem): string {
-    return item.displayName ?? item.mealName ?? item.dishName ?? item.productName ?? 'Element sans nom';
+    return item.displayName ?? item.mealName ?? item.dishName ?? item.productName ?? 'Unnamed item';
   }
 
   resolveTemplateItemTypeLabel(item: TemplateItem): string {
     const itemType = item.itemType ?? (item.mealId != null ? 'meal' : item.dishId != null ? 'dish' : 'product');
     if (itemType === 'meal') {
-      return 'Repas';
+      return 'Meal';
     }
     if (itemType === 'dish') {
-      return 'Plat';
+      return 'Dish';
     }
-    return 'Produit';
+    return 'Product';
   }
 
   resolveTemplateItemSlotLabel(item: TemplateItem): string {
@@ -175,7 +175,7 @@ export class TemplateList {
       }
     }
 
-    return item.slotKey?.trim() || 'Sans slot';
+    return item.slotKey?.trim() || 'No slot';
   }
 
   private formatNumber(value: number): string {

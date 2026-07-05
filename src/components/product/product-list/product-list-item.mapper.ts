@@ -56,7 +56,7 @@ function resolveTagNames(tags: unknown): string[] {
 
 function resolveLinkedEntityName(value: unknown): string {
   if (!value || typeof value !== 'object') {
-    return 'Aucun';
+    return 'None';
   }
 
   const raw = value as Record<string, unknown>;
@@ -68,5 +68,5 @@ function resolveLinkedEntityName(value: unknown): string {
     }
   }
 
-  return 'Aucun';
+  return 'None';
 }

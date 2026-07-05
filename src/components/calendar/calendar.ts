@@ -566,18 +566,18 @@ export class Calendar implements OnInit, OnChanges {
 
   getViewLabel(view: CalendarView): string {
     if (view === 'year') {
-      return 'Année';
+      return 'Year';
     }
 
     if (view === 'month') {
-      return 'Mois';
+      return 'Month';
     }
 
     if (view === 'week') {
-      return 'Semaine';
+      return 'Week';
     }
 
-    return 'Jour';
+    return 'Day';
   }
 
   private refreshView(): void {
@@ -693,12 +693,12 @@ export class Calendar implements OnInit, OnChanges {
   getWeekDayCycleProgress(day: CalendarDay): string | null {
     if (day.assignment?.dayNumber) {
       return day.assignment.totalDays
-        ? `J${day.assignment.dayNumber}/${day.assignment.totalDays}`
-        : `J${day.assignment.dayNumber}`;
+        ? `D${day.assignment.dayNumber}/${day.assignment.totalDays}`
+        : `D${day.assignment.dayNumber}`;
     }
 
     const dayIndex = this.getWeekDayResponse(day.date)?.assignment?.dayIndex;
-    return typeof dayIndex === 'number' ? `J${dayIndex}` : null;
+    return typeof dayIndex === 'number' ? `D${dayIndex}` : null;
   }
 
   getWeekDayProductCount(dateLocal: string): number {
@@ -756,11 +756,11 @@ export class Calendar implements OnInit, OnChanges {
       const assignment = this.buildCalendarAssignmentForDate(currentDateLocal);
       if (assignment) {
         return {
-          title: assignment.cycleName ?? assignment.label ?? 'Cycle actif',
+          title: assignment.cycleName ?? assignment.label ?? 'Active cycle',
           progress: assignment.dayNumber
             ? assignment.totalDays
-              ? `Jour ${assignment.dayNumber}/${assignment.totalDays}`
-              : `Jour ${assignment.dayNumber}`
+              ? `Day ${assignment.dayNumber}/${assignment.totalDays}`
+              : `Day ${assignment.dayNumber}`
             : null,
           colorClass: assignment.color ?? 'bg-slate-700',
         };
@@ -774,7 +774,7 @@ export class Calendar implements OnInit, OnChanges {
 
     return {
       title: assignment.cycleTitle,
-      progress: `Jour ${assignment.dayIndex}`,
+      progress: `Day ${assignment.dayIndex}`,
       colorClass: 'bg-slate-700',
     };
   }
@@ -801,14 +801,14 @@ export class Calendar implements OnInit, OnChanges {
       this.inputDayResponse()?.totalsMacros?.targetSource ?? 'none';
 
     if (targetSource === 'cycle') {
-      return 'Cible du jour issue du cycle assigne';
+      return 'Daily target inherited from the assigned cycle';
     }
 
     if (targetSource === 'daySet') {
-      return 'Cible du jour issue du day set';
+      return 'Daily target inherited from the day set';
     }
 
-    return 'Aucune cible du jour resolue';
+    return 'No daily target resolved';
   }
 
   getDayTargetSupportingText(): string {
@@ -822,17 +822,17 @@ export class Calendar implements OnInit, OnChanges {
 
     if (targetSource === 'cycle') {
       return assignmentTitle
-        ? `Les entrees saisies sont comparees a la cible du cycle ${assignmentTitle}.`
-        : 'Les entrees saisies sont comparees a la cible du cycle assigne.';
+        ? `Logged entries are compared with the ${assignmentTitle} cycle target.`
+        : 'Logged entries are compared with the assigned cycle target.';
     }
 
     if (targetSource === 'daySet') {
       return daySetTitle
-        ? `Les entrees saisies sont comparees au repere du day set ${daySetTitle}.`
-        : 'Les entrees saisies sont comparees au repere nutritionnel du day set.';
+        ? `Logged entries are compared with the ${daySetTitle} day set target.`
+        : 'Logged entries are compared with the day set nutrition target.';
     }
 
-    return 'Le pilotage du jour affiche uniquement les entrees reellement saisies.';
+    return 'The daily dashboard only reflects entries that were actually logged.';
   }
 
   getDayTargetSourcePillText(targetSource: InputDayTargetSource): string {
@@ -878,7 +878,7 @@ export class Calendar implements OnInit, OnChanges {
       timeLabel: this.formatItemTime(item.occurredAt, item.insertedAt),
       productName: item.productName,
       qtyLabel: this.formatQuantityLabel(item.qty),
-      slotLabel: item.slotTitle || item.slotKey || 'Non rattache a un slot',
+      slotLabel: item.slotTitle || item.slotKey || 'Unassigned to a slot',
       item,
     }));
   }
@@ -974,17 +974,17 @@ export class Calendar implements OnInit, OnChanges {
       day.assignment?.cycleName ??
       day.assignment?.label ??
       this.getWeekDayResponse(day.date)?.templateAssociation?.template.title ??
-      'Jour suivi'
+      'Tracked day'
     );
   }
 
   getMonthDayType(day: CalendarDay): string {
-    return day.assignment ? 'Cycle actif' : 'Jour suivi';
+    return day.assignment ? 'Active cycle' : 'Tracked day';
   }
 
   getMonthDayProgressText(day: CalendarDay): string | null {
     if (day.assignment?.dayNumber) {
-      return `Jour ${day.assignment.dayNumber}/${day.assignment.totalDays}`;
+      return `Day ${day.assignment.dayNumber}/${day.assignment.totalDays}`;
     }
 
     return this.getTemplateSourceBadgeText(this.getWeekDayResponse(day.date));
@@ -1545,10 +1545,10 @@ export class Calendar implements OnInit, OnChanges {
         (item) => item.status === 'converted' || item.convertedItemId !== null,
       )
     ) {
-      return 'Toutes les entrees ont ete converties.';
+      return 'All entries were converted.';
     }
 
-    return 'Aucun template prevu sur cette plage.';
+    return 'No template is planned for this time range.';
   }
 
 

@@ -85,7 +85,7 @@ export class DaySetForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode() === 'edit' ? 'Modifier DaySet' : 'Ajouter DaySet';
+    return this.mode() === 'edit' ? 'Edit day set' : 'Add day set';
   }
 
   onMenuClick(): void {

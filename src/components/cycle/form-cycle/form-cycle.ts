@@ -145,7 +145,7 @@ export class FormCycle implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode() === 'edit' ? 'Modifier un Cycle' : 'Ajouter un Cycle';
+    return this.mode() === 'edit' ? 'Edit cycle' : 'Add cycle';
   }
 
   get couleurSelectionnee(): string {

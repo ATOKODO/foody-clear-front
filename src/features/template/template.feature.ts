@@ -232,14 +232,14 @@ export class TemplateFeature implements OnInit {
 
   get formDialogTitle(): string {
     return this.formMode === 'edit'
-      ? 'Modifier le template'
+      ? 'Edit template'
       : 'Nouveau template';
   }
 
   get formDialogSubtitle(): string {
     return this.formMode === 'edit'
-      ? 'Mets a jour le titre, les lignes et les controles stock du template.'
-      : 'Cree un template previsionnel, puis ajoute ses lignes produits.';
+      ? 'Update the title, lines, and stock controls for this template.'
+      : 'Create a planning template, then add its product lines.';
   }
 
   get productOptions(): ProductApiModel[] {

@@ -4,7 +4,7 @@
   [class.py-8]="!inDialog()"
   [class.px-3]="inDialog()"
   [class.py-4]="inDialog()"
-  aria-label="Add ou modifier un day set">
+  aria-label="Add or edit a day set">
   @if (showHeading()) {
     <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
       <h2 class="text-xl font-medium">{{ heading }}</h2>
@@ -40,7 +40,7 @@
 
       @if (nutritionKeys().length === 0) {
         <p class="text-sm text-slate-600">
-          Les cles nutritionnelles meta ne sont pas chargees, saisie libre active.
+          Nutrition meta keys are not loaded, free entry mode is enabled.
         </p>
       }
 
@@ -107,7 +107,7 @@
     </div>
 
     <div class="space-y-3">
-      <h3 class="text-base font-semibold text-slate-900">Slots du day set</h3>
+      <h3 class="text-base font-semibold text-slate-900">Day set slots</h3>
       <app-slot-list mode="select-multi"
         [slots]="slots()"
         [selectedIds]="selectedSlotIdsAsString"

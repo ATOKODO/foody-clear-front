@@ -3,7 +3,7 @@
     <app-segmented-toggle [value]="activeView"
       [options]="viewOptions"
       (valueChange)="onActiveViewChange($event)"
-      ariaLabel="Selection de la vue catalogue active"
+      ariaLabel="Select active catalog view"
       data-testid="catalogue-view-toggle"
       name="catalogue-view"
      />
@@ -56,7 +56,7 @@
                 <span
                   class="app-status-pill app-status-pill--saving"
                   >
-                  Sauvegarde...
+                  Saving...
                 </span>
               }
               @if (loadingMeta) {
@@ -74,8 +74,7 @@
               <p
                 class="app-alert"
                 >
-                Impossible de charger les metas (units / nutrition keys), fallback
-                actif.
+                Unable to load metadata (units / nutrition keys), fallback enabled.
               </p>
             }
             <app-product-list mode="manage"

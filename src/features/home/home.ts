@@ -71,7 +71,7 @@ export class Home implements OnInit {
   private readonly now = DateTime.local();
 
   readonly todayDateLocal = this.now.toFormat('yyyy-LL-dd');
-  readonly todayLabel = this.now.setLocale('fr').toFormat('cccc d LLLL');
+  readonly todayLabel = this.now.setLocale('en').toFormat('cccc d LLLL');
   readonly timezone = this.now.zoneName || 'UTC';
   readonly planningTodayQueryParams = {
     view: 'day',

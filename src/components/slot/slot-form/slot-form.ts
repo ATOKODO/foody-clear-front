@@ -60,8 +60,8 @@ export class SlotForm implements OnInit, OnChanges {
 
   nutritionValues: CycleNutritionValue[] = [];
   readonly referenceOptions: { label: string; value: NutritionReference }[] = [
-    { label: 'Pour 100 g', value: 'PER_100G' },
-    { label: 'Pour 100 ml', value: 'PER_100ML' },
+    { label: 'Per 100 g', value: 'PER_100G' },
+    { label: 'Per 100 ml', value: 'PER_100ML' },
   ];
 
   readonly form = this.fb.nonNullable.group({
@@ -83,7 +83,7 @@ export class SlotForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode() === 'edit' ? 'Modifier Slot' : 'Ajouter Slot';
+    return this.mode() === 'edit' ? 'Edit slot' : 'Add slot';
   }
 
   onMenuClick(): void {

@@ -1,4 +1,4 @@
-<section class="mx-auto max-w-5xl px-4 py-8 text-gray-900" aria-label="Ajouter ou modifier un tag">
+<section class="mx-auto max-w-5xl px-4 py-8 text-gray-900" aria-label="Add or edit a tag">
   @if (showHeading()) {
     <div class="mb-6 flex items-center justify-between border-b border-slate-200 pb-3">
       <h2 class="text-xl font-medium">{{ heading }}</h2>
@@ -9,11 +9,11 @@
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
     <div class="grid gap-4 md:grid-cols-12">
       <mat-form-field appearance="fill" class="md:col-span-12">
-        <mat-label>Nom *</mat-label>
+        <mat-label>Name *</mat-label>
         <input matInput type="text" formControlName="name" placeholder="Bio" />
         @if (form.controls.name.hasError('required')) {
           <mat-error>
-            Le nom est requis.
+            Name is required.
           </mat-error>
         }
       </mat-form-field>
@@ -21,7 +21,7 @@
 
     <div class="flex justify-center pt-2">
       <button mat-raised-button color="primary" type="submit" class="rounded-full px-8">
-        {{ mode() === 'edit' ? 'Mettre a jour' : 'Creer' }}
+        {{ mode() === 'edit' ? 'Update' : 'Create' }}
       </button>
     </div>
   </form>

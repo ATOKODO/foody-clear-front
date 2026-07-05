@@ -55,7 +55,7 @@ export const CategoryStore = signalStore(
   withComputed((store) => ({
     categoryListItems: computed(() => toCategoryListItems(store.categories())),
     dialogTitle: computed(() =>
-      store.formMode() === 'edit' ? 'Modifier une categorie' : 'Ajouter une categorie',
+      store.formMode() === 'edit' ? 'Edit category' : 'Add category',
     ),
     dialogSubtitle: computed(
       () =>

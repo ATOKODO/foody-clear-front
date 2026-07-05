@@ -162,7 +162,7 @@ export class ProductForm implements OnInit, OnChanges {
   }
 
   get heading(): string {
-    return this.mode() === 'edit' ? 'Modifier Produit' : 'Ajouter Produit';
+    return this.mode() === 'edit' ? 'Edit product' : 'Add product';
   }
 
   onMenuClick(): void {

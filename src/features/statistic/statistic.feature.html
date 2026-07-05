@@ -220,7 +220,7 @@
                       [attr.data-testid]="'stat-purchase-exclude-' + event.id"
                       (click)="excludePurchaseEvent(event)"
                     >
-                      Rembourse
+                      Refunded
                     </button>
                   }
                 </div>
@@ -240,12 +240,12 @@
     <mat-card appearance="outlined" class="stat-card">
       <div class="stat-card__head">
         <div>
-          <h2>Objectifs / saisie du day</h2>
+          <h2>Goals / day input</h2>
           <p>Comparaison daynaliere entre reel et cible.</p>
         </div>
         <mat-button-toggle-group
           [(ngModel)]="activeMetric"
-          aria-label="Choisir la metrique"
+          aria-label="Choose metric"
         >
           @for (metric of metricOptions; track metric.key) {
             <mat-button-toggle [value]="metric.key">

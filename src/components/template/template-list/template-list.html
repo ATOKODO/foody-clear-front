@@ -58,7 +58,7 @@
       @if (selectedTemplate(); as template) {
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-header>
-            <mat-card-title>Lignes du modele</mat-card-title>
+            <mat-card-title>Template lines</mat-card-title>
             <mat-card-subtitle>{{ template.title }}</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content class="pt-2">
@@ -73,7 +73,7 @@
                       <th class="px-3 py-2">Qty</th>
                       <th class="px-3 py-2">Slot</th>
                       <th class="px-3 py-2">Stock global</th>
-                      <th class="px-3 py-2">Detail inventaires</th>
+                      <th class="px-3 py-2">Inventory details</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -103,15 +103,15 @@
                           </span>
                           <p class="mt-2 text-xs text-slate-600">
                             {{ formatNutritionAmount(item.stockAvailability?.totalAvailableNormalized) }}
-                            dispo /
+                            available /
                             {{ formatNutritionAmount(item.stockAvailability?.requestedQtyNormalized) }}
-                            demande
+                            requested
                           </p>
                         </td>
                         <td class="px-3 py-2">
                           <details [attr.data-testid]="'template-stock-detail-' + item.id">
                             <summary class="cursor-pointer text-xs font-medium text-slate-700">
-                              Voir le detail
+                              View details
                             </summary>
                             <div class="mt-2 space-y-1">
                               @for (stock of item.stockByInventory ?? []; track stock) {
@@ -133,7 +133,7 @@
                                 <p
                                   class="text-xs text-slate-500"
                                   >
-                                  Aucun detail d'inventaire.
+                                  No inventory details.
                                 </p>
                               }
                             </div>
@@ -146,7 +146,7 @@
               </div>
             } @else {
               <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                Aucune ligne dans ce modele.
+                No lines in this template.
               </p>
             }
           </mat-card-content>
@@ -156,18 +156,18 @@
             <mat-card-content class="space-y-4 p-4">
               <div class="template-compare-card__header">
                 <div>
-                  <p class="text-sm font-semibold text-slate-900">Comparaison nutritionnelle</p>
+                  <p class="text-sm font-semibold text-slate-900">Nutrition comparison</p>
                   <p class="text-xs text-slate-500">
                     {{ getTargetSourceText(template.totalsMacros?.targetSource ?? 'none') }}
                   </p>
                 </div>
                 <mat-form-field appearance="fill" class="template-compare-card__field">
-                  <mat-label>Comparer au day-set</mat-label>
+                  <mat-label>Compare with day set</mat-label>
                   <mat-select
                     [ngModel]="compareDaySetId()"
                     (ngModelChange)="onCompareDaySetChange($event)"
                     >
-                    <mat-option [value]="null">Aucune comparaison</mat-option>
+                    <mat-option [value]="null">No comparison</mat-option>
                     @for (daySet of sortedDaySets; track daySet) {
                       <mat-option [value]="daySet.id">
                         {{ daySet.title }}
@@ -182,7 +182,7 @@
                   >
                   <p class="text-sm font-semibold text-slate-900">{{ daySet.title }}</p>
                   <p class="text-xs text-slate-500">
-                    Day-set de reference pour la comparaison.
+                    Reference day set for comparison.
                   </p>
                 </div>
               }
@@ -190,7 +190,7 @@
                 <div class="grid gap-3 md:grid-cols-3">
                   <div class="rounded-lg border border-slate-200 p-3">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Total modele
+                      Template total
                     </p>
                     @for (entry of totals.dayTotal | keyvalue; track entry) {
                       <p class="text-sm text-slate-700">
@@ -205,7 +205,7 @@
                     </p>
                     @if (!hasEntries(totals.targets)) {
                       <p class="text-sm text-slate-500">
-                        Aucune cible.
+                        No target.
                       </p>
                     }
                     @for (entry of totals.targets | keyvalue; track entry) {
@@ -221,7 +221,7 @@
                     </p>
                     @if (!hasEntries(totals.deltaToTargets)) {
                       <p class="text-sm text-slate-500">
-                        Aucun delta.
+                        No delta.
                       </p>
                     }
                     @for (entry of totals.deltaToTargets | keyvalue; track entry) {
@@ -257,7 +257,7 @@
                         <div
                           class="text-sm text-slate-700"
                           >
-                          <p class="font-medium text-slate-900">Consomme</p>
+                          <p class="font-medium text-slate-900">Consumed</p>
                           @for (entry of getSlotMacroEntries(slotTotals); track entry) {
                             <p>
                               {{ entry.key }}: {{ formatMacroValue(entry.value) }}
@@ -275,7 +275,7 @@
       } @else {
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-content class="p-4 text-sm text-slate-600">
-            Cree un modele ou selectionne-en un pour voir ses lignes et ses comparaisons.
+            Create a template or select one to review its lines and comparisons.
           </mat-card-content>
         </mat-card>
       }

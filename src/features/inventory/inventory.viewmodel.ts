@@ -35,8 +35,8 @@ export const INVENTORY_PURCHASE_ACCOUNTING_MODE_OPTIONS: readonly {
   value: PurchaseAccountingMode;
   label: string;
 }[] = [
-  { value: 'paid', label: 'Paye' },
-  { value: 'free', label: 'Offert' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'free', label: 'Free' },
   { value: 'excluded', label: 'Ignorer des stats' },
 ];
 
@@ -333,7 +333,7 @@ export function getInventoryQtyUnitOptions(
   };
 
   const unitType = row.unitType?.trim();
-  pushOption('unit', unitType ? `Unite produit (${unitType})` : 'Unite produit');
+  pushOption('unit', unitType ? `Product unit (${unitType})` : 'Product unit');
 
   if (row.quantityUnit) {
     pushOption(row.quantityUnit, row.quantityUnit.toUpperCase());
@@ -567,7 +567,7 @@ function isInventoryProductLike(value: unknown): value is InventoryProduct {
 function resolveInventoryProductName(item: InventoryProduct): string {
   return typeof item.product?.name === 'string' && item.product.name.trim() !== ''
     ? item.product.name.trim()
-    : `Produit #${item.productId}`;
+    : `Product #${item.productId}`;
 }
 
 function getCurrentInventoryQtyDisplay(row: {

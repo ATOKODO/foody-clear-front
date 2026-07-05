@@ -113,7 +113,7 @@ export function getStatisticSelectedProductName(
 ): string {
   return (
     products.find((product) => product.id === selectedProductId)?.name ??
-    'Aucun produit'
+    'No product'
   );
 }
 

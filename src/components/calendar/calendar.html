@@ -66,7 +66,7 @@
               <p class="calendar-week-summary__eyebrow">Year view</p>
               <h3 class="text-xl font-semibold text-slate-950">{{ currentViewLabel }}</h3>
               <p class="mt-1 max-w-2xl text-sm text-slate-600">
-                L'year condense les active months, les scheduled days et les bascules de cycle dans une seule lecture.
+                The year view condenses active months, scheduled days, and cycle changes into one overview.
               </p>
             </div>
             <div class="calendar-week-overview">
@@ -116,7 +116,7 @@
                   </span>
                   @if (month.month === currentDate.month) {
                     <span class="calendar-year-chip calendar-year-chip--current">
-                      Mois courant
+                      Current month
                     </span>
                   }
                 </div>
@@ -147,8 +147,8 @@
                   <span class="calendar-year-card__footer-copy">
                     {{
                     month.hasAssignments
-                    ? 'Les days actifs restent visibles dans le mini-calendrier.'
-                    : 'No cycle planifie sur ce month.'
+                    ? 'Active days remain visible in the mini calendar.'
+                    : 'No cycle is planned for this month.'
                     }}
                   </span>
                   <button
@@ -177,13 +177,13 @@
               <p class="calendar-week-summary__eyebrow">Month view</p>
               <h3 class="text-xl font-semibold text-slate-950">{{ currentViewLabel }}</h3>
               <p class="mt-1 max-w-2xl text-sm text-slate-600">
-                Le month met en avant les days actifs, les changements de cycle et l'ajout rapide.
+                The month view highlights active days, cycle changes, and quick actions.
               </p>
             </div>
             <div class="calendar-week-overview">
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getMonthDayCount() }}</span>
-                <span class="calendar-week-overview__label">days du month</span>
+                <span class="calendar-week-overview__label">days in month</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getMonthAssignedDayCount() }}</span>
@@ -248,7 +248,7 @@
                           class="calendar-month-day__quick-action"
                           data-kind="day"
                           (click)="$event.stopPropagation(); requestOpenDayView(day.date)">
-                          Jour
+                          Day
                         </button>
                         <button
                           type="button"
@@ -341,14 +341,14 @@
                         }
                         @if (!getWeekDayResponse(day.date) && !day.assignment) {
                           <div class="text-sm text-slate-500">
-                            No donnee de suivi pour cette day.
+                            No tracking data for this day.
                           </div>
                         }
                       </div>
                     } @else {
                       @if (day.isCurrentMonth) {
                         <div class="calendar-month-day__empty">
-                          <span class="calendar-month-day__empty-title">Day libre</span>
+                          <span class="calendar-month-day__empty-title">Free day</span>
                           <span class="calendar-month-day__empty-text">Day, cycle or entry available</span>
                         </div>
                       } @else {
@@ -371,24 +371,24 @@
         <div class="calendar-week-summary border-b border-slate-200 p-4 sm:p-5">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p class="calendar-week-summary__eyebrow">Vue week</p>
-              <h3 class="text-xl font-semibold text-slate-950">Resume de la week</h3>
+              <p class="calendar-week-summary__eyebrow">Week view</p>
+              <h3 class="text-xl font-semibold text-slate-950">Week summary</h3>
               <p class="mt-1 max-w-2xl text-sm text-slate-600">
-                Chaque day regroupe cycle, macros et slots dans une seule vue.
+                Each day combines cycle, macros, and slots in a single view.
               </p>
             </div>
             <div class="calendar-week-overview">
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getWeekSummaryDayCount() }}</span>
-                <span class="calendar-week-overview__label">days utiles</span>
+                <span class="calendar-week-overview__label">active days</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getWeekSummaryItemCount() }}</span>
-                <span class="calendar-week-overview__label">items saisis</span>
+                <span class="calendar-week-overview__label">logged items</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getWeekSummaryEnergyTotal() }}</span>
-                <span class="calendar-week-overview__label">kcal suivies</span>
+                <span class="calendar-week-overview__label">tracked kcal</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getWeekSummaryTemplateDayCount() }}</span>
@@ -398,12 +398,12 @@
           </div>
           @if (loadingDayItems()) {
             <p class="mt-3 text-xs text-slate-500">
-              Loading des products de la week...
+              Loading week products...
             </p>
           }
           @if (dayItemsError()) {
             <p class="mt-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-700">
-              Impossible de charger les products de la week.
+              Unable to load week products.
             </p>
           }
         </div>
@@ -524,7 +524,7 @@
                           <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
                         </div>
                         <span class="calendar-week-block__count">
-                          {{ block.items.length }} entree{{ block.items.length > 1 ? 's' : '' }}
+                          {{ block.items.length }} entr{{ block.items.length > 1 ? 'ies' : 'y' }}
                         </span>
                       </div>
                       @if (block.items.length > 0) {
@@ -545,22 +545,22 @@
                                 </span>
                               </div>
                               <div class="calendar-week-block__item-meta">
-                                qte: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
+                                qty: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
                               </div>
                             </div>
                           }
                         </div>
                       } @else {
-                        <p class="calendar-week-block__empty">No item saisi sur cette plage.</p>
+                        <p class="calendar-week-block__empty">No logged item in this time range.</p>
                       }
                     </div>
                   }
                 </div>
               } @else {
                 <div class="calendar-week-mobile__empty">
-                  <p class="calendar-week-mobile__empty-title">No plage sur cette day</p>
+                  <p class="calendar-week-mobile__empty-title">No time range for this day</p>
                   <p class="calendar-week-mobile__empty-text">
-                    Utilise le bouton + pour ajouter une action ou ouvrir les items du day.
+                    Use the + button to add an action or open the day items.
                   </p>
                 </div>
               }
@@ -691,7 +691,7 @@
                   [style.grid-column-end]="dayIndex + 3"
                   [style.grid-row-start]="getWeekHourGridRowStart(hour)"
                   [style.grid-row-end]="getWeekHourGridRowEnd(hour)"
-                  [attr.aria-label]="'Ouvrir ' + (hour.toString().padStart(2, '0')) + ':00 pour le ' + day.date"
+                  [attr.aria-label]="'Open ' + (hour.toString().padStart(2, '0')) + ':00 for ' + day.date"
                   (click)="onHourClick({ hour: hour, label: hour + ':00', assignment: day.assignment }, day.date)">
                 </button>
               }
@@ -737,13 +737,13 @@
                             </span>
                           </div>
                           <div class="calendar-week-block__item-meta">
-                            qte: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
+                            qty: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
                           </div>
                         </div>
                       }
                     </div>
                   } @else {
-                    <p class="calendar-week-block__empty">No item saisi sur cette plage.</p>
+                    <p class="calendar-week-block__empty">No logged item in this time range.</p>
                   }
                 </div>
               }
@@ -759,7 +759,7 @@
         <div class="calendar-day-summary border-b border-slate-200 p-4 sm:p-5">
           <div class="calendar-day-summary__top">
             <div>
-              <p class="calendar-week-summary__eyebrow">Vue day</p>
+              <p class="calendar-week-summary__eyebrow">Day view</p>
               <h3 class="calendar-day-summary__title">
                 {{ currentDate.toFormat('EEEE d LLLL', { locale: 'fr' }) }}
               </h3>
@@ -838,15 +838,15 @@
                         </div>
                         <div class="calendar-day-pilot-card__metrics">
                           <div class="calendar-day-pilot-card__metric">
-                            <span class="calendar-day-pilot-card__metric-label">Saisi</span>
+                            <span class="calendar-day-pilot-card__metric-label">Logged</span>
                             <span class="calendar-day-pilot-card__metric-value">{{ macro.consumed }}</span>
                           </div>
                           <div class="calendar-day-pilot-card__metric">
-                            <span class="calendar-day-pilot-card__metric-label">Cible</span>
+                            <span class="calendar-day-pilot-card__metric-label">Target</span>
                             <span class="calendar-day-pilot-card__metric-value">{{ macro.target }}</span>
                           </div>
                           <div class="calendar-day-pilot-card__metric">
-                            <span class="calendar-day-pilot-card__metric-label">Ecart</span>
+                            <span class="calendar-day-pilot-card__metric-label">Delta</span>
                             <span class="calendar-day-pilot-card__metric-value calendar-day-pilot-card__metric-value--delta">
                               {{ macro.delta }}
                             </span>
@@ -857,9 +857,9 @@
                   </div>
                 } @else {
                   <div class="calendar-day-summary__empty-state">
-                    <p class="calendar-day-summary__empty-title">No comparaison disponible</p>
+                    <p class="calendar-day-summary__empty-title">No comparison available</p>
                     <p class="calendar-day-summary__empty-text">
-                      Le resume affiche les entrees du day des qu'une cible nutritionnelle est resolue.
+                      The summary appears once a nutrition target is available for the day.
                     </p>
                   </div>
                 }
@@ -873,7 +873,7 @@
                       data-testid="calendar-day-toggle-slot-stats"
                       [attr.aria-expanded]="showDaySlotStats"
                       (click)="toggleDaySlotStats()">
-                      {{ showDaySlotStats ? 'Masquer les slots' : 'Afficher les slots' }}
+                      {{ showDaySlotStats ? 'Hide slots' : 'Show slots' }}
                     </button>
                     @if (showDaySlotStats) {
                       <div class="mt-4 space-y-4" data-testid="calendar-day-slot-stats">
@@ -884,7 +884,7 @@
                                 <p class="m-0 text-sm font-extrabold text-slate-900">{{ group.title }}</p>
                                 <p class="mt-1 text-xs font-semibold text-slate-500">{{ group.rangeLabel }}</p>
                               </div>
-                              <span class="calendar-day-summary__source-pill">Cible du slot</span>
+                              <span class="calendar-day-summary__source-pill">Slot target</span>
                             </div>
                             <div class="calendar-day-summary__macro-grid">
                               @for (macro of group.cards; track trackByDayMacroCard($index, macro)) {
@@ -902,15 +902,15 @@
                                   </div>
                                   <div class="calendar-day-pilot-card__metrics">
                                     <div class="calendar-day-pilot-card__metric">
-                                      <span class="calendar-day-pilot-card__metric-label">Saisi</span>
+                                      <span class="calendar-day-pilot-card__metric-label">Logged</span>
                                       <span class="calendar-day-pilot-card__metric-value">{{ macro.consumed }}</span>
                                     </div>
                                     <div class="calendar-day-pilot-card__metric">
-                                      <span class="calendar-day-pilot-card__metric-label">Cible</span>
+                                      <span class="calendar-day-pilot-card__metric-label">Target</span>
                                       <span class="calendar-day-pilot-card__metric-value">{{ macro.target }}</span>
                                     </div>
                                     <div class="calendar-day-pilot-card__metric">
-                                      <span class="calendar-day-pilot-card__metric-label">Ecart</span>
+                                      <span class="calendar-day-pilot-card__metric-label">Delta</span>
                                       <span class="calendar-day-pilot-card__metric-value calendar-day-pilot-card__metric-value--delta">
                                         {{ macro.delta }}
                                       </span>
@@ -930,12 +930,12 @@
           </div>
           @if (loadingDayItems()) {
             <p class="mt-3 text-xs text-slate-500">
-              Loading des products de la day...
+              Loading day products...
             </p>
           }
           @if (dayItemsError()) {
             <p class="mt-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-700">
-              Impossible de charger les products du day.
+              Unable to load day products.
             </p>
           }
         </div>
@@ -943,10 +943,10 @@
           <section class="calendar-day-body__section calendar-day-body__section--primary calendar-day-hours">
             <div class="calendar-day-body__section-header">
               <div>
-                <p class="calendar-day-body__eyebrow">Acces rapide</p>
-                <h4 class="calendar-day-body__title">Heures du day</h4>
+                <p class="calendar-day-body__eyebrow">Quick access</p>
+                <h4 class="calendar-day-body__title">Day hours</h4>
                 <p class="calendar-day-body__description">
-                  La grille horaire prend la largeur principale pour capturer ou ouvrir une entree au bon moment.
+                  The time grid uses the main width to create or open an entry at the right moment.
                 </p>
               </div>
               <span class="calendar-week-meta-pill">{{ getDayItemCount() }} items</span>
@@ -960,7 +960,7 @@
                   <div class="calendar-day-grid__header-summary">
                     <div>
                       <p class="calendar-day-grid__eyebrow">Timeline day</p>
-                      <p class="calendar-day-grid__title">Clic a la demi-heure</p>
+                      <p class="calendar-day-grid__title">Half-hour click targets</p>
                     </div>
                     <div class="calendar-day-grid__header-meta">
                       <span class="calendar-week-meta-pill">{{ getDayTemplateSlotCount() }} template(s)</span>
@@ -968,9 +968,9 @@
                     </div>
                   </div>
                   <div class="calendar-day-grid__lanes" aria-hidden="true">
-                    <span class="calendar-day-grid__lane-label">Templates &amp; slots template</span>
+                    <span class="calendar-day-grid__lane-label">Templates &amp; template slots</span>
                     <span class="calendar-day-grid__lane-label calendar-day-grid__lane-label--entries">
-                      Entrys effectuees &amp; slots DaySet
+                      Logged entries &amp; day set slots
                     </span>
                   </div>
                 </div>
@@ -989,7 +989,7 @@
                     [attr.data-testid]="'calendar-day-half-hour-' + hour.toString().padStart(2, '0') + '-00'"
                     [style.grid-row-start]="getDayHalfHourGridRowStart(hour, 0)"
                     [style.grid-row-end]="getDayHalfHourGridRowStart(hour, 0) + 1"
-                    [attr.aria-label]="'Ouvrir ' + hour.toString().padStart(2, '0') + ':00 pour le ' + currentDate.toISODate()"
+                    [attr.aria-label]="'Open ' + hour.toString().padStart(2, '0') + ':00 for ' + currentDate.toISODate()"
                     (click)="onDayHalfHourClick(hour, 0)">
                   </button>
                   <button
@@ -998,7 +998,7 @@
                     [attr.data-testid]="'calendar-day-half-hour-' + hour.toString().padStart(2, '0') + '-30'"
                     [style.grid-row-start]="getDayHalfHourGridRowStart(hour, 30)"
                     [style.grid-row-end]="getDayHalfHourGridRowStart(hour, 30) + 1"
-                    [attr.aria-label]="'Ouvrir ' + hour.toString().padStart(2, '0') + ':30 pour le ' + currentDate.toISODate()"
+                    [attr.aria-label]="'Open ' + hour.toString().padStart(2, '0') + ':30 for ' + currentDate.toISODate()"
                     (click)="onDayHalfHourClick(hour, 30)">
                   </button>
                 }
@@ -1021,7 +1021,7 @@
                           <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
                         </div>
                         <span class="calendar-week-block__count">
-                          {{ block.plannedItems.length }} prevu{{ block.plannedItems.length > 1 ? 's' : '' }}
+                          {{ block.plannedItems.length }} planned
                         </span>
                       </div>
                       @if (block.plannedItems.length > 0) {
@@ -1038,11 +1038,11 @@
                                   [attr.data-testid]="'calendar-day-convert-template-' + plannedItem.id"
                                   [disabled]="!plannedItem.stockAvailable || loadingDayItems()"
                                   (click)="onDayTemplateItemConvert(plannedItem, $event)">
-                                  Prévu · à saisir
+                                  Planned · log now
                                 </button>
                               </div>
                               <div class="calendar-week-block__item-meta">
-                                qte: {{ plannedItem.qtyLabel }} · {{ plannedItem.stockLabel }}
+                                qty: {{ plannedItem.qtyLabel }} · {{ plannedItem.stockLabel }}
                               </div>
                             </div>
                           }
@@ -1073,7 +1073,7 @@
                           <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
                         </div>
                         <span class="calendar-week-block__count">
-                          {{ block.items.length }} entree{{ block.items.length > 1 ? 's' : '' }}
+                          {{ block.items.length }} entr{{ block.items.length > 1 ? 'ies' : 'y' }}
                         </span>
                       </div>
                       @if (block.items.length > 0) {
@@ -1094,7 +1094,7 @@
                                 </span>
                               </div>
                               <div class="calendar-week-block__item-meta">
-                                qte: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
+                                qty: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
                               </div>
                               @if (product.templateItemId !== null) {
                                 <button
@@ -1103,14 +1103,14 @@
                                   [attr.data-testid]="'calendar-day-revert-template-' + product.id"
                                   [disabled]="loadingDayItems()"
                                   (click)="onDayTemplateItemRevert(product, $event)">
-                                  Remettre cote template
+                                  Move back to template
                                 </button>
                               }
                             </div>
                           }
                         </div>
                       } @else {
-                        <p class="calendar-week-block__empty">No entree saisie dans ce slot.</p>
+                        <p class="calendar-week-block__empty">No logged entry in this slot.</p>
                       }
                     </div>
                   }
@@ -1121,10 +1121,10 @@
           <aside class="calendar-day-body__section calendar-day-body__section--secondary calendar-day-entries">
             <div class="calendar-day-body__section-header">
               <div>
-                <p class="calendar-day-body__eyebrow">Resume rapide</p>
-                <h4 class="calendar-day-body__title">Entrys du day</h4>
+                <p class="calendar-day-body__eyebrow">Quick summary</p>
+                <h4 class="calendar-day-body__title">Day entries</h4>
                 <p class="calendar-day-body__description">
-                  Side list compacte des entrees saisies, triees par heure et pretes a rouvrir.
+                  Compact side list of logged entries, sorted by time and ready to reopen.
                 </p>
               </div>
               <span class="calendar-week-meta-pill">{{ getDayItemCount() }} items</span>
@@ -1149,9 +1149,9 @@
                 </div>
               } @else {
                 <div class="calendar-day-empty">
-                  <p class="calendar-day-empty__title">No entree saisie</p>
+                  <p class="calendar-day-empty__title">No logged entry</p>
                   <p class="calendar-day-empty__text">
-                    Utilise la grille horaire pour ouvrir rapidement une action sur cette day.
+                    Use the time grid to quickly open an action for this day.
                   </p>
                 </div>
               }

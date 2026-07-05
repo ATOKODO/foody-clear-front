@@ -166,7 +166,7 @@ export class NutritionValues implements OnInit {
 
     const dto = this.pickUpdatePayload();
     if (Object.keys(dto).length === 0) {
-      this.setError('Aucun champ a mettre a jour.');
+      this.setError('No field to update.');
       return;
     }
 

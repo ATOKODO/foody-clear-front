@@ -1,9 +1,9 @@
 <div class="external-entry-dialog" data-testid="external-entry-dialog">
   <div class="external-entry-dialog__header">
     <div>
-      <p class="external-entry-dialog__eyebrow">Entry externale</p>
+      <p class="external-entry-dialog__eyebrow">External entry</p>
       <h3 class="external-entry-dialog__title">{{ title() }}</h3>
-      <p class="external-entry-dialog__subtitle">Meals non prevu, sans impact sur le stock.</p>
+      <p class="external-entry-dialog__subtitle">Unplanned meal with no inventory impact.</p>
     </div>
   </div>
 
@@ -20,14 +20,14 @@
         </mat-form-field>
 
         <mat-form-field appearance="fill">
-          <mat-label>Heure</mat-label>
+          <mat-label>Time</mat-label>
           <input matInput type="datetime-local" formControlName="occurredAt" />
         </mat-form-field>
 
         <mat-form-field appearance="fill">
           <mat-label>Meals / slot</mat-label>
           <mat-select formControlName="slotKey">
-            <mat-option [value]="null">Sans slot</mat-option>
+            <mat-option [value]="null">No slot</mat-option>
             @for (slot of slotOptions; track slot.slotKey) {
               <mat-option [value]="slot.slotKey">
                 {{ slot.title }} · {{ slot.rangeLabel }}
@@ -39,7 +39,7 @@
 
       <div class="external-entry-dialog__grid">
         <mat-form-field appearance="fill">
-          <mat-label>Nom du meals / dish</mat-label>
+          <mat-label>Meal / dish name</mat-label>
           <input matInput type="text" formControlName="name" data-testid="external-entry-name" />
         </mat-form-field>
 
@@ -51,7 +51,7 @@
 
       <div class="external-entry-dialog__grid external-entry-dialog__grid--payment">
         <mat-form-field appearance="fill">
-          <mat-label>Statut</mat-label>
+          <mat-label>Status</mat-label>
           <mat-select formControlName="paymentStatus" data-testid="external-entry-payment-status">
             @for (status of paymentStatuses; track status.value) {
               <mat-option [value]="status.value">{{ status.label }}</mat-option>
@@ -60,7 +60,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="fill">
-          <mat-label>Prix</mat-label>
+          <mat-label>Price</mat-label>
           <input
             matInput
             type="number"
@@ -71,7 +71,7 @@
             [readonly]="!isPaid" />
           <span matTextSuffix>€</span>
           @if (!isPaid) {
-            <mat-hint>Non comptabilise en depense.</mat-hint>
+            <mat-hint>Not counted toward spending.</mat-hint>
           }
         </mat-form-field>
       </div>
@@ -82,22 +82,22 @@
         </div>
         <div class="external-entry-dialog__macro-grid">
           <mat-form-field appearance="fill">
-            <mat-label>Energie</mat-label>
+            <mat-label>Energy</mat-label>
             <input matInput type="number" min="0" step="1" formControlName="energyKcal" />
             <span matTextSuffix>kcal</span>
           </mat-form-field>
           <mat-form-field appearance="fill">
-            <mat-label>Proteines</mat-label>
+            <mat-label>Proteins</mat-label>
             <input matInput type="number" min="0" step="0.1" formControlName="proteins" />
             <span matTextSuffix>g</span>
           </mat-form-field>
           <mat-form-field appearance="fill">
-            <mat-label>Glucides</mat-label>
+            <mat-label>Carbs</mat-label>
             <input matInput type="number" min="0" step="0.1" formControlName="carbs" />
             <span matTextSuffix>g</span>
           </mat-form-field>
           <mat-form-field appearance="fill">
-            <mat-label>Lipides</mat-label>
+            <mat-label>Lipids</mat-label>
             <input matInput type="number" min="0" step="0.1" formControlName="lipids" />
             <span matTextSuffix>g</span>
           </mat-form-field>
