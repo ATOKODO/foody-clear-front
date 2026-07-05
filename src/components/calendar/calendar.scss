@@ -18,12 +18,10 @@
   align-self: stretch;
   justify-content: center;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 0.14);
+  border: 1px solid rgb(203 213 225);
   border-radius: 1.5rem;
-  background: rgb(15 23 42 / 0.46);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
-  backdrop-filter: blur(12px);
-  isolation: isolate;
+  background: rgb(248 250 252);
+  box-shadow: 0 10px 24px -20px rgb(15 23 42 / 0.18);
   padding: 0.35rem;
 }
 
@@ -34,16 +32,16 @@
   width: 100%;
   overflow: hidden;
   border-radius: 9999px;
-  border: 1px solid var(--app-border-strong);
-  background: rgb(15 23 42 / 0.66);
-  color: var(--app-text-inverse);
+  border: 2px solid #4d8078;
+  background: #c6fbf2;
+  color: #003732;
 }
 
 :host
   ::ng-deep
   .calendar-view-toggle.mat-button-toggle-group-appearance-standard {
-  border-color: rgb(255 255 255 / 0.12);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+  border-color: rgb(203 213 225);
+  box-shadow: none;
 }
 
 :host
@@ -61,16 +59,16 @@
 :host ::ng-deep .calendar-view-toggle .mat-button-toggle-label-content {
   padding: 0.68rem 0.9rem;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.2;
   white-space: nowrap;
 }
 
 :host ::ng-deep .calendar-view-toggle .mat-button-toggle-checked {
-  border-color: rgb(209 250 229 / 0.9);
-  background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%);
-  color: #14532d;
-  box-shadow: 0 10px 24px rgb(15 23 42 / 0.18);
+  border-color: #003913;
+  background: #cfffa9;
+  color: #003913;
+  box-shadow: 0 10px 24px rgb(15 23 42 / 0.12);
 }
 
 :host

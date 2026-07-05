@@ -121,6 +121,56 @@
   width: fit-content;
 }
 
+:host ::ng-deep .stat-view-switch.mat-button-toggle-group,
+:host ::ng-deep .stat-card__head mat-button-toggle-group {
+  gap: 0.5rem;
+  padding: 0.35rem;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 9999px;
+  background: rgb(248 250 252);
+}
+
+:host ::ng-deep .stat-view-switch .mat-button-toggle,
+:host ::ng-deep .stat-card__head mat-button-toggle {
+  border: 2px solid #4d8078;
+  border-radius: 9999px;
+  background: #c6fbf2;
+  color: #003732;
+}
+
+:host ::ng-deep .stat-view-switch .mat-button-toggle-label-content,
+:host ::ng-deep .stat-card__head .mat-button-toggle-label-content {
+  padding: 0.55rem 0.95rem;
+  font-weight: 500;
+}
+
+:host ::ng-deep .stat-view-switch .mat-button-toggle-checked,
+:host ::ng-deep .stat-card__head .mat-button-toggle-checked {
+  border-color: #003913;
+  background: #cfffa9;
+  color: #003913;
+}
+
+:host-context(.dark) ::ng-deep .stat-view-switch.mat-button-toggle-group,
+:host-context(.dark) ::ng-deep .stat-card__head mat-button-toggle-group {
+  border-color: var(--app-border);
+  background: rgb(15 23 42 / 0.92);
+}
+
+:host-context(.dark) ::ng-deep .stat-view-switch .mat-button-toggle,
+:host-context(.dark) ::ng-deep .stat-card__head mat-button-toggle {
+  border-color: rgb(110 231 210 / 0.35);
+  background: rgb(8 67 61 / 0.82);
+  color: #d1fae5;
+}
+
+:host-context(.dark) ::ng-deep .stat-view-switch .mat-button-toggle-checked,
+:host-context(.dark) ::ng-deep .stat-card__head .mat-button-toggle-checked {
+  border-color: rgb(207 255 169 / 0.4);
+  background: rgb(111 168 58 / 0.32);
+  color: #ecfccb;
+}
+
 .stat-filters {
   align-items: end;
 }
