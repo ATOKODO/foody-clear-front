@@ -205,7 +205,7 @@ export class ListCycle implements OnInit, OnChanges {
     }
 
     const suffix = count > 1 ? 's' : '';
-    return `${count} ${type}${suffix}`;
+    return `${count} ${type === 'semaine' ? `week${suffix}` : `day${suffix}`}`;
   }
 
   getToggleLabel(cycleId: number): string {

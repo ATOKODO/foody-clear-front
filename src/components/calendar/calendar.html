@@ -570,7 +570,7 @@
         <div class="calendar-week-grid">
           <div class="calendar-week-grid__timeline">
             <div class="calendar-week-grid__corner">
-              <span>Heures</span>
+              <span>Hours</span>
             </div>
             @for (day of weekDays; track trackByDate(dayIndex, day); let dayIndex = $index) {
               <div
@@ -761,10 +761,10 @@
             <div>
               <p class="calendar-week-summary__eyebrow">Day view</p>
               <h3 class="calendar-day-summary__title">
-                {{ currentDate.toFormat('EEEE d LLLL', { locale: 'fr' }) }}
+                {{ currentDate.setLocale('en').toFormat('EEEE d LLLL') }}
               </h3>
               <p class="calendar-day-summary__description">
-                Le pilotage du day et les slots detaillees sont regroupes dans une seule surface.
+                The daily dashboard and detailed slots are grouped into a single surface.
               </p>
             </div>
             <div class="calendar-day-summary__actions">
@@ -773,7 +773,7 @@
                 data-testid="calendar-day-manage-cycle"
                 class="calendar-day-summary__action-button calendar-day-summary__action-button--cycle"
                 (click)="onManageAssignment(currentDate.toISODate())">
-                Gerer Cycle
+                Manage cycle
               </button>
               <button
                 type="button"
@@ -807,7 +807,7 @@
             <section class="calendar-day-summary__panel calendar-day-summary__panel--pilot">
               <div class="calendar-day-summary__panel-head">
                 <div class="calendar-day-summary__panel-copy">
-                  <p class="calendar-day-summary__panel-title">Pilotage du day</p>
+                  <p class="calendar-day-summary__panel-title">Day dashboard</p>
                   <h4 class="calendar-day-summary__panel-heading">{{ getDayTargetHeadline() }}</h4>
                   <p class="calendar-day-summary__panel-description">
                     {{ getDayTargetSupportingText() }}
@@ -954,7 +954,7 @@
             <div class="calendar-day-hours__grid">
               <div class="calendar-day-grid__timeline">
                 <div class="calendar-day-grid__corner">
-                  <span>Heures</span>
+                  <span>Hours</span>
                 </div>
                 <div class="calendar-day-grid__header">
                   <div class="calendar-day-grid__header-summary">
@@ -964,7 +964,7 @@
                     </div>
                     <div class="calendar-day-grid__header-meta">
                       <span class="calendar-week-meta-pill">{{ getDayTemplateSlotCount() }} template(s)</span>
-                      <span class="calendar-week-meta-pill">{{ getDaySetSlotCount() }} slot(s) DaySet</span>
+                      <span class="calendar-week-meta-pill">{{ getDaySetSlotCount() }} day set slot(s)</span>
                     </div>
                   </div>
                   <div class="calendar-day-grid__lanes" aria-hidden="true">

@@ -87,7 +87,7 @@ export function getCalendarDayTargetSourcePillText(
   targetSource: InputDayTargetSource,
 ): string {
   const labels: Record<InputDayTargetSource, string> = {
-    cycle: 'Cible cycle assigne',
+    cycle: 'Assigned cycle target',
     daySet: 'Day set target',
     none: 'Sans cible',
   };

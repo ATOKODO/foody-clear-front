@@ -551,14 +551,14 @@ export class Calendar implements OnInit, OnChanges {
       case 'year':
         return this.currentDate.toFormat('yyyy');
       case 'month':
-        return this.currentDate.toFormat('LLLL yyyy', { locale: 'fr' });
+        return this.currentDate.setLocale('en').toFormat('LLLL yyyy');
       case 'week': {
         const start = this.currentDate.startOf('week');
         const end = this.currentDate.endOf('week');
-        return `${start.toFormat('d MMM', { locale: 'fr' })} - ${end.toFormat('d MMM yyyy', { locale: 'fr' })}`;
+        return `${start.setLocale('en').toFormat('d MMM')} - ${end.setLocale('en').toFormat('d MMM yyyy')}`;
       }
       case 'day':
-        return this.currentDate.toFormat('EEEE d LLLL yyyy', { locale: 'fr' });
+        return this.currentDate.setLocale('en').toFormat('EEEE d LLLL yyyy');
       default:
         return '';
     }
