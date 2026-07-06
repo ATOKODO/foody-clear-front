@@ -492,13 +492,29 @@ button.home-dashboard__hero-link {
 
 :host-context(.dark) .home-dashboard__hero-link,
 :host-context(.dark) .home-panel__link {
-  color: #07111f;
+  border-color: rgba(148, 163, 184, 0.26);
+  background: #142234;
+  color: #ecf7f3;
+}
+
+:host-context(.dark) .home-dashboard__hero-link--primary {
+  border-color: #7bcf96;
+  background: #183326;
+  color: #eaffef;
 }
 
 :host-context(.dark) .home-dashboard__hero-link--secondary,
 :host-context(.dark) .home-dashboard__hero-link--ghost,
-:host-context(.dark) .home-panel__link {
-  color: var(--app-text-strong);
+:host-context(.dark) .home-panel__link,
+:host-context(.dark) .home-panel__link--secondary {
+  border-color: #5caea2;
+  background: #133631;
+  color: #e7fffb;
+}
+
+:host-context(.dark) .home-dashboard__hero-link:hover,
+:host-context(.dark) .home-panel__link:hover {
+  filter: brightness(1.06);
 }
 
 @media (max-width: 1180px) {
