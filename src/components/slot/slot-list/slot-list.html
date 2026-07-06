@@ -1,7 +1,7 @@
 <section
   class="sl-shell"
   [class.sl-shell--embedded]="embedded()"
-  aria-label="Liste des slots"
+  aria-label="Slot list"
   data-testid="slot-list">
   @if (embedded()) {
     @if (hasItems) {
@@ -67,17 +67,17 @@
         </ng-container>
 
         <ng-container matColumnDef="protein">
-          <th mat-header-cell *matHeaderCellDef>Proteine</th>
+          <th mat-header-cell *matHeaderCellDef>Protein</th>
           <td mat-cell *matCellDef="let item">{{ getProtein(item) }}</td>
         </ng-container>
 
         <ng-container matColumnDef="carbs">
-          <th mat-header-cell *matHeaderCellDef>Glucide</th>
+          <th mat-header-cell *matHeaderCellDef>Carb</th>
           <td mat-cell *matCellDef="let item">{{ getCarbs(item) }}</td>
         </ng-container>
 
         <ng-container matColumnDef="fat">
-          <th mat-header-cell *matHeaderCellDef>Lipide</th>
+          <th mat-header-cell *matHeaderCellDef>Fat</th>
           <td mat-cell *matCellDef="let item">{{ getFat(item) }}</td>
         </ng-container>
 

@@ -67,9 +67,9 @@ const NUTRITION_DEFINITIONS: {
   unit: CycleBreakdownMetric['unit'];
 }[] = [
   { key: 'kcal', totalKey: 'energyKcal', label: 'KCAL', unit: 'kcal' },
-  { key: 'proteins', totalKey: 'proteins', label: 'Proteines', unit: 'g' },
-  { key: 'carbs', totalKey: 'carbs', label: 'Glucides', unit: 'g' },
-  { key: 'lipids', totalKey: 'lipids', label: 'Lipides', unit: 'g' },
+  { key: 'proteins', totalKey: 'proteins', label: 'Proteins', unit: 'g' },
+  { key: 'carbs', totalKey: 'carbs', label: 'Carbs', unit: 'g' },
+  { key: 'lipids', totalKey: 'lipids', label: 'Fats', unit: 'g' },
 ];
 
 export function buildCycleListItem(

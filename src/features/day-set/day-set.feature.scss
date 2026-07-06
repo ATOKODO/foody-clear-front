@@ -10,6 +10,15 @@
 .day-set-feature__dialog-card {
   display: flex;
   flex-direction: column;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--app-surface);
+}
+
+.day-set-feature__dialog-card .app-day-set-form,
+.day-set-feature__dialog-card app-day-set-form {
+  display: block;
+  min-height: 0;
 }
 
 .day-set-feature__dialog-card--embedded {
@@ -19,12 +28,21 @@
 .day-set-feature__dialog-header {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 10;
+  flex: 0 0 auto;
   background: var(--app-surface);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
 
 .day-set-feature__dialog-content {
+  position: relative;
+  z-index: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
   padding: 0;
+  background: var(--app-surface);
 }
 
 .app-modal-backdrop--embedded-day-set {

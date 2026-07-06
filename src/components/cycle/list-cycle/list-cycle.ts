@@ -193,7 +193,7 @@ export class ListCycle implements OnInit, OnChanges {
 
   formatPercent(percentage: number | null): string {
     if (percentage === null) {
-      return 'Cible 0';
+      return 'Target 0';
     }
 
     return `${this.formatAmount(percentage)}%`;
@@ -201,7 +201,7 @@ export class ListCycle implements OnInit, OnChanges {
 
   formatDuration(count: number, type: TypeDuree): string {
     if (type === 'mois') {
-      return `${count} mois`;
+      return `${count} month${count > 1 ? 's' : ''}`;
     }
 
     const suffix = count > 1 ? 's' : '';
@@ -209,7 +209,7 @@ export class ListCycle implements OnInit, OnChanges {
   }
 
   getToggleLabel(cycleId: number): string {
-    return this.isExpanded(cycleId) ? 'Masquer le detail' : 'Voir le detail';
+    return this.isExpanded(cycleId) ? 'Hide details' : 'View details';
   }
 
   getEmbeddedSummaryCards(cycle: CycleListItem): CycleEmbeddedSummaryCard[] {
@@ -223,21 +223,21 @@ export class ListCycle implements OnInit, OnChanges {
       ),
       this.buildEmbeddedSummaryCard(
         'proteins',
-        'PROTEINES',
+        'PROTEINS',
         cycle.daySetTotals.proteins,
         cycle.proteins,
         'g',
       ),
       this.buildEmbeddedSummaryCard(
         'carbs',
-        'GLUCIDES',
+        'CARBS',
         cycle.daySetTotals.carbs,
         cycle.carbs,
         'g',
       ),
       this.buildEmbeddedSummaryCard(
         'lipids',
-        'LIPIDES',
+        'FATS',
         cycle.daySetTotals.lipids,
         cycle.lipids,
         'g',
@@ -247,18 +247,18 @@ export class ListCycle implements OnInit, OnChanges {
 
   getStatusLabel(status: CycleBreakdownStatus): string {
     if (status === 'over') {
-      return 'Depasse';
+      return 'Over';
     }
 
     if (status === 'exact') {
-      return 'Pile cible';
+      return 'On target';
     }
 
     if (status === 'missing') {
-      return 'Indispo';
+      return 'Unavailable';
     }
 
-    return 'Sous cible';
+    return 'Below target';
   }
 
   getStatusClass(status: CycleBreakdownStatus): string {
@@ -403,7 +403,7 @@ export class ListCycle implements OnInit, OnChanges {
           ? this.roundNumber((roundedValue / roundedTarget) * 100)
           : null,
       status: this.resolveComparisonStatus(roundedValue, roundedTarget),
-      caption: 'Moyenne journaliere effective',
+      caption: 'Effective daily average',
     };
   }
 

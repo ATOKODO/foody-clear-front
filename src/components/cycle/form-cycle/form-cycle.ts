@@ -108,22 +108,22 @@ export class FormCycle implements OnInit, OnChanges {
   showSelectionError = false;
 
   readonly colorOptions = [
-    { label: 'Rouge', value: 'red' },
-    { label: 'Bleu', value: 'blue' },
-    { label: 'Vert', value: 'green' },
-    { label: 'Jaune', value: 'yellow' },
+    { label: 'Red', value: 'red' },
+    { label: 'Blue', value: 'blue' },
+    { label: 'Green', value: 'green' },
+    { label: 'Yellow', value: 'yellow' },
     { label: 'Orange', value: 'orange' },
-    { label: 'Violet', value: 'purple' },
-    { label: 'Rose', value: 'pink' },
+    { label: 'Purple', value: 'purple' },
+    { label: 'Pink', value: 'pink' },
   ];
 
   readonly durationPresets: DurationPreset[] = [
-    { label: '7 jours', days: 7, legacyCount: 1, legacyType: 'semaine' },
-    { label: '14 jours', days: 14, legacyCount: 2, legacyType: 'semaine' },
-    { label: '28 jours', days: 28, legacyCount: 28, legacyType: 'jour' },
-    { label: '29 jours', days: 29, legacyCount: 29, legacyType: 'jour' },
-    { label: '30 jours', days: 30, legacyCount: 30, legacyType: 'jour' },
-    { label: '31 jours', days: 31, legacyCount: 31, legacyType: 'jour' },
+    { label: '7 days', days: 7, legacyCount: 1, legacyType: 'semaine' },
+    { label: '14 days', days: 14, legacyCount: 2, legacyType: 'semaine' },
+    { label: '28 days', days: 28, legacyCount: 28, legacyType: 'jour' },
+    { label: '29 days', days: 29, legacyCount: 29, legacyType: 'jour' },
+    { label: '30 days', days: 30, legacyCount: 30, legacyType: 'jour' },
+    { label: '31 days', days: 31, legacyCount: 31, legacyType: 'jour' },
   ];
 
   readonly form = this.fb.nonNullable.group({
@@ -183,7 +183,7 @@ export class FormCycle implements OnInit, OnChanges {
       title:
         daySetId > this.defaultDaySetId
           ? this.getDaySetTitle(daySetId)
-          : 'Objectif du cycle',
+          : 'Cycle target',
       isDefault: daySetId === this.defaultDaySetId,
       isOverflow: index >= this.maxSelectableDaySets,
     }));
