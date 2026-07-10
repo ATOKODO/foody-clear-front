@@ -195,7 +195,7 @@ export class TemplateForm implements OnInit, OnChanges {
       ...patch,
     };
 
-    if (Object.prototype.hasOwnProperty.call(patch, 'itemType')) {
+    if (Object.hasOwn(patch, 'itemType')) {
       nextDraft.productId = null;
       nextDraft.dishId = null;
       nextDraft.mealId = null;

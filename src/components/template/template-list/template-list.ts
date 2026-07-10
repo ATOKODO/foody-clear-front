@@ -157,7 +157,10 @@ export class TemplateList {
   }
 
   resolveTemplateItemTypeLabel(item: TemplateItem): string {
-    const itemType = item.itemType ?? (item.mealId != null ? 'meal' : item.dishId != null ? 'dish' : 'product');
+    let itemType = item.itemType;
+    if (itemType === null || itemType === undefined) {
+      itemType = item.mealId != null ? 'meal' : item.dishId != null ? 'dish' : 'product';
+    }
     if (itemType === 'meal') {
       return 'Meal';
     }

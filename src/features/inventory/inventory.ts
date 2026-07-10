@@ -761,9 +761,10 @@ export class Inventory implements OnInit {
     const inventoryId = this.selectedInventoryId;
     const hasCurrent =
       inventoryId !== null && this.inventoryListItems.some((item) => Number(item.id) === inventoryId);
-    const nextInventoryId = hasCurrent
-      ? (inventoryId as number)
-      : Number(this.inventoryListItems[0].id);
+    let nextInventoryId = Number(this.inventoryListItems[0].id);
+    if (hasCurrent && inventoryId !== null) {
+      nextInventoryId = inventoryId;
+    }
 
     this.selectedInventoryId = nextInventoryId;
     this.selectedInventoryProducts =

@@ -512,7 +512,12 @@ function formatMetricValue(
 ): string {
   if (typeof value === 'number' && Number.isFinite(value)) {
     const formatted = roundNumber(Math.abs(value));
-    const sign = showSign && value > 0 ? '+' : showSign && value < 0 ? '-' : '';
+    let sign = '';
+    if (showSign && value > 0) {
+      sign = '+';
+    } else if (showSign && value < 0) {
+      sign = '-';
+    }
     return `${sign}${formatted} ${unit}`.trim();
   }
 
@@ -560,5 +565,5 @@ function isFiniteNumber(value: unknown): value is number {
 
 function roundNumber(value: number): string {
   const rounded = Math.round(value * 100) / 100;
-  return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+  return String(rounded);
 }

@@ -103,7 +103,7 @@
                   [class.is-ready]="dish.availability?.isInStock">
                   {{ dish.availability?.isInStock ? 'In stock' : 'Incomplete stock' }}
                 </span>
-                <div class="meal-prep-list-card__actions" (click)="$event.stopPropagation()">
+                <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
                   <button
                     mat-stroked-button
                     type="button"
@@ -193,7 +193,7 @@
                   [class.is-ready]="meal.availability?.isInStock">
                   {{ meal.availability?.isInStock ? 'In stock' : 'Incomplete stock' }}
                 </span>
-                <div class="meal-prep-list-card__actions" (click)="$event.stopPropagation()">
+                <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
                   <button
                     mat-stroked-button
                     type="button"
@@ -278,7 +278,7 @@
 }
 @if (isEditorOpen) {
   <div class="modal-shell modal-shell--meal-prep" data-testid="meal-prep-editor-dialog">
-    <mat-card class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
+    <mat-card class="modal-card modal-card--wide" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
       <mat-card-header>
         <mat-card-title>
           @if (activeView === 'dish') {
@@ -439,7 +439,7 @@
 }
 @if (isProductPickerOpen) {
   <div class="modal-shell modal-shell--meal-prep" data-testid="meal-prep-product-picker-dialog">
-    <mat-card class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
+    <mat-card class="modal-card modal-card--wide" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
       <mat-card-header>
         <mat-card-title>Choose a product</mat-card-title>
         <mat-card-subtitle>

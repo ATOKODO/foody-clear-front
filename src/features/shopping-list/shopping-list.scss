@@ -142,19 +142,12 @@
 .shopping-list-table-card,
 .shopping-list-convert-card,
 .shopping-list-template-create {
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.75rem;
-  background: white;
-}
-
-.shopping-list-workspace,
-.shopping-list-editor-card,
-.shopping-list-table-card,
-.shopping-list-convert-card,
-.shopping-list-template-create {
   display: grid;
   gap: 0.875rem;
   padding: 0.875rem;
+  border: 1px solid rgb(226 232 240);
+  border-radius: 0.75rem;
+  background: white;
 }
 
 .shopping-list-section-header,
@@ -555,7 +548,7 @@
 
 :host-context(.dark) .shopping-list-action--primary {
   border-color: rgb(207 255 169 / 0.4);
-  background: rgb(111 168 58 / 0.32);
+  background: rgb(77 124 15 / 0.92);
   color: #ecfccb;
 }
 
@@ -566,12 +559,12 @@
 }
 
 :host-context(.dark) .shopping-list-list-card__status {
-  background: rgb(120 53 15 / 0.55);
+  background: rgb(124 45 18);
   color: rgb(254 215 170);
 }
 
 :host-context(.dark) .shopping-list-list-card__status--template {
-  background: rgb(3 105 161 / 0.42);
+  background: rgb(7 89 133);
   color: rgb(186 230 253);
 }
 

@@ -151,6 +151,16 @@ export interface CalendarRevertTemplateItemEvent {
   itemId: number;
 }
 
+function formatCalendarAssignmentProgress(assignment: CalendarAssignment): string | null {
+  if (assignment.dayNumber === null || assignment.dayNumber === undefined) {
+    return null;
+  }
+
+  return assignment.totalDays
+    ? `Day ${assignment.dayNumber}/${assignment.totalDays}`
+    : `Day ${assignment.dayNumber}`;
+}
+
 @Component({
   selector: 'app-calendar',
   imports: [MatButtonModule, MatButtonToggleModule, DecimalPipe],
@@ -198,10 +208,10 @@ export class Calendar implements OnInit, OnChanges {
   dayHours: HourSlot[] = [];
   daySlots: CalendarDaySlot[] = [];
 
-  private assignmentById = new Map<string, CycleAssignment>();
-  private visibleDayResponseByDate = new Map<string, InputDayResponse>();
-  private visibleDaySlotsByDate = new Map<string, CalendarDaySlot[]>();
-  private visibleTimelineBlocksByDate = new Map<
+  private readonly assignmentById = new Map<string, CycleAssignment>();
+  private readonly visibleDayResponseByDate = new Map<string, InputDayResponse>();
+  private readonly visibleDaySlotsByDate = new Map<string, CalendarDaySlot[]>();
+  private readonly visibleTimelineBlocksByDate = new Map<
     string,
     CalendarWeekTimelineBlock[]
   >();
@@ -369,10 +379,9 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   onDayClick(day: CalendarDay): void {
-    const sourceAssignment =
-      day.assignment && day.assignment.id
-        ? (this.assignmentById.get(day.assignment.id) ?? null)
-        : null;
+    const sourceAssignment = day.assignment?.id
+      ? (this.assignmentById.get(day.assignment.id) ?? null)
+      : null;
 
     this.dayClick.emit({
       view: this.currentView,
@@ -388,10 +397,9 @@ export class Calendar implements OnInit, OnChanges {
       resolvedDateLocal === ''
         ? null
         : (this.findAssignmentForDate(resolvedDateLocal) ?? null);
-    const assignmentFromHour =
-      hour.assignment && hour.assignment.id
-        ? (this.assignmentById.get(hour.assignment.id) ?? null)
-        : null;
+    const assignmentFromHour = hour.assignment?.id
+      ? (this.assignmentById.get(hour.assignment.id) ?? null)
+      : null;
     const sourceAssignment = assignmentFromDate ?? assignmentFromHour;
 
     this.hourClick.emit({
@@ -725,17 +733,13 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getMonthDayMacroComparisons(dateLocal: string): CalendarMacroComparison[] {
-    return this.buildMacroComparisons(
-      this.visibleDayResponseByDate.get(dateLocal) ?? null,
-    );
+    return this.getWeekDayMacroComparisons(dateLocal);
   }
 
   getMonthDayProjectedMacroComparisons(
     dateLocal: string,
   ): CalendarMacroComparison[] {
-    return this.buildProjectedMacroComparisons(
-      this.visibleDayResponseByDate.get(dateLocal) ?? null,
-    );
+    return this.getWeekDayProjectedMacroComparisons(dateLocal);
   }
 
   getDayMacroHighlights(): CalendarWeekMacroHighlight[] {
@@ -757,11 +761,7 @@ export class Calendar implements OnInit, OnChanges {
       if (assignment) {
         return {
           title: assignment.cycleName ?? assignment.label ?? 'Active cycle',
-          progress: assignment.dayNumber
-            ? assignment.totalDays
-              ? `Day ${assignment.dayNumber}/${assignment.totalDays}`
-              : `Day ${assignment.dayNumber}`
-            : null,
+          progress: formatCalendarAssignmentProgress(assignment),
           colorClass: assignment.color ?? 'bg-slate-700',
         };
       }
@@ -946,7 +946,7 @@ export class Calendar implements OnInit, OnChanges {
 
   getTemplateChipLabel(response: InputDayResponse | null): string | null {
     const title = response?.templateAssociation?.template.title?.trim();
-    return title ? title : null;
+    return title || null;
   }
 
   getTemplateSourceBadgeText(response: InputDayResponse | null): string | null {

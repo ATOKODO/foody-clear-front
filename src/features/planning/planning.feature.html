@@ -128,7 +128,7 @@
 </section>
 
 @if (activeModal) {
-  <div class="modal-backdrop" tabindex="0" role="button" aria-label="Close modal" (click)="closeActiveModal()" (keydown.enter)="closeActiveModal()" (keydown.space)="closeActiveModal(); $event.preventDefault()"></div>
+  <button type="button" class="modal-backdrop" aria-label="Close modal" (click)="closeActiveModal()"></button>
 }
 @if (activeModal) {
   <div class="modal-shell" [attr.data-testid]="'planning-modal-' + activeModal">

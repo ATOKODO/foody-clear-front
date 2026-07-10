@@ -56,7 +56,8 @@ class CalendarStub {
   }
 
   navigate(direction: 'prev' | 'next'): void {
-    void direction;
+    this.currentDate = this.currentDate.plus({ days: direction === 'next' ? 1 : -1 });
+    this.currentViewLabel = this.currentDate.toFormat('dd/MM/yyyy');
   }
 
   switchView(view: string): void {

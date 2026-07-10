@@ -262,5 +262,5 @@ function isStatisticPriceCorrectionValid(
 
 function roundStatisticValue(value: number): string {
   const rounded = Math.round(value * 100) / 100;
-  return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+  return String(rounded);
 }

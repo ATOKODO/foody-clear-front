@@ -39,8 +39,8 @@ export interface ProductListSource {
   priceUnit?: string | null;
   tags?: unknown[];
   nutritionValues?: unknown[];
-  category?: unknown | null;
-  genericProduct?: unknown | null;
+  category?: unknown;
+  genericProduct?: unknown;
 }
 
 export interface InputDaySelectedInventoryTemplateStock {
@@ -89,7 +89,7 @@ export interface InputDaySelectableProductInput {
   selectedInventoryProducts: readonly InventoryProduct[];
 }
 
-export type InputDaySlotMacroEntry = {
+export interface InputDaySlotMacroEntry {
   key: string;
   value: InputDayMacroValue;
-};
+}

@@ -435,7 +435,11 @@ export function resolveCalendarDayMacroCardStatus(
   delta: InputDayMacroValue | undefined,
 ): CalendarDayMacroCard['status'] {
   if (typeof delta === 'number') {
-    return delta === 0 ? 'exact' : delta > 0 ? 'over' : 'under';
+    if (delta === 0) {
+      return 'exact';
+    }
+
+    return delta > 0 ? 'over' : 'under';
   }
 
   if (typeof consumed === 'number' && typeof target === 'number') {

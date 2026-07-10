@@ -258,33 +258,11 @@ export class InputDayFeature implements OnInit, OnChanges {
     }
 
     if (changes['apiBaseUrl']) {
-      this.baseUrl = this.resolveConfiguredBaseUrl();
-      this.applyServicesBaseUrl();
-      if (this.shouldEagerLoadProducts() || this.products.length > 0) {
-        this.loadProducts();
-      }
-      this.loadInventories();
-      this.loadTemplates();
-      if (this.hasValidSelectedDate) {
-        this.loadDay();
-      }
+      this.handleApiBaseUrlChange();
     }
 
     if (changes['initialOccurredAt'] || changes['initialEditingItemId']) {
-      if (
-        this.shouldEagerLoadProducts() &&
-        this.products.length === 0 &&
-        !this.loadingProducts
-      ) {
-        this.loadProducts();
-      }
-
-      this.syncPendingEditorContextFromInputs();
-      if (this.inputDayResponse) {
-        this.applyPendingEditorContext();
-      } else if (this.pendingInitialEditingItemId === null) {
-        this.prefillItemEditorForCreate(this.pendingInitialOccurredAt);
-      }
+      this.handleInitialEditorContextChange();
     }
 
     if (
@@ -292,20 +270,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       changes['displayMode'] ||
       changes['lockDate']
     ) {
-      if (
-        this.shouldEagerLoadProducts() &&
-        this.products.length === 0 &&
-        !this.loadingProducts
-      ) {
-        this.loadProducts();
-      }
-
-      this.applyInitialDateInput();
-      this.syncPendingEditorContextFromInputs();
-      this.prefillItemEditorForCreate(this.pendingInitialOccurredAt);
-      if (this.isEmbeddedMode && this.hasValidSelectedDate) {
-        this.loadDay();
-      }
+      this.handleInitialDateContextChange();
     }
   }
 
@@ -1106,6 +1071,49 @@ export class InputDayFeature implements OnInit, OnChanges {
       this.isStandaloneMode ||
       normalizePositiveInteger(this.initialEditingItemId()) !== null
     );
+  }
+
+  private handleApiBaseUrlChange(): void {
+    this.baseUrl = this.resolveConfiguredBaseUrl();
+    this.applyServicesBaseUrl();
+    if (this.shouldEagerLoadProducts() || this.products.length > 0) {
+      this.loadProducts();
+    }
+    this.loadInventories();
+    this.loadTemplates();
+    if (this.hasValidSelectedDate) {
+      this.loadDay();
+    }
+  }
+
+  private handleInitialEditorContextChange(): void {
+    this.loadProductsForCurrentContext();
+    this.syncPendingEditorContextFromInputs();
+    if (this.inputDayResponse) {
+      this.applyPendingEditorContext();
+    } else if (this.pendingInitialEditingItemId === null) {
+      this.prefillItemEditorForCreate(this.pendingInitialOccurredAt);
+    }
+  }
+
+  private handleInitialDateContextChange(): void {
+    this.loadProductsForCurrentContext();
+    this.applyInitialDateInput();
+    this.syncPendingEditorContextFromInputs();
+    this.prefillItemEditorForCreate(this.pendingInitialOccurredAt);
+    if (this.isEmbeddedMode && this.hasValidSelectedDate) {
+      this.loadDay();
+    }
+  }
+
+  private loadProductsForCurrentContext(): void {
+    if (
+      this.shouldEagerLoadProducts() &&
+      this.products.length === 0 &&
+      !this.loadingProducts
+    ) {
+      this.loadProducts();
+    }
   }
 
   private applyServicesBaseUrl(): void {

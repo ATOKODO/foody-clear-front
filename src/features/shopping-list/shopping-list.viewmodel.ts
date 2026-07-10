@@ -25,7 +25,7 @@ export const SHOPPING_LIST_VIEW_OPTIONS: readonly SegmentedToggleOption<Shopping
   { value: 'template', label: 'Shopping template' },
 ];
 
-const ALLOWED_QTY_UNITS: readonly ProductQuantityInputUnit[] = [
+const ALLOWED_QTY_UNITS = new Set<ProductQuantityInputUnit>([
   'mg',
   'g',
   'kg',
@@ -38,7 +38,9 @@ const ALLOWED_QTY_UNITS: readonly ProductQuantityInputUnit[] = [
   'part',
   'bouteille',
   'portion',
-];
+]);
+
+type ShoppingListProductItem = ShoppingListItem | ShoppingListTemplateItem;
 
 export function countCheckedItems(list: ShoppingList | null): number {
   return list?.items.filter((item) => item.checked).length ?? 0;
@@ -53,7 +55,7 @@ export function toProductListItems(products: Product[]): ProductListItem[] {
 }
 
 export function resolveProductName(
-  item: Pick<ShoppingListItem | ShoppingListTemplateItem, 'product' | 'productId'>,
+  item: Pick<ShoppingListProductItem, 'product' | 'productId'>,
 ): string {
   return item.product?.name?.trim() || `Product #${item.productId}`;
 }
@@ -118,7 +120,7 @@ export function normalizeQtyUnit(
   }
 
   const candidate = value.trim().toLowerCase();
-  return ALLOWED_QTY_UNITS.includes(candidate as ProductQuantityInputUnit)
+  return ALLOWED_QTY_UNITS.has(candidate as ProductQuantityInputUnit)
     ? (candidate as ProductQuantityInputUnit)
     : null;
 }

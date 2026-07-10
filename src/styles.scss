@@ -306,6 +306,8 @@ a {
   z-index: 900;
   background: var(--app-overlay);
   backdrop-filter: blur(6px);
+  border: 0;
+  padding: 0;
 }
 
 .app-modal-shell,

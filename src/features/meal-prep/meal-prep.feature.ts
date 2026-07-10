@@ -537,7 +537,11 @@ export class MealPrepFeature implements OnInit {
     const nextDishes = this.dishes.filter((dish) => dish.id !== dishId);
     this.dishesState.set(nextDishes);
     this.selectedDishIdState.set(nextDishes[0]?.id ?? null);
-    nextDishes[0] ? this.populateDishDraft(nextDishes[0]) : this.startNewDish();
+    if (nextDishes[0]) {
+      this.populateDishDraft(nextDishes[0]);
+    } else {
+      this.startNewDish();
+    }
     this.savingState.set(false);
   }
 
@@ -545,7 +549,11 @@ export class MealPrepFeature implements OnInit {
     const nextMeals = this.meals.filter((meal) => meal.id !== mealId);
     this.mealsState.set(nextMeals);
     this.selectedMealIdState.set(nextMeals[0]?.id ?? null);
-    nextMeals[0] ? this.populateMealDraft(nextMeals[0]) : this.startNewMeal();
+    if (nextMeals[0]) {
+      this.populateMealDraft(nextMeals[0]);
+    } else {
+      this.startNewMeal();
+    }
     this.savingState.set(false);
   }
 

@@ -284,7 +284,11 @@ export function normalizeInputDayQtyUnit(
     return null;
   }
 
-  const candidate = String(value).trim().toLowerCase();
+  if (typeof value !== 'string') {
+    throw new Error('qtyUnit invalide.');
+  }
+
+  const candidate = value.trim().toLowerCase();
   if (candidate === '') {
     return null;
   }
@@ -374,7 +378,14 @@ export function isInputDayDateLocal(value: string): boolean {
 export function normalizeInputDayInventoryIds(
   value: number | number[] | null | undefined,
 ): number[] {
-  const values = Array.isArray(value) ? value : value == null ? [] : [value];
+  let values: number[];
+  if (Array.isArray(value)) {
+    values = value;
+  } else if (value == null) {
+    values = [];
+  } else {
+    values = [value];
+  }
   return Array.from(
     new Set(
       values.filter(
@@ -412,8 +423,8 @@ export function normalizeNullablePositiveInteger(value: unknown): number | null 
 export function normalizeIsoString(
   value: string | null | undefined,
 ): string | null {
-  const candidate = value?.trim();
-  return candidate ? candidate : null;
+  const candidate = value?.trim() || null;
+  return candidate;
 }
 
 export function formatInputDayDecimal(value: number): string {

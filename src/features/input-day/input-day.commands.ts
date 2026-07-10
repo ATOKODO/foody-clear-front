@@ -45,6 +45,22 @@ export interface InputDayItemEditorRequestInput {
   resolveUpdateRequestDateLocal: () => string | null;
 }
 
+interface NormalizedInputDayItemEditorValue {
+  dateLocal: string;
+  inventoryId: number;
+  productId: number;
+  qty: number;
+  qtyUnit: ProductQuantityInputUnit | null;
+  occurredAt: string | null;
+  slotId: number | null;
+  slotKey: string;
+  itemId: number | null;
+}
+
+type NormalizeInputDayItemEditorResult =
+  | { value: NormalizedInputDayItemEditorValue; error: null }
+  | { value: null; error: string };
+
 export interface InputDaySelectedItemsRequest {
   requestDateLocal: string;
   payload: CreateInputDayItemsDto;
@@ -75,11 +91,10 @@ export interface InputDayItemEditorAvailabilityInput {
   hasInventoryProductsError: boolean;
 }
 
-export interface InputDaySelectedItemsAvailabilityInput
-  extends Omit<
-    InputDayItemEditorAvailabilityInput,
-    'hasProductsError' | 'hasInventoriesError' | 'hasInventoryProductsError'
-  > {
+export interface InputDaySelectedItemsAvailabilityInput extends Omit<
+  InputDayItemEditorAvailabilityInput,
+  'hasProductsError' | 'hasInventoriesError' | 'hasInventoryProductsError'
+> {
   loadingInventoryProducts: boolean;
   hasProductsError: boolean;
   hasInventoriesError: boolean;
@@ -206,25 +221,58 @@ export function buildInputDayItemEditorRequest({
   timezone,
   resolveUpdateRequestDateLocal,
 }: InputDayItemEditorRequestInput): InputDayCommandResult<InputDayItemEditorRequest> {
+  const normalizedResult = normalizeInputDayItemEditorValue(
+    value,
+    selectedInventoryIds,
+    qtyUnitSet,
+    timezone,
+  );
+  if (normalizedResult.error !== null) {
+    return { request: null, error: normalizedResult.error };
+  }
+
+  const normalizedValue = normalizedResult.value;
+  if (normalizedValue.itemId === null) {
+    return buildCreateInputDayItemRequest(normalizedValue);
+  }
+
+  const requestDateLocal = resolveUpdateRequestDateLocal();
+  if (!requestDateLocal) {
+    return { request: null, error: null };
+  }
+
+  return buildUpdateInputDayItemRequest(
+    normalizedValue,
+    normalizedValue.itemId,
+    requestDateLocal,
+  );
+}
+
+function normalizeInputDayItemEditorValue(
+  value: InputDayItemEditorValue,
+  selectedInventoryIds: readonly number[],
+  qtyUnitSet: ReadonlySet<ProductQuantityInputUnit>,
+  timezone: string,
+): NormalizeInputDayItemEditorResult {
   const dateLocal = readString(value.dateLocal);
   if (!isInputDayDateLocal(dateLocal)) {
     return {
-      request: null,
-      error: "Entry date must use YYYY-MM-DD format.",
+      value: null,
+      error: 'Entry date must use YYYY-MM-DD format.',
     };
   }
 
   if (selectedInventoryIds.length === 0) {
     return {
-      request: null,
-      error: "Select at least one inventory before saving the entry.",
+      value: null,
+      error: 'Select at least one inventory before saving the entry.',
     };
   }
 
   const inventoryId = selectedInventoryIds[0];
   const productId = normalizePositiveInteger(value.productId);
   if (productId === null) {
-    return { request: null, error: 'Select a product.' };
+    return { value: null, error: 'Select a product.' };
   }
 
   const qty = value.qty ?? null;
@@ -234,7 +282,7 @@ export function buildInputDayItemEditorRequest({
     !Number.isFinite(qty) ||
     qty <= 0
   ) {
-    return { request: null, error: 'La quantite doit etre > 0.' };
+    return { value: null, error: 'La quantite doit etre > 0.' };
   }
 
   let qtyUnit: ProductQuantityInputUnit | null;
@@ -242,7 +290,7 @@ export function buildInputDayItemEditorRequest({
     qtyUnit = normalizeInputDayQtyUnit(value.qtyUnit, qtyUnitSet);
   } catch (error) {
     return {
-      request: null,
+      value: null,
       error: error instanceof Error ? error.message : 'qtyUnit invalide.',
     };
   }
@@ -253,37 +301,74 @@ export function buildInputDayItemEditorRequest({
       ? null
       : buildInputDayOccurredAtIso(occurredAtRaw, timezone);
   if (occurredAtRaw !== '' && occurredAt === null) {
-    return { request: null, error: 'occurredAt doit etre une date/heure valide.' };
+    return {
+      value: null,
+      error: 'occurredAt doit etre une date/heure valide.',
+    };
   }
 
   const slotId = normalizeNullablePositiveInteger(value.slotId);
   const slotKey = slotId === null ? readString(value.slotKey) : '';
   const itemId = normalizePositiveInteger(value.itemId);
 
-  if (itemId === null) {
-    return {
-      request: {
-        itemId: null,
-        requestDateLocal: dateLocal,
-        payload: {
-          productId,
-          inventoryId,
-          qty,
-          ...(occurredAt ? { occurredAt } : {}),
-          ...(qtyUnit ? { qtyUnit } : {}),
-          ...(slotId !== null ? { slotId } : {}),
-          ...(slotId === null && slotKey !== '' ? { slotKey } : {}),
-        },
+  return {
+    value: {
+      dateLocal,
+      inventoryId,
+      productId,
+      qty,
+      qtyUnit,
+      occurredAt,
+      slotId,
+      slotKey,
+      itemId,
+    },
+    error: null,
+  };
+}
+
+function buildCreateInputDayItemRequest({
+  dateLocal,
+  inventoryId,
+  productId,
+  qty,
+  qtyUnit,
+  occurredAt,
+  slotId,
+  slotKey,
+}: NormalizedInputDayItemEditorValue): InputDayCommandResult<InputDayItemEditorRequest> {
+  return {
+    request: {
+      itemId: null,
+      requestDateLocal: dateLocal,
+      payload: {
+        productId,
+        inventoryId,
+        qty,
+        ...(occurredAt ? { occurredAt } : {}),
+        ...(qtyUnit ? { qtyUnit } : {}),
+        ...(slotId !== null ? { slotId } : {}),
+        ...(slotId === null && slotKey !== '' ? { slotKey } : {}),
       },
-      error: null,
-    };
-  }
+    },
+    error: null,
+  };
+}
 
-  const requestDateLocal = resolveUpdateRequestDateLocal();
-  if (!requestDateLocal) {
-    return { request: null, error: null };
-  }
-
+function buildUpdateInputDayItemRequest(
+  {
+    dateLocal,
+    inventoryId,
+    productId,
+    qty,
+    qtyUnit,
+    occurredAt,
+    slotId,
+    slotKey,
+  }: NormalizedInputDayItemEditorValue,
+  itemId: number,
+  requestDateLocal: string,
+): InputDayCommandResult<InputDayItemEditorRequest> {
   return {
     request: {
       itemId,
@@ -370,7 +455,7 @@ function validateSelectedItemsPayload({
   }
 
   if (selectedInventoryIds.length === 0) {
-    return "Select at least one inventory before adding items.";
+    return 'Select at least one inventory before adding items.';
   }
 
   if (selectedProductRows.length === 0) {
@@ -402,5 +487,5 @@ function validateSelectedItemsPayload({
 }
 
 function readString(value: unknown): string {
-  return String(value ?? '').trim();
+  return typeof value === 'string' ? value.trim() : '';
 }

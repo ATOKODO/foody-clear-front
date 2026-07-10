@@ -228,7 +228,7 @@ export class ProductList implements OnInit, OnChanges {
 
   getLinkedEntityDisplay(value: string | null | undefined): string {
     const normalized = value?.trim();
-    return normalized ? normalized : '-';
+    return normalized || '-';
   }
 
   onRowClick(item: ProductListItem): void {

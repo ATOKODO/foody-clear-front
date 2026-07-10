@@ -663,7 +663,7 @@ function buildCalendarWeekTimelineSlotBlock(
       : null;
   const lastItemMinute =
     items.length > 0
-      ? resolveCalendarInsertedProductMinute(items[items.length - 1], timezone)
+      ? resolveCalendarInsertedProductMinute(items.at(-1) as CalendarInsertedProduct, timezone)
       : null;
 
   const startMinute = slotStart ?? firstItemMinute;
