@@ -10,7 +10,7 @@ function readLastResponseJson(text: string | null): Record<string, unknown> | un
 }
 
 test('creates, reads, updates and deletes a nutrition value', async ({ page, mockApi }) => {
-  void mockApi;
+  expect(mockApi).toBeDefined();
 
   await gotoRoute(page, '/nutrition-value');
   await expectShellTitle(page, 'Valeurs nutritionnelles');

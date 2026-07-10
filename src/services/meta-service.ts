@@ -20,7 +20,7 @@ export interface NutritionKeyMeta {
 
 @Injectable({ providedIn: 'root' })
 export class MetaService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   baseUrl = defaultApiBaseUrl;
 
@@ -41,47 +41,18 @@ export class MetaService {
   }
 
   private normalizeQuantityUnits(response: unknown): QuantityUnitMeta[] {
-    if (Array.isArray(response)) {
-      return this.sanitizeUnits(response);
-    }
-
-    if (!response || typeof response !== 'object') {
-      return [];
-    }
-
-    const data = response as Record<string, unknown>;
-    const candidateKeys = ['data', 'items', 'quantityUnits', 'units'];
-
-    for (const key of candidateKeys) {
-      const value = data[key];
-      if (Array.isArray(value)) {
-        return this.sanitizeUnits(value);
-      }
-    }
-
-    return [];
+    return this.sanitizeUnits(this.findArrayPayload(response, ['data', 'items', 'quantityUnits', 'units']));
   }
 
   private normalizeNutritionKeys(response: unknown): NutritionKeyMeta[] {
-    if (Array.isArray(response)) {
-      return this.sanitizeNutritionKeys(response);
-    }
+    return this.sanitizeNutritionKeys(this.findArrayPayload(response, ['data', 'items', 'nutritionKeys', 'keys']));
+  }
 
-    if (!response || typeof response !== 'object') {
-      return [];
-    }
-
+  private findArrayPayload(response: unknown, keys: string[]): unknown[] {
+    if (Array.isArray(response)) return response;
+    if (!response || typeof response !== 'object') return [];
     const data = response as Record<string, unknown>;
-    const candidateKeys = ['data', 'items', 'nutritionKeys', 'keys'];
-
-    for (const key of candidateKeys) {
-      const value = data[key];
-      if (Array.isArray(value)) {
-        return this.sanitizeNutritionKeys(value);
-      }
-    }
-
-    return [];
+    return keys.map((key) => data[key]).find(Array.isArray) ?? [];
   }
 
   private sanitizeUnits(values: unknown[]): QuantityUnitMeta[] {

@@ -25,7 +25,7 @@ export type UpdateGenericProductDto = Partial<CreateGenericProductDto>;
 
 @Injectable({ providedIn: 'root' })
 export class GenericProductService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   baseUrl = defaultApiBaseUrl;
 

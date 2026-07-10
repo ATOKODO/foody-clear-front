@@ -15,9 +15,34 @@ import {
 import type { MockCycle, MockCycleAssignment, MockDaySet, MockSlot, MockTemplate } from '../state';
 
 export async function handlePlanningRequest(context: MockApiRequestContext): Promise<boolean> {
-  const { path, request, state, url } = context;
-  const method = request.method();
+  const handlers = [
+    handleSlotCollectionRequest,
+    handleSlotRequest,
+    handleDaySetCollectionRequest,
+    handleDaySetRequest,
+    handleCycleCollectionRequest,
+    handleCycleRequest,
+    handleTemplateCollectionRequest,
+    handleTemplateRequest,
+    handleTemplateItemsRequest,
+    handleTemplateItemRequest,
+    handleCycleAssignmentCollectionRequest,
+    handleCycleAssignmentRequest,
+  ];
 
+  for (const handler of handlers) {
+    if (await handler(context)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function handleSlotCollectionRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path === '/slot') {
     if (method === 'GET') {
       await context.json(state.slots.map(hydrateSlot));
@@ -42,7 +67,13 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       return true;
     }
   }
+  return false;
+}
 
+async function handleSlotRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path.startsWith('/slot/')) {
     const slotId = Number(path.split('/')[2]);
     const slot = getSlot(state, slotId);
@@ -81,7 +112,13 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       return true;
     }
   }
+  return false;
+}
 
+async function handleDaySetCollectionRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path === '/day-set') {
     if (method === 'GET') {
       await context.json(state.daySets.map((daySet) => hydrateDaySet(state, daySet)));
@@ -106,7 +143,13 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       return true;
     }
   }
+  return false;
+}
 
+async function handleDaySetRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path.startsWith('/day-set/')) {
     const daySetId = Number(path.split('/')[2]);
     const daySet = getDaySet(state, daySetId);
@@ -149,7 +192,13 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       return true;
     }
   }
+  return false;
+}
 
+async function handleCycleCollectionRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path === '/cycle') {
     if (method === 'GET') {
       await context.json(state.cycles.map((cycle) => hydrateCycle(state, cycle)));
@@ -176,7 +225,13 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       return true;
     }
   }
+  return false;
+}
 
+async function handleCycleRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path.startsWith('/cycle/')) {
     const cycleId = Number(path.split('/')[2]);
     const cycle = getCycle(state, cycleId);
@@ -219,7 +274,13 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       return true;
     }
   }
+  return false;
+}
 
+async function handleTemplateCollectionRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path === '/template') {
     if (method === 'GET') {
       await context.json(state.templates.map((template) => buildTemplateResponse(state, template)));
@@ -238,7 +299,13 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       return true;
     }
   }
+  return false;
+}
 
+async function handleTemplateRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path.startsWith('/template/') && path.split('/').length === 3) {
     const templateId = Number(path.split('/')[2]);
     const template = getTemplate(state, templateId);
@@ -275,7 +342,13 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       return true;
     }
   }
+  return false;
+}
 
+async function handleTemplateItemsRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path.startsWith('/template/') && path.endsWith('/items')) {
     const templateId = Number(path.split('/')[2]);
     const template = getTemplate(state, templateId);
@@ -298,7 +371,13 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       return true;
     }
   }
+  return false;
+}
 
+async function handleTemplateItemRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path.startsWith('/template/') && path.includes('/items/')) {
     const [, , templateIdValue, , itemIdValue] = path.split('/');
     const templateId = Number(templateIdValue);
@@ -332,7 +411,13 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       return true;
     }
   }
+  return false;
+}
 
+async function handleCycleAssignmentCollectionRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path === '/cycle-assignment') {
     if (method === 'GET') {
       const from = url.searchParams.get('from');
@@ -365,7 +450,13 @@ export async function handlePlanningRequest(context: MockApiRequestContext): Pro
       return true;
     }
   }
+  return false;
+}
 
+async function handleCycleAssignmentRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path.startsWith('/cycle-assignment/')) {
     const assignmentId = Number(path.split('/')[2]);
     const assignment = state.cycleAssignments.find((candidate) => candidate.id === assignmentId) ?? null;

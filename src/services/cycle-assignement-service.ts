@@ -12,7 +12,7 @@ import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
   providedIn: 'root',
 })
 export class CycleAssignementService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   baseUrl = defaultApiBaseUrl;
 

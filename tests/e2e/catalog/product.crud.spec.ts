@@ -3,7 +3,7 @@ import { selectMatOptionByLabel } from '../../helpers/material';
 import { expectShellTitle, gotoRoute } from '../../helpers/navigation';
 
 test('creates, edits and deletes a product', async ({ page, mockApi }) => {
-  void mockApi;
+  expect(mockApi).toBeDefined();
 
   await gotoRoute(page, '/product');
   await expectShellTitle(page, 'Catalogue');

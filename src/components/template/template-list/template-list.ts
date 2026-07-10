@@ -156,11 +156,21 @@ export class TemplateList {
     return item.displayName ?? item.mealName ?? item.dishName ?? item.productName ?? 'Unnamed item';
   }
 
+  private resolveTemplateItemType(item: TemplateItem): NonNullable<TemplateItem['itemType']> {
+    if (item.mealId != null) {
+      return 'meal';
+    }
+
+    if (item.dishId != null) {
+      return 'dish';
+    }
+
+    return 'product';
+  }
+
   resolveTemplateItemTypeLabel(item: TemplateItem): string {
     let itemType = item.itemType;
-    if (itemType === null || itemType === undefined) {
-      itemType = item.mealId != null ? 'meal' : item.dishId != null ? 'dish' : 'product';
-    }
+    itemType ??= this.resolveTemplateItemType(item);
     if (itemType === 'meal') {
       return 'Meal';
     }

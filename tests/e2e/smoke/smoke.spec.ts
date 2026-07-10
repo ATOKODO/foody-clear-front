@@ -3,7 +3,7 @@ import { test } from '../../fixtures/test';
 import { expectShellTitle, gotoRoute, openSidebarRoute } from '../../helpers/navigation';
 
 test('redirects / to /home @smoke', async ({ page, mockApi }) => {
-  void mockApi;
+  expect(mockApi).toBeDefined();
 
   await page.goto('/');
 
@@ -13,7 +13,7 @@ test('redirects / to /home @smoke', async ({ page, mockApi }) => {
 });
 
 test('navigates through the main shell routes @smoke', async ({ page, mockApi }) => {
-  void mockApi;
+  expect(mockApi).toBeDefined();
 
   await gotoRoute(page, '/home');
 
@@ -35,7 +35,7 @@ test('navigates through the main shell routes @smoke', async ({ page, mockApi })
 });
 
 test('toggles the theme from the shell @smoke', async ({ page, mockApi }) => {
-  void mockApi;
+  expect(mockApi).toBeDefined();
 
   await gotoRoute(page, '/home');
 

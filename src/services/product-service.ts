@@ -93,7 +93,7 @@ export interface Product {
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   baseUrl = defaultApiBaseUrl;
 

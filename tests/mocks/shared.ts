@@ -1,4 +1,5 @@
 import type { Request, Route } from '@playwright/test';
+import type { InputDayResponse } from '../src/interfaces/input-day.interface';
 import { DateTime } from 'luxon';
 import type {
   MockApiState,
@@ -793,7 +794,7 @@ export function buildStatisticsTimeline(
   timezone: string,
 ): Record<string, unknown> {
   const days = listBetweenDates(fromDateLocal, toDateLocal).map((dateLocal) => {
-    const response = buildInputDayResponse(state, dateLocal) as Record<string, any>;
+    const response = buildInputDayResponse(state, dateLocal) as InputDayResponse;
     const dayItems = state.inputDayItems.filter((item) => item.dateLocal === dateLocal);
     const events = dayItems.map((item) => {
       const product = getProduct(state, item.productId);

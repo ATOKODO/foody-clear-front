@@ -450,10 +450,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   openExternalEntryFromItems(): void {
-    this.openExternalMealEntry(
-      this.selectedModalDateLocal,
-      this.selectedOccurredAt,
-    );
+    this.openExternalEntryFromActions();
   }
 
   closeActiveModal(): void {
@@ -703,12 +700,12 @@ export class PlanningFeature implements OnInit, AfterViewInit {
       this.loadInputDataForView(scheduledEvent);
     };
 
-    if (typeof window === 'undefined') {
+    if (typeof globalThis.window === 'undefined') {
       load();
       return;
     }
 
-    const idleWindow = window as Window & {
+    const idleWindow = globalThis.window as Window & {
       requestIdleCallback?: (
         callback: () => void,
         options?: { timeout: number },
@@ -720,7 +717,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
       return;
     }
 
-    window.setTimeout(load, 250);
+    globalThis.window.setTimeout(load, 250);
   }
 
   private loadInputDataForView(event: CalendarViewChangeEvent): void {

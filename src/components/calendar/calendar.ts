@@ -939,9 +939,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getMonthTemplateDayCount(): number {
-    return Array.from(this.visibleDayResponseByDate.values()).filter(
-      (response) => this.hasTemplateData(response),
-    ).length;
+    return this.getWeekSummaryTemplateDayCount();
   }
 
   getTemplateChipLabel(response: InputDayResponse | null): string | null {

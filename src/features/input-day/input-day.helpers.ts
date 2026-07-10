@@ -285,7 +285,7 @@ export function normalizeInputDayQtyUnit(
   }
 
   if (typeof value !== 'string') {
-    throw new Error('qtyUnit invalide.');
+    throw new TypeError('qtyUnit invalide.');
   }
 
   const candidate = value.trim().toLowerCase();

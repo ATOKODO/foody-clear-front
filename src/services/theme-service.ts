@@ -6,7 +6,7 @@ export type ThemeMode = 'light' | 'dark';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private document = inject<Document>(DOCUMENT);
+  private readonly document = inject<Document>(DOCUMENT);
 
   private readonly storageKey = 'theme';
   private readonly modeSubject = new BehaviorSubject<ThemeMode>('light');

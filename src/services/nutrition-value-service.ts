@@ -25,7 +25,7 @@ export type UpdateNutritionValueDto = Partial<CreateNutritionValueDto>;
 
 @Injectable({ providedIn: 'root' })
 export class NutritionValueService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   baseUrl = defaultApiBaseUrl;
 

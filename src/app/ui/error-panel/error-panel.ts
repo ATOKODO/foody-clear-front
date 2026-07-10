@@ -64,37 +64,25 @@ function summarizeError(error: unknown): string {
     return defaultErrorMessage;
   }
 
-  for (const key of ['message', 'detail', 'error', 'title']) {
-    const value = record[key];
-    const candidate = readTextCandidate(value);
-    if (candidate) {
-      return candidate;
-    }
-  }
+  return findRecordMessage(record) ?? formatStatusMessage(record) ?? defaultErrorMessage;
+}
 
-  const nestedError = toRecord(record['error']);
-  if (nestedError) {
-    for (const key of ['message', 'detail']) {
-      const candidate = readTextCandidate(nestedError[key]);
-      if (candidate) {
-        return candidate;
-      }
-    }
-  }
+function findRecordMessage(record: Record<string, unknown>): string | null {
+  const direct = ['message', 'detail', 'error', 'title']
+    .map((key) => readTextCandidate(record[key]))
+    .find((candidate): candidate is string => !!candidate);
+  if (direct) return direct;
+  const nested = toRecord(record['error']);
+  return nested
+    ? ['message', 'detail'].map((key) => readTextCandidate(nested[key])).find((candidate): candidate is string => !!candidate) ?? null
+    : null;
+}
 
+function formatStatusMessage(record: Record<string, unknown>): string | null {
   const status = typeof record['status'] === 'number' ? record['status'] : null;
-  const statusText =
-    typeof record['statusText'] === 'string' && record['statusText'].trim() !== ''
-      ? record['statusText'].trim()
-      : null;
-
-  if (status !== null) {
-    return statusText
-      ? `La requete a echoue (${status} ${statusText}).`
-      : `La requete a echoue (${status}).`;
-  }
-
-  return defaultErrorMessage;
+  if (status === null) return null;
+  const statusText = typeof record['statusText'] === 'string' ? record['statusText'].trim() : '';
+  return statusText ? `La requete a echoue (${status} ${statusText}).` : `La requete a echoue (${status}).`;
 }
 
 function readTextCandidate(value: unknown): string | null {

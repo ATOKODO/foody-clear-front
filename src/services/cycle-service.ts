@@ -6,7 +6,7 @@ import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
 
 @Injectable({ providedIn: 'root' })
 export class CycleService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   baseUrl = defaultApiBaseUrl;
 

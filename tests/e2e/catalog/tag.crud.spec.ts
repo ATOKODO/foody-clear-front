@@ -2,7 +2,7 @@ import { expect, test } from '../../fixtures/test';
 import { expectShellTitle, gotoRoute } from '../../helpers/navigation';
 
 test('creates, edits and deletes a tag', async ({ page, mockApi }) => {
-  void mockApi;
+  expect(mockApi).toBeDefined();
 
   await gotoRoute(page, '/tag');
   await expectShellTitle(page, 'Tags');

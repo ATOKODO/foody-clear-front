@@ -16,8 +16,36 @@ import {
   updateInventoryStock,
 } from '../shared';
 export async function handleExecutionRequest(context: MockApiRequestContext): Promise<boolean> {
-  const { path, request, state } = context;
-  const method = request.method();
+  const handlers = [
+    handleInventoryCollectionRequest,
+    handleInventoryRequest,
+    handleInventoryProductsRequest,
+    handleInventoryProductsAddRequest,
+    handleInventoryProductsRemoveRequest,
+    handleInventoryProductsReconcileRequest,
+    handleInputDayMonthRequest,
+    handleInputDayWeekRequest,
+    handleInputDayRequest,
+    handleInputDayCreateRequest,
+    handleInputDayBulkCreateRequest,
+    handleInputDayItemRequest,
+    handleInputDayTemplateRequest,
+    handleInputDayTemplateConversionRequest,
+  ];
+
+  for (const handler of handlers) {
+    if (await handler(context)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function handleInventoryCollectionRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path === '/inventory') {
     if (method === 'GET') {
       await context.json(state.inventories.map((inventory) => hydrateInventory(state, inventory)));
@@ -50,6 +78,13 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       return true;
     }
   }
+  return false;
+}
+
+async function handleInventoryRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path.startsWith('/inventory/') && path.split('/').length === 3) {
     const inventoryId = Number(path.split('/')[2]);
     const inventory = getInventory(state, inventoryId);
@@ -74,6 +109,13 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       return true;
     }
   }
+  return false;
+}
+
+async function handleInventoryProductsRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (path.startsWith('/inventory/') && path.endsWith('/products')) {
     const inventoryId = Number(path.split('/')[2]);
     const inventory = getInventory(state, inventoryId);
@@ -86,6 +128,12 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       return true;
     }
   }
+  return false;
+}
+
+async function handleInventoryProductsAddRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
   if (path.startsWith('/inventory/') && path.endsWith('/products/add')) {
     const inventoryId = Number(path.split('/')[2]);
     const inventory = getInventory(state, inventoryId);
@@ -113,6 +161,12 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json(hydrateInventory(state, inventory));
     return true;
   }
+  return false;
+}
+
+async function handleInventoryProductsRemoveRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
   if (path.startsWith('/inventory/') && path.endsWith('/products/remove')) {
     const inventoryId = Number(path.split('/')[2]);
     const inventory = getInventory(state, inventoryId);
@@ -140,6 +194,12 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json(hydrateInventory(state, inventory));
     return true;
   }
+  return false;
+}
+
+async function handleInventoryProductsReconcileRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
   if (path.startsWith('/inventory/') && path.endsWith('/products/reconcile')) {
     const inventoryId = Number(path.split('/')[2]);
     const inventory = getInventory(state, inventoryId);
@@ -168,16 +228,35 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json(hydrateInventory(state, inventory));
     return true;
   }
+  return false;
+}
+
+async function handleInputDayMonthRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
   if (path.startsWith('/input-days/month/')) {
     const dateLocal = path.split('/')[3];
     await context.json(buildMonthResponse(state, dateLocal));
     return true;
   }
+  return false;
+}
+
+async function handleInputDayWeekRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
   if (path.startsWith('/input-days/week/')) {
     const dateLocal = path.split('/')[3];
     await context.json(buildWeekResponse(state, dateLocal));
     return true;
   }
+  return false;
+}
+
+async function handleInputDayRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (/^\/input-days\/[^/]+$/.test(path)) {
     const dateLocal = path.split('/')[2];
     if (method === 'GET') {
@@ -185,6 +264,13 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       return true;
     }
   }
+  return false;
+}
+
+async function handleInputDayCreateRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (/^\/input-days\/[^/]+\/items$/.test(path) && method === 'POST') {
     const dateLocal = path.split('/')[2];
     const body = await context.readJson<Record<string, unknown>>();
@@ -197,6 +283,13 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json(created, 201);
     return true;
   }
+  return false;
+}
+
+async function handleInputDayBulkCreateRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (/^\/input-days\/[^/]+\/items\/bulk$/.test(path) && method === 'POST') {
     const dateLocal = path.split('/')[2];
     const body = await context.readJson<Record<string, unknown>>();
@@ -210,6 +303,13 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json({ created: items.length }, 201);
     return true;
   }
+  return false;
+}
+
+async function handleInputDayItemRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (/^\/input-days\/[^/]+\/items\/\d+$/.test(path)) {
     const [, , dateLocal, , itemIdValue] = path.split('/');
     const itemId = Number(itemIdValue);
@@ -242,6 +342,13 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
       return true;
     }
   }
+  return false;
+}
+
+async function handleInputDayTemplateRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (/^\/input-days\/[^/]+\/template$/.test(path) && method === 'PUT') {
     const dateLocal = path.split('/')[2];
     const body = await context.readJson<Record<string, unknown>>();
@@ -249,6 +356,13 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
     await context.json(buildInputDayResponse(state, dateLocal));
     return true;
   }
+  return false;
+}
+
+async function handleInputDayTemplateConversionRequest(context: MockApiRequestContext): Promise<boolean> {
+  const { path } = context;
+  const { state } = context;
+  const method = context.request.method();
   if (/^\/input-days\/[^/]+\/template-items\/\d+\/convert$/.test(path) && method === 'POST') {
     const [, , dateLocal, , templateItemIdValue] = path.split('/');
     const templateItemId = Number(templateItemIdValue);
@@ -283,6 +397,7 @@ export async function handleExecutionRequest(context: MockApiRequestContext): Pr
   }
   return false;
 }
+
 function createInputDayItem(
   context: MockApiRequestContext,
   dateLocal: string,

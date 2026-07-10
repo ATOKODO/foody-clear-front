@@ -22,7 +22,7 @@ export type UpdateCategoryDto = Partial<CreateCategoryDto>;
 
 @Injectable({ providedIn: 'root' })
 export class CategoryService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   /** Modifie-la dans le composant si besoin */
   baseUrl = defaultApiBaseUrl;

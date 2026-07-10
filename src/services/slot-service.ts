@@ -8,7 +8,7 @@ import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
   providedIn: 'root',
 })
 export class SlotService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   baseUrl = defaultApiBaseUrl;
 

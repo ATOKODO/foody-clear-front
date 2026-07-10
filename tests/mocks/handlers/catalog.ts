@@ -7,7 +7,6 @@ import {
   hydrateProduct,
   hydrateTag,
   removeArrayItem,
-  replaceArrayItem,
   round,
 } from '../shared';
 import type { MockNutritionValue, MockProduct } from '../state';

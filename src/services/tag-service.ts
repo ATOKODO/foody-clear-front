@@ -16,7 +16,7 @@ export type UpdateTagDto = Partial<CreateTagDto>;
 
 @Injectable({ providedIn: 'root' })
 export class TagService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
   baseUrl = defaultApiBaseUrl;
 
