@@ -477,7 +477,7 @@ function mergeSlots(
   const uniqueSlots = new Map<string, InputDayDaySetSlotSummary>();
 
   slotGroups.flat().forEach((slot) => {
-    const key = slot.slotId !== null ? `id:${slot.slotId}` : `key:${slot.slotKey}`;
+    const key = slot.slotId === null ? `key:${slot.slotKey}` : `id:${slot.slotId}`;
     if (!uniqueSlots.has(key)) {
       uniqueSlots.set(key, slot);
     }
@@ -490,7 +490,7 @@ function mergeSlots(
 }
 
 function getSlotKey(slot: InputDayDaySetSlotSummary): string {
-  return slot.slotId !== null ? `slot-${slot.slotId}` : `key-${slot.slotKey}`;
+  return slot.slotId === null ? `key-${slot.slotKey}` : `slot-${slot.slotId}`;
 }
 
 function formatSlotRange(slot: InputDayDaySetSlotSummary): string {

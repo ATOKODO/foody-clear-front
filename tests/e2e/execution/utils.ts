@@ -15,7 +15,7 @@ export async function loadStandaloneInputDay(
   await expect(dateInput).toBeVisible();
   await dateInput.evaluate((element, value) => {
     const input = element as HTMLInputElement;
-    input.value = value as string;
+    input.value = value;
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
     input.dispatchEvent(new Event('blur', { bubbles: true }));

@@ -584,7 +584,7 @@ function mergeSlotRecords(
     id: primary.id ?? fallback.id,
     key: primary.key || fallback.key,
     title: primary.title || fallback.title,
-    sortOrder: primary.sortOrder !== 0 ? primary.sortOrder : fallback.sortOrder,
+    sortOrder: primary.sortOrder === 0 ? fallback.sortOrder : primary.sortOrder,
     startTime: primary.startTime ?? fallback.startTime,
     endTime: primary.endTime ?? fallback.endTime,
     nutritionValues:
@@ -665,7 +665,7 @@ function ensureSlotTitle(record: SlotRecord): SlotRecord {
     title:
       record.title ||
       record.key ||
-      (record.id !== null ? `Slot ${record.id}` : 'Slot'),
+      (record.id === null ? 'Slot' : `Slot ${record.id}`),
   };
 }
 

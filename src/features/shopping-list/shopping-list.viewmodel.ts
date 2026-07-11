@@ -41,6 +41,7 @@ const ALLOWED_QTY_UNITS = new Set<ProductQuantityInputUnit>([
 ]);
 
 type ShoppingListProductItem = ShoppingListItem | ShoppingListTemplateItem;
+type LinkedProduct = InventoryLinkedProduct | Product;
 
 export function countCheckedItems(list: ShoppingList | null): number {
   return list?.items.filter((item) => item.checked).length ?? 0;
@@ -76,8 +77,8 @@ export function resolveDraftProductName(
 export function resolveLinkedProduct(
   products: Product[],
   productId: number,
-  inlineProduct: InventoryLinkedProduct | Product | null,
-): InventoryLinkedProduct | Product | null {
+  inlineProduct: LinkedProduct | null,
+): LinkedProduct | null {
   return inlineProduct ?? products.find((item) => item.id === productId) ?? null;
 }
 

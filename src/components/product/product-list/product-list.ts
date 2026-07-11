@@ -215,7 +215,7 @@ export class ProductList implements OnInit, OnChanges {
       Math.round(item.availableQuantity * 100) / 100;
     const value = String(rounded);
     const unit = item.availableQuantityUnit?.trim() ?? '';
-    return unit !== '' ? `${value} ${unit}` : value;
+    return unit === '' ? value : `${value} ${unit}`;
   }
 
   getTagNamesDisplay(item: ProductListItem): string {

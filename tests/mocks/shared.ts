@@ -531,7 +531,7 @@ export function buildTemplateResponse(
   });
 
   const comparisonDaySet = compareDaySetId ? getDaySet(state, compareDaySetId) : null;
-  const dayTotal = sumNutrition(items.map((item) => item.nutritionValue as Record<string, number>));
+  const dayTotal = sumNutrition(items.map((item) => item.nutritionValue));
   const targets = comparisonDaySet ? buildDaySetNutritionRecord(comparisonDaySet) : null;
 
   return {

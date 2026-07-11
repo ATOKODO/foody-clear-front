@@ -122,9 +122,9 @@ export function resolveInputDayTemplateItemSlotTitle(
   availableSlots: readonly InputDayAvailableSlot[],
 ): string {
   const matchedSlot =
-    item.slotId !== null
-      ? availableSlots.find((slot) => slot.slotId === item.slotId) ?? null
-      : null;
+    item.slotId === null
+      ? null
+      : availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
 
   return matchedSlot?.title ?? item.slotKey?.trim() ?? 'No slot';
 }
@@ -134,9 +134,9 @@ export function resolveInputDayTemplateItemSlotKey(
   availableSlots: readonly InputDayAvailableSlot[],
 ): string {
   const matchedSlot =
-    item.slotId !== null
-      ? availableSlots.find((slot) => slot.slotId === item.slotId) ?? null
-      : null;
+    item.slotId === null
+      ? null
+      : availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
 
   return matchedSlot?.slotKey ?? item.slotKey?.trim() ?? '-';
 }

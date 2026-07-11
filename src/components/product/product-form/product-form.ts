@@ -130,9 +130,9 @@ export class ProductForm implements OnInit, OnChanges {
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required]],
     barcode: [''],
-    categoryId: ['' as number | ''],
+    categoryId: this.fb.nonNullable.control<number | ''>(''),
     tagIds: [[] as number[]],
-    genericProductId: ['' as number | ''],
+    genericProductId: this.fb.nonNullable.control<number | ''>(''),
     unitType: ['', [Validators.required]],
     quantityPerUnit: [0, [Validators.required, Validators.min(0.000001)]],
     quantityUnit: ['', [Validators.required]],
@@ -291,14 +291,10 @@ export class ProductForm implements OnInit, OnChanges {
         unitType: product.unitType ?? defaults.unitType,
         quantityPerUnit: product.quantityPerUnit ?? defaults.quantityPerUnit,
         quantityUnit: product.quantityUnit ?? defaults.quantityUnit,
-        portionCount:
-          product.portionCount != null ? String(product.portionCount) : '',
+        portionCount: this.formatOptionalNumber(product.portionCount),
         portionUnit: product.portionUnit ?? '',
-        portionQuantityNormalized:
-          product.portionQuantityNormalized != null
-            ? String(product.portionQuantityNormalized)
-            : '',
-        price: product.price != null ? String(product.price) : '',
+        portionQuantityNormalized: this.formatOptionalNumber(product.portionQuantityNormalized),
+        price: this.formatOptionalNumber(product.price),
         priceUnit: product.priceUnit ?? '',
         priceEffectiveFrom: product.priceEffectiveFrom ?? '',
         url: product.url ?? defaults.url ?? '',
@@ -364,12 +360,16 @@ export class ProductForm implements OnInit, OnChanges {
     const reference = value.reference === 'PER_100ML' ? 'PER_100ML' : 'PER_100G';
 
     return {
-      ...(normalizedId != null ? { id: normalizedId } : {}),
+      ...(normalizedId === undefined ? {} : { id: normalizedId }),
       nutritionKey,
       amount,
       unit,
       reference,
     };
+  }
+
+  private formatOptionalNumber(value: number | null | undefined): string {
+    return value == null ? '' : String(value);
   }
 
   private pickDefaultUnit(nutritionKey: string, preferred?: string): string {

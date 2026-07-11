@@ -130,7 +130,7 @@ export class FormCycle implements OnInit, OnChanges {
     titre: ['', [Validators.required]],
     couleur: [this.colorOptions[0].value],
     nombre: [1, [Validators.min(1)]],
-    typeDuree: ['jour' as TypeDuree],
+    typeDuree: this.fb.nonNullable.control<TypeDuree>('jour'),
     durationDays: [1, [Validators.required, Validators.min(1)]],
   });
 

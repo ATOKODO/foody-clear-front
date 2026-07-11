@@ -1265,7 +1265,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     const timezone = String(
       this.form.value.timezone ?? this.fallbackTimezone,
     ).trim();
-    return timezone !== '' ? timezone : this.fallbackTimezone;
+    return timezone === '' ? this.fallbackTimezone : timezone;
   }
 
   private clearSelectedProducts(): void {

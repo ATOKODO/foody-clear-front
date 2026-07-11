@@ -678,7 +678,7 @@ export class Product implements OnInit {
         const reference = this.extractNutritionReferenceValue(value);
 
         return {
-          ...(id != null ? { id } : {}),
+          ...(id === undefined ? {} : { id }),
           nutritionKey,
           amount,
           unit,

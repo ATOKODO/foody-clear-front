@@ -204,7 +204,7 @@ export function toInventoryProductQtyPayload(
     .map((row) => ({
       productId: row.productId,
       qty: row.qty as number,
-      ...(row.qtyUnit !== 'unit' ? { qtyUnit: row.qtyUnit } : {}),
+      ...(row.qtyUnit === 'unit' ? {} : { qtyUnit: row.qtyUnit }),
       ...(includeAccountingMode
         ? { purchaseAccountingMode: row.purchaseAccountingMode }
         : {}),
@@ -437,7 +437,7 @@ function ensureInventoryPurchaseAccountingMode(
 function resolveDefaultPurchaseAccountingMode(
   meta: InventoryRowProductMeta,
 ): PurchaseAccountingMode {
-  return meta.price != null ? 'paid' : 'free';
+  return meta.price == null ? 'free' : 'paid';
 }
 
 function ensureInventoryRowQtyUnit(

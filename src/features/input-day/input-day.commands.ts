@@ -347,7 +347,7 @@ function buildCreateInputDayItemRequest({
         qty,
         ...(occurredAt ? { occurredAt } : {}),
         ...(qtyUnit ? { qtyUnit } : {}),
-        ...(slotId !== null ? { slotId } : {}),
+        ...(slotId === null ? {} : { slotId }),
         ...(slotId === null && slotKey !== '' ? { slotKey } : {}),
       },
     },
@@ -422,9 +422,9 @@ export function buildInputDaySelectedItemsRequest(
               qty: row.qty as number,
               ...(occurredAt ? { occurredAt } : {}),
               ...(qtyUnit ? { qtyUnit } : {}),
-              ...(input.selectedSlotId != null
-                ? { slotId: input.selectedSlotId }
-                : {}),
+              ...(input.selectedSlotId == null
+                ? {}
+                : { slotId: input.selectedSlotId }),
               ...(input.selectedSlotId == null && slotKey !== ''
                 ? { slotKey }
                 : {}),

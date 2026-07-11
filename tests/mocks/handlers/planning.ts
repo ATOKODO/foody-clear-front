@@ -134,7 +134,7 @@ async function handleDaySetCollectionRequest(context: MockApiRequestContext): Pr
           ? body.nutritionValues.map(toCycleNutritionValue).filter(isCycleNutritionValue)
           : [],
         slotIds: Array.isArray(body.slotIds)
-          ? body.slotIds.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0)
+          ? body.slotIds.map(Number).filter((value) => Number.isInteger(value) && value > 0)
           : [],
         templateId: readNullableNumber(body.templateId),
       };
@@ -173,7 +173,7 @@ async function handleDaySetRequest(context: MockApiRequestContext): Promise<bool
       }
       if (Array.isArray(body.slotIds)) {
         daySet.slotIds = body.slotIds
-          .map((value) => Number(value))
+          .map(Number)
           .filter((value) => Number.isInteger(value) && value > 0);
       }
       if ('templateId' in body) {
@@ -513,7 +513,7 @@ function isCycleNutritionValue(value: CycleNutritionValue | null): value is Cycl
 
 function normalizeTimeline(value: unknown, durationDays: number): number[] {
   const timeline = Array.isArray(value)
-    ? value.map((entry) => Number(entry)).map((entry) => (Number.isInteger(entry) && entry > 0 ? entry : 0))
+    ? value.map(Number).map((entry) => (Number.isInteger(entry) && entry > 0 ? entry : 0))
     : [];
 
   while (timeline.length < Math.max(1, durationDays)) {

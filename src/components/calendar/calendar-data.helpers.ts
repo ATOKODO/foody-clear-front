@@ -551,7 +551,7 @@ function mergeCalendarSlots(
   sources.forEach((slots) => {
     slots.forEach((slot) => {
       const key =
-        slot.slotId !== null ? `id:${slot.slotId}` : `key:${slot.slotKey}`;
+        slot.slotId === null ? `key:${slot.slotKey}` : `id:${slot.slotId}`;
       if (!unique.has(key)) {
         unique.set(key, slot);
       }
@@ -673,7 +673,7 @@ function buildCalendarWeekTimelineSlotBlock(
 
   const endMinute = normalizeCalendarTimelineEndMinute(
     startMinute,
-    slotEnd ?? (lastItemMinute !== null ? lastItemMinute + 30 : startMinute + 60),
+    slotEnd ?? (lastItemMinute === null ? startMinute + 60 : lastItemMinute + 30),
   );
 
   return {

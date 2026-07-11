@@ -62,20 +62,20 @@ export function toCreateTemplateItemDto(
   return {
     itemType: itemDraft.itemType,
     ...(itemDraft.itemType === 'product'
-      ? { productId: itemDraft.productId as number }
+      ? { productId: itemDraft.productId }
       : {}),
     ...(itemDraft.itemType === 'dish'
-      ? { dishId: itemDraft.dishId as number }
+      ? { dishId: itemDraft.dishId }
       : {}),
     ...(itemDraft.itemType === 'meal'
-      ? { mealId: itemDraft.mealId as number }
+      ? { mealId: itemDraft.mealId }
       : {}),
     qty: itemDraft.qty as number,
     ...(itemDraft.qtyUnit ? { qtyUnit: itemDraft.qtyUnit } : {}),
     slotId: itemDraft.slotId,
-    ...(itemDraft.slotKey.trim() !== ''
-      ? { slotKey: itemDraft.slotKey.trim() }
-      : {}),
+    ...(itemDraft.slotKey.trim() === ''
+      ? {}
+      : { slotKey: itemDraft.slotKey.trim() }),
     ...(itemDraft.slotId === null
       ? { preferredTime: itemDraft.preferredTime || '06:00' }
       : {}),
