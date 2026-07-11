@@ -11,6 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table';
+import { createSelection, deselectItem, getSelectedItems, selectItem } from '../../shared/list-selection';
 
 export type TagListMode = 'manage' | 'select-single' | 'select-multi';
 
@@ -129,9 +130,9 @@ export class TagList implements OnInit, OnChanges {
     }
 
     if (checked) {
-      this.selectedIdSet.add(item.id);
+      selectItem(this.selectedIdSet, item.id);
     } else {
-      this.selectedIdSet.delete(item.id);
+      deselectItem(this.selectedIdSet, item.id);
     }
 
     this.selectedMany.emit(this.getSelectedItems());
@@ -165,20 +166,14 @@ export class TagList implements OnInit, OnChanges {
     const tags = this.tags();
     this.resolvedTags = tags === null ? [...this.defaultTags] : [...tags];
 
-    const initialIds = this.selectedIds() ?? [];
-    const availableIds = new Set(this.resolvedTags.map((item) => item.id));
-    this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
-
-    if (this.isSingleSelectMode && this.selectedIdSet.size > 1) {
-      const firstSelected = this.resolvedTags.find((item) => this.selectedIdSet.has(item.id));
-      this.selectedIdSet.clear();
-      if (firstSelected) {
-        this.selectedIdSet.add(firstSelected.id);
-      }
-    }
+    this.selectedIdSet = createSelection(
+      this.resolvedTags,
+      this.selectedIds(),
+      this.isSingleSelectMode,
+    );
   }
 
   private getSelectedItems(): TagListItem[] {
-    return this.resolvedTags.filter((item) => this.selectedIdSet.has(item.id));
+    return getSelectedItems(this.resolvedTags, this.selectedIdSet);
   }
 }

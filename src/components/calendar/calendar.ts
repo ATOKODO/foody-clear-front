@@ -8,7 +8,7 @@ import {
   input,
   output,
 } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { DateTime } from 'luxon';
@@ -163,7 +163,7 @@ function formatCalendarAssignmentProgress(assignment: CalendarAssignment): strin
 
 @Component({
   selector: 'app-calendar',
-  imports: [MatButtonModule, MatButtonToggleModule, DecimalPipe],
+  imports: [MatButtonModule, MatButtonToggleModule, DecimalPipe, NgTemplateOutlet],
   templateUrl: './calendar.html',
   styleUrl: './calendar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

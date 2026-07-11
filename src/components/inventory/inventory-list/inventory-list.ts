@@ -11,6 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table';
+import { createSelection, deselectItem, getSelectedItems, selectItem } from '../../shared/list-selection';
 
 export type InventoryListMode = 'manage' | 'select-single' | 'select-multi';
 
@@ -130,9 +131,9 @@ export class InventoryList implements OnInit, OnChanges {
     }
 
     if (checked) {
-      this.selectedIdSet.add(item.id);
+      selectItem(this.selectedIdSet, item.id);
     } else {
-      this.selectedIdSet.delete(item.id);
+      deselectItem(this.selectedIdSet, item.id);
     }
 
     this.selectedMany.emit(this.getSelectedItems());
@@ -168,22 +169,14 @@ export class InventoryList implements OnInit, OnChanges {
       ? [...this.defaultInventories]
       : [...inventories];
 
-    const initialIds = this.selectedIds() ?? [];
-    const availableIds = new Set(this.resolvedInventories.map((item) => item.id));
-    this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
-
-    if (this.isSingleSelectMode && this.selectedIdSet.size > 1) {
-      const firstSelected = this.resolvedInventories.find(
-        (item) => this.selectedIdSet.has(item.id),
-      );
-      this.selectedIdSet.clear();
-      if (firstSelected) {
-        this.selectedIdSet.add(firstSelected.id);
-      }
-    }
+    this.selectedIdSet = createSelection(
+      this.resolvedInventories,
+      this.selectedIds(),
+      this.isSingleSelectMode,
+    );
   }
 
   private getSelectedItems(): InventoryListItem[] {
-    return this.resolvedInventories.filter((item) => this.selectedIdSet.has(item.id));
+    return getSelectedItems(this.resolvedInventories, this.selectedIdSet);
   }
 }

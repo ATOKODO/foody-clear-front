@@ -456,53 +456,13 @@
                 </div>
               }
               @if (hasWeekDayInsights(day.date)) {
-                @if (getWeekDayResponse(day.date); as response) {
-                  @if (getMonthDayAlertBadges(day.date); as alertBadges) {
-                    <div class="calendar-week-day-details calendar-week-day-details--mobile">
-                      @if (response.daySet || response.totalsMacros?.targetSource || response.templateAssociation) {
-                        <div
-                          class="calendar-week-day-details__chips">
-                          @if (response.daySet; as daySet) {
-                            <span class="calendar-week-chip calendar-week-chip--dayset">
-                              {{ daySet.title }}
-                            </span>
-                          }
-                          @if (response.totalsMacros?.targetSource; as targetSource) {
-                            <span
-                              class="calendar-week-chip calendar-week-chip--target">
-                              {{ getTargetSourceBadgeText(targetSource) }}
-                            </span>
-                          }
-                          @if (getTemplateChipLabel(response); as templateLabel) {
-                            <span
-                              class="calendar-week-chip calendar-week-chip--template">
-                              {{ templateLabel }}
-                            </span>
-                          }
-                          @if (getTemplateSourceBadgeText(response); as templateSource) {
-                            <span
-                              class="calendar-week-chip calendar-week-chip--template-source">
-                              {{ templateSource }}
-                            </span>
-                          }
-                        </div>
-                      }
-                      @if (alertBadges.length > 0) {
-                        <div
-                          [attr.data-testid]="'calendar-week-mobile-alerts-' + day.date"
-                          class="calendar-week-day-details__alerts">
-                          @for (badge of alertBadges; track trackByMonthAlertBadge($index, badge)) {
-                            <span
-                              class="calendar-month-day__alert-badge"
-                              [attr.data-tone]="badge.tone">
-                              {{ badge.text }}
-                            </span>
-                          }
-                        </div>
-                      }
-                    </div>
-                  }
-                }
+                <ng-container
+                  [ngTemplateOutlet]="weekDayDetailsTemplate"
+                  [ngTemplateOutletContext]="{
+                    $implicit: day,
+                    alertsTestId: 'calendar-week-mobile-alerts-' + day.date,
+                    mobile: true
+                  }" />
               }
               @if (getWeekTimelineBlocks(day.date).length > 0) {
                 <div class="calendar-week-mobile__blocks">
@@ -597,53 +557,13 @@
                   </div>
                 }
                 @if (hasWeekDayInsights(day.date)) {
-                  @if (getWeekDayResponse(day.date); as response) {
-                    @if (getMonthDayAlertBadges(day.date); as alertBadges) {
-                      <div class="calendar-week-day-details calendar-week-day-details--desktop">
-                        @if (response.daySet || response.totalsMacros?.targetSource || response.templateAssociation) {
-                          <div
-                            class="calendar-week-day-details__chips">
-                            @if (response.daySet; as daySet) {
-                              <span class="calendar-week-chip calendar-week-chip--dayset">
-                                {{ daySet.title }}
-                              </span>
-                            }
-                            @if (response.totalsMacros?.targetSource; as targetSource) {
-                              <span
-                                class="calendar-week-chip calendar-week-chip--target">
-                                {{ getTargetSourceBadgeText(targetSource) }}
-                              </span>
-                            }
-                            @if (getTemplateChipLabel(response); as templateLabel) {
-                              <span
-                                class="calendar-week-chip calendar-week-chip--template">
-                                {{ templateLabel }}
-                              </span>
-                            }
-                            @if (getTemplateSourceBadgeText(response); as templateSource) {
-                              <span
-                                class="calendar-week-chip calendar-week-chip--template-source">
-                                {{ templateSource }}
-                              </span>
-                            }
-                          </div>
-                        }
-                        @if (alertBadges.length > 0) {
-                          <div
-                            [attr.data-testid]="'calendar-week-alerts-' + day.date"
-                            class="calendar-week-day-details__alerts">
-                            @for (badge of alertBadges; track trackByMonthAlertBadge($index, badge)) {
-                              <span
-                                class="calendar-month-day__alert-badge"
-                                [attr.data-tone]="badge.tone">
-                                {{ badge.text }}
-                              </span>
-                            }
-                          </div>
-                        }
-                      </div>
-                    }
-                  }
+                  <ng-container
+                    [ngTemplateOutlet]="weekDayDetailsTemplate"
+                    [ngTemplateOutletContext]="{
+                      $implicit: day,
+                      alertsTestId: 'calendar-week-alerts-' + day.date,
+                      mobile: false
+                    }" />
                 }
                 <div class="calendar-week-grid__day-actions">
                   <button
@@ -809,35 +729,9 @@
                 @if (macroCards.length > 0) {
                   <div class="calendar-day-summary__macro-grid">
                     @for (macro of macroCards; track trackByDayMacroCard($index, macro)) {
-                      <article
-                        class="calendar-day-pilot-card"
-                        [attr.data-status]="macro.status"
-                        [attr.data-tone]="macro.tone">
-                        <div class="calendar-day-pilot-card__top">
-                          <div>
-                            <p class="calendar-day-pilot-card__title">{{ macro.label }}</p>
-                            @if (macro.unit) {
-                              <p class="calendar-day-pilot-card__unit">{{ macro.unit }}</p>
-                            }
-                          </div>
-                        </div>
-                        <div class="calendar-day-pilot-card__metrics">
-                          <div class="calendar-day-pilot-card__metric">
-                            <span class="calendar-day-pilot-card__metric-label">Logged</span>
-                            <span class="calendar-day-pilot-card__metric-value">{{ macro.consumed }}</span>
-                          </div>
-                          <div class="calendar-day-pilot-card__metric">
-                            <span class="calendar-day-pilot-card__metric-label">Target</span>
-                            <span class="calendar-day-pilot-card__metric-value">{{ macro.target }}</span>
-                          </div>
-                          <div class="calendar-day-pilot-card__metric">
-                            <span class="calendar-day-pilot-card__metric-label">Delta</span>
-                            <span class="calendar-day-pilot-card__metric-value calendar-day-pilot-card__metric-value--delta">
-                              {{ macro.delta }}
-                            </span>
-                          </div>
-                        </div>
-                      </article>
+                      <ng-container
+                        [ngTemplateOutlet]="dayMacroCardTemplate"
+                        [ngTemplateOutletContext]="{ $implicit: macro }" />
                     }
                   </div>
                 } @else {
@@ -872,36 +766,10 @@
                               <span class="calendar-day-summary__source-pill">Slot target</span>
                             </div>
                             <div class="calendar-day-summary__macro-grid">
-                              @for (macro of group.cards; track trackByDayMacroCard($index, macro)) {
-                                <article
-                                  class="calendar-day-pilot-card"
-                                  [attr.data-status]="macro.status"
-                                  [attr.data-tone]="macro.tone">
-                                  <div class="calendar-day-pilot-card__top">
-                                    <div>
-                                      <p class="calendar-day-pilot-card__title">{{ macro.label }}</p>
-                                      @if (macro.unit) {
-                                        <p class="calendar-day-pilot-card__unit">{{ macro.unit }}</p>
-                                      }
-                                    </div>
-                                  </div>
-                                  <div class="calendar-day-pilot-card__metrics">
-                                    <div class="calendar-day-pilot-card__metric">
-                                      <span class="calendar-day-pilot-card__metric-label">Logged</span>
-                                      <span class="calendar-day-pilot-card__metric-value">{{ macro.consumed }}</span>
-                                    </div>
-                                    <div class="calendar-day-pilot-card__metric">
-                                      <span class="calendar-day-pilot-card__metric-label">Target</span>
-                                      <span class="calendar-day-pilot-card__metric-value">{{ macro.target }}</span>
-                                    </div>
-                                    <div class="calendar-day-pilot-card__metric">
-                                      <span class="calendar-day-pilot-card__metric-label">Delta</span>
-                                      <span class="calendar-day-pilot-card__metric-value calendar-day-pilot-card__metric-value--delta">
-                                        {{ macro.delta }}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </article>
+                        @for (macro of group.cards; track trackByDayMacroCard($index, macro)) {
+                          <ng-container
+                            [ngTemplateOutlet]="dayMacroCardTemplate"
+                            [ngTemplateOutletContext]="{ $implicit: macro }" />
                               }
                             </div>
                           </section>
@@ -1136,3 +1004,80 @@
     }
   </main>
 </div>
+
+<ng-template
+  #weekDayDetailsTemplate
+  let-day
+  let-alertsTestId="alertsTestId"
+  let-mobile="mobile">
+  @if (getWeekDayResponse(day.date); as response) {
+    @if (getMonthDayAlertBadges(day.date); as alertBadges) {
+      <div
+        class="calendar-week-day-details"
+        [class.calendar-week-day-details--mobile]="mobile"
+        [class.calendar-week-day-details--desktop]="!mobile">
+        @if (response.daySet || response.totalsMacros?.targetSource || response.templateAssociation) {
+          <div class="calendar-week-day-details__chips">
+            @if (response.daySet; as daySet) {
+              <span class="calendar-week-chip calendar-week-chip--dayset">{{ daySet.title }}</span>
+            }
+            @if (response.totalsMacros?.targetSource; as targetSource) {
+              <span class="calendar-week-chip calendar-week-chip--target">
+                {{ getTargetSourceBadgeText(targetSource) }}
+              </span>
+            }
+            @if (getTemplateChipLabel(response); as templateLabel) {
+              <span class="calendar-week-chip calendar-week-chip--template">{{ templateLabel }}</span>
+            }
+            @if (getTemplateSourceBadgeText(response); as templateSource) {
+              <span class="calendar-week-chip calendar-week-chip--template-source">
+                {{ templateSource }}
+              </span>
+            }
+          </div>
+        }
+        @if (alertBadges.length > 0) {
+          <div [attr.data-testid]="alertsTestId" class="calendar-week-day-details__alerts">
+            @for (badge of alertBadges; track trackByMonthAlertBadge($index, badge)) {
+              <span class="calendar-month-day__alert-badge" [attr.data-tone]="badge.tone">
+                {{ badge.text }}
+              </span>
+            }
+          </div>
+        }
+      </div>
+    }
+  }
+</ng-template>
+
+<ng-template #dayMacroCardTemplate let-macro>
+  <article
+    class="calendar-day-pilot-card"
+    [attr.data-status]="macro.status"
+    [attr.data-tone]="macro.tone">
+    <div class="calendar-day-pilot-card__top">
+      <div>
+        <p class="calendar-day-pilot-card__title">{{ macro.label }}</p>
+        @if (macro.unit) {
+          <p class="calendar-day-pilot-card__unit">{{ macro.unit }}</p>
+        }
+      </div>
+    </div>
+    <div class="calendar-day-pilot-card__metrics">
+      <div class="calendar-day-pilot-card__metric">
+        <span class="calendar-day-pilot-card__metric-label">Logged</span>
+        <span class="calendar-day-pilot-card__metric-value">{{ macro.consumed }}</span>
+      </div>
+      <div class="calendar-day-pilot-card__metric">
+        <span class="calendar-day-pilot-card__metric-label">Target</span>
+        <span class="calendar-day-pilot-card__metric-value">{{ macro.target }}</span>
+      </div>
+      <div class="calendar-day-pilot-card__metric">
+        <span class="calendar-day-pilot-card__metric-label">Delta</span>
+        <span class="calendar-day-pilot-card__metric-value calendar-day-pilot-card__metric-value--delta">
+          {{ macro.delta }}
+        </span>
+      </div>
+    </div>
+  </article>
+</ng-template>

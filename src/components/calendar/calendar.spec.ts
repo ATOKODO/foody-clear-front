@@ -2,8 +2,51 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withXhr } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { DateTime } from 'luxon';
+import type {
+  InputDayResponse,
+  InputDayTemplateItemSummary,
+} from '../../interfaces/input-day.interface';
 
 import { Calendar, CalendarDayClickEvent } from './calendar';
+
+function createDayResponse(overrides: Partial<InputDayResponse> = {}): InputDayResponse {
+  return {
+    dateLocal: '2026-02-17',
+    timezone: 'UTC',
+    assignment: null,
+    daySet: null,
+    items: [],
+    totalsMacros: null,
+    itemsBySlot: [],
+    slots: [],
+    ...overrides,
+  };
+}
+
+function createTemplateItem(
+  overrides: Partial<InputDayTemplateItemSummary> = {},
+): InputDayTemplateItemSummary {
+  return {
+    id: 91,
+    productId: 8,
+    productName: 'Skyr',
+    qty: 1,
+    qtyUnit: 'portion',
+    qtyNormalized: 150,
+    slotId: 11,
+    slotKey: 'breakfast',
+    status: 'pending',
+    convertedItemId: null,
+    stockAvailability: {
+      enoughStock: true,
+      totalAvailableNormalized: 300,
+      requestedQtyNormalized: 150,
+    },
+    stockByInventory: [],
+    nutritionValue: {},
+    ...overrides,
+  };
+}
 
 describe('Calendar', () => {
   let component: Calendar;
@@ -764,34 +807,14 @@ describe('Calendar', () => {
         template: { id: 13, title: 'Plan proteine' },
       },
       templateItems: [
-        {
-          id: 91,
-          productId: 8,
-          productName: 'Skyr',
-          qty: 1,
-          qtyUnit: 'portion',
-          qtyNormalized: 150,
-          slotId: 11,
-          slotKey: 'breakfast',
-          status: 'pending',
-          convertedItemId: null,
-          stockAvailability: {
-            enoughStock: true,
-            totalAvailableNormalized: 300,
-            requestedQtyNormalized: 150,
-          },
-          stockByInventory: [],
-          nutritionValue: {},
-        },
-        {
+        createTemplateItem(),
+        createTemplateItem({
           id: 92,
           productId: 9,
           productName: 'Avoine',
           qty: 80,
           qtyUnit: 'g',
           qtyNormalized: 80,
-          slotId: 11,
-          slotKey: 'breakfast',
           status: 'converted',
           convertedItemId: 44,
           stockAvailability: {
@@ -799,9 +822,7 @@ describe('Calendar', () => {
             totalAvailableNormalized: 200,
             requestedQtyNormalized: 80,
           },
-          stockByInventory: [],
-          nutritionValue: {},
-        },
+        }),
       ],
       items: [
         {
@@ -892,25 +913,7 @@ describe('Calendar', () => {
         template: { id: 13, title: 'Template matin' },
       },
       templateItems: [
-        {
-          id: 91,
-          productId: 8,
-          productName: 'Skyr',
-          qty: 1,
-          qtyUnit: 'portion',
-          qtyNormalized: 150,
-          slotId: 11,
-          slotKey: 'breakfast',
-          status: 'pending',
-          convertedItemId: null,
-          stockAvailability: {
-            enoughStock: true,
-            totalAvailableNormalized: 300,
-            requestedQtyNormalized: 150,
-          },
-          stockByInventory: [],
-          nutritionValue: {},
-        },
+        createTemplateItem(),
       ],
       items: [
         {
@@ -1108,23 +1111,12 @@ describe('Calendar', () => {
         template: { id: 13, title: 'Plan libre' },
       },
       templateItems: [
-        {
+        createTemplateItem({
           id: 92,
-          productId: 8,
           productName: 'Skyr libre',
-          qty: 1,
-          qtyUnit: 'portion',
-          qtyNormalized: 150,
           slotId: null,
           slotKey: null,
           preferredTime: '06:30:00',
-          status: 'pending',
-          convertedItemId: null,
-          stockAvailability: {
-            enoughStock: true,
-            totalAvailableNormalized: 300,
-            requestedQtyNormalized: 150,
-          },
           stockByInventory: [
             {
               inventoryId: 4,
@@ -1133,8 +1125,7 @@ describe('Calendar', () => {
               enoughStock: true,
             },
           ],
-          nutritionValue: {},
-        },
+        }),
       ],
       items: [],
       totalsMacros: null,
@@ -1194,25 +1185,7 @@ describe('Calendar', () => {
             template: { id: 13, title: 'Template matin' },
           },
           templateItems: [
-            {
-              id: 91,
-              productId: 8,
-              productName: 'Skyr',
-              qty: 1,
-              qtyUnit: 'portion',
-              qtyNormalized: 150,
-              slotId: 11,
-              slotKey: 'breakfast',
-              status: 'pending',
-              convertedItemId: null,
-              stockAvailability: {
-                enoughStock: true,
-                totalAvailableNormalized: 300,
-                requestedQtyNormalized: 150,
-              },
-              stockByInventory: [],
-              nutritionValue: {},
-            },
+            createTemplateItem(),
           ],
           items: [],
           totalsMacros: null,
@@ -1241,16 +1214,7 @@ describe('Calendar', () => {
     );
     component.manageItems.subscribe((event) => itemEvents.push(event));
 
-    fixture.componentRef.setInput('inputDayResponse', {
-      dateLocal: '2026-02-17',
-      timezone: 'UTC',
-      assignment: null,
-      daySet: null,
-      items: [],
-      totalsMacros: null,
-      itemsBySlot: [],
-      slots: [],
-    });
+    fixture.componentRef.setInput('inputDayResponse', createDayResponse());
     renderView('day', '2026-02-17');
 
     const root = fixture.nativeElement;
@@ -1299,10 +1263,8 @@ describe('Calendar', () => {
     component.itemClick.subscribe((event) => itemEvents.push(event));
     component.hourClick.subscribe((event) => hourEvents.push(event));
 
-    fixture.componentRef.setInput('inputDayResponse', {
+    fixture.componentRef.setInput('inputDayResponse', createDayResponse({
       dateLocal: '2026-02-16',
-      timezone: 'UTC',
-      assignment: null,
       daySet: {
         id: 1,
         title: 'Jour standard',
@@ -1335,10 +1297,7 @@ describe('Calendar', () => {
           nutritionValue: {},
         },
       ],
-      totalsMacros: null,
-      itemsBySlot: [],
-      slots: [],
-    });
+    }));
     component.switchView('day');
     fixture.detectChanges();
 
@@ -1352,9 +1311,7 @@ describe('Calendar', () => {
 
   it('should show cycle target fallback when no day set is active', () => {
     component.switchView('day');
-    fixture.componentRef.setInput('inputDayResponse', {
-      dateLocal: '2026-02-17',
-      timezone: 'UTC',
+    fixture.componentRef.setInput('inputDayResponse', createDayResponse({
       assignment: {
         id: 5,
         cycleId: 2,
@@ -1364,7 +1321,6 @@ describe('Calendar', () => {
         dayIndex: 1,
       },
       daySet: null,
-      items: [],
       totalsMacros: {
         bySlot: [],
         dayTotal: {
@@ -1379,9 +1335,7 @@ describe('Calendar', () => {
         incompleteNutritionKeys: [],
         targetSource: 'cycle',
       },
-      itemsBySlot: [],
-      slots: [],
-    });
+    }));
     fixture.detectChanges();
 
     const textContent = fixture.nativeElement.textContent;

@@ -12,6 +12,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table';
 import { CycleNutritionValue } from '../../../interfaces/cycle.interface';
+import { getNutritionMacro } from '../../shared/nutrition';
+import { createSelection, deselectItem, getSelectedItems, selectItem } from '../../shared/list-selection';
 
 export type SlotListMode = 'manage' | 'select-single' | 'select-multi';
 
@@ -180,9 +182,9 @@ export class SlotList implements OnInit, OnChanges {
     }
 
     if (checked) {
-      this.selectedIdSet.add(item.id);
+      selectItem(this.selectedIdSet, item.id);
     } else {
-      this.selectedIdSet.delete(item.id);
+      deselectItem(this.selectedIdSet, item.id);
     }
 
     this.selectedMany.emit(this.getSelectedItems());
@@ -216,81 +218,19 @@ export class SlotList implements OnInit, OnChanges {
     const slots = this.slots();
     this.resolvedSlots = slots === null ? [...this.defaultSlots] : [...slots];
 
-    const initialIds = this.selectedIds() ?? [];
-    const availableIds = new Set(this.resolvedSlots.map((item) => item.id));
-    this.selectedIdSet = new Set(initialIds.filter((id) => availableIds.has(id)));
-
-    if (this.isSingleSelectMode && this.selectedIdSet.size > 1) {
-      const firstSelected = this.resolvedSlots.find((item) => this.selectedIdSet.has(item.id));
-      this.selectedIdSet.clear();
-      if (firstSelected) {
-        this.selectedIdSet.add(firstSelected.id);
-      }
-    }
+    this.selectedIdSet = createSelection(
+      this.resolvedSlots,
+      this.selectedIds(),
+      this.isSingleSelectMode,
+    );
   }
 
   private getSelectedItems(): SlotListItem[] {
-    return this.resolvedSlots.filter((item) => this.selectedIdSet.has(item.id));
+    return getSelectedItems(this.resolvedSlots, this.selectedIdSet);
   }
 
   private getMacro(item: SlotListItem, key: 'protein' | 'carbs' | 'fat'): number {
-    const nutritionValues = item.nutritionValues ?? [];
-    if (nutritionValues.length > 0) {
-      return this.extractMacroTotals(nutritionValues)[key];
-    }
-
-    if (key === 'protein') {
-      return this.roundNumber(item.protein ?? 0);
-    }
-
-    if (key === 'carbs') {
-      return this.roundNumber(item.carbs ?? 0);
-    }
-
-    return this.roundNumber(item.fat ?? 0);
-  }
-
-  private extractMacroTotals(values: CycleNutritionValue[]): {
-    protein: number;
-    carbs: number;
-    fat: number;
-  } {
-    const totals = { protein: 0, carbs: 0, fat: 0 };
-
-    values.forEach((value) => {
-      const amount = this.toGrams(value.amount, value.unit);
-      const nutritionKey = value.nutritionKey.toUpperCase();
-
-      if (nutritionKey === 'PROTEIN') {
-        totals.protein += amount;
-      } else if (nutritionKey === 'CARBOHYDRATE') {
-        totals.carbs += amount;
-      } else if (nutritionKey === 'FAT') {
-        totals.fat += amount;
-      }
-    });
-
-    return {
-      protein: this.roundNumber(totals.protein),
-      carbs: this.roundNumber(totals.carbs),
-      fat: this.roundNumber(totals.fat),
-    };
-  }
-
-  private toGrams(amount: number, unit: string): number {
-    if (unit.toUpperCase() === 'G') {
-      return amount;
-    }
-
-    if (unit.toUpperCase() === 'MG') {
-      return amount / 1000;
-    }
-
-    return 0;
-  }
-
-  private roundNumber(value: number): number {
-    return Math.round(value * 100) / 100;
+    return getNutritionMacro(item, key);
   }
 
   private formatTime(value: string | null | undefined): string | null {

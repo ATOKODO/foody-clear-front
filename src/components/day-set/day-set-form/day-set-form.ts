@@ -18,9 +18,8 @@ import { NutritionKeyMeta } from '../../../services/meta-service';
 import { SlotList, SlotListItem } from '../../slot/slot-list/slot-list';
 import { TemplateSummary } from '../../../interfaces/template.interface';
 import {
-  getFallbackUnitsForNutritionKey,
-  resolveDefaultNutritionKeys,
-} from '../../shared/default-nutrition-values';
+  NutritionValueEditor,
+} from '../../shared/nutrition-value-editor';
 
 export type DaySetFormMode = 'add' | 'edit';
 
@@ -63,6 +62,7 @@ export class DaySetForm implements OnInit, OnChanges {
   readonly menuClicked = output<void>();
 
   nutritionValues: CycleNutritionValue[] = [];
+  private readonly nutritionValueEditor = new NutritionValueEditor(() => this.nutritionKeys());
   selectedSlotIds: number[] = [];
   selectedTemplateId: number | null = null;
   readonly referenceOptions: { label: string; value: NutritionReference }[] = [
@@ -98,9 +98,9 @@ export class DaySetForm implements OnInit, OnChanges {
       return;
     }
 
-    const nutritionValues = this.nutritionValues
-      .map((value) => this.normalizeNutritionValue(value))
-      .filter((value) => value.nutritionKey !== '');
+    const nutritionValues = this.nutritionValueEditor.normalizeValuesForSubmission(
+      this.nutritionValues,
+    );
 
     this.submitted.emit({
       mode: this.mode(),
@@ -126,7 +126,7 @@ export class DaySetForm implements OnInit, OnChanges {
   }
 
   addNutritionValue(): void {
-    this.nutritionValues = [...this.nutritionValues, this.buildDefaultNutritionValue()];
+    this.nutritionValues = [...this.nutritionValues, this.nutritionValueEditor.createDefaultValue()];
   }
 
   removeNutritionValue(index: number): void {
@@ -139,26 +139,17 @@ export class DaySetForm implements OnInit, OnChanges {
       return;
     }
 
-    const allowedUnits = this.getAllowedUnits(row.nutritionKey);
-    if (allowedUnits.length === 0) {
-      row.unit = this.getFallbackUnits(row.nutritionKey)[0];
-      return;
-    }
-
-    if (!allowedUnits.includes(row.unit)) {
-      row.unit = allowedUnits[0];
-    }
+    this.nutritionValueEditor.ensureUnit(row);
   }
 
   getUnitsForKey(nutritionKey: string): string[] {
-    const allowedUnits = this.getAllowedUnits(nutritionKey);
-    return allowedUnits.length > 0 ? allowedUnits : this.getFallbackUnits(nutritionKey);
+    return this.nutritionValueEditor.getUnitsForKey(nutritionKey);
   }
 
   private applyInputState(): void {
     const defaults: DaySetFormValue = {
       title: '',
-      nutritionValues: this.getDefaultNutritionValues(),
+      nutritionValues: this.nutritionValueEditor.createDefaultValues(),
       slotIds: [],
       templateId: null,
     };
@@ -174,88 +165,15 @@ export class DaySetForm implements OnInit, OnChanges {
       );
       this.nutritionValues =
         daySet.nutritionValues && daySet.nutritionValues.length > 0
-          ? this.cloneNutritionValues(daySet.nutritionValues)
-          : this.getDefaultNutritionValues();
+          ? this.nutritionValueEditor.cloneValues(daySet.nutritionValues)
+          : this.nutritionValueEditor.createDefaultValues();
       return;
     }
 
     this.form.reset({ title: defaults.title });
     this.selectedSlotIds = [...defaults.slotIds];
     this.selectedTemplateId = defaults.templateId;
-    this.nutritionValues = this.cloneNutritionValues(defaults.nutritionValues);
-  }
-
-  private getDefaultNutritionValues(): CycleNutritionValue[] {
-    const defaults = resolveDefaultNutritionKeys(this.nutritionKeys()).map((key) =>
-      this.buildDefaultNutritionValue(key),
-    );
-    return this.cloneNutritionValues(defaults);
-  }
-
-  private buildDefaultNutritionValue(nutritionKey = ''): CycleNutritionValue {
-    const unit = this.pickDefaultUnit(nutritionKey);
-    return {
-      nutritionKey,
-      amount: 0,
-      unit,
-      reference: 'PER_100G',
-    };
-  }
-
-  private cloneNutritionValues(values: CycleNutritionValue[]): CycleNutritionValue[] {
-    return values.map((value) => this.normalizeNutritionValue(value));
-  }
-
-  private normalizeNutritionValue(value: CycleNutritionValue): CycleNutritionValue {
-    const nutritionKey = (value.nutritionKey ?? '').trim();
-    const amount = Number.isFinite(value.amount) ? Math.max(0, value.amount) : 0;
-    const unit = this.pickDefaultUnit(nutritionKey, value.unit);
-    const reference = value.reference === 'PER_100ML' ? 'PER_100ML' : 'PER_100G';
-
-    return {
-      nutritionKey,
-      amount,
-      unit,
-      reference,
-    };
-  }
-
-  private pickDefaultUnit(nutritionKey: string, preferred?: string): string {
-    const allowedUnits = this.getAllowedUnits(nutritionKey);
-    if (allowedUnits.length === 0) {
-      return preferred && preferred.trim() !== ''
-        ? preferred
-        : this.getFallbackUnits(nutritionKey)[0];
-    }
-
-    if (preferred && allowedUnits.includes(preferred)) {
-      return preferred;
-    }
-
-    const gramUnit = allowedUnits.find((unit) => unit.toUpperCase() === 'G');
-    return gramUnit ?? allowedUnits[0];
-  }
-
-  private getAllowedUnits(nutritionKey: string): string[] {
-    if (nutritionKey.trim() === '') {
-      return [];
-    }
-
-    const key = this.nutritionKeys().find(
-      (item) =>
-        item.value.toUpperCase() === nutritionKey.toUpperCase() ||
-        item.key.toUpperCase() === nutritionKey.toUpperCase(),
-    );
-
-    if (!key) {
-      return [];
-    }
-
-    return key.allowedUnits.filter((unit) => unit.trim() !== '');
-  }
-
-  private getFallbackUnits(nutritionKey: string): string[] {
-    return getFallbackUnitsForNutritionKey(nutritionKey);
+    this.nutritionValues = this.nutritionValueEditor.cloneValues(defaults.nutritionValues);
   }
 
   private normalizeSlotIds(slotIds: number[]): number[] {
