@@ -60,55 +60,12 @@ export class MetaService {
     const seenValues = new Set<string>();
 
     for (const value of values) {
-      if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed === '' || seenValues.has(trimmed)) {
-          continue;
-        }
-
-        units.push({
-          key: trimmed.toUpperCase(),
-          value: trimmed,
-          label: trimmed,
-        });
-        seenValues.add(trimmed);
+      const item = this.normalizeUnit(value);
+      if (!item || seenValues.has(item.value)) {
         continue;
       }
-
-      if (!value || typeof value !== 'object') {
-        continue;
-      }
-
-      const raw = value as Record<string, unknown>;
-      const unitValue =
-        typeof raw['value'] === 'string' ? raw['value'].trim() : '';
-
-      if (unitValue === '' || seenValues.has(unitValue)) {
-        continue;
-      }
-
-      const item: QuantityUnitMeta = {
-        key:
-          typeof raw['key'] === 'string' && raw['key'].trim() !== ''
-            ? raw['key'].trim()
-            : unitValue.toUpperCase(),
-        value: unitValue,
-        label:
-          typeof raw['label'] === 'string' && raw['label'].trim() !== ''
-            ? raw['label'].trim()
-            : unitValue,
-      };
-
-      if (typeof raw['dimension'] === 'string' && raw['dimension'].trim() !== '') {
-        item.dimension = raw['dimension'].trim();
-      }
-
-      if (typeof raw['factor'] === 'number' && Number.isFinite(raw['factor'])) {
-        item.factor = raw['factor'];
-      }
-
       units.push(item);
-      seenValues.add(unitValue);
+      seenValues.add(item.value);
     }
 
     return units;
@@ -119,56 +76,61 @@ export class MetaService {
     const seenValues = new Set<string>();
 
     for (const value of values) {
-      if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (trimmed === '' || seenValues.has(trimmed)) {
-          continue;
-        }
-
-        keys.push({
-          key: trimmed.toUpperCase(),
-          value: trimmed,
-          label: trimmed,
-          allowedUnits: [],
-        });
-        seenValues.add(trimmed);
+      const item = this.normalizeNutritionKey(value);
+      if (!item || seenValues.has(item.value)) {
         continue;
       }
-
-      if (!value || typeof value !== 'object') {
-        continue;
-      }
-
-      const raw = value as Record<string, unknown>;
-      const nutritionKeyValue =
-        typeof raw['value'] === 'string' ? raw['value'].trim() : '';
-
-      if (nutritionKeyValue === '' || seenValues.has(nutritionKeyValue)) {
-        continue;
-      }
-
-      const allowedUnits = Array.isArray(raw['allowedUnits'])
-        ? raw['allowedUnits']
-            .filter((unit): unit is string => typeof unit === 'string')
-            .map((unit) => unit.trim())
-            .filter((unit) => unit !== '')
-        : [];
-
-      keys.push({
-        key:
-          typeof raw['key'] === 'string' && raw['key'].trim() !== ''
-            ? raw['key'].trim()
-            : nutritionKeyValue.toUpperCase(),
-        value: nutritionKeyValue,
-        label:
-          typeof raw['label'] === 'string' && raw['label'].trim() !== ''
-            ? raw['label'].trim()
-            : nutritionKeyValue,
-        allowedUnits,
-      });
-      seenValues.add(nutritionKeyValue);
+      keys.push(item);
+      seenValues.add(item.value);
     }
 
     return keys;
+  }
+
+  private normalizeUnit(value: unknown): QuantityUnitMeta | null {
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      return trimmed ? { key: trimmed.toUpperCase(), value: trimmed, label: trimmed } : null;
+    }
+    if (!value || typeof value !== 'object') return null;
+
+    const raw = value as Record<string, unknown>;
+    const unitValue = typeof raw['value'] === 'string' ? raw['value'].trim() : '';
+    if (!unitValue) return null;
+
+    const item: QuantityUnitMeta = {
+      key: this.readTrimmedString(raw['key']) ?? unitValue.toUpperCase(),
+      value: unitValue,
+      label: this.readTrimmedString(raw['label']) ?? unitValue,
+    };
+    const dimension = this.readTrimmedString(raw['dimension']);
+    if (dimension) item.dimension = dimension;
+    if (typeof raw['factor'] === 'number' && Number.isFinite(raw['factor'])) item.factor = raw['factor'];
+    return item;
+  }
+
+  private normalizeNutritionKey(value: unknown): NutritionKeyMeta | null {
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      return trimmed ? { key: trimmed.toUpperCase(), value: trimmed, label: trimmed, allowedUnits: [] } : null;
+    }
+    if (!value || typeof value !== 'object') return null;
+
+    const raw = value as Record<string, unknown>;
+    const keyValue = typeof raw['value'] === 'string' ? raw['value'].trim() : '';
+    if (!keyValue) return null;
+    const allowedUnits = Array.isArray(raw['allowedUnits'])
+      ? raw['allowedUnits'].filter((unit): unit is string => typeof unit === 'string').map((unit) => unit.trim()).filter(Boolean)
+      : [];
+    return {
+      key: this.readTrimmedString(raw['key']) ?? keyValue.toUpperCase(),
+      value: keyValue,
+      label: this.readTrimmedString(raw['label']) ?? keyValue,
+      allowedUnits,
+    };
+  }
+
+  private readTrimmedString(value: unknown): string | null {
+    return typeof value === 'string' && value.trim() ? value.trim() : null;
   }
 }

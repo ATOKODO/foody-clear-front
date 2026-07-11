@@ -83,7 +83,7 @@ describe('DaySetList', () => {
     component.onCheckboxChange(component.resolvedDaySets[0], true);
     component.onCheckboxChange(component.resolvedDaySets[2], true);
 
-    expect(emitted[emitted.length - 1]).toEqual([
+    expect(emitted.at(-1)).toEqual([
       {
         id: '1',
         title: 'Lundi',
@@ -112,7 +112,7 @@ describe('DaySetList', () => {
     checkbox.click();
     fixture.detectChanges();
 
-    expect((emitted[emitted.length - 1] as unknown[]).length).toBe(1);
+    expect((emitted.at(-1) as unknown[]).length).toBe(1);
     expect(component.isSelected(component.resolvedDaySets[0].id)).toBeTrue();
   });
 

@@ -231,7 +231,7 @@ export function resolveCycleDaySetTimeline(
               daySet === null ||
               !('id' in daySet)
             ) {
-              return NaN;
+              return Number.NaN;
             }
 
             return Number((daySet as { id: unknown }).id);
@@ -622,12 +622,7 @@ function toDaySetRecord(value: unknown): DaySetRecord | null {
     nutritionValues: extractNutritionValues(raw['nutritionValues']),
     slotIds: hasSlotIdsProperty ? extractOptionalIdArray(raw['slotIds']) : null,
     hasSlotIdsProperty,
-    slots:
-      hasSlotsProperty && Array.isArray(raw['slots'])
-        ? raw['slots']
-        : hasSlotsProperty
-          ? null
-          : null,
+    slots: hasSlotsProperty && Array.isArray(raw['slots']) ? raw['slots'] : null,
     hasSlotsProperty,
   };
 }
@@ -793,7 +788,7 @@ function extractOptionalIdArray(value: unknown): number[] | null {
             return Number((item as { id: unknown }).id);
           }
 
-          return NaN;
+          return Number.NaN;
         })
         .filter((id): id is number => Number.isInteger(id) && id > 0),
     ),
@@ -869,7 +864,7 @@ function readString(value: unknown): string | null {
 }
 
 function hasOwn(value: Record<string, unknown>, key: string): boolean {
-  return Object.prototype.hasOwnProperty.call(value, key);
+  return Object.hasOwn(value, key);
 }
 
 function roundNumber(value: number): number {

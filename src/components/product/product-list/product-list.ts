@@ -213,7 +213,7 @@ export class ProductList implements OnInit, OnChanges {
 
     const rounded =
       Math.round(item.availableQuantity * 100) / 100;
-    const value = Number.isInteger(rounded) ? String(rounded) : String(rounded);
+    const value = String(rounded);
     const unit = item.availableQuantityUnit?.trim() ?? '';
     return unit !== '' ? `${value} ${unit}` : value;
   }

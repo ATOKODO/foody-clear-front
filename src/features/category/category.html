@@ -79,15 +79,12 @@
 
 
 @if (store.formVisible()) {
-  <div
+  <button
+    type="button"
     class="app-modal-backdrop"
-    tabindex="0"
-    role="button"
     aria-label="Close la modale"
     (click)="store.cancelForm()"
-    (keydown.enter)="store.cancelForm()"
-    (keydown.space)="store.cancelForm(); $event.preventDefault()"
-  ></div>
+  ></button>
 }
 @if (store.formVisible()) {
   <div class="app-modal-shell" data-testid="category-dialog">

@@ -18,21 +18,21 @@ function createMatchMedia(matches: boolean): (query: string) => MediaQueryList {
 
 describe('ThemeService', () => {
   beforeEach(() => {
-    window.localStorage.removeItem('theme');
+    globalThis.localStorage.removeItem('theme');
     document.documentElement.classList.remove('dark');
     document.documentElement.style.colorScheme = 'light';
   });
 
   afterEach(() => {
     TestBed.resetTestingModule();
-    window.localStorage.removeItem('theme');
+    globalThis.localStorage.removeItem('theme');
     document.documentElement.classList.remove('dark');
     document.documentElement.style.colorScheme = 'light';
   });
 
   it('should restore the saved theme on init', () => {
-    window.localStorage.setItem('theme', 'dark');
-    spyOn(window, 'matchMedia').and.callFake(createMatchMedia(false));
+    globalThis.localStorage.setItem('theme', 'dark');
+    spyOn(globalThis, 'matchMedia').and.callFake(createMatchMedia(false));
 
     TestBed.configureTestingModule({});
     const service = TestBed.inject(ThemeService);
@@ -44,7 +44,7 @@ describe('ThemeService', () => {
   });
 
   it('should toggle the theme and persist the new mode', () => {
-    spyOn(window, 'matchMedia').and.callFake(createMatchMedia(false));
+    spyOn(globalThis, 'matchMedia').and.callFake(createMatchMedia(false));
 
     TestBed.configureTestingModule({});
     const service = TestBed.inject(ThemeService);
@@ -52,25 +52,25 @@ describe('ThemeService', () => {
 
     service.toggle();
     expect(service.mode).toBe('dark');
-    expect(window.localStorage.getItem('theme')).toBe('dark');
+    expect(globalThis.localStorage.getItem('theme')).toBe('dark');
     expect(documentRef.documentElement.classList.contains('dark')).toBeTrue();
 
     service.toggle();
     expect(service.mode).toBe('light');
-    expect(window.localStorage.getItem('theme')).toBe('light');
+    expect(globalThis.localStorage.getItem('theme')).toBe('light');
     expect(documentRef.documentElement.classList.contains('dark')).toBeFalse();
   });
 
   it('should fall back to the system preference when clearing the saved mode', () => {
-    window.localStorage.setItem('theme', 'light');
-    spyOn(window, 'matchMedia').and.callFake(createMatchMedia(true));
+    globalThis.localStorage.setItem('theme', 'light');
+    spyOn(globalThis, 'matchMedia').and.callFake(createMatchMedia(true));
 
     TestBed.configureTestingModule({});
     const service = TestBed.inject(ThemeService);
 
     service.clearSavedMode();
 
-    expect(window.localStorage.getItem('theme')).toBeNull();
+    expect(globalThis.localStorage.getItem('theme')).toBeNull();
     expect(service.mode).toBe('dark');
     expect(document.documentElement.classList.contains('dark')).toBeTrue();
   });

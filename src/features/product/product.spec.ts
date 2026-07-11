@@ -297,29 +297,6 @@ describe('Product', () => {
     expect(component.formInitialValue?.categoryId).toBe(7);
   });
 
-  function buildProduct(overrides: Partial<ProductModel> = {}): ProductModel {
-    const baseProduct: ProductModel = {
-      id: 1,
-      name: 'Produit',
-      barcode: null,
-      category: null,
-      tags: [],
-      genericProduct: null,
-      unitType: 'Paquet',
-      quantityPerUnit: 1,
-      quantityUnit: 'g',
-      portionCount: null,
-      portionUnit: null,
-      portionQuantityNormalized: null,
-      price: null,
-      url: null,
-      memo: null,
-      nutritionValues: [],
-    };
-
-    return { ...baseProduct, ...overrides };
-  }
-
   function resetSpyCalls(): void {
     productServiceMock.setBaseUrl.calls.reset();
     productServiceMock.findAll.calls.reset();
@@ -369,3 +346,25 @@ describe('Product', () => {
     fixture.detectChanges();
   }
 });
+
+function buildProduct(overrides: Partial<ProductModel> = {}): ProductModel {
+  const baseProduct: ProductModel = {
+    id: 1,
+    name: 'Produit',
+    barcode: null,
+    category: null,
+    tags: [],
+    genericProduct: null,
+    unitType: 'Paquet',
+    quantityPerUnit: 1,
+    quantityUnit: 'g',
+    portionCount: null,
+    portionUnit: null,
+    portionQuantityNormalized: null,
+    price: null,
+    url: null,
+    memo: null,
+    nutritionValues: [],
+  };
+  return { ...baseProduct, ...overrides };
+}

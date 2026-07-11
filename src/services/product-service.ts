@@ -73,9 +73,9 @@ export interface Product {
   id: number;
   name: string;
   barcode?: string | null;
-  category?: unknown | null;
+  category?: unknown;
   tags?: unknown[];
-  genericProduct?: unknown | null;
+  genericProduct?: unknown;
   unitType: ProductUnitType;
   quantityPerUnit: number;
   quantityUnit: QuantityUnit | null;

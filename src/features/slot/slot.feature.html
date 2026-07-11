@@ -81,16 +81,14 @@
 
 
 @if (store.formVisible()) {
-  <div
+  <button
+    type="button"
     class="app-modal-backdrop"
     [class.app-modal-backdrop--embedded-slot]="embedded()"
     [style.--slot-dialog-top-offset.px]="embeddedDialogTopOffset()"
-    tabindex="0"
-    role="button"
     aria-label="Close la modale"
     (click)="onCancelForm()"
-    (keydown.enter)="onCancelForm()"
-    (keydown.space)="onCancelForm(); $event.preventDefault()"></div>
+    ></button>
 }
 @if (store.formVisible()) {
   <div

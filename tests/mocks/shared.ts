@@ -921,7 +921,7 @@ export function buildProductPriceHistory(
     right.effectiveFrom.localeCompare(left.effectiveFrom),
   )[0] ?? null;
   const firstPrice = changes[0]?.price ?? null;
-  const lastPrice = changes[changes.length - 1]?.price ?? null;
+  const lastPrice = changes.at(-1)?.price ?? null;
 
   return {
     fromDateLocal,

@@ -301,7 +301,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
         const effectiveFrom =
           String(body.priceEffectiveFrom ?? '2026-03-25T09:00:00+01:00').trim() ||
           '2026-03-25T09:00:00+01:00';
-        const currentVersion = product.priceHistory[product.priceHistory.length - 1] ?? null;
+        const currentVersion = product.priceHistory.at(-1) ?? null;
         if (currentVersion) {
           currentVersion.effectiveTo = effectiveFrom;
         }

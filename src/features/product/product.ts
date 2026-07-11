@@ -412,12 +412,7 @@ export class Product implements OnInit {
   }
 
   private closeFormDialog(): void {
-    if (this.dialogRef) {
-      this.dialogRef.close();
-      return;
-    }
-
-    this.resetFormState();
+    this.onCancelForm();
   }
 
   private resetFormState(): void {
@@ -675,26 +670,8 @@ export class Product implements OnInit {
           !!value && typeof value === 'object',
       )
       .map((value) => {
-        const rawId = value['id'];
-        const id =
-          typeof rawId === 'number' && Number.isInteger(rawId) && rawId > 0
-            ? rawId
-            : typeof rawId === 'string' &&
-                rawId.trim() !== '' &&
-                Number.isInteger(Number(rawId)) &&
-                Number(rawId) > 0
-              ? Number(rawId)
-              : undefined;
-
-        const rawAmount = value['amount'];
-        const amount =
-          typeof rawAmount === 'number' && Number.isFinite(rawAmount)
-            ? rawAmount
-            : typeof rawAmount === 'string' &&
-                rawAmount.trim() !== '' &&
-                Number.isFinite(Number(rawAmount))
-              ? Number(rawAmount)
-              : 0;
+        const id = this.readPositiveInteger(value['id']);
+        const amount = this.readFiniteNumber(value['amount']) ?? 0;
 
         const nutritionKey = this.extractNutritionKeyValue(value) ?? '';
         const unit = this.extractNutritionUnitValue(value) ?? 'G';
@@ -709,6 +686,22 @@ export class Product implements OnInit {
         };
       })
       .filter((value) => value.nutritionKey !== '');
+  }
+
+  private readPositiveInteger(value: unknown): number | undefined {
+    const numberValue = typeof value === 'number' ? value : Number(value);
+    return Number.isInteger(numberValue) && numberValue > 0 ? numberValue : undefined;
+  }
+
+  private readFiniteNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value !== 'string' || value.trim() === '') {
+      return null;
+    }
+    const numberValue = Number(value);
+    return Number.isFinite(numberValue) ? numberValue : null;
   }
 
   private extractProductsFromResponse(value: unknown): ProductApiModel[] {
@@ -772,7 +765,7 @@ export class Product implements OnInit {
           return Number((tag as { id: unknown }).id);
         }
 
-        return NaN;
+        return Number.NaN;
       })
       .filter((id): id is number => Number.isInteger(id) && id > 0);
 

@@ -122,7 +122,7 @@ export class DaySetForm implements OnInit, OnChanges {
   }
 
   get selectedSlotIdsAsString(): string[] {
-    return this.selectedSlotIds.map((id) => String(id));
+    return this.selectedSlotIds.map(String);
   }
 
   addNutritionValue(): void {

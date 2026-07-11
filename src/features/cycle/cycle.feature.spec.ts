@@ -753,15 +753,6 @@ describe('CycleFeature', () => {
     addButton.click();
   }
 
-  function nutritionValue(nutritionKey: string, amount: number, unit = 'G') {
-    return {
-      nutritionKey,
-      amount,
-      unit,
-      reference: 'PER_100G' as const,
-    };
-  }
-
   function flushCycleRequests(): void {
     httpController
       .expectOne('http://localhost:3000/meta/nutrition-keys')
@@ -788,3 +779,7 @@ describe('CycleFeature', () => {
     httpController.expectOne('http://localhost:3000/slot').flush([]);
   }
 });
+
+function nutritionValue(nutritionKey: string, amount: number, unit = 'G') {
+  return { nutritionKey, amount, unit, reference: 'PER_100G' as const };
+}

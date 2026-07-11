@@ -18,9 +18,9 @@ export interface InventoryLinkedProduct {
   id: number;
   name: string;
   barcode?: string | null;
-  category?: unknown | null;
+  category?: unknown;
   tags?: unknown[];
-  genericProduct?: unknown | null;
+  genericProduct?: unknown;
   unitType?: string | null;
   quantityPerUnit?: number | null;
   quantityUnit?: string | null;

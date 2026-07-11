@@ -356,55 +356,40 @@ describe('buildCycleListItem', () => {
     expect(monthItem.durationType).toBe('mois');
   });
 
-  function createCycle(overrides: Partial<Cycle> = {}): Cycle {
-    return {
-      id: 1,
-      title: 'Cycle test',
-      color: 'green',
-      durationDays: 7,
-      durationCount: 7,
-      durationType: 'jour',
-      nutritionValues: [],
-      daySetOrder: [],
-      daySets: [],
-      ...overrides,
-    };
-  }
-
-  function createDaySet(overrides: Partial<DaySet> = {}): DaySet {
-    return {
-      id: 1,
-      title: 'Day set',
-      nutritionValues: [],
-      slotIds: [],
-      slots: [],
-      ...overrides,
-    };
-  }
-
-  function createSlot(overrides: Partial<Slot> = {}): Slot {
-    return {
-      id: 1,
-      key: 'slot',
-      title: 'Slot',
-      sortOrder: 0,
-      startTime: null,
-      endTime: null,
-      nutritionValues: [],
-      ...overrides,
-    };
-  }
-
-  function nutritionValue(
-    nutritionKey: string,
-    amount: number,
-    unit = 'G',
-  ): CycleNutritionValue {
-    return {
-      nutritionKey,
-      amount,
-      unit,
-      reference: 'PER_100G',
-    };
-  }
 });
+
+function createCycle(overrides: Partial<Cycle> = {}): Cycle {
+  return {
+    id: 1,
+    title: 'Cycle test',
+    color: 'green',
+    durationDays: 7,
+    durationCount: 7,
+    durationType: 'jour',
+    nutritionValues: [],
+    daySetOrder: [],
+    daySets: [],
+    ...overrides,
+  };
+}
+
+function createDaySet(overrides: Partial<DaySet> = {}): DaySet {
+  return { id: 1, title: 'Day set', nutritionValues: [], slotIds: [], slots: [], ...overrides };
+}
+
+function createSlot(overrides: Partial<Slot> = {}): Slot {
+  return {
+    id: 1,
+    key: 'slot',
+    title: 'Slot',
+    sortOrder: 0,
+    startTime: null,
+    endTime: null,
+    nutritionValues: [],
+    ...overrides,
+  };
+}
+
+function nutritionValue(nutritionKey: string, amount: number, unit = 'G'): CycleNutritionValue {
+  return { nutritionKey, amount, unit, reference: 'PER_100G' };
+}

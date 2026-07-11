@@ -293,12 +293,12 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.syncCalendarHeaderState();
   }
 
-  switchCalendarView(view: CalendarView | string | null): void {
+  switchCalendarView(view: CalendarView | null): void {
     if (!view) {
       return;
     }
 
-    this.calendarRef()?.switchView(view as CalendarView);
+    this.calendarRef()?.switchView(view);
     this.syncCalendarHeaderState();
   }
 
@@ -700,7 +700,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
       this.loadInputDataForView(scheduledEvent);
     };
 
-    if (typeof globalThis.window === 'undefined') {
+    if (globalThis.window === undefined) {
       load();
       return;
     }

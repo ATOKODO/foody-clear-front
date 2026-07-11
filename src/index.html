@@ -11,9 +11,9 @@
   <app-root></app-root>
   <script>
     (() => {
-      const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
+      const hash = globalThis.location.hash.startsWith('#') ? globalThis.location.hash.slice(1) : '';
       const hashParams = new URLSearchParams(hash);
-      const searchParams = new URLSearchParams(window.location.search);
+      const searchParams = new URLSearchParams(globalThis.location.search);
       const readParam = (key) => hashParams.get(key) || searchParams.get(key) || '';
       const captureId = readParam('figmacapture');
       const requestedView = readParam('figmaview').trim();
@@ -51,10 +51,10 @@
           return;
         }
 
-        const intervalId = window.setInterval(() => {
+        const intervalId = globalThis.setInterval(() => {
           attempts += 1;
           if (run() || attempts >= maxAttempts) {
-            window.clearInterval(intervalId);
+            globalThis.clearInterval(intervalId);
           }
         }, delayMs);
       };
@@ -68,7 +68,7 @@
         const wantsDark = requestedTheme === 'dark';
 
         try {
-          window.localStorage.setItem('theme', requestedTheme);
+          globalThis.localStorage.setItem('theme', requestedTheme);
         } catch {
           // Ignore storage access errors during capture.
         }
@@ -230,14 +230,14 @@
 
           if (!(button instanceof HTMLElement)) {
             if (attempt < 120) {
-              window.setTimeout(() => openTemplateEditDialog(attempt + 1), 250);
+              globalThis.setTimeout(() => openTemplateEditDialog(attempt + 1), 250);
             }
             return;
           }
 
           button.click();
 
-          window.setTimeout(() => {
+          globalThis.setTimeout(() => {
             const nextDialog = document.querySelector('[data-testid="template-dialog"]');
             if (nextDialog instanceof HTMLElement) {
               finalizeTemplateDialogCapture();
@@ -253,7 +253,7 @@
         if (requestedTemplateId) {
           watchForElement(`[data-testid="template-select-${requestedTemplateId}"]`, (button) => {
             button.click();
-            window.setTimeout(openTemplateEditDialog, 200);
+            globalThis.setTimeout(openTemplateEditDialog, 200);
           });
         } else {
           openTemplateEditDialog();

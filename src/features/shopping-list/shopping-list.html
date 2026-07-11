@@ -239,7 +239,7 @@
   }
 
   @if (store.isListEditorOpen) {
-    <div class="shopping-list-modal-shell" role="dialog" aria-modal="true" aria-label="Editer une liste de course">
+    <dialog open class="shopping-list-modal-shell" aria-label="Editer une liste de course">
       <mat-card class="shopping-list-modal-card shopping-list-modal-card--wide">
         <div class="shopping-list-modal-card__header">
           <div>
@@ -467,7 +467,7 @@
           }
         </div>
       </mat-card>
-    </div>
+    </dialog>
   }
 
   @if (store.isTemplateEditorOpen) {
@@ -480,7 +480,7 @@
   }
 
   @if (store.isTemplateEditorOpen) {
-    <div class="shopping-list-modal-shell" role="dialog" aria-modal="true" aria-label="Edit shopping template">
+    <dialog open class="shopping-list-modal-shell" aria-label="Edit shopping template">
       <mat-card class="shopping-list-modal-card">
         <div class="shopping-list-modal-card__header">
           <div>
@@ -536,7 +536,7 @@
           }
         </div>
       </mat-card>
-    </div>
+    </dialog>
   }
 
   @if (store.isProductPickerOpen) {
@@ -549,7 +549,7 @@
   }
 
   @if (store.isProductPickerOpen) {
-    <div class="shopping-list-modal-shell shopping-list-modal-shell--picker" role="dialog" aria-modal="true" aria-label="Select a product">
+    <dialog open class="shopping-list-modal-shell shopping-list-modal-shell--picker" aria-label="Select a product">
       <mat-card class="shopping-list-modal-card shopping-list-modal-card--picker">
         <div class="shopping-list-modal-card__header">
           <div>
@@ -576,6 +576,6 @@
           />
         </div>
       </mat-card>
-    </div>
+    </dialog>
   }
 </section>

@@ -172,7 +172,7 @@ export class FormCycle implements OnInit, OnChanges {
   }
 
   get selectedDaySetIdsAsString(): string[] {
-    return this.selectedDaySetIds.map((id) => String(id));
+    return this.selectedDaySetIds.map(String);
   }
 
   get timelineSlots(): CycleTimelineSlot[] {
@@ -553,7 +553,7 @@ export class FormCycle implements OnInit, OnChanges {
 
     while (
       timeline.length > this.maxSelectableDaySets &&
-      timeline[timeline.length - 1] === this.defaultDaySetId
+      timeline.at(-1) === this.defaultDaySetId
     ) {
       timeline.pop();
     }
@@ -562,7 +562,7 @@ export class FormCycle implements OnInit, OnChanges {
   }
 
   private serializeDaySetTimeline(durationDays: number): number[] {
-    const timeline = [...this.daySetTimeline.slice(0, durationDays)];
+    const timeline = this.daySetTimeline.slice(0, durationDays);
 
     while (timeline.length < durationDays) {
       timeline.push(this.defaultDaySetId);

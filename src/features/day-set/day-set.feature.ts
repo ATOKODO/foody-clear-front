@@ -433,7 +433,7 @@ export class DaySetFeature implements OnInit {
           return Number((slot as { id: unknown }).id);
         }
 
-        return NaN;
+        return Number.NaN;
       })
       .filter((id): id is number => Number.isFinite(id));
 

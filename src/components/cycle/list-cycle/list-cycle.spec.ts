@@ -119,7 +119,7 @@ describe('ListCycle', () => {
     component.onCheckboxChange(cycles[0], true);
     component.onCheckboxChange(cycles[1], true);
 
-    expect(emitted[emitted.length - 1]).toEqual(cycles);
+    expect(emitted.at(-1)).toEqual(cycles);
   });
 
   it('should toggle selection on the first checkbox click in multi select mode', () => {
@@ -135,7 +135,7 @@ describe('ListCycle', () => {
     checkbox.click();
     fixture.detectChanges();
 
-    expect((emitted[emitted.length - 1] as unknown[]).length).toBe(1);
+    expect((emitted.at(-1) as unknown[]).length).toBe(1);
     expect(component.isSelected(cycles[0].id)).toBeTrue();
   });
 

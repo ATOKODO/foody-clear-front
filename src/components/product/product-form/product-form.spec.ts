@@ -187,8 +187,9 @@ describe('ProductForm', () => {
     ]);
   });
 
-  function closeSelectPanel(): void {
-    const backdrop = document.body.querySelector<HTMLElement>('.cdk-overlay-backdrop');
-    backdrop?.click();
-  }
 });
+
+function closeSelectPanel(): void {
+  const backdrop = document.body.querySelector<HTMLElement>('.cdk-overlay-backdrop');
+  backdrop?.click();
+}

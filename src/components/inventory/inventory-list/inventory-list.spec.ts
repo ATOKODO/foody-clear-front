@@ -79,7 +79,7 @@ describe('InventoryList', () => {
     component.onCheckboxChange(component.resolvedInventories[0], true);
     component.onCheckboxChange(component.resolvedInventories[2], true);
 
-    expect(emitted[emitted.length - 1]).toEqual([
+    expect(emitted.at(-1)).toEqual([
       {
         id: '1',
         name: 'Stock principal',
@@ -104,7 +104,7 @@ describe('InventoryList', () => {
     checkbox.click();
     fixture.detectChanges();
 
-    expect((emitted[emitted.length - 1] as unknown[]).length).toBe(1);
+    expect((emitted.at(-1) as unknown[]).length).toBe(1);
     expect(component.isSelected(component.resolvedInventories[0].id)).toBeTrue();
   });
 });

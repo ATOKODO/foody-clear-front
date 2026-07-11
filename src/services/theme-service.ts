@@ -59,9 +59,9 @@ export class ThemeService {
 
   private prefersDark(): boolean {
     return (
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-color-scheme: dark)').matches
+      globalThis.window !== undefined &&
+      typeof globalThis.window?.matchMedia === 'function' &&
+      globalThis.window.matchMedia('(prefers-color-scheme: dark)').matches
     );
   }
 
@@ -76,10 +76,10 @@ export class ThemeService {
   // LocalStorage Manipulation
   private safeStorageGet(key: string): string | null {
     try {
-      if (typeof window === 'undefined') {
+      if (globalThis.window === undefined) {
         return null;
       }
-      return window.localStorage.getItem(key);
+      return globalThis.window.localStorage.getItem(key);
     } catch {
       return null;
     }
@@ -87,10 +87,10 @@ export class ThemeService {
 
   private safeStorageSet(key: string, value: string): void {
     try {
-      if (typeof window === 'undefined') {
+      if (globalThis.window === undefined) {
         return;
       }
-      window.localStorage.setItem(key, value);
+      globalThis.window.localStorage.setItem(key, value);
     } catch {
       // Ignore storage errors (private mode, disabled, etc.).
     }
@@ -98,10 +98,10 @@ export class ThemeService {
 
   private safeStorageRemove(key: string): void {
     try {
-      if (typeof window === 'undefined') {
+      if (globalThis.window === undefined) {
         return;
       }
-      window.localStorage.removeItem(key);
+      globalThis.window.localStorage.removeItem(key);
     } catch {
       // Ignore storage errors.
     }

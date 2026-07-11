@@ -81,16 +81,14 @@
 
 
 @if (formVisible()) {
-  <div
+  <button
+    type="button"
     class="app-modal-backdrop"
     [class.app-modal-backdrop--embedded-day-set]="embedded()"
     [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset()"
-    tabindex="0"
-    role="button"
     aria-label="Close modal"
     (click)="onCancelForm()"
-    (keydown.enter)="onCancelForm()"
-    (keydown.space)="onCancelForm(); $event.preventDefault()"></div>
+    ></button>
 }
 @if (formVisible()) {
   <div

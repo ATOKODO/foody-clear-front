@@ -267,14 +267,12 @@
 </section>
 
 @if (isEditorOpen) {
-  <div
+  <button
+    type="button"
     class="modal-backdrop modal-backdrop--meal-prep"
-    tabindex="0"
-    role="button"
     aria-label="Close editor"
     (click)="closeEditor()"
-    (keydown.enter)="closeEditor()"
-    (keydown.space)="closeEditor(); $event.preventDefault()"></div>
+    ></button>
 }
 @if (isEditorOpen) {
   <div class="modal-shell modal-shell--meal-prep" data-testid="meal-prep-editor-dialog">
@@ -428,14 +426,12 @@
 }
 
 @if (isProductPickerOpen) {
-  <div
+  <button
+    type="button"
     class="modal-backdrop modal-backdrop--meal-prep"
-    tabindex="0"
-    role="button"
     aria-label="Close product picker"
     (click)="closeProductPicker()"
-    (keydown.enter)="closeProductPicker()"
-    (keydown.space)="closeProductPicker(); $event.preventDefault()"></div>
+    ></button>
 }
 @if (isProductPickerOpen) {
   <div class="modal-shell modal-shell--meal-prep" data-testid="meal-prep-product-picker-dialog">

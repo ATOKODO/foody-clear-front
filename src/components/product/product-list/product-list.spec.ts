@@ -58,7 +58,7 @@ describe('ProductList', () => {
     component.onCheckboxChange(component.resolvedProducts[0], true);
     component.onCheckboxChange(component.resolvedProducts[1], true);
 
-    expect((emitted[emitted.length - 1] as unknown[]).length).toBe(2);
+    expect((emitted.at(-1) as unknown[]).length).toBe(2);
   });
 
   it('should toggle selection on the first checkbox click in multi-edit mode', () => {
@@ -72,7 +72,7 @@ describe('ProductList', () => {
     checkbox.click();
     fixture.detectChanges();
 
-    expect((emitted[emitted.length - 1] as unknown[]).length).toBe(1);
+    expect((emitted.at(-1) as unknown[]).length).toBe(1);
     expect(component.isSelected(component.resolvedProducts[0].id)).toBeTrue();
   });
 
