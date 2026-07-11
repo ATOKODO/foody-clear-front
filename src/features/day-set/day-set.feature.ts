@@ -430,7 +430,7 @@ export class DaySetFeature implements OnInit {
         }
 
         if (typeof slot === 'object' && slot !== null && 'id' in slot) {
-          return Number((slot as { id: unknown }).id);
+          return Number(slot.id);
         }
 
         return Number.NaN;

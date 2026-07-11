@@ -53,8 +53,8 @@ async function handleSlotCollectionRequest(context: MockApiRequestContext): Prom
       const body = await context.readJson<Record<string, unknown>>();
       const slot: MockSlot = {
         id: context.nextId('slot'),
-        key: String(body.key ?? '').trim(),
-        title: String(body.title ?? '').trim(),
+        key: readNullableString(body.key) ?? '',
+        title: readNullableString(body.title) ?? '',
         sortOrder: Number(body.sortOrder ?? 0),
         startTime: readNullableString(body.startTime),
         endTime: readNullableString(body.endTime),
@@ -89,8 +89,8 @@ async function handleSlotRequest(context: MockApiRequestContext): Promise<boolea
 
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      slot.key = String(body.key ?? slot.key).trim();
-      slot.title = String(body.title ?? slot.title).trim();
+      slot.key = readNullableString(body.key) ?? slot.key;
+      slot.title = readNullableString(body.title) ?? slot.title;
       slot.sortOrder = Number(body.sortOrder ?? slot.sortOrder);
       slot.startTime = readFallbackString(body.startTime, slot.startTime);
       slot.endTime = readFallbackString(body.endTime, slot.endTime);
@@ -129,7 +129,7 @@ async function handleDaySetCollectionRequest(context: MockApiRequestContext): Pr
       const body = await context.readJson<Record<string, unknown>>();
       const daySet: MockDaySet = {
         id: context.nextId('daySet'),
-        title: String(body.title ?? '').trim(),
+        title: readNullableString(body.title) ?? '',
         nutritionValues: Array.isArray(body.nutritionValues)
           ? body.nutritionValues.map(toCycleNutritionValue).filter(isCycleNutritionValue)
           : [],
@@ -165,7 +165,7 @@ async function handleDaySetRequest(context: MockApiRequestContext): Promise<bool
 
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      daySet.title = String(body.title ?? daySet.title).trim();
+      daySet.title = readNullableString(body.title) ?? daySet.title;
       if (Array.isArray(body.nutritionValues)) {
         daySet.nutritionValues = body.nutritionValues
           .map(toCycleNutritionValue)
@@ -209,14 +209,14 @@ async function handleCycleCollectionRequest(context: MockApiRequestContext): Pro
       const body = await context.readJson<Record<string, unknown>>();
       const cycle: MockCycle = {
         id: context.nextId('cycle'),
-        title: String(body.title ?? '').trim(),
-        color: String(body.color ?? 'bg-sky-500').trim(),
+        title: readNullableString(body.title) ?? '',
+        color: readNullableString(body.color) ?? 'bg-sky-500',
         nutritionValues: Array.isArray(body.nutritionValues)
           ? body.nutritionValues.map(toCycleNutritionValue).filter(isCycleNutritionValue)
           : [],
         durationDays: Number(body.durationDays ?? 1),
         durationCount: Number(body.durationCount ?? body.durationDays ?? 1),
-        durationType: String(body.durationType ?? 'jour') as MockCycle['durationType'],
+        durationType: (readNullableString(body.durationType) ?? 'jour') as MockCycle['durationType'],
         defaultTemplateId: readNullableNumber(body.defaultTemplateId),
         daySetOrder: normalizeTimeline(body.daySetOrder, Number(body.durationDays ?? 1)),
       };
@@ -247,11 +247,11 @@ async function handleCycleRequest(context: MockApiRequestContext): Promise<boole
 
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      cycle.title = String(body.title ?? cycle.title).trim();
-      cycle.color = String(body.color ?? cycle.color).trim();
+      cycle.title = readNullableString(body.title) ?? cycle.title;
+      cycle.color = readNullableString(body.color) ?? cycle.color;
       cycle.durationDays = Number(body.durationDays ?? cycle.durationDays);
       cycle.durationCount = Number(body.durationCount ?? cycle.durationCount);
-      cycle.durationType = String(body.durationType ?? cycle.durationType) as MockCycle['durationType'];
+      cycle.durationType = (readNullableString(body.durationType) ?? cycle.durationType) as MockCycle['durationType'];
       if ('defaultTemplateId' in body) {
         cycle.defaultTemplateId = readNullableNumber(body.defaultTemplateId);
       }
@@ -291,7 +291,7 @@ async function handleTemplateCollectionRequest(context: MockApiRequestContext): 
       const body = await context.readJson<Record<string, unknown>>();
       const template: MockTemplate = {
         id: context.nextId('template'),
-        title: String(body.title ?? '').trim(),
+        title: readNullableString(body.title) ?? '',
         items: [],
       };
       state.templates.push(template);
@@ -321,7 +321,7 @@ async function handleTemplateRequest(context: MockApiRequestContext): Promise<bo
 
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      template.title = String(body.title ?? template.title).trim();
+      template.title = readNullableString(body.title) ?? template.title;
       await context.json(buildTemplateResponse(state, template));
       return true;
     }
@@ -443,7 +443,7 @@ async function handleCycleAssignmentCollectionRequest(context: MockApiRequestCon
       const assignment: MockCycleAssignment = {
         id: context.nextId('cycleAssignment'),
         cycleId: Number(body.cycleId ?? 0),
-        startDateLocal: String(body.startDateLocal ?? '').trim(),
+        startDateLocal: readNullableString(body.startDateLocal) ?? '',
       };
       state.cycleAssignments.push(assignment);
       await context.json(hydrateCycleAssignment(state, assignment), 201);
@@ -473,7 +473,7 @@ async function handleCycleAssignmentRequest(context: MockApiRequestContext): Pro
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
       assignment.cycleId = Number(body.cycleId ?? assignment.cycleId);
-      assignment.startDateLocal = String(body.startDateLocal ?? assignment.startDateLocal).trim();
+    assignment.startDateLocal = readNullableString(body.startDateLocal) ?? assignment.startDateLocal;
       await context.json(hydrateCycleAssignment(state, assignment));
       return true;
     }
@@ -494,7 +494,7 @@ function toCycleNutritionValue(value: unknown): CycleNutritionValue | null {
   }
 
   const raw = value as Record<string, unknown>;
-  const nutritionKey = String(raw.nutritionKey ?? '').trim().toUpperCase();
+  const nutritionKey = (readNullableString(raw.nutritionKey) ?? '').toUpperCase();
   if (!nutritionKey) {
     return null;
   }
@@ -502,8 +502,8 @@ function toCycleNutritionValue(value: unknown): CycleNutritionValue | null {
   return {
     nutritionKey,
     amount: Number(raw.amount ?? 0),
-    unit: String(raw.unit ?? 'G').trim().toUpperCase(),
-    reference: String(raw.reference ?? 'PER_100G') === 'PER_100ML' ? 'PER_100ML' : 'PER_100G',
+    unit: (readNullableString(raw.unit) ?? 'G').toUpperCase(),
+    reference: readNullableString(raw.reference) === 'PER_100ML' ? 'PER_100ML' : 'PER_100G',
   };
 }
 
@@ -541,11 +541,11 @@ function readFallbackNumber(value: unknown, fallback: number | null): number | n
 }
 
 function readNullableString(value: unknown): string | null {
-  if (value == null) {
+  if (typeof value !== 'string') {
     return null;
   }
 
-  const candidate = String(value).trim();
+  const candidate = value.trim();
   return candidate === '' ? null : candidate;
 }
 

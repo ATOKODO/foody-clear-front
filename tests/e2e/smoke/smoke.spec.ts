@@ -1,5 +1,4 @@
-import { expect } from '../../fixtures/test';
-import { test } from '../../fixtures/test';
+import { expect, test } from '../../fixtures/test';
 import { expectShellTitle, gotoRoute, openSidebarRoute } from '../../helpers/navigation';
 
 test('redirects / to /home @smoke', async ({ page, mockApi }) => {

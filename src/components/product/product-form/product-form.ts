@@ -416,7 +416,7 @@ export class ProductForm implements OnInit, OnChanges {
     }
 
     const ids = value
-      .map((item) => Number(item))
+      .map(Number)
       .filter((item) => Number.isInteger(item) && item > 0);
 
     return Array.from(new Set(ids));

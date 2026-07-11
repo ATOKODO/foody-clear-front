@@ -5,7 +5,6 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 import { CycleFeature } from './cycle.feature';
 
@@ -21,7 +20,6 @@ describe('CycleFeature', () => {
       providers: [
         provideHttpClient(withXhr()),
         provideHttpClientTesting(),
-        provideNoopAnimations(),
       ],
     }).compileComponents();
 

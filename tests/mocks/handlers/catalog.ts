@@ -35,7 +35,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       const body = await context.readJson<Record<string, unknown>>();
       const category = {
         id: context.nextId('category'),
-        name: String(body.name ?? '').trim(),
+        name: readNullableString(body.name) ?? '',
         warnBeforeDays: Number(body.warnBeforeDays ?? 0),
         recentlyExpiredDays: Number(body.recentlyExpiredDays ?? 0),
         minQuantity: Number(body.minQuantity ?? 0),
@@ -61,7 +61,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
 
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      category.name = String(body.name ?? category.name).trim();
+      category.name = readNullableString(body.name) ?? category.name;
       category.warnBeforeDays = Number(body.warnBeforeDays ?? category.warnBeforeDays);
       category.recentlyExpiredDays = Number(body.recentlyExpiredDays ?? category.recentlyExpiredDays);
       category.minQuantity = Number(body.minQuantity ?? category.minQuantity);
@@ -91,7 +91,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       const body = await context.readJson<Record<string, unknown>>();
       const tag = {
         id: context.nextId('tag'),
-        name: String(body.name ?? '').trim(),
+        name: readNullableString(body.name) ?? '',
       };
       state.tags.push(tag);
       await context.json(hydrateTag(tag), 201);
@@ -114,7 +114,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
 
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      tag.name = String(body.name ?? tag.name).trim();
+      tag.name = readNullableString(body.name) ?? tag.name;
       await context.json(hydrateTag(tag));
       return true;
     }
@@ -139,7 +139,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       const body = await context.readJson<Record<string, unknown>>();
       const genericProduct = {
         id: context.nextId('genericProduct'),
-        name: String(body.name ?? '').trim(),
+        name: readNullableString(body.name) ?? '',
         minQuantityUnit: Number(body.minQuantityUnit ?? 0),
         minQuantityUnitType: (body.minQuantityUnitType as MockProduct['portionUnit']) ?? null,
         minQuantityMetric: Number(body.minQuantityMetric ?? 0),
@@ -166,7 +166,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
 
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      genericProduct.name = String(body.name ?? genericProduct.name).trim();
+      genericProduct.name = readNullableString(body.name) ?? genericProduct.name;
       genericProduct.minQuantityUnit = Number(body.minQuantityUnit ?? genericProduct.minQuantityUnit);
       genericProduct.minQuantityUnitType =
         (body.minQuantityUnitType as MockProduct['portionUnit']) ?? genericProduct.minQuantityUnitType;
@@ -200,14 +200,14 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       const productId = context.nextId('product');
       const product: MockProduct = {
         id: productId,
-        name: String(body.name ?? '').trim(),
+        name: readNullableString(body.name) ?? '',
         barcode: readNullableString(body.barcode),
         categoryId: readNullableNumber(body.categoryId),
         tagIds: Array.isArray(body.tagIds)
-          ? body.tagIds.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0)
+          ? body.tagIds.map(Number).filter((value) => Number.isInteger(value) && value > 0)
           : [],
         genericProductId: readNullableNumber(body.genericProductId),
-        unitType: String(body.unitType ?? 'Unite'),
+        unitType: readNullableString(body.unitType) ?? 'Unite',
         quantityPerUnit: Number(body.quantityPerUnit ?? 1),
         quantityUnit: readNullableString(body.quantityUnit) ?? 'g',
         portionCount: readNullableNumber(body.portionCount),
@@ -233,7 +233,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
           id: context.nextId('priceHistory'),
           price: round(product.price),
           priceUnit: product.priceUnit,
-          effectiveFrom: String(body.priceEffectiveFrom ?? '2026-03-01T08:00:00+01:00'),
+          effectiveFrom: readNullableString(body.priceEffectiveFrom) ?? '2026-03-01T08:00:00+01:00',
           effectiveTo: null,
         });
       }
@@ -259,7 +259,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
 
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      product.name = String(body.name ?? product.name).trim();
+      product.name = readNullableString(body.name) ?? product.name;
       product.barcode = readFallbackString(body.barcode, product.barcode);
       if ('categoryId' in body) {
         product.categoryId = readNullableNumber(body.categoryId);
@@ -270,7 +270,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       if ('genericProductId' in body) {
         product.genericProductId = readNullableNumber(body.genericProductId);
       }
-      product.unitType = String(body.unitType ?? product.unitType);
+      product.unitType = readNullableString(body.unitType) ?? product.unitType;
       product.quantityPerUnit = Number(body.quantityPerUnit ?? product.quantityPerUnit);
       product.quantityUnit = readFallbackString(body.quantityUnit, product.quantityUnit);
       product.portionCount = readFallbackNumber(body.portionCount, product.portionCount);
@@ -286,12 +286,12 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
         product.tagIds = Array.from(
           new Set([
             ...product.tagIds,
-            ...body.tagIdsToAdd.map((value) => Number(value)).filter((value) => Number.isInteger(value) && value > 0),
+            ...body.tagIdsToAdd.map(Number).filter((value) => Number.isInteger(value) && value > 0),
           ]),
         );
       }
       if (Array.isArray(body.tagIdsToRemove)) {
-        const toRemove = new Set(body.tagIdsToRemove.map((value) => Number(value)));
+        const toRemove = new Set(body.tagIdsToRemove.map(Number));
         product.tagIds = product.tagIds.filter((tagId) => !toRemove.has(tagId));
       }
 
@@ -299,7 +299,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       const nextPriceUnit = readNullableString(body.priceUnit) as MockProduct['priceUnit'];
       if (nextPrice != null && nextPriceUnit && (nextPrice !== product.price || nextPriceUnit !== product.priceUnit)) {
         const effectiveFrom =
-          String(body.priceEffectiveFrom ?? '2026-03-25T09:00:00+01:00').trim() ||
+          (readNullableString(body.priceEffectiveFrom) ?? '2026-03-25T09:00:00+01:00').trim() ||
           '2026-03-25T09:00:00+01:00';
         const currentVersion = product.priceHistory.at(-1) ?? null;
         if (currentVersion) {
@@ -323,10 +323,10 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
           if (existingId != null) {
             const existing = product.nutritionValues.find((item) => item.id === existingId);
             if (existing) {
-              existing.nutritionKey = String(payload.nutritionKey ?? existing.nutritionKey).trim().toUpperCase();
+              existing.nutritionKey = (readNullableString(payload.nutritionKey) ?? existing.nutritionKey).toUpperCase();
               existing.amount = Number(payload.amount ?? existing.amount);
-              existing.unit = String(payload.unit ?? existing.unit);
-              existing.reference = String(payload.reference ?? existing.reference) === 'PER_100ML' ? 'PER_100ML' : 'PER_100G';
+              existing.unit = readNullableString(payload.unit) ?? existing.unit;
+              existing.reference = readNullableString(payload.reference) === 'PER_100ML' ? 'PER_100ML' : 'PER_100G';
             }
             return;
           }
@@ -411,15 +411,14 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
 
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      located.value.nutritionKey = String(body.label ?? body.nutritionKey ?? located.value.nutritionKey)
-        .trim()
-        .toUpperCase();
+      located.value.nutritionKey = (readNullableString(body.label) ?? readNullableString(body.nutritionKey) ?? located.value.nutritionKey)
+        .trim().toUpperCase();
       located.value.amount = Number(body.amount ?? located.value.amount);
-      located.value.unit = String(body.unit ?? located.value.unit);
+      located.value.unit = readNullableString(body.unit) ?? located.value.unit;
       located.value.reference = Number(body.per ?? 100) === 100 ? 'PER_100G' : 'PER_100ML';
       await context.json({
         id: located.value.id,
-        label: String(body.label ?? located.value.nutritionKey),
+        label: readNullableString(body.label) ?? located.value.nutritionKey,
         amount: located.value.amount,
         unit: located.value.unit,
         per: Number(body.per ?? 100),
@@ -456,7 +455,7 @@ function createNutritionValue(
   context: MockApiRequestContext,
   payload: Record<string, unknown>,
 ): MockNutritionValue | null {
-  const nutritionKey = String(payload.nutritionKey ?? payload.label ?? '').trim().toUpperCase();
+  const nutritionKey = (readNullableString(payload.nutritionKey) ?? readNullableString(payload.label) ?? '').toUpperCase();
   if (!nutritionKey) {
     return null;
   }
@@ -465,17 +464,17 @@ function createNutritionValue(
     id: context.nextId('nutritionValue'),
     nutritionKey,
     amount: Number(payload.amount ?? 0),
-    unit: String(payload.unit ?? 'G').trim().toUpperCase(),
+    unit: (readNullableString(payload.unit) ?? 'G').toUpperCase(),
     reference: Number(payload.per ?? 100) === 100 ? 'PER_100G' : 'PER_100ML',
   };
 }
 
 function readNullableString(value: unknown): string | null {
-  if (value == null) {
+  if (typeof value !== 'string') {
     return null;
   }
 
-  const candidate = String(value).trim();
+  const candidate = value.trim();
   return candidate === '' ? null : candidate;
 }
 

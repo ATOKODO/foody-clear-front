@@ -12,4 +12,4 @@ export const test = base.extend<{ mockApi: MockApi }>({
   ],
 });
 
-export { expect };
+export { expect } from '@playwright/test';

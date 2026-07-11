@@ -385,7 +385,7 @@ describe('Inventory', () => {
         id: 4,
         name: 'Stock principal',
         inventoryProducts: [],
-      } as (typeof component.inventories)[number],
+      },
     ];
     inventoryServiceMock.findProducts.and.returnValue(of([]));
 

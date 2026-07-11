@@ -234,7 +234,7 @@ export function resolveCycleDaySetTimeline(
               return Number.NaN;
             }
 
-            return Number((daySet as { id: unknown }).id);
+            return Number(daySet.id);
           })
           .filter((id): id is number => Number.isFinite(id));
 

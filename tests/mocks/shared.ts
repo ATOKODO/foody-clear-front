@@ -1064,7 +1064,7 @@ function macrosForSlotItems(
           return true;
         }
 
-        const itemSlotKey = String(item.slotKey ?? '').trim();
+        const itemSlotKey = typeof item.slotKey === 'string' ? item.slotKey.trim() : '';
         return slotKey !== null && itemSlotKey !== '' && itemSlotKey === slotKey;
       })
       .map((item) => item.nutritionValue as Record<string, number>),

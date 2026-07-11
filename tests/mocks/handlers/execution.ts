@@ -55,7 +55,7 @@ async function handleInventoryCollectionRequest(context: MockApiRequestContext):
       const body = await context.readJson<Record<string, unknown>>();
       const inventory: MockInventory = {
         id: context.nextId('inventory'),
-        name: String(body.name ?? '').trim(),
+        name: readNullableString(body.name) ?? '',
       };
       state.inventories.push(inventory);
       const products = Array.isArray(body.products) ? body.products : [];
@@ -98,7 +98,7 @@ async function handleInventoryRequest(context: MockApiRequestContext): Promise<b
     }
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      inventory.name = String(body.name ?? inventory.name).trim();
+      inventory.name = readNullableString(body.name) ?? inventory.name;
       await context.json(hydrateInventory(state, inventory));
       return true;
     }
@@ -327,7 +327,7 @@ async function handleInputDayItemRequest(context: MockApiRequestContext): Promis
         item.qtyUnit = readFallbackString(body.qtyUnit, item.qtyUnit) as typeof item.qtyUnit;
         item.qtyNormalized = normalizeProductQuantity(product, item.qty, item.qtyUnit);
       }
-      item.dateLocal = String(body.dateLocal ?? item.dateLocal).trim();
+      item.dateLocal = readNullableString(body.dateLocal) ?? item.dateLocal;
       item.inventoryId = readFallbackNumber(body.inventoryId, item.inventoryId);
       item.occurredAt = readFallbackString(body.occurredAt, item.occurredAt);
       item.slotId = readFallbackNumber(body.slotId, item.slotId);
@@ -439,10 +439,10 @@ function readFallbackNumber(value: unknown, fallback: number | null): number | n
   return readNullableNumber(value);
 }
 function readNullableString(value: unknown): string | null {
-  if (value == null) {
+  if (typeof value !== 'string') {
     return null;
   }
-  const candidate = String(value).trim();
+  const candidate = value.trim();
   return candidate === '' ? null : candidate;
 }
 function readFallbackString(value: unknown, fallback: string | null): string | null {

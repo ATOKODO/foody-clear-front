@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { InputDayService } from '../../services/input-day-service';
 import { ExternalMealEntryDialog, ExternalMealEntryDialogData } from './external-meal-entry-dialog';
@@ -42,7 +41,7 @@ describe('ExternalMealEntryDialog', () => {
     inputDayServiceMock.createExternalEntry.calls.reset();
 
     await TestBed.configureTestingModule({
-      imports: [ExternalMealEntryDialog, NoopAnimationsModule],
+      imports: [ExternalMealEntryDialog],
       providers: [
         { provide: MAT_DIALOG_DATA, useValue: dialogData },
         { provide: MatDialogRef, useValue: dialogRefMock },

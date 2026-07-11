@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, Subject } from 'rxjs';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 import { Product } from './product';
 import { CategoryService } from '../../services/category-service';
@@ -61,7 +60,6 @@ describe('Product', () => {
     await TestBed.configureTestingModule({
       imports: [Product],
       providers: [
-        provideNoopAnimations(),
         { provide: CategoryService, useValue: categoryServiceMock },
         { provide: GenericProductService, useValue: genericProductServiceMock },
         { provide: ProductService, useValue: productServiceMock },

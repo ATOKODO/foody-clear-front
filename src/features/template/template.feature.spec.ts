@@ -1,6 +1,5 @@
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { of, Subject } from 'rxjs';
 
 import { TemplateFeature } from './template.feature';
@@ -116,7 +115,6 @@ describe('TemplateFeature', () => {
         { provide: DaySetService, useValue: daySetServiceMock },
         { provide: SlotService, useValue: slotServiceMock },
         { provide: MealPrepService, useValue: mealPrepServiceMock },
-        provideNoopAnimations(),
       ],
     }).compileComponents();
 
@@ -247,8 +245,7 @@ describe('TemplateFeature', () => {
 
   it('should refresh all template dependencies and preserve the current selection', () => {
     component.selectedTemplateId = 2;
-    component.selectedTemplate =
-      templates[1] as typeof component.selectedTemplate;
+    component.selectedTemplate = templates[1];
     component.compareDaySetId = 9;
     templateServiceMock.findOne.and.returnValue(
       of({
@@ -271,8 +268,7 @@ describe('TemplateFeature', () => {
 
   it('should remove the selected template via the list action and keep no fallback selection', () => {
     component.selectedTemplateId = 1;
-    component.selectedTemplate =
-      templates[0] as typeof component.selectedTemplate;
+    component.selectedTemplate = templates[0];
     templateServiceMock.findAll.and.returnValue(of([templates[1]]));
 
     component.onTemplateDeleteRequested(1);
