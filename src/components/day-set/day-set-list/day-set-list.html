@@ -50,7 +50,7 @@
               [disabled]="isSelectionDisabled(item)"
               [attr.aria-label]="'Select ' + item.title"
               (change)="onCheckboxChange(item, $event.checked)"
-              (click)="$event.stopPropagation()"
+              (click)="onCheckboxClick($event, item)"
               (keydown)="$event.stopPropagation()" />
           </td>
         </ng-container>

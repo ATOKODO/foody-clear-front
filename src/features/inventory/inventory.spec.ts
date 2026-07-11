@@ -357,12 +357,12 @@ describe('Inventory', () => {
 
     expect(component.activeModal).toBeNull();
     expect(component.manageProductRows.length).toBe(1);
-    expect(headerActions).toEqual(["Ouvrir l'ajout", 'Options']);
+    expect(headerActions).toEqual(['Open add products', 'Options']);
     expect(element.querySelector('.inventory-manage-products')?.textContent).toContain(
-      'Gerer les produits',
+      'Manage products',
     );
-    expect(element.textContent).not.toContain('Ouvrir la gestion');
-    expect(element.textContent).not.toContain("Gerer les produits de l'inventory");
+    expect(element.textContent).not.toContain('Open management');
+    expect(element.textContent).not.toContain('Manage inventory products');
   });
 
   it('should preserve inline managed rows when the add modal closes', () => {
@@ -400,7 +400,7 @@ describe('Inventory', () => {
 
     expect(component.manageProductRows).toEqual([]);
     expect(fixture.nativeElement.querySelector('.inventory-manage-products')?.textContent).toContain(
-      'Aucun produit lie a cet inventory.',
+      'No product is linked to this inventory.',
     );
   });
 
@@ -434,7 +434,7 @@ describe('Inventory', () => {
     const manageTitle = fixture.nativeElement.querySelector('.inventory-manage-products h3');
     expect(component.manageProductRows[0].qtyUnitOptions.length).toBeGreaterThan(0);
     expect(component.manageProductRows[0].currentQtyDisplay).toContain('2');
-    expect(manageTitle?.textContent).toContain('Gerer les produits');
+    expect(manageTitle?.textContent).toContain('Manage products');
   });
 
   it('should replace stock rows when managed quantities switch to portion', () => {

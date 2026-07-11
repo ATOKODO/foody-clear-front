@@ -145,6 +145,11 @@ export class CategoryList implements OnInit, OnChanges {
     this.selectedMany.emit(this.getSelectedItems());
   }
 
+  onCheckboxClick(event: MouseEvent, item: CategoryListItem): void {
+    event.stopPropagation();
+    this.onCheckboxChange(item, !this.isSelected(item.id));
+  }
+
   onAddClick(): void {
     if (!this.isManageMode) {
       return;

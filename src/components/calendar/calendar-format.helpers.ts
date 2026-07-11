@@ -65,7 +65,7 @@ export function getCalendarTargetSourceText(
   targetSource: InputDayTargetSource,
 ): string {
   const labels: Record<InputDayTargetSource, string> = {
-    cycle: 'Cible du cycle',
+    cycle: 'Cycle target',
     daySet: 'Day set target',
     none: 'No target',
   };
@@ -76,9 +76,9 @@ export function getCalendarTargetSourceBadgeText(
   targetSource: InputDayTargetSource,
 ): string {
   const labels: Record<InputDayTargetSource, string> = {
-    cycle: 'Cibles cycle',
+    cycle: 'Cycle targets',
     daySet: 'Day set targets',
-    none: 'Sans cible',
+    none: 'No target',
   };
   return labels[targetSource] ?? labels.none;
 }
@@ -89,7 +89,7 @@ export function getCalendarDayTargetSourcePillText(
   const labels: Record<InputDayTargetSource, string> = {
     cycle: 'Assigned cycle target',
     daySet: 'Day set target',
-    none: 'Sans cible',
+    none: 'No target',
   };
   return labels[targetSource] ?? labels.none;
 }
@@ -98,7 +98,7 @@ export function getCalendarTemplateSourceBadgeText(
   source: string | null | undefined,
 ): string | null {
   if (source === 'manual') {
-    return 'Template manuel';
+    return 'Manual template';
   }
 
   if (source === 'daySet') {
@@ -251,8 +251,8 @@ export function buildCalendarMonthAlertBadges(
       key: 'template-pending',
       text:
         pendingTemplateItems === 1
-          ? 'Template en attente'
-          : `${pendingTemplateItems} templates en attente`,
+          ? 'Pending template'
+          : `${pendingTemplateItems} pending templates`,
       tone: 'template',
     });
   }

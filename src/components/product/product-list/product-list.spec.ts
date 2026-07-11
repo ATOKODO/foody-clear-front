@@ -121,7 +121,7 @@ describe('ProductList', () => {
     searchInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    expect(nativeElement.textContent).toContain('Aucun produit ne correspond a la recherche.');
+    expect(nativeElement.textContent).toContain('No product matches the search.');
   });
 
   it('should render category and generic product columns in manage mode', () => {
@@ -147,8 +147,8 @@ describe('ProductList', () => {
       (cell) => (cell as HTMLElement).textContent?.trim() ?? '',
     );
 
-    expect(headerCells).toContain('Categorie');
-    expect(headerCells).toContain('Produit generique');
+    expect(headerCells).toContain('Category');
+    expect(headerCells).toContain('Generic product');
     expect(nativeElement.textContent).toContain('Epicerie');
     expect(nativeElement.textContent).toContain('Riz blanc');
   });
@@ -173,7 +173,7 @@ describe('ProductList', () => {
       nativeElement.querySelectorAll('th'),
     ).map((cell) => (cell as HTMLElement).textContent?.trim() ?? '');
 
-    expect(headerCells).toContain('Disponible');
+    expect(headerCells).toContain('Available');
     expect(nativeElement.textContent).toContain('1200 g');
   });
 
@@ -197,6 +197,6 @@ describe('ProductList', () => {
     const nativeElement = fixture.nativeElement as HTMLElement;
 
     expect(nativeElement.querySelector('mat-card')).toBeNull();
-    expect(nativeElement.textContent).toContain('Aucun produit disponible.');
+    expect(nativeElement.textContent).toContain('No product available.');
   });
 });

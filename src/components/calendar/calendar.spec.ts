@@ -228,11 +228,11 @@ describe('Calendar', () => {
     expect(desktopAlerts.length).toBe(1);
     expect(textContent).toContain('Base');
     expect(textContent).toContain('Lean Day');
-    expect(textContent).toContain('Cibles day set');
-    expect(textContent).toContain('Template manuel');
-    expect(textContent).toContain('Template en attente');
-    expect(textContent).not.toContain('Effectif');
-    expect(textContent).not.toContain('Effectif + template');
+    expect(textContent).toContain('Day set targets');
+    expect(textContent).toContain('Manual template');
+    expect(textContent).toContain('Pending template');
+    expect(textContent).not.toContain('Actual');
+    expect(textContent).not.toContain('Actual + template');
   });
 
   it('should render a modernized year view with summary cards and active months', () => {
@@ -264,8 +264,8 @@ describe('Calendar', () => {
       root.querySelector('.calendar-year-mini-day--assigned'),
     ).toBeTruthy();
     expect(textContent).toContain('Vue annee');
-    expect(textContent).toContain('mois couverts');
-    expect(textContent).toContain('jours planifies');
+    expect(textContent).toContain('months covered');
+    expect(textContent).toContain('scheduled days');
   });
 
   it('should switch to the clicked month from the year footer action', () => {
@@ -349,7 +349,7 @@ describe('Calendar', () => {
     ).toBeNull();
     expect(textContent).toContain('Vue mois');
     expect(textContent).toContain('Prise de Masse');
-    expect(textContent).toContain('jours planifies');
+    expect(textContent).toContain('scheduled days');
   });
 
   it('should emit openDayView requests from the month card and Jour button', () => {
@@ -588,9 +588,9 @@ describe('Calendar', () => {
     expect(textContent).toContain('G depasse');
     expect(textContent).toContain('P projete depasse');
     expect(textContent).toContain('L projete depasse');
-    expect(textContent).toContain('2 templates en attente');
-    expect(textContent).not.toContain('Effectif');
-    expect(textContent).not.toContain('Effectif + template');
+    expect(textContent).toContain('2 pending templates');
+    expect(textContent).not.toContain('Actual');
+    expect(textContent).not.toContain('Actual + template');
     expect(textContent).not.toContain('Kcal projete depasse');
   });
 
@@ -736,27 +736,27 @@ describe('Calendar', () => {
     expect(
       root.querySelectorAll('.calendar-day-grid__half-hour-cell').length,
     ).toBe(48);
-    expect(textContent).toContain('Vue jour');
-    expect(textContent).toContain('Pilotage du jour');
-    expect(textContent).toContain('Cible du jour issue du day set');
-    expect(textContent).toContain('Gerer Cycle');
-    expect(textContent).toContain('Modifier Journee');
-    expect(textContent).toContain('Heures du jour');
-    expect(textContent).toContain('Entrees du jour');
-    expect(textContent).toContain('Clic a la demi-heure');
+    expect(textContent).toContain('Day view');
+    expect(textContent).toContain('Day dashboard');
+    expect(textContent).toContain('Daily target inherited from the day set');
+    expect(textContent).toContain('Manage cycle');
+    expect(textContent).toContain('Edit day');
+    expect(textContent).toContain('Day hours');
+    expect(textContent).toContain('Day entries');
+    expect(textContent).toContain('Half-hour click targets');
     expect(textContent).toContain('Jour standard');
-    expect(textContent).toContain('Saisi');
-    expect(textContent).toContain('Cible');
-    expect(textContent).toContain('Ecart');
-    expect(textContent).not.toContain('Effectif + template / day-set');
-    expect(textContent).not.toContain('Template manuel');
+    expect(textContent).toContain('Logged');
+    expect(textContent).toContain('Target');
+    expect(textContent).toContain('Delta');
+    expect(textContent).not.toContain('Actual + template / day set');
+    expect(textContent).not.toContain('Manual template');
     expect(textContent).not.toContain('Plan proteine');
 
     const slotToggle = root.querySelector(
       '[data-testid="calendar-day-toggle-slot-stats"]',
     ) as HTMLButtonElement;
     expect(slotToggle).toBeTruthy();
-    expect(slotToggle.textContent).toContain('Afficher les slots');
+    expect(slotToggle.textContent).toContain('Show slots');
     expect(
       root.querySelector('[data-testid="calendar-day-slot-stats"]'),
     ).toBeNull();
@@ -1340,11 +1340,11 @@ describe('Calendar', () => {
 
     const textContent = fixture.nativeElement.textContent;
 
-    expect(textContent).toContain('Cible du jour issue du cycle assigne');
+    expect(textContent).toContain('Daily target inherited from the assigned cycle');
     expect(textContent).toContain(
-      'Les entrees saisies sont comparees a la cible du cycle Seche.',
+      'Logged entries are compared with the Seche cycle target.',
     );
-    expect(textContent).toContain('Cible cycle assigne');
+    expect(textContent).toContain('Assigned cycle target');
     expect(textContent).toContain('150');
   });
 });

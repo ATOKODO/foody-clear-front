@@ -48,7 +48,7 @@ describe('InventoryList', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.inventory-list__empty')?.textContent)
-      .toContain('Aucun inventory disponible.');
+      .toContain('No inventory available.');
   });
 
   it('should emit selected in single select mode', () => {

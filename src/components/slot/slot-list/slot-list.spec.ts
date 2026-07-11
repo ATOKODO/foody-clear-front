@@ -50,7 +50,7 @@ describe('SlotList', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('mat-card')).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('Aucun slot disponible.');
+    expect(fixture.nativeElement.textContent).toContain('No slot available.');
   });
 
   it('should emit selected in single select mode', () => {

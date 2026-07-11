@@ -47,10 +47,10 @@ describe('ListCycle', () => {
       fixture.nativeElement.querySelector('.lc-card__footer'),
     ).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('KCAL');
-    expect(fixture.nativeElement.textContent).toContain('Sous cible');
+    expect(fixture.nativeElement.textContent).toContain('Below target');
     expect(fixture.nativeElement.textContent).toContain('55.56%');
-    expect(fixture.nativeElement.textContent).toContain('Modifier');
-    expect(fixture.nativeElement.textContent).toContain('Retirer');
+    expect(fixture.nativeElement.textContent).toContain('Edit');
+    expect(fixture.nativeElement.textContent).toContain('Remove');
   });
 
   it('should render a plain empty state in embedded manage mode', () => {
@@ -60,7 +60,7 @@ describe('ListCycle', () => {
 
     expect(fixture.nativeElement.querySelector('mat-card')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain(
-      'Aucun cycle disponible.',
+      'No cycle available.',
     );
   });
 
@@ -179,14 +179,14 @@ describe('ListCycle', () => {
     const textContent = fixture.nativeElement.textContent;
 
     expect(textContent).toContain(
-      'Moyenne journaliere effective / cible cycle',
+      'Effective daily average / cycle target',
     );
     expect(textContent).toContain(
-      '4 jour(s) sans day set reprennent directement la cible du cycle.',
+      '4 day(s) without a day set use the cycle target directly.',
     );
     expect(textContent).toContain('Day sets > cycle');
     expect(textContent).toContain('Slots > day set');
-    expect(textContent).toContain('Decomposition slots partielle');
+    expect(textContent).toContain('Partial slot breakdown');
   });
 
   it('should expand and collapse the detail panel', () => {
@@ -223,7 +223,7 @@ describe('ListCycle', () => {
     expect(textContent).toContain('KCAL');
     expect(textContent).toContain('1070 / 1740 kcal');
     expect(textContent).toContain('1070 / 1070 kcal');
-    expect(textContent).toContain('Pile cible');
+    expect(textContent).toContain('On target');
   });
 
   it('should show an unavailable slot breakdown state when slots cannot be reconstructed', () => {

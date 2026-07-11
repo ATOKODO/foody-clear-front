@@ -66,7 +66,7 @@ describe('CycleFeature', () => {
     expect(
       fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')
         ?.textContent,
-    ).toContain('Ajouter un cycle');
+    ).toContain('Add cycle');
   });
 
   it('should show the day set feature when selecting its toggle', () => {
@@ -87,7 +87,7 @@ describe('CycleFeature', () => {
     expect(
       fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')
         ?.textContent,
-    ).toContain('Ajouter un day set');
+    ).toContain('Add day set');
     expect(
       fixture.nativeElement.querySelector(
         'app-day-set-feature section.app-page',
@@ -115,7 +115,7 @@ describe('CycleFeature', () => {
     expect(
       fixture.nativeElement.querySelector('[data-testid="cycle-add-action"]')
         ?.textContent,
-    ).toContain('Ajouter un slot');
+    ).toContain('Add slot');
     expect(
       fixture.nativeElement.querySelector('app-slot-feature section.app-page'),
     ).toBeNull();
@@ -505,7 +505,7 @@ describe('CycleFeature', () => {
     const dialogText = overlayContainer.getContainerElement().textContent ?? '';
 
     expect(component.formVisible).toBeTrue();
-    expect(dialogText).toContain('Modifier un cycle');
+    expect(dialogText).toContain('Edit cycle');
     expect(dialogText).toContain(
       'Les changements sont appliques sans quitter la liste.',
     );

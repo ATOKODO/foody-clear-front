@@ -37,6 +37,6 @@ describe('CategoryList', () => {
     expect(nativeElement.querySelector('mat-card')).toBeNull();
     expect(nativeElement.querySelector('.add-btn')).toBeNull();
     expect(nativeElement.querySelector('[data-testid="category-list-embedded"]')).not.toBeNull();
-    expect(nativeElement.textContent).toContain('Aucune categorie disponible.');
+    expect(nativeElement.textContent).toContain('No category available.');
   });
 });

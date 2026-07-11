@@ -241,21 +241,21 @@
             <p
               class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
             >
-              Impossible de charger les products.
+              Unable to load products.
             </p>
           }
           @if (inventoriesError) {
             <p
               class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
             >
-              Impossible de charger les inventories.
+              Unable to load inventories.
             </p>
           }
           @if (inventoryProductsError) {
             <p
               class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
             >
-              Impossible de charger les products de l'inventory selectionne.
+              Unable to load products from the selected inventory.
             </p>
           }
           @if (isEditingItem) {
@@ -287,7 +287,7 @@
                   {{ selectedInventoriesLabel }}
                 </p>
                 <p class="mt-1 text-xs text-slate-500">
-                  La selection d'inventories se fait dans Day context.
+                  Inventory selection is available in the day context.
                 </p>
               </div>
               <mat-form-field appearance="fill" class="w-full">
@@ -644,7 +644,7 @@
                     </div>
                   } @else {
                     <p class="text-xs text-slate-500">
-                      No cible nutritionnelle definie pour ce daySet.
+                      No nutrition target is defined for this day set.
                     </p>
                   }
                   <div
@@ -654,8 +654,8 @@
                       <thead class="bg-slate-50 text-left text-slate-700">
                         <tr>
                           <th class="px-3 py-2">Slot</th>
-                          <th class="px-3 py-2">Horaire</th>
-                          <th class="px-3 py-2">Cibles</th>
+                          <th class="px-3 py-2">Schedule</th>
+                          <th class="px-3 py-2">Targets</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -699,8 +699,7 @@
               } @else {
                 @if (response.totalsMacros?.targetSource === "cycle") {
                   <p class="text-sm text-slate-600">
-                    No daySet actif pour cette day. Les cibles
-                    quotidiennes proviennent du cycle.
+                    No active day set for this day. Daily targets come from the cycle.
                   </p>
                 } @else {
                   <p class="text-sm text-slate-600">No daySet retourne.</p>
@@ -1114,7 +1113,7 @@
                   {{ selectedInventoriesLabel }}
                 </p>
                 <p class="mt-1 text-xs text-slate-500">
-                  La selection d'inventories se fait dans Day context.
+                  Inventory selection is available in the day context.
                 </p>
               </div>
               <mat-form-field appearance="fill" class="w-full">
@@ -1226,7 +1225,7 @@
               <mat-card appearance="outlined" class="rounded-xl">
                 <mat-card-content class="space-y-3 p-4">
                   <p class="text-sm font-semibold text-slate-900">
-                    Effectif / day-set
+                    Actual / day set
                   </p>
                   <p class="text-xs text-slate-500">
                     {{ getTargetSourceText(totals.targetSource) }}
@@ -1256,7 +1255,7 @@
                       <p
                         class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
                       >
-                        Cibles
+                        Targets
                       </p>
                       @if (hasEntries(totals.targets)) {
                         <div class="space-y-1 text-sm text-slate-700">
@@ -1273,14 +1272,14 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-slate-500">No cible.</p>
+                        <p class="text-sm text-slate-500">No target.</p>
                       }
                     </div>
                     <div class="rounded-lg border border-slate-200 p-3">
                       <p
                         class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
                       >
-                        Ecart aux cibles
+                        Target delta
                       </p>
                       @if (hasEntries(totals.deltaToTargets)) {
                         <div class="space-y-1 text-sm text-slate-700">
@@ -1308,7 +1307,7 @@
               <mat-card appearance="outlined" class="rounded-xl">
                 <mat-card-content class="space-y-3 p-4">
                   <p class="text-sm font-semibold text-slate-900">
-                    Effectif + template / day-set
+                    Actual + template / day set
                   </p>
                   <p class="text-xs text-slate-500">
                     {{ getTemplateTargetSourceText(projectedTotals) }}
@@ -1338,7 +1337,7 @@
                       <p
                         class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
                       >
-                        Cibles
+                        Targets
                       </p>
                       @if (hasEntries(projectedTotals.targets)) {
                         <div class="space-y-1 text-sm text-slate-700">
@@ -1355,14 +1354,14 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-slate-500">No cible.</p>
+                        <p class="text-sm text-slate-500">No target.</p>
                       }
                     </div>
                     <div class="rounded-lg border border-slate-200 p-3">
                       <p
                         class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
                       >
-                        Ecart aux cibles
+                        Target delta
                       </p>
                       @if (hasEntries(projectedTotals.deltaToTargets)) {
                         <div class="space-y-1 text-sm text-slate-700">

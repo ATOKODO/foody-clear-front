@@ -22,7 +22,7 @@
     }
     @if (store.lastMetaError) {
       <p class="app-alert">
-        Impossible de charger les cles nutritionnelles meta, fallback actif.
+        Unable to load nutrition metadata; fallback is active.
       </p>
     }
     <app-slot-list mode="manage"
@@ -39,7 +39,7 @@
       <div class="bg-slate-900 px-6 py-5 text-white">
         <h2 class="text-xl font-semibold">Slots</h2>
         <p class="mt-1 text-sm text-slate-300">
-          Slots horaires, ordre et cibles nutritionnelles par slot.
+          Time slots, order, and nutrition targets for each slot.
         </p>
       </div>
       <div class="space-y-4 p-4 sm:p-6">
@@ -65,7 +65,7 @@
         }
         @if (store.lastMetaError) {
           <p class="app-alert">
-            Impossible de charger les cles nutritionnelles meta, fallback actif.
+            Unable to load nutrition metadata; fallback is active.
           </p>
         }
         <app-slot-list mode="manage"

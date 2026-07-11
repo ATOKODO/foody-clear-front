@@ -87,9 +87,9 @@ describe('Product', () => {
     );
 
     expect(toggleLabels).toEqual([
-      'Produits',
+      'Products',
       'Categories',
-      'Produits generiques',
+      'Generic products',
       'Tags',
     ]);
     expect(component.activeView).toBe('product');
@@ -98,9 +98,9 @@ describe('Product', () => {
     expect(fixture.nativeElement.querySelector('app-generic-product')).toBeNull();
     expect(fixture.nativeElement.querySelector('app-tag')).toBeNull();
     expect(fixture.nativeElement.querySelector('[data-testid="catalogue-panel-title"]')?.textContent)
-      .toContain('Produits');
+      .toContain('Products');
     expect(fixture.nativeElement.querySelector('[data-testid="catalogue-add-action"]')?.textContent)
-      .toContain('Ajouter un produit');
+      .toContain('Add product');
   });
 
   it('should show linked features when selecting a toggle', () => {
@@ -124,15 +124,15 @@ describe('Product', () => {
     expect(nativeElement.querySelector('[data-testid="catalogue-panel-title"]')?.textContent)
       .toContain('Categories');
     expect(nativeElement.querySelector('[data-testid="catalogue-add-action"]')?.textContent)
-      .toContain('Ajouter une categorie');
+      .toContain('Add category');
     expect(nativeElement.querySelector('app-category section.app-page')).toBeNull();
 
     clickToggle(2);
     nativeElement = fixture.nativeElement as HTMLElement;
     expect(nativeElement.querySelector('[data-testid="catalogue-panel-title"]')?.textContent)
-      .toContain('Produits generiques');
+      .toContain('Generic products');
     expect(nativeElement.querySelector('[data-testid="catalogue-add-action"]')?.textContent)
-      .toContain('Ajouter un produit generique');
+      .toContain('Add generic product');
     expect(nativeElement.querySelector('app-generic-product section.app-page')).toBeNull();
 
     clickToggle(3);
@@ -140,7 +140,7 @@ describe('Product', () => {
     expect(nativeElement.querySelector('[data-testid="catalogue-panel-title"]')?.textContent)
       .toContain('Tags');
     expect(nativeElement.querySelector('[data-testid="catalogue-add-action"]')?.textContent)
-      .toContain('Ajouter un tag');
+      .toContain('Add tag');
     expect(nativeElement.querySelector('app-tag section.app-page')).toBeNull();
   });
 
@@ -155,7 +155,7 @@ describe('Product', () => {
     fixture.detectChanges();
 
     expectHeaderActionsDisabled(false);
-    expect(fixture.nativeElement.textContent).not.toContain('Chargement...');
+    expect(fixture.nativeElement.textContent).not.toContain('Loading...');
 
     const tags$ = new Subject<never[]>();
     tagServiceMock.findAll.and.returnValue(tags$);
@@ -167,8 +167,8 @@ describe('Product', () => {
     fixture.detectChanges();
 
     expectHeaderActionsDisabled(false);
-    expect(fixture.nativeElement.textContent).not.toContain('Chargement...');
-    expect(fixture.nativeElement.textContent).toContain('Aucun tag disponible.');
+    expect(fixture.nativeElement.textContent).not.toContain('Loading...');
+    expect(fixture.nativeElement.textContent).toContain('No tag available.');
   });
 
   it('should open the generic product and tag dialogs from the shared add action', () => {

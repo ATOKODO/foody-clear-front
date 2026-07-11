@@ -312,10 +312,10 @@ describe('InputDayFeature', () => {
     const textContent = fixture.nativeElement.textContent;
 
     expect(textContent).toContain(
-      'Aucun daySet actif pour cette journee. Les cibles quotidiennes proviennent du cycle.',
+      'No active day set for this day. Daily targets come from the cycle.',
     );
     expect(textContent).toContain(
-      'Cibles quotidiennes heritees du cycle (aucun day set actif).',
+      'Daily targets inherited from the cycle (no active day set).',
     );
     expect(textContent).toContain('proteins:');
     expect(textContent).toContain('150');
@@ -625,7 +625,7 @@ describe('InputDayFeature', () => {
     fixture.detectChanges();
 
     expect(component.activeEmbeddedSection).toBe('stock');
-    expect(fixture.nativeElement.textContent).toContain('Ajouter des entrees');
+    expect(fixture.nativeElement.textContent).toContain('Add entries');
 
     component.onActiveEmbeddedSectionChange('templates');
     fixture.detectChanges();
@@ -731,7 +731,7 @@ describe('InputDayFeature', () => {
 
     expect(component.isTemplatesSectionActive).toBeTrue();
     expect(editorCard).toBeTruthy();
-    expect(editorCard.textContent).toContain('Modifier une entree');
+    expect(editorCard.textContent).toContain('Edit entry');
     expect(
       itemRow.compareDocumentPosition(editorCard) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();

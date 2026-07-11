@@ -38,6 +38,6 @@ describe('GenericProductList', () => {
     expect(nativeElement.querySelector('mat-card')).toBeNull();
     expect(nativeElement.querySelector('.add-btn')).toBeNull();
     expect(nativeElement.querySelector('[data-testid="generic-product-list-embedded"]')).not.toBeNull();
-    expect(nativeElement.textContent).toContain('Aucun generic product disponible.');
+    expect(nativeElement.textContent).toContain('No generic product available.');
   });
 });

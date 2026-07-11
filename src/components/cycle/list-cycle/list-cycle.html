@@ -172,7 +172,7 @@
                     [checked]="isSelected(cycle.id)"
                     [attr.aria-label]="'Select ' + cycle.title"
                     (change)="onCheckboxChange(cycle, $event.checked)"
-                    (click)="$event.stopPropagation()"
+                    (click)="onCheckboxClick($event, cycle)"
                     (keydown)="$event.stopPropagation()"
                   />
                 }
@@ -353,8 +353,7 @@
                               <p
                                 class="lc-summary-panel__subtitle text-xs text-slate-500"
                               >
-                                {{ cycle.daySets.length }} day set(s)
-                                rattache(s)
+                                {{ cycle.daySets.length }} linked day set(s)
                               </p>
                             </div>
                             <button
@@ -370,7 +369,7 @@
                           @if (cycle.missingDayCount > 0) {
                             <p class="mt-2 text-xs text-amber-700">
                               {{ cycle.missingDayCount }} day(s) without a day set
-                              reprennent directement la cible du cycle.
+                              use the cycle target directly.
                             </p>
                           }
                           <div
@@ -496,8 +495,8 @@
                               >
                                 {{
                                   daySet.slots.length > 0
-                                    ? "Slots partiels"
-                                    : "Slots indisponibles"
+                                    ? "Partial slots"
+                                    : "Slots unavailable"
                                 }}
                               </span>
                             }
@@ -605,8 +604,7 @@
                               <p
                                 class="lc-slot-missing mt-2 text-sm text-amber-700"
                               >
-                                Decomposition des slots indisponible pour ce day
-                                set.
+                                Slot breakdown is unavailable for this day set.
                               </p>
                             }
                           </section>

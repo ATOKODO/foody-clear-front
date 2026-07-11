@@ -548,7 +548,7 @@ export class InputDayFeature implements OnInit, OnChanges {
         },
         error: (error) => {
           this.lastError = error;
-          this.itemsFormError = "Impossible d'ajouter les items selectionnes.";
+          this.itemsFormError = 'Unable to add the selected items.';
           this.loading = false;
         },
       });
@@ -610,7 +610,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   startEditingItem(itemId: number): void {
     const item = this.findItemById(itemId);
     if (!item) {
-      this.itemEditorError = `Impossible de trouver l'item #${itemId}.`;
+      this.itemEditorError = `Unable to find item #${itemId}.`;
       return;
     }
 
@@ -797,7 +797,7 @@ export class InputDayFeature implements OnInit, OnChanges {
         error: (error) => {
           this.lastError = error;
           this.templateActionError =
-            'Impossible de mettre a jour le template actif.';
+            'Unable to update the active template.';
           this.loading = false;
         },
       });
@@ -838,7 +838,7 @@ export class InputDayFeature implements OnInit, OnChanges {
           this.lastError = error;
           this.templateActionError = resolveInputDayApiErrorMessage(
             error,
-            'Impossible de convertir cette ligne template.',
+            'Unable to convert this template item.',
           );
           this.finishTemplateItemConversion(item.id);
         },
@@ -1046,7 +1046,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       },
       error: (error) => {
         this.templates = [];
-        this.templateError = 'Impossible de charger les templates.';
+        this.templateError = 'Unable to load templates.';
         this.lastError = error;
         this.loadingTemplates = false;
       },

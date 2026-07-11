@@ -38,6 +38,6 @@ describe('TagList', () => {
     expect(nativeElement.querySelector('mat-card')).toBeNull();
     expect(nativeElement.querySelector('.add-btn')).toBeNull();
     expect(nativeElement.querySelector('[data-testid="tag-list-embedded"]')).not.toBeNull();
-    expect(nativeElement.textContent).toContain('Aucun tag disponible.');
+    expect(nativeElement.textContent).toContain('No tag available.');
   });
 });
