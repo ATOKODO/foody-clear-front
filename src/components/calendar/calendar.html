@@ -212,18 +212,17 @@
             <div class="calendar-month-grid__body">
               @for (day of monthDays; track trackByDate($index, day)) {
                 <article
-                  tabindex="0"
-                  role="button"
-                  (click)="onMonthDayClick(day)"
-                  (keydown.enter)="onMonthDayClick(day)"
-                  (keydown.space)="onMonthDayClick(day); $event.preventDefault()"
                   [attr.data-testid]="'calendar-month-day-' + day.date"
                   class="calendar-month-day"
                   [class.calendar-month-day--current]="day.isCurrentMonth"
                   [class.calendar-month-day--outside]="!day.isCurrentMonth"
                   [class.calendar-month-day--today]="day.isToday"
                   [class.calendar-month-day--interactive]="day.isCurrentMonth">
-                  <div class="calendar-month-day__header">
+                  <button
+                    type="button"
+                    class="calendar-month-day__header calendar-month-day__select"
+                    [attr.aria-label]="'Open ' + day.date"
+                    (click)="onMonthDayClick(day)">
                     <div class="calendar-month-day__date-group">
                       <span class="calendar-month-day__number">{{ day.dayNumber }}</span>
                       @if (day.dayNumber === 1 || !day.isCurrentMonth) {
@@ -238,7 +237,7 @@
                         <span class="calendar-month-day__today-pill">Today</span>
                       }
                     </div>
-                  </div>
+                  </button>
                   <div class="calendar-month-day__body" [attr.data-testid]="'calendar-month-body-' + day.date">
                     @if (day.isCurrentMonth) {
                       <div class="calendar-month-day__quick-actions">
@@ -509,16 +508,12 @@
                 <div class="calendar-week-mobile__blocks">
                   @for (block of getWeekTimelineBlocks(day.date); track trackByWeekTimelineBlock($index, block)) {
                     <div
-                      tabindex="0"
-                      role="button"
                       [attr.data-testid]="'calendar-week-mobile-block-' + day.date + '-' + block.title"
                       class="calendar-week-block calendar-week-block--mobile"
                       [class.calendar-week-block--orphan]="block.kind === 'orphan'"
                       [attr.data-tone]="block.tone"
-                      (click)="onWeekTimelineBlockClick(day, block, $event)"
-                      (keydown.enter)="onWeekTimelineBlockClick(day, block, $event)"
-                      (keydown.space)="onWeekTimelineBlockClick(day, block, $event); $event.preventDefault()">
-                      <div class="calendar-week-block__header">
+                      >
+                      <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onWeekTimelineBlockClick(day, block, $event)">
                         <div class="calendar-week-block__heading">
                           <span class="calendar-week-block__title">{{ block.title }}</span>
                           <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
@@ -526,16 +521,13 @@
                         <span class="calendar-week-block__count">
                           {{ block.items.length }} entr{{ block.items.length > 1 ? 'ies' : 'y' }}
                         </span>
-                      </div>
+                      </button>
                       @if (block.items.length > 0) {
                         <div class="calendar-week-block__items">
                           @for (product of block.items; track trackByInsertedProduct($index, product)) {
-                            <div
-                              tabindex="0"
-                              role="button"
+                            <button
+                              type="button"
                               (click)="onItemClick(product, day.date, $event)"
-                              (keydown.enter)="onItemClick(product, day.date, $event)"
-                              (keydown.space)="onItemClick(product, day.date, $event); $event.preventDefault()"
                               [attr.data-testid]="'calendar-week-mobile-item-' + day.date + '-' + product.id"
                               class="calendar-week-block__item">
                               <div class="calendar-week-block__item-top">
@@ -547,7 +539,7 @@
                               <div class="calendar-week-block__item-meta">
                                 qty: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
                               </div>
-                            </div>
+                            </button>
                           }
                         </div>
                       } @else {
@@ -697,8 +689,6 @@
               }
               @for (block of getWeekTimelineBlocks(day.date); track trackByWeekTimelineBlock($index, block)) {
                 <div
-                  tabindex="0"
-                  role="button"
                   [attr.data-testid]="'calendar-week-block-' + day.date + '-' + block.title"
                   class="calendar-week-block"
                   [class.calendar-week-block--orphan]="block.kind === 'orphan'"
@@ -707,10 +697,8 @@
                   [style.grid-column-end]="dayIndex + 3"
                   [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
                   [style.grid-row-end]="getWeekTimelineBlockGridRowEnd(block)"
-                  (click)="onWeekTimelineBlockClick(day, block, $event)"
-                  (keydown.enter)="onWeekTimelineBlockClick(day, block, $event)"
-                  (keydown.space)="onWeekTimelineBlockClick(day, block, $event); $event.preventDefault()">
-                  <div class="calendar-week-block__header">
+                  >
+                  <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onWeekTimelineBlockClick(day, block, $event)">
                     <div class="calendar-week-block__heading">
                       <span class="calendar-week-block__title">{{ block.title }}</span>
                       <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
@@ -718,16 +706,13 @@
                     <span class="calendar-week-block__count">
                       {{ block.items.length }} item{{ block.items.length > 1 ? 's' : '' }}
                     </span>
-                  </div>
+                  </button>
                   @if (block.items.length > 0) {
                     <div class="calendar-week-block__items">
                       @for (product of block.items; track trackByInsertedProduct($index, product)) {
-                        <div
-                          tabindex="0"
-                          role="button"
+                        <button
+                          type="button"
                           (click)="onItemClick(product, day.date, $event)"
-                          (keydown.enter)="onItemClick(product, day.date, $event)"
-                          (keydown.space)="onItemClick(product, day.date, $event); $event.preventDefault()"
                           [attr.data-testid]="'calendar-week-item-' + day.date + '-' + product.id"
                           class="calendar-week-block__item">
                           <div class="calendar-week-block__item-top">
@@ -739,7 +724,7 @@
                           <div class="calendar-week-block__item-meta">
                             qty: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
                           </div>
-                        </div>
+                        </button>
                       }
                     </div>
                   } @else {
@@ -1005,17 +990,13 @@
                 @if (getDayTemplateTimelineBlocks(); as templateBlocks) {
                   @for (block of templateBlocks; track trackByWeekTimelineBlock($index, block)) {
                     <div
-                      tabindex="0"
-                      role="button"
                       [attr.data-testid]="'calendar-day-template-block-' + block.title"
                       class="calendar-week-block calendar-day-grid__block"
                       [attr.data-tone]="block.tone"
                       [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
                       [style.grid-row-end]="getWeekTimelineBlockGridRowEnd(block)"
-                      (click)="onDayTimelineBlockClick(block, $event)"
-                      (keydown.enter)="onDayTimelineBlockClick(block, $event)"
-                      (keydown.space)="onDayTimelineBlockClick(block, $event); $event.preventDefault()">
-                      <div class="calendar-week-block__header">
+                      >
+                      <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onDayTimelineBlockClick(block, $event)">
                         <div class="calendar-week-block__heading">
                           <span class="calendar-week-block__title">{{ block.title }}</span>
                           <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
@@ -1023,7 +1004,7 @@
                         <span class="calendar-week-block__count">
                           {{ block.plannedItems.length }} planned
                         </span>
-                      </div>
+                      </button>
                       @if (block.plannedItems.length > 0) {
                         <div class="calendar-week-block__items">
                           @for (plannedItem of block.plannedItems; track plannedItem.id) {
@@ -1056,18 +1037,14 @@
                 @if (getDaySetTimelineBlocks(); as daySetBlocks) {
                   @for (block of daySetBlocks; track trackByWeekTimelineBlock($index, block)) {
                     <div
-                      tabindex="0"
-                      role="button"
                       [attr.data-testid]="'calendar-day-dayset-block-' + block.title"
                       class="calendar-week-block calendar-day-grid__block calendar-day-grid__block--entries"
                       [class.calendar-week-block--orphan]="block.kind === 'orphan'"
                       [attr.data-tone]="block.tone"
                       [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
                       [style.grid-row-end]="getWeekTimelineBlockGridRowEnd(block)"
-                      (click)="onDayTimelineBlockClick(block, $event)"
-                      (keydown.enter)="onDayTimelineBlockClick(block, $event)"
-                      (keydown.space)="onDayTimelineBlockClick(block, $event); $event.preventDefault()">
-                      <div class="calendar-week-block__header">
+                      >
+                      <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onDayTimelineBlockClick(block, $event)">
                         <div class="calendar-week-block__heading">
                           <span class="calendar-week-block__title">{{ block.title }}</span>
                           <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
@@ -1075,27 +1052,24 @@
                         <span class="calendar-week-block__count">
                           {{ block.items.length }} entr{{ block.items.length > 1 ? 'ies' : 'y' }}
                         </span>
-                      </div>
+                      </button>
                       @if (block.items.length > 0) {
                         <div class="calendar-week-block__items">
                           @for (product of block.items; track trackByInsertedProduct($index, product)) {
                             <div
-                              tabindex="0"
-                              role="button"
                               [attr.data-testid]="'calendar-day-item-' + product.id"
-                              class="calendar-week-block__item calendar-day-grid__completed-item"
-                              (click)="onItemClick(product, product.dateLocal, $event)"
-                              (keydown.enter)="onItemClick(product, product.dateLocal, $event)"
-                              (keydown.space)="onItemClick(product, product.dateLocal, $event); $event.preventDefault()">
-                              <div class="calendar-week-block__item-top">
-                                <span class="calendar-week-block__item-name">{{ product.productName }}</span>
-                                <span class="calendar-week-block__item-time">
-                                  {{ formatItemTime(product.occurredAt, product.insertedAt) }}
+                              class="calendar-week-block__item calendar-day-grid__completed-item">
+                              <button type="button" class="calendar-week-block__item-select" (click)="onItemClick(product, product.dateLocal, $event)">
+                                <span class="calendar-week-block__item-top">
+                                  <span class="calendar-week-block__item-name">{{ product.productName }}</span>
+                                  <span class="calendar-week-block__item-time">
+                                    {{ formatItemTime(product.occurredAt, product.insertedAt) }}
+                                  </span>
                                 </span>
-                              </div>
-                              <div class="calendar-week-block__item-meta">
-                                qty: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
-                              </div>
+                                <span class="calendar-week-block__item-meta">
+                                  qty: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
+                                </span>
+                              </button>
                               @if (product.templateItemId !== null) {
                                 <button
                                   type="button"
