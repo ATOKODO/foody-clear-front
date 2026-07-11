@@ -236,11 +236,11 @@ describe('FormCycle', () => {
   it('should render the updated duration and ordering labels', () => {
     const text = fixture.nativeElement.textContent;
 
-    expect(text).toContain('Ajouter un Cycle');
-    expect(text).toContain('Nombre de jours');
-    expect(text).toContain('Raccourcis de duree');
-    expect(text).toContain('Ordre du cycle');
-    expect(text).toContain('Objectif du cycle');
+    expect(text).toContain('Add cycle');
+    expect(text).toContain('Number of days');
+    expect(text).toContain('Duration shortcuts');
+    expect(text).toContain('Cycle order');
+    expect(text).toContain('Cycle target');
     expect(text).not.toContain('Reference');
   });
 });

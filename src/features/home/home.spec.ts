@@ -271,15 +271,14 @@ describe('Home', () => {
   it('should render the daily operational dashboard', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
-    expect(compiled.textContent).toContain('Tableau de bord');
-    expect(compiled.textContent).toContain('Ouvrir le catalogue');
-    expect(compiled.textContent).toContain('Voir le planning');
-    expect(compiled.textContent).toContain('Cycle prise de masse');
-    expect(compiled.textContent).toContain('Jour entrainement');
-    expect(compiled.textContent).toContain("Ce qui est prevu aujourd'hui");
+    expect(compiled.textContent).toContain('Dashboard');
+    expect(compiled.textContent).toContain('Open catalog');
+    expect(compiled.textContent).toContain('View planning');
+    expect(compiled.textContent).toContain('Day planning');
+    expect(compiled.textContent).toContain('What is planned today');
     expect(compiled.textContent).toContain('Porridge');
     expect(compiled.textContent).toContain('Banane');
-    expect(compiled.textContent).toContain('Depenses du jour');
+    expect(compiled.textContent).toContain("Today's spending");
   });
 
   it('should load today planning on init', () => {

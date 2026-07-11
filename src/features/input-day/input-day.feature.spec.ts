@@ -53,6 +53,34 @@ describe('InputDayFeature', () => {
     slots: [],
     itemsBySlot: [],
     totalsMacros: null,
+    templateItems: [
+      {
+        id: 18,
+        productId: 2,
+        productName: 'Rice',
+        qty: 80,
+        qtyUnit: 'g',
+        qtyNormalized: 80,
+        slotId: 11,
+        slotKey: 'breakfast',
+        status: 'pending',
+        convertedItemId: null,
+        stockAvailability: {
+          enoughStock: true,
+          totalAvailableNormalized: 500,
+          requestedQtyNormalized: 80,
+        },
+        stockByInventory: [
+          {
+            inventoryId: 4,
+            inventoryName: 'Stock principal',
+            qtyAvailableNormalized: 500,
+            enoughStock: true,
+          },
+        ],
+        nutritionValue: {},
+      },
+    ],
   };
 
   const inputDayServiceMock = {
@@ -152,6 +180,51 @@ describe('InputDayFeature', () => {
   };
 
   beforeEach(async () => {
+    inputDayServiceMock.getInputDay.and.returnValue(of(dayResponse));
+    inputDayServiceMock.createItem.and.returnValue(of({}));
+    inputDayServiceMock.createItems.and.returnValue(of([]));
+    inputDayServiceMock.updateItem.and.returnValue(of(null));
+    inputDayServiceMock.removeItem.and.returnValue(of(void 0));
+    inputDayServiceMock.setTemplate.and.returnValue(of(dayResponse));
+    inputDayServiceMock.convertTemplateItem.and.returnValue(of(dayResponse));
+    productServiceMock.findAll.and.returnValue(of([
+      {
+        id: 1,
+        name: 'Chicken',
+        unitType: 'Paquet',
+        quantityPerUnit: 1,
+        quantityUnit: 'unit',
+        nutritionValues: [],
+      },
+      {
+        id: 2,
+        name: 'Rice',
+        unitType: 'Paquet',
+        quantityPerUnit: 500,
+        quantityUnit: 'g',
+        nutritionValues: [],
+      },
+    ]));
+    inventoryServiceMock.findAll.and.returnValue(of([
+      { id: 4, name: 'Stock principal' },
+      { id: 5, name: 'Stock secondaire' },
+    ]));
+    inventoryServiceMock.findProducts.and.callFake((inventoryId: number) => {
+      if (inventoryId === 4) {
+        return of([
+          { id: 41, inventoryId: 4, productId: 1, qtyOnHandInUnits: 2, qtyOnHandNormalized: 2 },
+          { id: 42, inventoryId: 4, productId: 2, qtyOnHandInUnits: 1, qtyOnHandNormalized: 500 },
+        ]);
+      }
+      if (inventoryId === 5) {
+        return of([
+          { id: 51, inventoryId: 5, productId: 2, qtyOnHandInUnits: 1, qtyOnHandNormalized: 500 },
+        ]);
+      }
+      return of([]);
+    });
+    templateServiceMock.findAll.and.returnValue(of([]));
+
     await TestBed.configureTestingModule({
       imports: [InputDayFeature],
       providers: [
@@ -247,7 +320,7 @@ describe('InputDayFeature', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain(
-      'Selectionne au moins un inventory pour afficher les produits, les modeles et les elements saisis.',
+      'Select at least one inventory to display products, templates, and entered items.',
     );
     expect(
       fixture.nativeElement.querySelector(
@@ -280,6 +353,7 @@ describe('InputDayFeature', () => {
   });
 
   it('should expose formatting, tracking, and reset helpers for the active day', () => {
+    component.form.patchValue({ dateLocal: '2026-02-16' });
     component.inputDayResponse = dayResponse;
     component.onSelectedInventoryChange([4]);
     component.onProductsSelected(component.selectableProductListItems.slice(0, 1));
@@ -668,7 +742,7 @@ describe('InputDayFeature', () => {
     fixture.detectChanges();
 
     expect(component.activeEmbeddedSection).toBe('templates');
-    expect(fixture.nativeElement.textContent).toContain('Template associe');
+    expect(fixture.nativeElement.textContent).toContain('Associated template');
     expect(
       fixture.nativeElement.querySelector('[data-testid="input-day-item-31"]'),
     ).not.toBeNull();
@@ -824,4 +898,135 @@ describe('InputDayFeature', () => {
     );
     expect(component.isConvertingTemplateItem(pendingItem)).toBeFalse();
   });
+
+  it('should cover invalid editor states, loading errors and template actions', () => {
+    const callPrivate = privateMethod(component);
+    component.form.patchValue({ dateLocal: null, timezone: ' ' });
+    component.loadDay();
+    expect(component.lastError).toContain('dateLocal');
+    expect(component.selectedDateLabel).toBe('-');
+    expect(component.selectedInventoriesLabel).toBe('No inventory selected');
+    expect(component.selectedBatchSlotLabel).toBe('No batch slot');
+    expect(component.activeTemplateLabel).toBe('No active template');
+    expect(component.createSelectedItemsLabel).toBe('Add selected entry');
+    expect(callPrivate('resolveDateLocalValue')).toBeNull();
+    expect(callPrivate('resolveTimezone')).toBe(fallbackTimezone);
+    expect(callPrivate('resolveEditorDefaultDateLocal')).toBe('');
+
+    component.form.patchValue({ dateLocal: '2026-02-16', timezone: 'UTC' });
+    component.onItemEditorSlotIdChange(11);
+    expect(component.itemEditorSelectedSlotId).toBe(11);
+    component.onItemEditorSlotIdChange(null);
+    expect(component.itemEditorSelectedSlotId).toBeNull();
+    component.onSelectedInventoryChange([999]);
+    expect(component.selectedInventoriesLabel).toBe('Inventory #999');
+    component.selectedSlotId = 99;
+    expect(component.selectedBatchSlotLabel).toBe('Slot #99');
+    component.inputDayResponse = {
+      ...dayResponse,
+      templateAssociation: {
+        source: 'manual',
+        template: { id: 9, title: 'Manual template' },
+      },
+    };
+    expect(component.activeTemplateLabel).toBe('Manual template (manual override)');
+    expect(component.hasManualTemplateOverride).toBeTrue();
+    component.selectedProducts = component.productListItems;
+    component.onProductsSelected(component.productListItems);
+    component.selectedProductRows[0].qty = 1;
+    component.selectedProductRows[0].qtyUnit = 'unit';
+    expect(component.createSelectedItemsLabel).toBe('Add selected entries');
+    component.removeSelectedProduct(1);
+    expect(component.selectedProductRows.length).toBe(1);
+
+    inputDayServiceMock.createItems.and.returnValue(throwError(() => new Error('bulk')));
+    component.onSelectedInventoryChange([4]);
+    component.onProductsSelected(component.selectableProductListItems.slice(0, 1));
+    component.selectedProductRows[0].qty = 1;
+    component.selectedProductRows[0].qtyUnit = 'unit';
+    component.itemEditorForm.patchValue({ dateLocal: '2026-02-16', productId: 1, qty: 1, qtyUnit: 'unit' });
+    component.createSelectedItems();
+    expect(component.itemsFormError).toBe('Unable to add the selected items.');
+
+    inputDayServiceMock.createItem.and.returnValue(throwError(() => new Error('create')));
+    component.itemEditorForm.patchValue({
+      itemId: null,
+      dateLocal: '2026-02-16',
+      productId: 1,
+      qty: 1,
+      qtyUnit: 'unit',
+    });
+    component.submitItemEditor();
+    expect(component.itemEditorError).toBe('Unable to create the entry.');
+
+    inputDayServiceMock.updateItem.and.returnValue(throwError(() => new Error('update')));
+    component.inputDayResponse = dayResponse;
+    component.startEditingItem(31);
+    component.submitItemEditor();
+    expect(component.itemEditorError).toBe('Unable to update the entry.');
+
+    component.itemEditorForm.patchValue({ itemId: null });
+    component.removeItem();
+    expect(component.lastError).toContain('itemId');
+    inputDayServiceMock.removeItem.and.returnValue(throwError(() => new Error('remove')));
+    component.itemEditorForm.patchValue({ itemId: 31 });
+    component.editingSourceDateLocal = '2026-02-16';
+    component.removeItem();
+    expect(component.itemEditorError).toBe('Unable to delete the entry.');
+
+    inputDayServiceMock.getInputDay.and.returnValue(throwError(() => new Error('day')));
+    component.loadDay();
+    expect(component.lastError).toEqual(jasmine.any(Error));
+    inputDayServiceMock.setTemplate.and.returnValue(throwError(() => new Error('template')));
+    component.onManualTemplateSelectionChange(9);
+    expect(component.templateActionError).toBe('Unable to update the active template.');
+
+    const pendingItem = {
+      id: 18,
+      productId: 2,
+      productName: 'Rice',
+      qty: 80,
+      qtyUnit: 'g' as const,
+      qtyNormalized: 80,
+      slotId: 11,
+      slotKey: 'breakfast',
+      status: 'pending' as const,
+      convertedItemId: null,
+      stockAvailability: {
+        enoughStock: true,
+        totalAvailableNormalized: 1000,
+        requestedQtyNormalized: 80,
+      },
+      stockByInventory: [],
+      nutritionValue: {},
+    };
+    component.selectedInventoryIds = [];
+    component.convertTemplateItem(pendingItem);
+    expect(component.templateActionError).toContain('Select at least one inventory');
+    component.form.patchValue({ dateLocal: '2026-02-16' });
+    component.selectedInventoryIds = [4];
+    inputDayServiceMock.convertTemplateItem.and.returnValue(
+      throwError(() => ({ error: { message: 'convert' } })),
+    );
+    component.convertTemplateItem(pendingItem);
+    expect(component.templateActionError).toContain('convert');
+
+    productServiceMock.findAll.and.returnValue(throwError(() => new Error('products')));
+    inventoryServiceMock.findAll.and.returnValue(throwError(() => new Error('inventories')));
+    templateServiceMock.findAll.and.returnValue(throwError(() => new Error('templates')));
+    component.onBaseUrlChange();
+    expect(component.productsError).toEqual(jasmine.any(Error));
+    expect(component.inventoriesError).toEqual(jasmine.any(Error));
+    expect(component.templateError).toBe('Unable to load templates.');
+    component.fillDemo();
+    component.clear();
+    expect(component.activeEmbeddedSection).toBe('stock');
+  });
 });
+
+function privateMethod(
+  component: InputDayFeature,
+): (name: string, ...args: unknown[]) => unknown {
+  const methods = component as unknown as Record<string, (...args: unknown[]) => unknown>;
+  return (name, ...args) => methods[name](...args);
+}

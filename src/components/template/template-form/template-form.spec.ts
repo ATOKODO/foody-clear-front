@@ -99,7 +99,7 @@ describe('TemplateForm', () => {
     component.updateItemDraft({ productId: 7 });
 
     expect(component.getAvailableQtyUnitOptions()).toEqual([
-      { value: 'unit', label: 'Unite produit (Paquet)' },
+      { value: 'unit', label: 'Product unit (Paquet)' },
       { value: 'portion', label: 'Portion' },
       { value: 'g', label: 'G (Gramme)' },
     ]);

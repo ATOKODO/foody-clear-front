@@ -170,14 +170,14 @@ describe('TemplateFeature', () => {
     expect(
       nativeElement.querySelector('[data-testid="template-panel-title"]')
         ?.textContent,
-    ).toContain('Modeles');
+    ).toContain('Templates');
     expect(
       nativeElement.querySelector('[data-testid="template-refresh-action"]')
         ?.textContent,
     ).toContain('Rafraichir');
     expect(
       nativeElement.querySelector('[data-testid="template-add"]')?.textContent,
-    ).toContain('Nouveau modele');
+    ).toContain('New template');
   });
 
   it('should enable the header actions after initial loading completes', async () => {

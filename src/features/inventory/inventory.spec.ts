@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { Inventory } from './inventory';
 import { InventoryService } from '../../services/inventory-service';
@@ -143,7 +143,6 @@ describe('Inventory', () => {
         nutritionValues: [],
       },
     ]));
-
     fixture = TestBed.createComponent(Inventory);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -467,5 +466,124 @@ describe('Inventory', () => {
     });
     expect(component.formVisible).toBeTrue();
     expect(component.activeModal).toBeNull();
+  });
+
+  it('should guard invalid actions and expose request errors', () => {
+    component.onEditRequested({ id: 'invalid', name: 'Invalid', productCount: 0 });
+    component.selectInventory('invalid');
+    component.openAddProductsModal();
+    component.openSelectedInventoryEditor();
+    component.deleteSelectedInventory();
+    expect(component.formVisible).toBeFalse();
+
+    component.onAddRequested();
+    component.onCreateProductsSelected([component.productListItems[0]]);
+    component.createSelectedProductRows[0].qty = 0;
+    component.onFormSubmitted({ mode: 'add', value: { name: 'Invalid stock' } });
+    expect(component.createProductsFormError).toBeTruthy();
+    component.onCreateProductQtyChange();
+    expect(component.createProductsFormError).toBeNull();
+
+    component.onEditRequested({ id: '4', name: 'Stock principal', productCount: 1 });
+    component.openAddProductsModal();
+    component.onProductsToAddSelected([component.productListItems[0]]);
+    component.addSelectedProductRows[0].qty = 0;
+    component.onAddSelectedProducts();
+    expect(component.addProductsFormError).toBeTruthy();
+    component.onAddProductQtyChange();
+    expect(component.addProductsFormError).toBeNull();
+    component.manageProductRows[0].qty = -1;
+    component.saveManagedProducts();
+    expect(component.manageProductsFormError).toBeTruthy();
+    component.onManagedProductQtyChange();
+    expect(component.manageProductsFormError).toBeNull();
+
+    component.onCancelForm();
+    component.openAddProductsModal();
+    component.closeActiveModal();
+    component.onEscapeKey();
+    expect(component.activeModal).toBeNull();
+
+    productServiceMock.findAll.and.returnValue(throwError(() => new Error('products')));
+    inventoryServiceMock.findAll.and.returnValue(throwError(() => new Error('inventories')));
+    inventoryServiceMock.findProducts.and.returnValue(throwError(() => new Error('selected products')));
+    component.onRefreshRequested();
+    expect(component.lastError).toEqual(jasmine.any(Error));
+
+    productServiceMock.findAll.and.returnValue(of([
+      {
+        id: 1,
+        name: 'Chicken',
+        unitType: 'Paquet',
+        quantityPerUnit: 1,
+        quantityUnit: 'unit',
+        portionCount: 2,
+        portionUnit: 'portion',
+        portionQuantityNormalized: 0.5,
+        nutritionValues: [],
+        price: 6,
+        priceUnit: 'kg',
+      },
+    ]));
+    component.products = [{
+      id: 1,
+      name: 'Chicken',
+      unitType: 'Paquet',
+      quantityPerUnit: 1,
+      quantityUnit: 'unit',
+      portionCount: 2,
+      portionUnit: 'portion',
+      portionQuantityNormalized: 0.5,
+      nutritionValues: [],
+      price: 6,
+      priceUnit: 'kg',
+    }];
+    inventoryServiceMock.findAll.and.returnValue(of([
+      { id: 4, name: 'Stock principal', inventoryProducts: linkedProducts },
+    ]));
+    inventoryServiceMock.findProducts.and.returnValue(throwError(() => new Error('products')));
+    component.onEditRequested({ id: '4', name: 'Stock principal', productCount: 1 });
+    expect(component.lastError).toEqual(jasmine.any(Error));
+
+    inventoryServiceMock.update.and.returnValue(throwError(() => new Error('update')));
+    component.onFormSubmitted({ mode: 'edit', value: { name: 'Updated' } });
+    expect(component.lastError).toEqual(jasmine.any(Error));
+    inventoryServiceMock.remove.and.returnValue(throwError(() => new Error('remove')));
+    component.onDeleteRequested({ id: '4', name: 'Stock principal', productCount: 1 });
+    expect(component.lastError).toEqual(jasmine.any(Error));
+
+    inventoryServiceMock.addProducts.and.returnValue(throwError(() => new Error('add')));
+    component.openAddProductsModal();
+    component.onProductsToAddSelected([component.productListItems[0]]);
+    component.addSelectedProductRows[0].qty = 1;
+    component.onAddSelectedProducts();
+    expect(component.lastError).toEqual(jasmine.any(Error));
+    inventoryServiceMock.reconcileProducts.and.returnValue(throwError(() => new Error('reconcile')));
+    component.manageProductRows = [{
+      productId: 1,
+      productName: 'Chicken',
+      qty: 1,
+      qtyUnit: 'unit',
+      qtyUnitOptions: [],
+      qtyUnitHelpText: null,
+      purchaseAccountingMode: 'paid',
+      currentQty: 1,
+      currentQtyUnit: 'unit',
+      currentNormalizedQty: 1,
+      currentQtyDisplay: '1',
+      unitType: 'Paquet',
+      quantityPerUnit: 1,
+      quantityUnit: 'unit',
+      portionCount: null,
+      portionUnit: null,
+      portionQuantityNormalized: null,
+      price: null,
+    }];
+    component.saveManagedProducts();
+    expect(component.lastError).toEqual(jasmine.any(Error));
+    component.emptyInventory();
+    expect(component.lastError).toEqual(jasmine.any(Error));
+    component.onMenuClicked();
+    expect(component.lastResponse).toEqual(jasmine.objectContaining({ info: jasmine.any(String) }));
   });
 });

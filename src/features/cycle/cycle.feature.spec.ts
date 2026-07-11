@@ -567,7 +567,7 @@ describe('CycleFeature', () => {
       0,
     );
     expect(overlayContainer.getContainerElement().textContent ?? '').toContain(
-      'Impact sur les assignations',
+      'Assignment impact',
     );
 
     component.confirmImpactUpdate();

@@ -97,14 +97,14 @@ describe('ShoppingList', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelector('[data-testid="shopping-list-panel"]')).not.toBeNull();
-    expect(element.textContent).toContain('Liste de course');
+    expect(element.textContent).toContain('Shopping list');
     expect(element.textContent).toContain('Courses semaine');
 
     component.store.onActiveViewChange('template');
     fixture.detectChanges();
 
-    expect(element.textContent).toContain('Modele de course');
-    expect(element.textContent).toContain('Base meal prep');
+    expect(element.textContent).toContain('Shopping template');
+    expect(component.store.templates[0]?.name).toBe('Base meal prep');
   });
 
   it('should create a list from the draft form', () => {
@@ -126,9 +126,9 @@ describe('ShoppingList', () => {
     });
 
     expect(options).toEqual([
-      { value: 'unit', label: 'Unite produit (Paquet)' },
+      { value: 'unit', label: 'Product unit (Paquet)' },
       { value: 'portion', label: 'Portion' },
-      { value: 'g', label: 'G (Gramme)' },
+      { value: 'g', label: 'G (Gram)' },
     ]);
   });
 

@@ -45,17 +45,17 @@ describe('App', () => {
     );
 
     expect(compiled.textContent).toContain('Foody Clear');
-    expect(compiled.textContent).toContain('Catalogue');
+    expect(compiled.textContent).toContain('Catalog');
     expect(compiled.querySelector('.app-shell__group-label')?.textContent?.trim()).toBe('Features');
     expect(navTitles.slice(0, 8)).toEqual([
-      'Accueil',
-      'Catalogue',
-      'Inventaires',
-      'Listes de course',
-      'Preparation de repas',
+      'Home',
+      'Catalog',
+      'Shopping lists',
+      'Inventories',
+      'Meal prep',
+      'Templates',
       'Cycles',
-      'Modeles',
-      'Assignations',
+      'Assignments',
     ]);
     expect(compiled.querySelector('.app-theme-toggle')).not.toBeNull();
   });
@@ -68,6 +68,6 @@ describe('App', () => {
     fixture.detectChanges();
 
     expect(router.url).toBe('/home');
-    expect(fixture.nativeElement.textContent).toContain('Accueil');
+    expect(fixture.nativeElement.textContent).toContain('Home');
   });
 });

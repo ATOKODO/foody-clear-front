@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { DateTime } from 'luxon';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { PlanningFeature } from './planning.feature';
 import { CycleService } from '../../services/cycle-service';
@@ -727,7 +727,155 @@ describe('PlanningFeature', () => {
     });
   });
 
+  it('should cover planning guards, cache branches and mutation errors', () => {
+    const calendar = fixture.debugElement.query(By.directive(CalendarStub))
+      .componentInstance as CalendarStub;
+    const callPrivate = privateMethod(component);
+
+    component.goToCalendarToday();
+    component.navigateCalendar('next');
+    component.navigateCalendar('prev');
+    component.switchCalendarView(null);
+    component.switchCalendarView('day');
+    expect(component.getCalendarViewLabel('year')).toBe('Année');
+    component.onCalendarOpenDayView({ dateLocal: '2026-02-16' });
+    component.onCalendarMonthClick({
+      view: 'month',
+      currentDateIso: '2026-02-16T00:00:00Z',
+      dateLocal: '2026-02-16',
+      month: {} as never,
+      sourceAssignments: [],
+    });
+    component.onCalendarHourClick({
+      view: 'year',
+      currentDateIso: '2026-02-16T00:00:00Z',
+      dateLocal: '2026-02-16',
+      occurredAt: null,
+      hour: { hour: 8, label: '08:00' },
+      sourceAssignment: null,
+    });
+    component.onModalCycleSelected({ id: 11, title: 'Cycle' } as never);
+    expect(component.modalSelectedIds).toEqual([11]);
+    component.onCalendarDayClick({
+      view: 'day',
+      currentDateIso: 'invalid',
+      day: {
+        date: 'not-a-date',
+        dateObj: {} as never,
+        dayNumber: 1,
+        isToday: false,
+        isCurrentMonth: true,
+        isWeekend: false,
+      },
+      sourceAssignment: null,
+    });
+
+    component.currentCalendarView = 'year';
+    component.currentAnchorDateLocal = '2026-02-16';
+    component.currentRangeFromLocal = null;
+    component.currentRangeToLocal = null;
+    component.refreshPlanningData(true, { includeCycles: false });
+    expect(component.inputDayResponse).toBeNull();
+    expect(component.canSubmitModal).toBeFalse();
+    component.closeActiveModal();
+    component.savingAssignment = true;
+    component.closeActiveModal();
+    component.savingAssignment = false;
+    component.onEscapeKey();
+
+    component.cycles = [];
+    component.modalStartDateLocal = 'bad';
+    component.modalSelectedCycleId = 99;
+    component.saveAssignmentFromModal();
+    component.removeAssignmentFromModal();
+    component.openAssignmentFromActions();
+    component.openItemsFromActions();
+
+    cycleServiceMock.findAll.and.returnValue(throwError(() => new Error('cycles')));
+    slotServiceMock.findAll.and.returnValue(throwError(() => new Error('slots')));
+    component.refreshPlanningData(true);
+    expect(component.lastError).toEqual(jasmine.any(Error));
+    cycleServiceMock.findAll.and.returnValue(of([]));
+    slotServiceMock.findAll.and.returnValue(of([]));
+
+    inputDayServiceMock.convertTemplateItem.and.returnValue(
+      throwError(() => new Error('conversion')),
+    );
+    component.onCalendarConvertTemplateItem({
+      dateLocal: '2026-02-16',
+      templateItemId: 1,
+      inventoryId: 4,
+    });
+    expect(component.dayItemsError).toEqual(jasmine.any(Error));
+    inputDayServiceMock.removeItem.and.returnValue(
+      throwError(() => new Error('revert')),
+    );
+    component.onCalendarRevertTemplateItem({ dateLocal: '2026-02-16', itemId: 1 });
+    expect(component.dayItemsError).toEqual(jasmine.any(Error));
+
+    component.cycles = [{
+      id: 11,
+      title: 'Cycle',
+      color: 'blue',
+      durationDays: 7,
+      durationCount: 1,
+      durationType: 'semaine',
+      nutritionValues: [],
+    }];
+    component.onCalendarManageAssignment({
+      view: 'month',
+      currentDateIso: '2026-02-16T00:00:00Z',
+      dateLocal: '2026-02-16',
+      sourceAssignment: null,
+    });
+    component.modalSelectedCycleId = 11;
+    component.modalStartDateLocal = '2026-02-16';
+    cycleAssignmentServiceMock.create.and.returnValue(throwError(() => new Error('create')));
+    component.saveAssignmentFromModal();
+    expect(component.modalError).toEqual(jasmine.any(Error));
+
+    component.editingAssignment = {
+      id: 2,
+      cycle: component.cycles[0],
+      startDateLocal: '2026-02-16',
+      endDateLocal: '2026-02-22',
+    };
+    cycleAssignmentServiceMock.update.and.returnValue(throwError(() => new Error('update')));
+    component.saveAssignmentFromModal();
+    expect(component.modalError).toEqual(jasmine.any(Error));
+    cycleAssignmentServiceMock.remove.and.returnValue(throwError(() => new Error('delete')));
+    component.removeAssignmentFromModal();
+    expect(component.modalError).toEqual(jasmine.any(Error));
+
+    component.currentCalendarView = 'day';
+    component.currentAnchorDateLocal = '2026-02-16';
+    inputDayServiceMock.getInputDay.and.returnValue(throwError(() => new Error('day')));
+    component.refreshPlanningData(true, { includeCycles: false });
+    expect(component.dayItemsError).toEqual(jasmine.any(Error));
+    component.currentCalendarView = 'week';
+    component.currentRangeFromLocal = '2026-02-16';
+    inputDayServiceMock.getInputWeek.and.returnValue(throwError(() => new Error('week')));
+    component.refreshPlanningData(true, { includeCycles: false });
+    expect(component.dayItemsError).toEqual(jasmine.any(Error));
+
+    expect(callPrivate('prepareInputDataRequest', 'day', 'invalid', true)).toBeNull();
+    callPrivate('clearInputDayState');
+    callPrivate('setLastResponse', { ok: true });
+    callPrivate('setLastError', { message: 'failure' });
+    expect(component.lastResponseText).toContain('ok');
+    expect(component.lastErrorText).toContain('failure');
+    callPrivate('invalidatePlanningDataCache');
+    expect(calendar.currentView).toBeDefined();
+  });
+
 });
+
+function privateMethod(
+  component: PlanningFeature,
+): (name: string, ...args: unknown[]) => unknown {
+  const methods = component as unknown as Record<string, (...args: unknown[]) => unknown>;
+  return (name, ...args) => methods[name](...args);
+}
 
 function nutritionValue(
   nutritionKey: string,

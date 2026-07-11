@@ -1,12 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withXhr } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 
 import { NutritionValues } from './nutrition-value';
 
 describe('NutritionValues', () => {
   let component: NutritionValues;
   let fixture: ComponentFixture<NutritionValues>;
+  let httpMock: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -18,9 +22,76 @@ describe('NutritionValues', () => {
     fixture = TestBed.createComponent(NutritionValues);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should execute create, read, update, delete and form helper flows', () => {
+    component.form.patchValue({
+      label: ' Protein ',
+      amount: 12.5,
+      unit: ' g ',
+      per: 100,
+      productId: 4,
+    });
+    component.create();
+    let request = httpMock.expectOne('http://localhost:3000/nutrition-value');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
+      label: 'Protein',
+      amount: 12.5,
+      unit: 'g',
+      per: 100,
+      productId: 4,
+    });
+    request.flush({ id: 1 });
+    expect(component.lastResponse).toEqual({ id: 1 });
+
+    component.getAll();
+    request = httpMock.expectOne('http://localhost:3000/nutrition-value');
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+    component.form.patchValue({ id: 2 });
+    component.getOne();
+    request = httpMock.expectOne('http://localhost:3000/nutrition-value/2');
+    expect(request.request.method).toBe('GET');
+    request.flush({ id: 2 });
+
+    component.form.patchValue({ id: 2, label: ' Protein ', amount: 20, unit: 'g', per: null, productId: null });
+    component.update();
+    request = httpMock.expectOne('http://localhost:3000/nutrition-value/2');
+    expect(request.request.method).toBe('PATCH');
+    expect(request.request.body).toEqual({ label: 'Protein', amount: 20, unit: 'g' });
+    request.flush({ id: 2, amount: 20 });
+
+    component.delete();
+    request = httpMock.expectOne('http://localhost:3000/nutrition-value/2');
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
+    expect(component.lastResponse).toEqual({ deleted: true, id: 2 });
+
+    component.fillDemoCreate();
+    expect(component.form.value).toEqual(jasmine.objectContaining({ label: 'Proteines', productId: 1 }));
+    component.clear();
+    expect(component.form.value.label).toBe('');
+    expect(component.lastResponse).toBeNull();
+  });
+
+  it('should report validation errors without sending requests', () => {
+    component.create();
+    expect(component.lastError).toEqual(jasmine.any(Error));
+    component.getOne();
+    expect(component.lastError).toContain('Veuillez renseigner un id');
+    component.update();
+    expect(component.lastError).toContain('Veuillez renseigner un id');
+    component.delete();
+    expect(component.lastError).toContain('Veuillez renseigner un id');
+
+    component.form.patchValue({ id: 2 });
+    component.update();
+    expect(component.lastError).toBe('No field to update.');
   });
 });

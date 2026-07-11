@@ -288,7 +288,7 @@ describe('Calendar', () => {
     expect(
       root.querySelector('.calendar-year-mini-day--assigned'),
     ).toBeTruthy();
-    expect(textContent).toContain('Vue annee');
+    expect(textContent).toContain('Year view');
     expect(textContent).toContain('months covered');
     expect(textContent).toContain('scheduled days');
   });
@@ -372,7 +372,7 @@ describe('Calendar', () => {
         `[data-testid="calendar-month-add-${currentDateLocal}"]`,
       ),
     ).toBeNull();
-    expect(textContent).toContain('Vue mois');
+    expect(textContent).toContain('Month view');
     expect(textContent).toContain('Prise de Masse');
     expect(textContent).toContain('scheduled days');
   });
@@ -385,7 +385,7 @@ describe('Calendar', () => {
 
     const root = fixture.nativeElement;
     const monthDay = root.querySelector(
-      `[data-testid="calendar-month-day-${currentDateLocal}"]`,
+      `[data-testid="calendar-month-day-${currentDateLocal}"] .calendar-month-day__select`,
     ) as HTMLButtonElement | null;
     const dayButton = root.querySelector(
       `[data-testid="calendar-month-open-day-${currentDateLocal}"]`,
@@ -882,7 +882,7 @@ describe('Calendar', () => {
       'calendar-week-block__item--planned',
     );
     expect(pendingItem.textContent).toContain('Skyr');
-    expect(pendingItem.textContent).toContain('Prévu · à saisir');
+    expect(pendingItem.textContent).toContain('Planned · log now');
     expect(pendingItem.textContent).toContain('1 portion');
     expect(
       root.querySelector(
@@ -1106,7 +1106,7 @@ describe('Calendar', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain(
-      'Toutes les entrees ont ete converties.',
+      'All entries were converted.',
     );
     const revertEvents: unknown[] = [];
     component.revertTemplateItem.subscribe((event) =>

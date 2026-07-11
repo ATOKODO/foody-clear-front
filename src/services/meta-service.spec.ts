@@ -73,4 +73,31 @@ describe('MetaService', () => {
     expect(req.request.method).toBe('GET');
     req.flush([]);
   });
+
+  it('should normalize nested quantity units and remove invalid duplicates', () => {
+    service.getQuantityUnits().subscribe((units) => {
+      expect(units).toEqual([
+        { key: 'G', value: 'g', label: 'g' },
+        { key: 'KG', value: 'kg', label: 'Kilogram', dimension: 'mass', factor: 1 },
+      ]);
+    });
+
+    const req = httpMock.expectOne('http://localhost:3000/meta/quantity-units');
+    req.flush({ units: [' g ', ' ', { value: 'kg', label: 'Kilogram', dimension: 'mass', factor: 1 }, { value: 'kg' }, 42] });
+  });
+
+  it('should normalize nutrition keys from nested and primitive payloads', () => {
+    service.getNutritionKeys().subscribe((keys) => {
+      expect(keys).toEqual([
+        { key: 'PROTEIN', value: 'protein', label: 'protein', allowedUnits: [] },
+        { key: 'CARBS', value: 'carbs', label: 'Carbs', allowedUnits: ['g', 'mg'] },
+      ]);
+    });
+
+    const req = httpMock.expectOne('http://localhost:3000/meta/nutrition-keys');
+    req.flush({ keys: [' protein ', { value: 'carbs', label: 'Carbs', allowedUnits: [' g ', 4, 'mg'] }, { value: 'carbs' }, {}] });
+
+    service.getNutritionKeys().subscribe((keys) => expect(keys).toEqual([]));
+    httpMock.expectOne('http://localhost:3000/meta/nutrition-keys').flush('invalid');
+  });
 });

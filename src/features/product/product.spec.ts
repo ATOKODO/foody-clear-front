@@ -295,34 +295,161 @@ describe('Product', () => {
     expect(component.formInitialValue?.categoryId).toBe(7);
   });
 
+  it('should cover product normalization and response-shape helpers', () => {
+    component.nutritionKeyOptions = [
+      { key: 'PROTEIN', value: 'protein', label: 'Protein', allowedUnits: ['g'] },
+    ];
+    const callPrivate = privateMethod(component);
+    const product = buildProduct({
+      tags: [1, { id: 2 }, { name: ' Fresh ' }, { title: 'Pantry' }, { label: 'Organic' }, ' Fresh ', null],
+      category: { id: 3, name: ' Produce ' },
+      genericProduct: { title: 'Rice' },
+      nutritionValues: [
+        { id: '8', nutritionKey: 'protein', amount: '12.5', unit: 'g', reference: 'PER_100G' },
+        { key: 'energy', amount: Number.NaN, nutrition_unit: 'kcal', per: 1000 },
+        { amount: 1, unit: 'g' },
+        null,
+      ],
+    });
+
+    component.products = [product];
+    expect(component.productListItems()[0]).toEqual(
+      jasmine.objectContaining({
+        tagNames: ['Fresh', 'Pantry', 'Organic'],
+        category: 'Produce',
+        genericProduct: 'Rice',
+        nutritionValuesCount: 2,
+      }),
+    );
+
+    expect(callPrivate('extractProductsFromResponse', [product, { id: 'bad' }])).toEqual([product]);
+    expect(callPrivate('extractProductsFromResponse', product)).toEqual([product]);
+    expect(callPrivate('extractProductsFromResponse', { data: [product] })).toEqual([product]);
+    expect(callPrivate('extractProductsFromResponse', { payload: [{ id: 0, name: 'bad' }] })).toEqual([
+      { id: 0, name: 'bad' },
+    ]);
+    expect(callPrivate('extractProductsFromResponse', null)).toEqual([]);
+    expect(callPrivate('extractCategoriesFromResponse', { categories: [{ id: 2, name: 'Fruit' }] })).toEqual([
+      { id: 2, name: 'Fruit' },
+    ]);
+    expect(callPrivate('extractGenericProductsFromResponse', { items: [{ id: 2, name: 'Rice' }] })).toEqual([
+      { id: 2, name: 'Rice' },
+    ]);
+    expect(callPrivate('extractTagsFromResponse', { tags: [{ id: 2, name: 'Fresh' }] })).toEqual([
+      { id: 2, name: 'Fresh' },
+    ]);
+
+    const formValue = {
+      name: ' Product ',
+      barcode: null,
+      categoryId: 3,
+      tagIds: [2, 4],
+      genericProductId: 5,
+      unitType: 'Paquet',
+      quantityPerUnit: 2,
+      quantityUnit: 'g',
+      portionCount: null,
+      portionUnit: null,
+      portionQuantityNormalized: null,
+      price: 2,
+      priceUnit: 'kg',
+      priceEffectiveFrom: null,
+      url: null,
+      memo: null,
+      nutritionValues: [
+        { nutritionKey: ' protein ', amount: -2, unit: 'g', reference: 'PER_100G' },
+        { nutritionKey: ' ', amount: Number.NaN, unit: 'g', reference: 'PER_100G' },
+      ],
+    };
+    expect(callPrivate('toCreateDto', formValue)).toEqual(
+      jasmine.objectContaining({
+        name: ' Product ',
+        nutritionValuesCreated: [
+          { nutritionKey: 'PROTEIN', amount: 0, unit: 'g', reference: 'PER_100G' },
+        ],
+      }),
+    );
+    expect(callPrivate('toUpdateDto', formValue, product)).toEqual(
+      jasmine.objectContaining({
+        categoryId: 3,
+        tagIdsToAdd: [4],
+        tagIdsToRemove: [1],
+      }),
+    );
+    expect(callPrivate('toUpdateDto', { ...formValue, categoryId: null, tagIds: [] }, product)).toEqual(
+      jasmine.objectContaining({ clearCategory: true, tagIdsToRemove: [1, 2] }),
+    );
+    expect(callPrivate('toFormValue', product)).toEqual(
+      jasmine.objectContaining({ categoryId: 3, genericProductId: null, tagIds: [1, 2] }),
+    );
+
+    expect(callPrivate('resolveTagIds', [1, { id: '2' }, { id: 2 }, 0, 'bad'])).toEqual([1, 2]);
+    expect(callPrivate('resolveTagNames', [' Fresh ', { label: 'Organic' }, { key: 'Seasonal' }, {}])).toEqual([
+      'Fresh',
+      'Organic',
+      'Seasonal',
+    ]);
+    expect(callPrivate('resolveLinkedEntityName', null)).toBe('None');
+    expect(callPrivate('resolveLinkedEntityName', { label: 'Organic' })).toBe('Organic');
+    expect(callPrivate('resolveLinkedEntityName', {})).toBe('None');
+    expect(callPrivate('readPositiveInteger', '4')).toBe(4);
+    expect(callPrivate('readPositiveInteger', 0)).toBeUndefined();
+    expect(callPrivate('readFiniteNumber', '12.5')).toBe(12.5);
+    expect(callPrivate('readFiniteNumber', ' ')).toBeNull();
+    expect(callPrivate('readFiniteNumber', true)).toBeNull();
+    expect(callPrivate('extractNutritionKeyValue', { nutritionKey: 'PROTEIN' })).toBe('protein');
+    expect(callPrivate('extractNutritionKeyValue', { label: 'Unknown' })).toBe('UNKNOWN');
+    expect(callPrivate('extractNutritionUnitValue', { uom: 'kcal' })).toBe('KCAL');
+    expect(callPrivate('extractNutritionReferenceValue', { reference: '100ml' })).toBe('PER_100ML');
+    expect(callPrivate('extractNutritionReferenceValue', { per: 1000 })).toBe('PER_100ML');
+    expect(callPrivate('extractNutritionReferenceValue', {})).toBe('PER_100G');
+    expect(callPrivate('readStringFromCandidates', { first: 3 }, ['missing', 'first'])).toBe('3');
+    expect(callPrivate('normalizeUnitType', 'invalid')).toBe('Paquet');
+    expect(callPrivate('normalizeQuantityUnit', ' KG ')).toBe('kg');
+    expect(callPrivate('normalizePortionUnit', 'invalid')).toBeNull();
+    expect(callPrivate('normalizePriceUnit', ' ML ')).toBe('ml');
+    expect(callPrivate('normalizeProductSearchValue', ' Épicerie ')).toBe('epicerie');
+    expect(callPrivate('matchesProductSearch', component.productListItems()[0], 'organic')).toBeTrue();
+    expect((callPrivate('sortByName', [{ name: 'z' }, { name: 'A' }]) as { name: string }[]).map((item) => item.name)).toEqual([
+      'A',
+      'z',
+    ]);
+  });
+
   function resetSpyCalls(): void {
     productServiceMock.setBaseUrl.calls.reset();
     productServiceMock.findAll.calls.reset();
     productServiceMock.create.calls.reset();
     productServiceMock.update.calls.reset();
     productServiceMock.remove.calls.reset();
+    productServiceMock.findAll.and.returnValue(of([]));
 
     metaServiceMock.setBaseUrl.calls.reset();
     metaServiceMock.getQuantityUnits.calls.reset();
     metaServiceMock.getNutritionKeys.calls.reset();
+    metaServiceMock.getQuantityUnits.and.returnValue(of([]));
+    metaServiceMock.getNutritionKeys.and.returnValue(of([]));
 
     categoryServiceMock.setBaseUrl.calls.reset();
     categoryServiceMock.findAll.calls.reset();
     categoryServiceMock.create.calls.reset();
     categoryServiceMock.update.calls.reset();
     categoryServiceMock.remove.calls.reset();
+    categoryServiceMock.findAll.and.returnValue(of([]));
 
     genericProductServiceMock.setBaseUrl.calls.reset();
     genericProductServiceMock.findAll.calls.reset();
     genericProductServiceMock.create.calls.reset();
     genericProductServiceMock.update.calls.reset();
     genericProductServiceMock.remove.calls.reset();
+    genericProductServiceMock.findAll.and.returnValue(of([]));
 
     tagServiceMock.setBaseUrl.calls.reset();
     tagServiceMock.findAll.calls.reset();
     tagServiceMock.create.calls.reset();
     tagServiceMock.update.calls.reset();
     tagServiceMock.remove.calls.reset();
+    tagServiceMock.findAll.and.returnValue(of([]));
   }
 
   function expectHeaderActionsDisabled(expected: boolean): void {
@@ -344,6 +471,13 @@ describe('Product', () => {
     fixture.detectChanges();
   }
 });
+
+function privateMethod(
+  component: Product,
+): (name: string, ...args: unknown[]) => unknown {
+  const methods = component as unknown as Record<string, (...args: unknown[]) => unknown>;
+  return (name, ...args) => methods[name](...args);
+}
 
 function buildProduct(overrides: Partial<ProductModel> = {}): ProductModel {
   const baseProduct: ProductModel = {
