@@ -222,7 +222,7 @@ export function resolveStatisticPriceCorrectionDefaults(
         ? selected.price
         : current.price,
     priceUnit:
-      (selected?.priceUnit as ProductPriceUnit | null | undefined) ??
+      selected?.priceUnit ??
       current.priceUnit,
   };
 }
