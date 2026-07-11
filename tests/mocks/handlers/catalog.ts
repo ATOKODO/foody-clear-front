@@ -15,6 +15,7 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
   const { path, request, state } = context;
   const method = request.method();
 
+  const handleMetaRequest = async (): Promise<boolean> => {
   if (method === 'GET' && path === '/meta/quantity-units') {
     await context.json(state.quantityUnits);
     return true;
@@ -24,7 +25,10 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
     await context.json(state.nutritionKeys);
     return true;
   }
+    return false;
+  };
 
+  const handleCategoryRequest = async (): Promise<boolean> => {
   if (path === '/category') {
     if (method === 'GET') {
       await context.json(state.categories.map(hydrateCategory));
@@ -80,7 +84,10 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       return true;
     }
   }
+  return false;
+  };
 
+  const handleTagRequest = async (): Promise<boolean> => {
   if (path === '/tag') {
     if (method === 'GET') {
       await context.json(state.tags.map(hydrateTag));
@@ -128,7 +135,10 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       return true;
     }
   }
+  return false;
+  };
 
+  const handleGenericProductRequest = async (): Promise<boolean> => {
   if (path === '/generic-product') {
     if (method === 'GET') {
       await context.json(state.genericProducts.map(hydrateGenericProduct));
@@ -188,7 +198,10 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       return true;
     }
   }
+  return false;
+  };
 
+  const handleProductCollectionRequest = async (): Promise<boolean> => {
   if (path === '/product') {
     if (method === 'GET') {
       await context.json(state.products.map((product) => hydrateProduct(state, product)));
@@ -243,7 +256,10 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       return true;
     }
   }
+  return false;
+  };
 
+  const handleProductItemRequest = async (): Promise<boolean> => {
   if (path.startsWith('/product/')) {
     const productId = Number(path.split('/')[2]);
     const product = getProduct(state, productId);
@@ -353,7 +369,10 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       return true;
     }
   }
+  return false;
+  };
 
+  const handleNutritionCollectionRequest = async (): Promise<boolean> => {
   if (path === '/nutrition-value') {
     if (method === 'GET') {
       await context.json(
@@ -391,7 +410,10 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
       return true;
     }
   }
+  return false;
+  };
 
+  const handleNutritionItemRequest = async (): Promise<boolean> => {
   if (path.startsWith('/nutrition-value/')) {
     const nutritionValueId = Number(path.split('/')[2]);
     const located = findNutritionValue(state, nutritionValueId);
@@ -434,6 +456,19 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
     }
   }
 
+  const handlers = [
+    handleMetaRequest,
+    handleCategoryRequest,
+    handleTagRequest,
+    handleGenericProductRequest,
+    handleProductCollectionRequest,
+    handleProductItemRequest,
+    handleNutritionCollectionRequest,
+    handleNutritionItemRequest,
+  ];
+  for (const handler of handlers) {
+    if (await handler()) return true;
+  }
   return false;
 }
 

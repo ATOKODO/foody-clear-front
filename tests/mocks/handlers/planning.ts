@@ -147,52 +147,59 @@ async function handleDaySetCollectionRequest(context: MockApiRequestContext): Pr
 }
 
 async function handleDaySetRequest(context: MockApiRequestContext): Promise<boolean> {
-  const { path } = context;
-  const { state } = context;
-  const method = context.request.method();
-  if (path.startsWith('/day-set/')) {
-    const daySetId = Number(path.split('/')[2]);
-    const daySet = getDaySet(state, daySetId);
-    if (!daySet) {
-      await context.notFound('Day set not found');
-      return true;
-    }
-
-    if (method === 'GET') {
-      await context.json(hydrateDaySet(state, daySet));
-      return true;
-    }
-
-    if (method === 'PATCH') {
-      const body = await context.readJson<Record<string, unknown>>();
-      daySet.title = readNullableString(body.title) ?? daySet.title;
-      if (Array.isArray(body.nutritionValues)) {
-        daySet.nutritionValues = body.nutritionValues
-          .map(toCycleNutritionValue)
-          .filter((value): value is NonNullable<ReturnType<typeof toCycleNutritionValue>> => value !== null);
-      }
-      if (Array.isArray(body.slotIds)) {
-        daySet.slotIds = body.slotIds
-          .map(Number)
-          .filter((value) => Number.isInteger(value) && value > 0);
-      }
-      if ('templateId' in body) {
-        daySet.templateId = readNullableNumber(body.templateId);
-      }
-      await context.json(hydrateDaySet(state, daySet));
-      return true;
-    }
-
-    if (method === 'DELETE') {
-      state.daySets = removeArrayItem(state.daySets, daySetId);
-      state.cycles.forEach((cycle) => {
-        cycle.daySetOrder = cycle.daySetOrder.map((candidate) => (candidate === daySetId ? 0 : candidate));
-      });
-      await context.noContent();
-      return true;
-    }
+  if (!context.path.startsWith('/day-set/')) {
+    return false;
   }
-  return false;
+
+  const daySet = getDaySet(context.state, Number(context.path.split('/')[2]));
+  if (!daySet) {
+    await context.notFound('Day set not found');
+    return true;
+  }
+
+  const handler = daySetRequestHandlers(context, daySet)[context.request.method()];
+  if (!handler) {
+    return false;
+  }
+
+  await handler();
+  return true;
+}
+
+function daySetRequestHandlers(
+  context: MockApiRequestContext,
+  daySet: MockDaySet,
+): Record<string, () => Promise<void>> {
+  return {
+    GET: () => context.json(hydrateDaySet(context.state, daySet)),
+    PATCH: () => patchDaySet(context, daySet),
+    DELETE: () => deleteDaySet(context, daySet),
+  };
+}
+
+async function patchDaySet(context: MockApiRequestContext, daySet: MockDaySet): Promise<void> {
+  const body = await context.readJson<Record<string, unknown>>();
+  daySet.title = readNullableString(body.title) ?? daySet.title;
+  if (Array.isArray(body.nutritionValues)) {
+    daySet.nutritionValues = body.nutritionValues
+      .map(toCycleNutritionValue)
+      .filter((value): value is NonNullable<ReturnType<typeof toCycleNutritionValue>> => value !== null);
+  }
+  if (Array.isArray(body.slotIds)) {
+    daySet.slotIds = body.slotIds.map(Number).filter((value) => Number.isInteger(value) && value > 0);
+  }
+  if ('templateId' in body) {
+    daySet.templateId = readNullableNumber(body.templateId);
+  }
+  await context.json(hydrateDaySet(context.state, daySet));
+}
+
+async function deleteDaySet(context: MockApiRequestContext, daySet: MockDaySet): Promise<void> {
+  context.state.daySets = removeArrayItem(context.state.daySets, daySet.id);
+  context.state.cycles.forEach((cycle) => {
+    cycle.daySetOrder = cycle.daySetOrder.map((candidate) => (candidate === daySet.id ? 0 : candidate));
+  });
+  await context.noContent();
 }
 
 async function handleCycleCollectionRequest(context: MockApiRequestContext): Promise<boolean> {
@@ -229,50 +236,64 @@ async function handleCycleCollectionRequest(context: MockApiRequestContext): Pro
 }
 
 async function handleCycleRequest(context: MockApiRequestContext): Promise<boolean> {
-  const { path } = context;
-  const { state } = context;
-  const method = context.request.method();
-  if (path.startsWith('/cycle/')) {
-    const cycleId = Number(path.split('/')[2]);
-    const cycle = getCycle(state, cycleId);
-    if (!cycle) {
-      await context.notFound('Cycle not found');
-      return true;
-    }
+  if (!context.path.startsWith('/cycle/')) {
+    return false;
+  }
 
-    if (method === 'GET') {
-      await context.json(hydrateCycle(state, cycle));
-      return true;
-    }
+  const cycle = getCycle(context.state, Number(context.path.split('/')[2]));
+  if (!cycle) {
+    await context.notFound('Cycle not found');
+    return true;
+  }
 
-    if (method === 'PATCH') {
-      const body = await context.readJson<Record<string, unknown>>();
-      cycle.title = readNullableString(body.title) ?? cycle.title;
-      cycle.color = readNullableString(body.color) ?? cycle.color;
-      cycle.durationDays = Number(body.durationDays ?? cycle.durationDays);
-      cycle.durationCount = Number(body.durationCount ?? cycle.durationCount);
-      cycle.durationType = (readNullableString(body.durationType) ?? cycle.durationType) as MockCycle['durationType'];
-      if ('defaultTemplateId' in body) {
-        cycle.defaultTemplateId = readNullableNumber(body.defaultTemplateId);
-      }
-      if (Array.isArray(body.nutritionValues)) {
-        cycle.nutritionValues = body.nutritionValues
-          .map(toCycleNutritionValue)
-          .filter((value): value is NonNullable<ReturnType<typeof toCycleNutritionValue>> => value !== null);
-      }
-      if (Array.isArray(body.daySetOrder)) {
-        cycle.daySetOrder = normalizeTimeline(body.daySetOrder, cycle.durationDays);
-      }
-      await context.json(hydrateCycle(state, cycle));
-      return true;
-    }
+  const handler = cycleRequestHandlers(context, cycle)[context.request.method()];
+  if (!handler) {
+    return false;
+  }
 
-    if (method === 'DELETE') {
-      state.cycles = removeArrayItem(state.cycles, cycleId);
-      state.cycleAssignments = state.cycleAssignments.filter((assignment) => assignment.cycleId !== cycleId);
-      await context.noContent();
-      return true;
-    }
+  await handler();
+  return true;
+}
+
+function cycleRequestHandlers(
+  context: MockApiRequestContext,
+  cycle: MockCycle,
+): Record<string, () => Promise<void>> {
+  return {
+    GET: () => context.json(hydrateCycle(context.state, cycle)),
+    PATCH: () => patchCycle(context, cycle),
+    DELETE: () => deleteCycle(context, cycle),
+  };
+}
+
+async function patchCycle(context: MockApiRequestContext, cycle: MockCycle): Promise<void> {
+  const body = await context.readJson<Record<string, unknown>>();
+  cycle.title = readNullableString(body.title) ?? cycle.title;
+  cycle.color = readNullableString(body.color) ?? cycle.color;
+  cycle.durationDays = Number(body.durationDays ?? cycle.durationDays);
+  cycle.durationCount = Number(body.durationCount ?? cycle.durationCount);
+  cycle.durationType = (readNullableString(body.durationType) ?? cycle.durationType) as MockCycle['durationType'];
+  if ('defaultTemplateId' in body) {
+    cycle.defaultTemplateId = readNullableNumber(body.defaultTemplateId);
+  }
+  if (Array.isArray(body.nutritionValues)) {
+    cycle.nutritionValues = body.nutritionValues
+      .map(toCycleNutritionValue)
+      .filter((value): value is NonNullable<ReturnType<typeof toCycleNutritionValue>> => value !== null);
+  }
+  if (Array.isArray(body.daySetOrder)) {
+    cycle.daySetOrder = normalizeTimeline(body.daySetOrder, cycle.durationDays);
+  }
+  await context.json(hydrateCycle(context.state, cycle));
+}
+
+async function deleteCycle(context: MockApiRequestContext, cycle: MockCycle): Promise<void> {
+  context.state.cycles = removeArrayItem(context.state.cycles, cycle.id);
+  context.state.cycleAssignments = context.state.cycleAssignments.filter(
+    (assignment) => assignment.cycleId !== cycle.id,
+  );
+  await context.noContent();
+}
   }
   return false;
 }
