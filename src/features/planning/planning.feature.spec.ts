@@ -727,21 +727,17 @@ describe('PlanningFeature', () => {
     });
   });
 
-  function nutritionValue(
-    nutritionKey: string,
-    amount: number,
-    unit = 'G',
-  ): {
-    nutritionKey: string;
-    amount: number;
-    unit: string;
-    reference: 'PER_100G';
-  } {
-    return {
-      nutritionKey,
-      amount,
-      unit,
-      reference: 'PER_100G',
-    };
-  }
 });
+
+function nutritionValue(
+  nutritionKey: string,
+  amount: number,
+  unit = 'G',
+): {
+  nutritionKey: string;
+  amount: number;
+  unit: string;
+  reference: 'PER_100G';
+} {
+  return { nutritionKey, amount, unit, reference: 'PER_100G' };
+}

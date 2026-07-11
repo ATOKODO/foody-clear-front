@@ -198,6 +198,20 @@
   transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
+.meal-prep-list-card__select {
+  min-width: 0;
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
 .meal-prep-list-card:hover,
 .meal-prep-list-card.is-active {
   border-color: #4d8078;

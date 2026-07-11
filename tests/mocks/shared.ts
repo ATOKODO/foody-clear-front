@@ -333,7 +333,7 @@ export function getTemplateForDate(
 
   const daySetId = activeAssignment.cycle.daySetOrder[activeAssignment.dayIndex - 1] ?? 0;
   const daySet = getDaySet(state, daySetId);
-  if (daySet && daySet.templateId != null) {
+  if (daySet?.templateId != null) {
     return { template: getTemplate(state, daySet.templateId), source: 'daySet' };
   }
 
@@ -636,6 +636,42 @@ export function hydrateInputDayTemplateItem(
   };
 }
 
+function resolveNutritionTargets(
+  daySet: MockDaySet | null,
+  activeAssignment: MockCycleAssignment | null,
+): Record<string, number> | null {
+  if (daySet) {
+    return buildDaySetNutritionRecord(daySet);
+  }
+  if (activeAssignment) {
+    return macrosFromCycleNutritionValues(activeAssignment.cycle.nutritionValues);
+  }
+  return null;
+}
+
+function resolveTargetSource(
+  daySet: MockDaySet | null,
+  activeAssignment: MockCycleAssignment | null,
+): 'daySet' | 'cycle' | 'none' {
+  if (daySet) return 'daySet';
+  if (activeAssignment) return 'cycle';
+  return 'none';
+}
+
+function resolveExpenseAmount(
+  product: MockProduct | null,
+  quantityNormalized: number,
+  unitCount: number,
+): number | null {
+  if (product?.price == null) {
+    return null;
+  }
+  const quantity = product.priceUnit === 'kg' || product.priceUnit === 'g'
+    ? quantityNormalized / 1000
+    : unitCount;
+  return round(quantity * product.price);
+}
+
 export function buildInputDayResponse(state: MockApiState, dateLocal: string): Record<string, unknown> {
   const activeAssignment = getActiveAssignmentForDate(state, dateLocal);
   const daySet = getDaySetForDate(state, dateLocal);
@@ -657,11 +693,7 @@ export function buildInputDayResponse(state: MockApiState, dateLocal: string): R
       item.status === 'converted' ? {} : (item.nutritionValue as Record<string, number>),
     ),
   );
-  const targets = daySet
-    ? buildDaySetNutritionRecord(daySet)
-    : activeAssignment
-      ? macrosFromCycleNutritionValues(activeAssignment.cycle.nutritionValues)
-      : null;
+  const targets = resolveNutritionTargets(daySet, activeAssignment);
 
   const slots = daySet
     ? daySet.slotIds
@@ -725,7 +757,7 @@ export function buildInputDayResponse(state: MockApiState, dateLocal: string): R
       targets,
       deltaToTargets: subtractNutrition(enteredNutrition, targets),
       incompleteNutritionKeys: [],
-      targetSource: daySet ? 'daySet' : activeAssignment ? 'cycle' : 'none',
+      targetSource: resolveTargetSource(daySet, activeAssignment),
     },
     projectedTotalsMacros: templateItems.length > 0
       ? {
@@ -749,7 +781,7 @@ export function buildInputDayResponse(state: MockApiState, dateLocal: string): R
           targets,
           deltaToTargets: subtractNutrition(sumNutrition([enteredNutrition, templateNutrition]), targets),
           incompleteNutritionKeys: [],
-          targetSource: daySet ? 'daySet' : activeAssignment ? 'cycle' : 'none',
+          targetSource: resolveTargetSource(daySet, activeAssignment),
         }
       : null,
     itemsBySlot: slots.map((slot) => ({
@@ -800,14 +832,7 @@ export function buildStatisticsTimeline(
       const product = getProduct(state, item.productId);
       const inventory = getInventory(state, item.inventoryId);
       const unitCount = product ? normalizedToProductUnits(product, item.qtyNormalized) : 0;
-      const expenseAmount =
-        product?.price != null
-          ? round(
-              (product.priceUnit === 'kg' || product.priceUnit === 'g'
-                ? item.qtyNormalized / 1000
-                : unitCount) * product.price,
-            )
-          : null;
+      const expenseAmount = resolveExpenseAmount(product, item.qtyNormalized, unitCount);
 
       return {
         id: item.id,

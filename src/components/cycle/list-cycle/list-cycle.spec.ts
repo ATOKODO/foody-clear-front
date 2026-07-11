@@ -250,69 +250,6 @@ describe('ListCycle', () => {
     ).not.toBeNull();
   });
 
-  function createMetric(
-    overrides: Partial<CycleBreakdownMetric> = {},
-  ): CycleBreakdownMetric {
-    return {
-      key: 'proteins',
-      label: 'Proteines',
-      unit: 'g',
-      value: 50,
-      target: 100,
-      percentage: 50,
-      status: 'under',
-      ...overrides,
-    };
-  }
-
-  function createSlot(
-    overrides: Partial<CycleSlotBreakdown> = {},
-  ): CycleSlotBreakdown {
-    return {
-      id: 11,
-      title: 'Petit dejeuner',
-      key: 'breakfast',
-      timeRange: '08:00 - 09:00',
-      totals: { energyKcal: 390, proteins: 50, carbs: 25, lipids: 10 },
-      metrics: [
-        createMetric({
-          key: 'kcal',
-          label: 'KCAL',
-          unit: 'kcal',
-          value: 390,
-          target: 1070,
-          percentage: 36.45,
-          status: 'under',
-        }),
-        createMetric({
-          key: 'proteins',
-          label: 'Proteines',
-          value: 50,
-          target: 100,
-          percentage: 50,
-          status: 'under',
-        }),
-        createMetric({
-          key: 'carbs',
-          label: 'Glucides',
-          value: 25,
-          target: 100,
-          percentage: 25,
-          status: 'under',
-        }),
-        createMetric({
-          key: 'lipids',
-          label: 'Lipides',
-          value: 10,
-          target: 30,
-          percentage: 33.33,
-          status: 'under',
-        }),
-      ],
-      ...overrides,
-    };
-  }
-
   function createDaySet(
     overrides: Partial<CycleDaySetBreakdown> = {},
   ): CycleDaySetBreakdown {
@@ -455,3 +392,37 @@ describe('ListCycle', () => {
     };
   }
 });
+
+function createMetric(
+  overrides: Partial<CycleBreakdownMetric> = {},
+): CycleBreakdownMetric {
+  return {
+    key: 'proteins',
+    label: 'Proteines',
+    unit: 'g',
+    value: 50,
+    target: 100,
+    percentage: 50,
+    status: 'under',
+    ...overrides,
+  };
+}
+
+function createSlot(
+  overrides: Partial<CycleSlotBreakdown> = {},
+): CycleSlotBreakdown {
+  return {
+    id: 11,
+    title: 'Petit dejeuner',
+    key: 'breakfast',
+    timeRange: '08:00 - 09:00',
+    totals: { energyKcal: 390, proteins: 50, carbs: 25, lipids: 10 },
+    metrics: [
+      createMetric({ key: 'kcal', label: 'KCAL', unit: 'kcal', value: 390, target: 1070, percentage: 36.45, status: 'under' }),
+      createMetric({ key: 'proteins', label: 'Proteines', value: 50, target: 100, percentage: 50, status: 'under' }),
+      createMetric({ key: 'carbs', label: 'Glucides', value: 25, target: 100, percentage: 25, status: 'under' }),
+      createMetric({ key: 'lipids', label: 'Lipides', value: 10, target: 30, percentage: 33.33, status: 'under' }),
+    ],
+    ...overrides,
+  };
+}

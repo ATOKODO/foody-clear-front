@@ -37,6 +37,19 @@
   transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
+.template-master__card-select {
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
 .template-master__card:hover,
 .template-master__card.is-active {
   border-color: #4d8078;
