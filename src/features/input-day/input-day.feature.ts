@@ -104,9 +104,16 @@ import {
   resolveInputDayItemSlotTitle,
   resolveInputDayTemplateItemSlotKey,
   resolveInputDayTemplateItemSlotTitle,
-  roundInputDayQuantity,
   toInputDayDateTimeLocalInput,
 } from './input-day.helpers';
+import {
+  aggregateInventoryProducts,
+  createInputDayEditorValue,
+  resolveInputDayDateLocal,
+  resolveInputDayTimezone,
+  resolveSelectedSlotId,
+  resolveValidInventoryIds,
+} from './input-day-state.helpers';
 
 @Component({
   selector: 'app-input-day',
@@ -1178,13 +1185,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private resolveDateLocalValue(): string | null {
-    const rawDate = this.form.value.dateLocal;
-    const parsedDate = parseInputDayDateInput(rawDate);
-    if (!parsedDate) {
-      return null;
-    }
-
-    return formatInputDayDateLocal(parsedDate);
+    return resolveInputDayDateLocal(this.form.value.dateLocal);
   }
 
   private requireDate(): string | null {
@@ -1228,19 +1229,13 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private prefillItemEditorForCreate(occurredAt: string | null): void {
-    this.itemEditorForm.reset(
-      {
-        itemId: null,
-        dateLocal: this.resolveEditorDefaultDateLocal(),
-        occurredAt: toInputDayDateTimeLocalInput(occurredAt, this.resolveTimezone()),
-        productId: null,
-        qty: null,
-        qtyUnit: null,
-        slotId: null,
-        slotKey: '',
-      },
-      { emitEvent: false },
-    );
+    this.itemEditorForm.reset(createInputDayEditorValue({
+      response: this.inputDayResponse,
+      formDateLocal: this.form.value.dateLocal,
+      initialDateLocal: this.initialDateLocal(),
+      occurredAt,
+      timezone: this.resolveTimezone(),
+    }), { emitEvent: false });
 
     this.editingSourceDateLocal = null;
     this.itemEditorError = null;
@@ -1262,10 +1257,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private resolveTimezone(): string {
-    const timezone = String(
-      this.form.value.timezone ?? this.fallbackTimezone,
-    ).trim();
-    return timezone === '' ? this.fallbackTimezone : timezone;
+    return resolveInputDayTimezone(this.form.value.timezone, this.fallbackTimezone);
   }
 
   private clearSelectedProducts(): void {
@@ -1376,36 +1368,10 @@ export class InputDayFeature implements OnInit, OnChanges {
     inventoryIds: number[],
     syncSelection = true,
   ): void {
-    const aggregatedProducts = new Map<number, InventoryProduct>();
-
-    for (const inventoryId of inventoryIds) {
-      const inventoryProducts =
-        this.inventoryProductsByInventoryId.get(inventoryId) ?? [];
-      for (const inventoryProduct of inventoryProducts) {
-        const existing = aggregatedProducts.get(inventoryProduct.productId);
-        if (!existing) {
-          aggregatedProducts.set(inventoryProduct.productId, {
-            ...inventoryProduct,
-            qtyOnHandInUnits: inventoryProduct.qtyOnHandInUnits ?? 0,
-            qtyOnHandNormalized: inventoryProduct.qtyOnHandNormalized ?? 0,
-          });
-          continue;
-        }
-
-        existing.qtyOnHandInUnits = roundInputDayQuantity(
-          (existing.qtyOnHandInUnits ?? 0) +
-            (inventoryProduct.qtyOnHandInUnits ?? 0),
-        );
-        existing.qtyOnHandNormalized = roundInputDayQuantity(
-          (existing.qtyOnHandNormalized ?? 0) +
-            (inventoryProduct.qtyOnHandNormalized ?? 0),
-        );
-      }
-    }
-
-    this.selectedInventoryProducts = Array.from(
-      aggregatedProducts.values(),
-    ).sort((left, right) => left.productId - right.productId);
+    this.selectedInventoryProducts = aggregateInventoryProducts(
+      inventoryIds,
+      this.inventoryProductsByInventoryId,
+    );
     this.refreshSelectableProductListItems();
     this.loadingInventoryProducts = false;
     this.inventoryProductsError = null;
@@ -1415,21 +1381,14 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private ensureSelectedInventoriesStillValid(): void {
-    const validInventoryIds = new Set(
+    this.selectedInventoryIds = resolveValidInventoryIds(
+      this.selectedInventoryIds,
       this.inventories.map((inventory) => inventory.id),
-    );
-    this.selectedInventoryIds = this.selectedInventoryIds.filter(
-      (inventoryId) => validInventoryIds.has(inventoryId),
     );
   }
 
   private ensureSelectedSlotStillValid(): void {
-    if (
-      this.selectedSlotId !== null &&
-      !this.availableSlots.some((slot) => slot.slotId === this.selectedSlotId)
-    ) {
-      this.selectedSlotId = null;
-    }
+    this.selectedSlotId = resolveSelectedSlotId(this.selectedSlotId, this.availableSlots);
   }
 
   private findItemById(itemId: number): InputDayItemSummary | null {

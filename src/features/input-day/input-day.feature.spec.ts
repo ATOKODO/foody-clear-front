@@ -279,6 +279,41 @@ describe('InputDayFeature', () => {
     expect(component.selectedProductRows[0].productId).toBe(1);
   });
 
+  it('should expose formatting, tracking, and reset helpers for the active day', () => {
+    component.inputDayResponse = dayResponse;
+    component.onSelectedInventoryChange([4]);
+    component.onProductsSelected(component.selectableProductListItems.slice(0, 1));
+
+    const item = dayResponse.items[0];
+    const templateItem = dayResponse.templateItems![0];
+
+    expect(component.hasValidSelectedDate).toBeTrue();
+    expect(component.hasSelectedInventories).toBeTrue();
+    expect(component.formatMacroValue(12.5)).toContain('12.5');
+    expect(component.formatNutritionAmount(12.5)).toContain('12.5');
+    expect(component.formatTime('08:15:00')).toBe('08:15');
+    expect(component.formatDateTime('2026-02-16T08:15:00Z')).toContain('2026');
+    expect(component.resolveItemSlotTitle(item)).toBeTruthy();
+    expect(component.resolveItemSlotKey(item)).toBeTruthy();
+    expect(component.resolveTemplateItemSlotTitle(templateItem)).toBeTruthy();
+    expect(component.resolveTemplateItemSlotKey(templateItem)).toBeTruthy();
+    expect(component.getSelectedInventoriesTemplateStock(templateItem)).toBeTruthy();
+    expect(component.getTargetSourceText('cycle')).toContain('cycle');
+    expect(component.getTemplateTargetSourceText(dayResponse.totalsMacros)).toBeTruthy();
+    expect(component.hasEntries({ proteins: 1 })).toBeTrue();
+    expect(component.hasEntries(null)).toBeFalse();
+    expect(component.trackBySelectedProductRow(0, component.selectedProductRows[0])).toBe(1);
+    expect(component.trackByInputDayItem(0, item)).toBe(item.id);
+    expect(component.trackByTemplateItem(0, templateItem)).toBe(templateItem.id);
+
+    component.clear();
+
+    expect(component.inputDayResponse).toBeNull();
+    expect(component.selectedInventoryIds).toEqual([]);
+    expect(component.selectedProductRows).toEqual([]);
+    expect(component.activeEmbeddedSection).toBe('stock');
+  });
+
   it('should render cycle-level targets when no day set is active', () => {
     const cycleTargetResponse: InputDayResponse = {
       ...dayResponse,

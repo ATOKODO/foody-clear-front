@@ -80,6 +80,31 @@ describe('Calendar', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should expose stable calendar labels, grid positions, and tracking keys', () => {
+    component.currentDate = DateTime.fromISO('2026-02-18') as typeof component.currentDate;
+
+    expect(component.getViewLabel('year')).toBe('Year');
+    expect(component.getViewLabel('month')).toBe('Month');
+    expect(component.getViewLabel('week')).toBe('Week');
+    expect(component.getViewLabel('day')).toBe('Day');
+    expect(component.currentViewLabel).toContain('2026');
+    expect(component.getWeekHourGridRowStart(8)).toBe(18);
+    expect(component.getWeekHourGridRowEnd(8)).toBe(20);
+    expect(component.getDayHalfHourGridRowStart(8, 0)).toBe(18);
+    expect(component.getDayHalfHourGridRowStart(8, 30)).toBe(19);
+    expect(component.trackByHour(0, 8)).toBe(8);
+    expect(component.trackByHour(0, { hour: 9 } as never)).toBe(9);
+    expect(component.trackByMonth(0, { year: 2026, month: 2 } as never)).toBe('2026-2');
+    expect(component.trackByMonthAlertBadge(0, { key: 'alert' } as never)).toBe('alert');
+    expect(component.trackByMacroMetricEntry(0, { key: 'protein' } as never)).toBe('protein');
+    expect(component.trackByDayMacroCard(0, { key: 'protein' } as never)).toBe('protein');
+    expect(component.trackByDaySlotMacroGroup(0, { key: 'breakfast' } as never)).toBe('breakfast');
+    expect(component.trackByDayEntryRow(0, { id: 12 } as never)).toBe(12);
+    expect(component.trackByWeekTimelineBlock(0, { id: 'breakfast' } as never)).toBe('breakfast');
+    expect(component.getTargetSourceText('cycle')).toBe('Cycle target');
+    expect(component.getTargetSourceBadgeText('none')).toBe('No target');
+  });
+
   it('should emit manageItems from day view', () => {
     const emitted: unknown[] = [];
     component.manageItems.subscribe((event) => emitted.push(event));
@@ -1139,7 +1164,7 @@ describe('Calendar', () => {
     renderView('day', '2026-02-17');
 
     const block = fixture.nativeElement.querySelector(
-      '[data-testid="calendar-day-template-block-Non rattache a un slot"]',
+      '[data-testid="calendar-day-template-block-Unassigned slot"]',
     ) as HTMLElement;
     const button = fixture.nativeElement.querySelector(
       '[data-testid="calendar-day-convert-template-92"]',
