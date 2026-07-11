@@ -171,7 +171,9 @@
                     class="pt-0.5"
                     [checked]="isSelected(cycle.id)"
                     [attr.aria-label]="'Select ' + cycle.title"
-                    (click)="onCheckboxClick($event, cycle)"
+                    (change)="onCheckboxChange(cycle, $event.checked)"
+                    (click)="$event.stopPropagation()"
+                    (keydown)="$event.stopPropagation()"
                   />
                 }
                 <div

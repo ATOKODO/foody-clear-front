@@ -137,16 +137,6 @@ export class TagList implements OnInit, OnChanges {
     this.selectedMany.emit(this.getSelectedItems());
   }
 
-  onCheckboxClick(event: MouseEvent, item: TagListItem): void {
-    event.stopPropagation();
-
-    if (!this.isMultiSelectMode) {
-      return;
-    }
-
-    this.onCheckboxChange(item, !this.isSelected(item.id));
-  }
-
   onAddClick(): void {
     if (!this.isManageMode) {
       return;

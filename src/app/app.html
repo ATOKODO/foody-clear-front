@@ -1,10 +1,11 @@
 <div class="app-shell">
   @if (mobileNavigationOpen) {
-    <div
+    <button
+      type="button"
       class="app-shell__backdrop"
       (click)="closeMobileNavigation()"
-      aria-hidden="true"
-    ></div>
+      aria-label="Close navigation"
+    ></button>
   }
 
   <aside

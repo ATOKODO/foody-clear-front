@@ -45,10 +45,12 @@
       <table mat-table [dataSource]="resolvedSlots" class="slot-table w-full">
         <ng-container matColumnDef="select">
           <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
-          <td mat-cell *matCellDef="let item" class="w-14" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+          <td mat-cell *matCellDef="let item" class="w-14" tabindex="-1">
             <mat-checkbox [checked]="isSelected(item.id)"
               [attr.aria-label]="'Select ' + item.title"
-              (click)="onCheckboxClick($event, item)" />
+              (change)="onCheckboxChange(item, $event.checked)"
+              (click)="$event.stopPropagation()"
+              (keydown)="$event.stopPropagation()" />
           </td>
         </ng-container>
 
@@ -83,14 +85,14 @@
 
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
-          <td mat-cell *matCellDef="let item" class="sl-actions-cell" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+          <td mat-cell *matCellDef="let item" class="sl-actions-cell" tabindex="-1">
             <div class="sl-actions">
               <button
                 mat-stroked-button
                 type="button"
                 class="sl-action sl-action--edit"
                 [attr.data-testid]="'slot-edit-' + item.id"
-                (click)="onEditClick(item)">
+                (click)="$event.stopPropagation(); onEditClick(item)">
                 Edit
               </button>
               <button
@@ -98,7 +100,7 @@
                 type="button"
                 class="sl-action sl-action--delete"
                 [attr.data-testid]="'slot-delete-' + item.id"
-                (click)="onDeleteClick(item)">
+                (click)="$event.stopPropagation(); onDeleteClick(item)">
                 Remove
               </button>
             </div>
