@@ -724,6 +724,100 @@ describe('CycleFeature', () => {
     expect(element.textContent).toContain('Cycle async');
   });
 
+  it('should cover cycle hub actions, CRUD callbacks and load errors', () => {
+    component.baseUrl = 'http://localhost:3000';
+    component.onBaseUrlChange();
+    flushCycleRequests();
+    expect(component.baseUrl).toBe('http://localhost:3000');
+
+    component.activeView = 'daySet';
+    fixture.detectChanges();
+    flushDaySetRequests();
+    component.onRefreshActiveView();
+    component.onAddActiveView();
+    flushDaySetRequests();
+    component.activeView = 'slot';
+    fixture.detectChanges();
+    flushSlotRequests();
+    component.onRefreshActiveView();
+    component.onAddActiveView();
+    flushSlotRequests();
+    component.activeView = 'cycle';
+    fixture.detectChanges();
+    component.onRefreshActiveView();
+    flushCycleRequests();
+
+    component.cycles = [{
+      id: 7,
+      title: 'Cycle',
+      color: 'blue',
+      durationDays: 7,
+      durationCount: 1,
+      durationType: 'semaine',
+      nutritionValues: [nutritionValue('PROTEIN', 100)],
+      daySetOrder: [0, 0, 0, 0, 0, 0, 0],
+    }];
+    component.onAddRequested();
+    expect(component.formMode).toBe('add');
+    const formValue = {
+      titre: 'Cycle',
+      couleur: 'blue',
+      nutritionValues: [nutritionValue('PROTEIN', 100)],
+      nombre: 1,
+      typeDuree: 'semaine' as const,
+      durationDays: 7,
+      slotIds: [],
+      defaultTemplateId: null,
+      daySetIds: [],
+      daySetOrder: [0, 0, 0, 0, 0, 0, 0],
+    };
+    component.onFormSubmitted({ mode: 'add', value: formValue });
+    httpController.expectOne('http://localhost:3000/cycle').flush({ id: 8, title: 'Cycle' });
+    httpController.expectOne('http://localhost:3000/cycle').flush([]);
+    expect(component.saving).toBeFalse();
+
+    component.onFormSubmitted({ mode: 'add', value: formValue });
+    httpController.expectOne('http://localhost:3000/cycle').flush({ error: 'create' }, { status: 500, statusText: 'create' });
+    expect(component.lastError).toBeTruthy();
+
+    component.editingCycleId = 7;
+    component.onFormSubmitted({ mode: 'edit', value: formValue });
+    const updateRequest = httpController.expectOne('http://localhost:3000/cycle/7');
+    updateRequest.flush({ id: 7, title: 'Updated' });
+    httpController.expectOne('http://localhost:3000/cycle').flush([]);
+    expect(component.saving).toBeFalse();
+
+    component.editingCycleId = 7;
+    component.onFormSubmitted({ mode: 'edit', value: formValue });
+    httpController.expectOne('http://localhost:3000/cycle/7').flush({ error: 'update' }, { status: 500, statusText: 'update' });
+    expect(component.lastError).toBeTruthy();
+    component.confirmImpactUpdate();
+    component.cancelImpactUpdate();
+    component.onCancelForm();
+
+    component.editingCycleId = 7;
+    component.onDeleteRequested({ id: 7 } as never);
+    httpController.expectOne('http://localhost:3000/cycle/7').flush(null);
+    httpController.expectOne('http://localhost:3000/cycle').flush([]);
+    expect(component.saving).toBeFalse();
+    component.onDeleteRequested({ id: 7 } as never);
+    httpController.expectOne('http://localhost:3000/cycle/7').flush({ error: 'delete' }, { status: 500, statusText: 'delete' });
+    expect(component.lastError).toBeTruthy();
+
+    component.onLinkedDataChanged();
+    httpController.expectOne('http://localhost:3000/day-set').flush([], { status: 500, statusText: 'day-set' });
+    httpController.expectOne('http://localhost:3000/slot').flush([], { status: 500, statusText: 'slot' });
+    httpController.expectOne('http://localhost:3000/template').flush([], { status: 500, statusText: 'template' });
+    httpController.expectOne('http://localhost:3000/cycle').flush([], { status: 500, statusText: 'cycle' });
+    component.onBaseUrlChange();
+    httpController.expectOne('http://localhost:3000/meta/nutrition-keys').flush([], { status: 500, statusText: 'meta' });
+    httpController.expectOne('http://localhost:3000/day-set').flush([], { status: 500, statusText: 'day-set' });
+    httpController.expectOne('http://localhost:3000/slot').flush([], { status: 500, statusText: 'slot' });
+    httpController.expectOne('http://localhost:3000/template').flush([], { status: 500, statusText: 'template' });
+    httpController.expectOne('http://localhost:3000/cycle').flush([], { status: 500, statusText: 'cycle' });
+    expect(component.lastMetaError).toBeTruthy();
+  });
+
   function clickToggle(index: number): void {
     const toggleButtons = fixture.nativeElement.querySelectorAll(
       'mat-button-toggle button',

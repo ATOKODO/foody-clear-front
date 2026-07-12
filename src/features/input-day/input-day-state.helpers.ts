@@ -1,5 +1,5 @@
 import type { InventoryProduct } from '../../interfaces/inventory.interface';
-import type { InputDayResponse, ProductQuantityInputUnit } from '../../interfaces/input-day.interface';
+import type { InputDayResponse } from '../../interfaces/input-day.interface';
 import type { InputDayAvailableSlot } from './input-day.models';
 import {
   formatInputDayDateLocal,
@@ -14,7 +14,7 @@ export function resolveInputDayDateLocal(value: Date | string | null): string | 
 }
 
 export function resolveInputDayTimezone(value: unknown, fallbackTimezone: string): string {
-  const timezone = String(value ?? fallbackTimezone).trim();
+  const timezone = JSON.stringify(value ?? fallbackTimezone).trim();
   return timezone === '' ? fallbackTimezone : timezone;
 }
 

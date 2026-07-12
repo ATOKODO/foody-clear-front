@@ -187,9 +187,91 @@ describe('ProductForm', () => {
     ]);
   });
 
+  it('should cover product validation, nutrition unit changes and normalizers', () => {
+    const emitted: unknown[] = [];
+    component.submitted.subscribe((payload) => emitted.push(payload));
+    component.onSubmit();
+    expect(emitted).toEqual([]);
+
+    component.form.patchValue({
+      name: 'Product',
+      unitType: 'Paquet',
+      quantityPerUnit: 1,
+      quantityUnit: 'g',
+      portionCount: '2',
+      portionUnit: '',
+    });
+    component.onSubmit();
+    expect(component.form.controls.portionUnit.hasError('requiredWithPortion')).toBeTrue();
+    component.form.patchValue({ portionUnit: 'portion', price: '2', priceUnit: '' });
+    component.onSubmit();
+    expect(component.form.controls.price.hasError('requiredWithPrice')).toBeTrue();
+    component.form.patchValue({ price: '', priceUnit: 'kg' });
+    component.onSubmit();
+    expect(component.form.controls.priceUnit.hasError('requiredWithPrice')).toBeTrue();
+    component.form.patchValue({ price: '2', priceUnit: 'kg', priceEffectiveFrom: ' 2026-01-01 ', barcode: ' ', url: ' https://example.test ', memo: ' note ' });
+    component.nutritionValues = [
+      { nutritionKey: ' protein ', amount: -2, unit: 'bad', reference: 'PER_100ML' },
+      { nutritionKey: ' ', amount: Number.NaN, unit: '', reference: 'PER_100G' },
+    ];
+    component.onSubmit();
+    expect(emitted.length).toBe(1);
+
+    component.addNutritionValue();
+    component.onNutritionKeyChange(999);
+    component.nutritionValues[0].nutritionKey = 'UNKNOWN';
+    component.onNutritionKeyChange(0);
+    expect(component.getUnitsForKey('UNKNOWN').length).toBeGreaterThan(0);
+    component.nutritionValues[0].nutritionKey = '';
+    component.onNutritionKeyChange(0);
+    component.removeNutritionValue(0);
+    component.removeNutritionValue(99);
+
+    const call = privateMethod(component);
+    expect(call('normalizeIntegerArray', [1, '2', 2, 0, 'bad'])).toEqual([1, 2]);
+    expect(call('normalizeIntegerArray', null)).toEqual([]);
+    expect(call('normalizeNullableString', '  value ')).toBe('value');
+    expect(call('normalizeNullableString', 1)).toBeNull();
+    expect(call('normalizeNullableString', ' ')).toBeNull();
+    expect(call('normalizeNullableInteger', 2)).toBe(2);
+    expect(call('normalizeNullableInteger', ' 3 ')).toBe(3);
+    expect(call('normalizeNullableInteger', 0)).toBeNull();
+    expect(call('normalizeNullableInteger', true)).toBeNull();
+    expect(call('normalizeNullableNumber', 2)).toBe(2);
+    expect(call('normalizeNullableNumber', '2.5')).toBe(2.5);
+    expect(call('normalizeNullableNumber', Number.NaN)).toBeNull();
+    expect(call('normalizeNullableNumber', true)).toBeNull();
+    expect(call('normalizeNullablePositiveNumber', 0)).toBeNull();
+    expect(call('normalizeNullablePositiveNumber', '2')).toBe(2);
+    expect(call('normalizeNullablePriceUnit', ' KG ')).toBe('kg');
+    expect(call('normalizeNullablePriceUnit', null)).toBeNull();
+    expect(call('normalizeQuantityUnit', ' ML ')).toBe('ml');
+    expect(call('normalizeQuantityUnit', null)).toBeNull();
+    expect(call('normalizeNullablePortionUnit', ' PORTION ')).toBe('portion');
+    expect(call('normalizeNullablePortionUnit', null)).toBeNull();
+    fixture.componentRef.setInput('nutritionKeys', [
+      { key: 'PROTEIN', value: 'PROTEIN', label: 'Protein', allowedUnits: ['G'] },
+    ]);
+    fixture.detectChanges();
+    expect(call('pickDefaultUnit', 'PROTEIN', 'G')).toBe('G');
+    expect(call('pickDefaultUnit', 'PROTEIN', 'BAD')).toBe('G');
+    expect(call('pickDefaultUnit', 'UNKNOWN', 'custom')).toBe('custom');
+    expect(call('getAllowedUnits', '')).toEqual([]);
+    expect(call('getAllowedUnits', 'UNKNOWN')).toEqual([]);
+    expect(call('formatOptionalNumber', null)).toBe('');
+    expect(call('formatOptionalNumber', 2)).toBe('2');
+  });
+
 });
 
 function closeSelectPanel(): void {
   const backdrop = document.body.querySelector<HTMLElement>('.cdk-overlay-backdrop');
   backdrop?.click();
+}
+
+function privateMethod(
+  component: ProductForm,
+): (name: string, ...args: unknown[]) => unknown {
+  const methods = component as unknown as Record<string, (...args: unknown[]) => unknown>;
+  return (name, ...args) => methods[name](...args);
 }

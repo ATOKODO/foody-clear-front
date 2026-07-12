@@ -13,6 +13,7 @@ import { ProductService } from '../../services/product-service';
 import { InventoryService } from '../../services/inventory-service';
 import { TemplateService } from '../../services/template-service';
 import { SlotService } from '../../services/slot-service';
+import { ExternalMealEntryDialogService } from '../../services/external-meal-entry-dialog-service';
 import { InputDayResponse, InputMonthResponse } from '../../interfaces/input-day.interface';
 import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
 import { InputDayFeature } from '../input-day/input-day.feature';
@@ -197,6 +198,10 @@ describe('PlanningFeature', () => {
     findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
   };
 
+  const externalMealEntryDialogMock = {
+    openCreate: jasmine.createSpy('openCreate').and.returnValue(of(null)),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PlanningFeature],
@@ -212,6 +217,7 @@ describe('PlanningFeature', () => {
         { provide: ProductService, useValue: productServiceMock },
         { provide: InventoryService, useValue: inventoryServiceMock },
         { provide: TemplateService, useValue: templateServiceMock },
+        { provide: ExternalMealEntryDialogService, useValue: externalMealEntryDialogMock },
       ],
     })
       .overrideComponent(PlanningFeature, {
@@ -866,6 +872,99 @@ describe('PlanningFeature', () => {
     expect(component.lastErrorText).toContain('failure');
     callPrivate('invalidatePlanningDataCache');
     expect(calendar.currentView).toBeDefined();
+  });
+
+  it('should cover planning view transitions, successful loads and modal actions', () => {
+    const call = privateMethod(component);
+    const viewEvent = {
+      view: 'month' as const,
+      anchorDateLocal: '2026-02-17',
+      fromDateLocal: '2026-02-01',
+      toDateLocal: '2026-02-28',
+    };
+    const dayEvent = { ...viewEvent, view: 'day' as const, fromDateLocal: '2026-02-17', toDateLocal: '2026-02-17' };
+    const weekEvent = { ...viewEvent, view: 'week' as const, fromDateLocal: '2026-02-16', toDateLocal: '2026-02-22' };
+
+    component.onVisibilityChange();
+    component.onWindowFocus();
+    component.onCalendarViewChanged(viewEvent);
+    component.onCalendarViewChanged(dayEvent);
+    component.onCalendarViewChanged(weekEvent);
+    component.onCalendarViewChanged({ ...viewEvent, view: 'year' as const });
+    component.onCalendarHourClick({ view: 'day', currentDateIso: '2026-02-17T00:00:00Z', dateLocal: '2026-02-17', occurredAt: '2026-02-17T08:00:00Z', hour: { hour: 8, label: '08:00' }, sourceAssignment: null });
+    component.onCalendarHourClick({ view: 'week', currentDateIso: '2026-02-17T00:00:00Z', dateLocal: '2026-02-17', occurredAt: null, hour: { hour: 8, label: '08:00' }, sourceAssignment: null });
+    component.onCalendarMonthClick({ view: 'month', currentDateIso: '2026-02-17T00:00:00Z', dateLocal: '2026-02-17', month: {} as never, sourceAssignments: [{ id: 1 } as never] });
+    component.onCalendarItemClick({ dateLocal: '2026-02-17', item: { id: 8 } as never, view: 'day', currentDateIso: '2026-02-17T00:00:00Z' });
+    component.onCalendarManageItems({ dateLocal: '2026-02-17', view: 'day', currentDateIso: '2026-02-17T00:00:00Z', sourceAssignment: null });
+    component.onCalendarManageAssignment({ dateLocal: '2026-02-17', view: 'day', currentDateIso: '2026-02-17T00:00:00Z', sourceAssignment: null });
+    component.onCalendarOpenDayView({ dateLocal: '2026-02-17' });
+    component.openExternalEntryFromActions();
+    component.openExternalEntryFromItems();
+    expect(externalMealEntryDialogMock.openCreate).toHaveBeenCalled();
+
+    component.cycles = [{ id: 11, title: 'Cycle', color: 'blue', durationDays: 7, durationCount: 1, durationType: 'semaine', nutritionValues: [] } as never];
+    component.modalSelectedCycleId = 11;
+    component.modalStartDateLocal = '2026-02-17';
+    component.editingAssignment = null;
+    cycleAssignmentServiceMock.create.and.returnValue(of({ id: 12 }));
+    component.saveAssignmentFromModal();
+    expect(component.savingAssignment).toBeFalse();
+    component.editingAssignment = { id: 12, cycle: component.cycles[0] as never, startDateLocal: '2026-02-17', endDateLocal: '2026-02-23' };
+    cycleAssignmentServiceMock.update.and.returnValue(of({ id: 12 }));
+    component.saveAssignmentFromModal();
+    expect(component.savingAssignment).toBeFalse();
+    cycleAssignmentServiceMock.remove.and.returnValue(of(void 0));
+    component.removeAssignmentFromModal();
+    expect(component.savingAssignment).toBeFalse();
+
+    cycleServiceMock.findAll.and.returnValue(of(component.cycles as never));
+    slotServiceMock.findAll.and.returnValue(of([{ id: 1, key: 'breakfast', title: 'Breakfast', sortOrder: 1 }] as never));
+    cycleAssignmentServiceMock.findInRange.and.returnValue(of([]));
+    inputDayServiceMock.getInputDay.and.returnValue(of(dayResponse));
+    inputDayServiceMock.getInputMonth.and.returnValue(of({ startDateLocal: '2026-02-01', endDateLocal: '2026-02-28', timezone: 'UTC', days: [dayResponse] }));
+    inputDayServiceMock.getInputWeek.and.returnValue(of({ startDateLocal: '2026-02-16', endDateLocal: '2026-02-22', timezone: 'UTC', days: [dayResponse] }));
+    call('loadSlots', true);
+    call('loadCycles', true);
+    call('loadAssignmentsInRange', '2026-02-16', '2026-02-22', true);
+    call('loadInputDay', '2026-02-17', true);
+    call('loadInputMonth', '2026-02-01', true);
+    call('loadInputWeek', '2026-02-16', true);
+    component.currentCalendarView = 'day';
+    component.currentAnchorDateLocal = '2026-02-17';
+    component.currentRangeFromLocal = '2026-02-17';
+    component.currentRangeToLocal = '2026-02-17';
+    call('reloadInputDataForCurrentView', true);
+    component.currentCalendarView = 'month';
+    component.currentRangeFromLocal = '2026-02-01';
+    call('reloadInputDataForCurrentView', true);
+    component.currentCalendarView = 'week';
+    component.currentRangeFromLocal = '2026-02-16';
+    call('reloadInputDataForCurrentView', true);
+    component.currentCalendarView = 'year';
+    call('reloadInputDataForCurrentView', true);
+    call('reloadAssignmentsForCurrentRange', true);
+    call('loadSlots', false);
+    call('loadCycles', false);
+    call('loadAssignmentsInRange', 'invalid', '2026-02-22', false);
+    call('loadAssignmentsInRange', '2026-02-16', '2026-02-22', false);
+    call('reloadAssignmentsForCurrentRange', false);
+
+    component.currentCalendarView = 'month';
+    component.currentAnchorDateLocal = '2026-02-01';
+    component.currentRangeFromLocal = '2026-02-01';
+    component.currentRangeToLocal = '2026-02-28';
+    call('deferInitialInputDataForView', viewEvent);
+    call('loadInputDataForView', dayEvent);
+    call('loadInputDataForView', viewEvent);
+    call('loadInputDataForView', weekEvent);
+    call('loadInputDataForView', { ...viewEvent, view: 'year' as const });
+    expect(call('prepareInputDataRequest', 'day', 'invalid', true)).toBeNull();
+    call('clearInputDayState');
+    call('invalidatePlanningDataCache');
+    call('resetAssignmentModalState');
+    call('resetModalState');
+    call('syncCalendarHeaderState');
+    call('applyRouteCalendarState');
   });
 
 });

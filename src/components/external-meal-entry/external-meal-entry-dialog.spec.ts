@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { InputDayService } from '../../services/input-day-service';
 import { ExternalMealEntryDialog, ExternalMealEntryDialogData } from './external-meal-entry-dialog';
 
@@ -36,9 +36,14 @@ describe('ExternalMealEntryDialog', () => {
   };
 
   beforeEach(async () => {
+    dialogData.apiBaseUrl = 'http://localhost:3000';
+    dialogData.dateLocal = '2026-03-25';
+    dialogData.occurredAt = '2026-03-25T12:30:00+01:00';
+    dialogData.timezone = 'Europe/Paris';
     dialogRefMock.close.calls.reset();
     inputDayServiceMock.setBaseUrl.calls.reset();
     inputDayServiceMock.createExternalEntry.calls.reset();
+    inputDayServiceMock.createExternalEntry.and.returnValue(of({}));
 
     await TestBed.configureTestingModule({
       imports: [ExternalMealEntryDialog],
@@ -99,4 +104,105 @@ describe('ExternalMealEntryDialog', () => {
     );
     expect(dialogRefMock.close).toHaveBeenCalledWith({ dateLocal: '2026-03-25' });
   });
+
+  it('should cover validation, errors, cancellation, and slot/date helpers', () => {
+    expect(component.title()).toBe('Add external entry');
+    expect(component.isPaid).toBeTrue();
+    component.saving = true;
+    expect(component.canSubmit).toBeFalse();
+    component.saving = false;
+
+    component.submit();
+    expect(inputDayServiceMock.createExternalEntry).toHaveBeenCalledTimes(0);
+
+    component.form.patchValue({
+      name: 'Invalid time',
+      paymentStatus: 'free',
+      energyKcal: 100,
+      proteins: 10,
+      carbs: 20,
+      lipids: 5,
+      occurredAt: 'invalid',
+    });
+    expect(component.canSubmit).toBeTrue();
+    component.submit();
+    expect(inputDayServiceMock.createExternalEntry).toHaveBeenCalledTimes(0);
+
+    component.form.patchValue({
+      occurredAt: '2026-03-25T12:30',
+      restaurantName: ' Restaurant ',
+      note: ' Note ',
+      slotKey: 'missing',
+    });
+    inputDayServiceMock.createExternalEntry.and.returnValue(
+      throwError(() => new Error('save failed')),
+    );
+    component.submit();
+    expect(component.error).toEqual(jasmine.any(Error));
+    expect(component.saving).toBeFalse();
+
+    component.cancel();
+    expect(dialogRefMock.close).toHaveBeenCalledWith();
+
+    const callPrivate = privateMethod(component);
+    const options = callPrivate('resolveSlotOptions', [
+      {
+        slotId: null,
+        slotKey: '',
+        title: 'Ignored',
+        sortOrder: 3,
+        startTime: null,
+        endTime: null,
+        nutritionValue: null,
+      },
+      {
+        slotId: 4,
+        slotKey: 'dinner',
+        title: 'Dinner',
+        sortOrder: 2,
+        startTime: null,
+        endTime: '20:00',
+        nutritionValue: null,
+      },
+      {
+        slotId: 5,
+        slotKey: 'snack',
+        title: 'Snack',
+        sortOrder: 1,
+        startTime: '16:00',
+        endTime: '16:30',
+        nutritionValue: null,
+      },
+    ]);
+    expect(options).toEqual([
+      jasmine.objectContaining({ slotId: 5, rangeLabel: '16:00-16:30' }),
+      jasmine.objectContaining({ slotId: 4, rangeLabel: 'Sans horaire' }),
+    ]);
+    expect(callPrivate('emptyToNull', '  ')).toBeNull();
+    expect(callPrivate('emptyToNull', ' text ')).toBe('text');
+    expect(callPrivate('toOccurredAtIso', '2026-03-25', '2026-03-26T08:15')).toContain(
+      '2026-03-25',
+    );
+    expect(callPrivate('toOccurredAtIso', '2026-03-25', 'invalid')).toBeNull();
+
+    const mutableData = component.data as ExternalMealEntryDialogData & {
+      dateLocal: string;
+      occurredAt: string;
+      timezone: string;
+    };
+    mutableData.dateLocal = 'invalid';
+    mutableData.occurredAt = 'invalid';
+    mutableData.timezone = 'invalid/timezone';
+    expect(callPrivate('resolveInitialDateLocal')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    mutableData.dateLocal = '2026-01-01';
+    expect(callPrivate('resolveInitialOccurredAt')).toContain('T12:00');
+    expect(callPrivate('resolveTimezone')).toBe('UTC');
+  });
 });
+
+function privateMethod(
+  component: ExternalMealEntryDialog,
+): (name: string, ...args: unknown[]) => any {
+  const methods = component as unknown as Record<string, (...args: unknown[]) => unknown>;
+  return (name, ...args) => methods[name](...args);
+}

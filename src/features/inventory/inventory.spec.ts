@@ -586,4 +586,71 @@ describe('Inventory', () => {
     component.onMenuClicked();
     expect(component.lastResponse).toEqual(jasmine.objectContaining({ info: jasmine.any(String) }));
   });
+
+  it('should cover successful inventory updates, selection guards and state resets', () => {
+    component.baseUrl = 'http://custom';
+    component.onBaseUrlChange();
+    expect(component.baseUrl).toBe('http://custom');
+    expect(component.selectedInventory).not.toBeNull();
+    expect(component.selectedInventoryRecord).not.toBeNull();
+    expect(component.addableProductListItems).toEqual(component.productListItems);
+    expect(component.createSelectedProductIds).toEqual([]);
+    expect(component.addSelectedProductIds).toEqual([]);
+    expect(component.isAddProductsModalOpen).toBeFalse();
+
+    component.selectInventory(4);
+    component.openSelectedInventoryEditor();
+    expect(component.formMode).toBe('edit');
+    inventoryServiceMock.update.and.returnValue(of({ id: 4, name: 'Updated stock' }));
+    component.onFormSubmitted({ mode: 'edit', value: { name: ' Updated stock ' } });
+    expect(component.saving).toBeFalse();
+
+    component.selectedInventoryId = 4;
+    inventoryServiceMock.remove.and.returnValue(of(void 0));
+    component.deleteSelectedInventory();
+    expect(component.saving).toBeFalse();
+    component.onDeleteRequested({ id: 'invalid' } as never);
+    component.selectInventory(0);
+
+    component.onAddRequested();
+    component.onCreateProductsSelected([component.productListItems[0]]);
+    component.createSelectedProductRows[0].qty = 1;
+    component.createSelectedProductRows[0].qtyUnit = 'unit';
+    component.onCreateProductQtyChange();
+    inventoryServiceMock.create.and.returnValue(of({ id: 9 }));
+    component.onFormSubmitted({ mode: 'add', value: { name: 'New stock' } });
+    expect(component.formVisible).toBeFalse();
+
+    component.onEditRequested({ id: '4', name: 'Stock principal', productCount: 1 });
+    component.openAddProductsModal();
+    component.onProductsToAddSelected([component.productListItems[0]]);
+    component.addSelectedProductRows[0].qty = 1;
+    component.addSelectedProductRows[0].qtyUnit = 'unit';
+    expect(component.canAddSelectedProducts).toBeTrue();
+    inventoryServiceMock.addProducts.and.returnValue(of({ added: true }));
+    component.onAddSelectedProducts();
+    expect(component.isAddProductsModalOpen).toBeFalse();
+
+    component.manageProductRows = [{ ...component.manageProductRows[0], qty: 1, qtyUnit: 'unit' }];
+    expect(component.canSaveManagedProducts).toBeTrue();
+    inventoryServiceMock.reconcileProducts.and.returnValue(of({ reconciled: true }));
+    component.saveManagedProducts();
+    expect(component.saving).toBeFalse();
+    component.emptyInventory();
+    expect(component.saving).toBeFalse();
+
+    component.saving = true;
+    component.closeActiveModal();
+    component.closeFormModal();
+    component.saving = false;
+    component.onEscapeKey();
+    component.onCancelForm();
+    component.onCreateProductQtyChange();
+    component.onAddProductQtyChange();
+    component.onManagedProductQtyChange();
+    component.removeCreateSelectedProduct(1);
+    component.removeAddSelectedProduct(1);
+    component.removeManagedProduct(1);
+    expect(component.trackBySelectedProductRow(0, { productId: 4 } as never)).toBe(4);
+  });
 });

@@ -181,6 +181,70 @@ describe('ShoppingListStore', () => {
     store.renameSelectedList();
     expect(store.lastError).toEqual(jasmine.any(Error));
   });
+
+  it('should cover mutation error callbacks and nullable selection guards', () => {
+    store.selectList(1);
+    store.draftItemProductId = 2;
+    store.draftItemQty = 1;
+    shoppingListServiceMock.createItem.and.returnValue(throwError(() => new Error('item')));
+    store.addItemToSelectedList();
+    expect(store.lastError).toEqual(jasmine.any(Error));
+    shoppingListServiceMock.updateItem.and.returnValue(throwError(() => new Error('save item')));
+    store.saveItem(store.selectedList!.items[0]);
+    expect(store.lastError).toEqual(jasmine.any(Error));
+    shoppingListServiceMock.removeItem.and.returnValue(throwError(() => new Error('remove item')));
+    store.removeItem(101);
+    expect(store.lastError).toEqual(jasmine.any(Error));
+    shoppingListServiceMock.checkAll.and.returnValue(throwError(() => new Error('check')));
+    store.setAllChecked(false);
+    expect(store.lastError).toEqual(jasmine.any(Error));
+    store.selectedInventoryId = 7;
+    shoppingListServiceMock.convertChecked.and.returnValue(throwError(() => new Error('convert')));
+    store.convertChecked();
+    expect(store.lastError).toEqual(jasmine.any(Error));
+
+    shoppingListServiceMock.checkAll.and.returnValue(of(createList()));
+    shoppingListServiceMock.convertChecked.and.returnValue(throwError(() => new Error('convert all')));
+    store.convertAll();
+    expect(store.lastError).toEqual(jasmine.any(Error));
+    shoppingListServiceMock.checkAll.and.returnValue(throwError(() => new Error('check all')));
+    store.convertAll();
+    expect(store.lastError).toEqual(jasmine.any(Error));
+
+    store.templateDraftName = 'Saved';
+    shoppingListServiceMock.saveTemplate.and.returnValue(throwError(() => new Error('template')));
+    store.saveAsTemplate();
+    expect(store.lastError).toEqual(jasmine.any(Error));
+    store.selectTemplate(5);
+    shoppingListServiceMock.updateTemplate.and.returnValue(throwError(() => new Error('rename template')));
+    store.renameSelectedTemplate();
+    expect(store.lastError).toEqual(jasmine.any(Error));
+    shoppingListServiceMock.removeTemplate.and.returnValue(throwError(() => new Error('delete template')));
+    store.deleteSelectedTemplate();
+    expect(store.lastError).toEqual(jasmine.any(Error));
+    shoppingListServiceMock.createFromTemplate.and.returnValue(throwError(() => new Error('from template')));
+    store.templateCreateListName = '';
+    store.createListFromTemplate();
+    expect(store.lastError).toEqual(jasmine.any(Error));
+
+    store.selectList(999);
+    store.selectTemplate(999);
+    store.onProductPicked({ id: 'bad', name: 'Invalid' } as never);
+    store.openSelectedListEditor(999);
+    store.openSelectedTemplateEditor(999);
+    store.closeProductPicker();
+    store.onEscapeKey();
+    setSaving(store, true);
+    store.openCreateListEditor();
+    store.openSelectedListEditor();
+    store.openProductPicker();
+    store.closeListEditor();
+    store.closeTemplateEditor();
+    store.deleteSelectedList();
+    store.createListFromTemplate();
+    setSaving(store, false);
+    expect(store.loading).toBeFalse();
+  });
 });
 
 function createMocks() {

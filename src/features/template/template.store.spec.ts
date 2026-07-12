@@ -13,18 +13,26 @@ import type { TemplateItemDraft } from '../../components/template/template-form/
 describe('TemplateFeatureStore', () => {
   let store: TemplateFeatureStore;
   let templateServiceMock: ReturnType<typeof createMocks>['template'];
+  let productServiceMock: ReturnType<typeof createMocks>['product'];
+  let daySetServiceMock: ReturnType<typeof createMocks>['daySet'];
+  let slotServiceMock: ReturnType<typeof createMocks>['slot'];
+  let mealPrepServiceMock: ReturnType<typeof createMocks>['mealPrep'];
 
   beforeEach(() => {
     const mocks = createMocks();
     templateServiceMock = mocks.template;
+    productServiceMock = mocks.product;
+    daySetServiceMock = mocks.daySet;
+    slotServiceMock = mocks.slot;
+    mealPrepServiceMock = mocks.mealPrep;
     TestBed.configureTestingModule({
       providers: [
         TemplateFeatureStore,
         { provide: TemplateService, useValue: mocks.template },
-        { provide: ProductService, useValue: mocks.product },
-        { provide: DaySetService, useValue: mocks.daySet },
-        { provide: SlotService, useValue: mocks.slot },
-        { provide: MealPrepService, useValue: mocks.mealPrep },
+        { provide: ProductService, useValue: productServiceMock },
+        { provide: DaySetService, useValue: daySetServiceMock },
+        { provide: SlotService, useValue: slotServiceMock },
+        { provide: MealPrepService, useValue: mealPrepServiceMock },
       ],
     });
     store = TestBed.inject(TemplateFeatureStore);
@@ -132,7 +140,71 @@ describe('TemplateFeatureStore', () => {
     const mocks = createMocks();
     void mocks;
   });
+
+  it('should cover successful lookups and individual workspace mutation failures', () => {
+    const call = privateMethod(store);
+    const ready = jasmine.createSpy('ready');
+    templateServiceMock.findOne.and.returnValue(of(createTemplate(2, 'Dinner loaded')));
+    store.loadTemplateForEdit(2, ready);
+    expect(ready).toHaveBeenCalledWith(2);
+
+    templateServiceMock.create.and.returnValue(throwError(() => new Error('create template')));
+    store.saveTemplate({ mode: 'add', title: 'Error' }, null, ready);
+    expect(store.lastError).toEqual(jasmine.any(Error));
+    templateServiceMock.update.and.returnValue(throwError(() => new Error('update template')));
+    store.saveTemplate({ mode: 'edit', title: 'Error' }, 1, ready);
+    expect(store.lastError).toEqual(jasmine.any(Error));
+    templateServiceMock.remove.and.returnValue(throwError(() => new Error('delete template')));
+    store.deleteTemplate(1, null, ready);
+    expect(store.lastError).toEqual(jasmine.any(Error));
+
+    const draft: TemplateItemDraft = {
+      id: 8,
+      itemType: 'product',
+      productId: 2,
+      dishId: null,
+      mealId: null,
+      qty: 1,
+      qtyUnit: 'unit',
+      slotId: null,
+      slotKey: 'breakfast',
+      preferredTime: '08:00',
+    };
+    templateServiceMock.updateItem.and.returnValue(throwError(() => new Error('update item')));
+    store.saveItem(1, draft, ready);
+    expect(store.itemError).toContain('Impossible');
+    templateServiceMock.removeItem.and.returnValue(of(createTemplate(1)));
+    store.deleteItem(1, 8);
+    expect(store.savingItem).toBeFalse();
+    templateServiceMock.removeItem.and.returnValue(throwError(() => new Error('delete item')));
+    store.deleteItem(1, 8);
+    expect(store.itemError).toContain('Impossible');
+
+    productServiceMock.findAll.and.returnValue(throwError(() => new Error('products')));
+    daySetServiceMock.findAll.and.returnValue(throwError(() => new Error('day sets')));
+    slotServiceMock.findAll.and.returnValue(throwError(() => new Error('slots')));
+    mealPrepServiceMock.findAllDishes.and.returnValue(throwError(() => new Error('dishes')));
+    mealPrepServiceMock.findAllMeals.and.returnValue(throwError(() => new Error('meals')));
+    templateServiceMock.findAll.and.returnValue(throwError(() => new Error('templates')));
+    call('loadProducts');
+    call('loadDaySets');
+    call('loadSlots');
+    call('loadMealPrepOptions');
+    call('loadTemplates');
+    call('loadSelectedTemplate');
+    expect(store.lastError).toEqual(jasmine.any(Error));
+    store.selectedTemplateId = null;
+    call('loadSelectedTemplate');
+    expect(store.selectedTemplate).toBeNull();
+  });
 });
+
+function privateMethod(
+  store: TemplateFeatureStore,
+): (name: string, ...args: unknown[]) => unknown {
+  const methods = store as unknown as Record<string, (...args: unknown[]) => unknown>;
+  return (name, ...args) => methods[name](...args);
+}
 
 function createMocks() {
   const template = createTemplate(1, 'Breakfast');

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { Product } from './product';
 import { CategoryService } from '../../services/category-service';
@@ -414,6 +414,122 @@ describe('Product', () => {
       'A',
       'z',
     ]);
+  });
+
+  it('should cover product hub actions, CRUD callbacks and error branches', () => {
+    const error = new Error('product failure');
+    const value = {
+      name: 'Product',
+      barcode: null,
+      categoryId: null,
+      tagIds: [],
+      genericProductId: null,
+      unitType: 'Paquet',
+      quantityPerUnit: 1,
+      quantityUnit: 'g',
+      portionCount: null,
+      portionUnit: null,
+      portionQuantityNormalized: null,
+      price: null,
+      priceUnit: null,
+      priceEffectiveFrom: null,
+      url: null,
+      memo: null,
+      nutritionValues: [],
+    } as any;
+
+    component.onBaseUrlChange();
+    component.activeView = 'product';
+    component.loading = true;
+    expect(component.activeViewBusy).toBeTrue();
+    component.loading = false;
+    component.onRefreshActiveView();
+
+    component.activeView = 'category';
+    fixture.detectChanges();
+    void component.activeViewBusy;
+    component.onRefreshActiveView();
+    component.onAddActiveView();
+    component.activeView = 'genericProduct';
+    fixture.detectChanges();
+    void component.activeViewBusy;
+    component.onRefreshActiveView();
+    component.onAddActiveView();
+    expect(component.genericProductCreateRequestId).toBe(1);
+    component.activeView = 'tag';
+    fixture.detectChanges();
+    void component.activeViewBusy;
+    component.onRefreshActiveView();
+    component.onAddActiveView();
+    expect(component.tagCreateRequestId).toBe(1);
+
+    component.activeView = 'product';
+    component.onAddRequested();
+    expect(component.formVisible).toBeTrue();
+    component.onCancelForm();
+    component.products = [buildProduct({ id: 8, name: 'Edit me' })];
+    component.onEditRequested({ id: 'bad' } as any);
+    component.onEditRequested({ id: '99' } as any);
+    component.onEditRequested(component.productListItems()[0]);
+    expect(component.formMode).toBe('edit');
+    component.onCancelForm();
+
+    productServiceMock.remove.and.returnValue(of(void 0));
+    component.editingProductId = 8;
+    component.onDeleteRequested({ id: '8' } as any);
+    expect(component.saving).toBeFalse();
+    productServiceMock.remove.and.returnValue(throwError(() => error));
+    component.onDeleteRequested({ id: '8' } as any);
+    expect(component.lastError).toBe(error);
+    productServiceMock.remove.and.returnValue(of(void 0));
+
+    productServiceMock.create.and.returnValue(of({ id: 9, name: 'Created' }));
+    component.onFormSubmitted({ mode: 'add', value });
+    expect(component.saving).toBeFalse();
+    productServiceMock.create.and.returnValue(throwError(() => error));
+    component.onFormSubmitted({ mode: 'add', value });
+    expect(component.lastError).toBe(error);
+    productServiceMock.create.and.returnValue(of({ id: 9, name: 'Created' }));
+
+    component.products = [buildProduct({ id: 8, name: 'Edit me', tags: [{ id: 1 }] })];
+    component.editingProductId = 8;
+    productServiceMock.update.and.returnValue(of({ id: 8, name: 'Updated' }));
+    component.onFormSubmitted({ mode: 'edit', value: { ...value, tagIds: [2] } });
+    expect(component.saving).toBeFalse();
+    component.editingProductId = 8;
+    productServiceMock.update.and.returnValue(throwError(() => error));
+    component.onFormSubmitted({ mode: 'edit', value });
+    expect(component.lastError).toBe(error);
+    productServiceMock.update.and.returnValue(of({ id: 8, name: 'Updated' }));
+    component.onMenuClicked();
+    expect(component.lastResponse).toEqual(jasmine.objectContaining({ info: jasmine.any(String) }));
+
+    categoryServiceMock.findAll.and.returnValue(throwError(() => error));
+    genericProductServiceMock.findAll.and.returnValue(throwError(() => error));
+    tagServiceMock.findAll.and.returnValue(throwError(() => error));
+    metaServiceMock.getQuantityUnits.and.returnValue(throwError(() => error));
+    metaServiceMock.getNutritionKeys.and.returnValue(throwError(() => error));
+    productServiceMock.findAll.and.returnValue(throwError(() => error));
+    component.onBaseUrlChange();
+    expect(component.categoryOptions).toEqual([]);
+    expect(component.genericProductOptions).toEqual([]);
+    expect(component.tagOptions).toEqual([]);
+    expect(component.lastMetaError).toBe(error);
+    expect(component.lastError).toBe(error);
+
+    const call = privateMethod(component);
+    expect(call('extractProductsFromResponse', { items: [{ id: 1, name: 'One' }, { id: 'bad' }] })).toEqual([{ id: 1, name: 'One' }]);
+    expect(call('extractProductsFromResponse', { data: [] })).toEqual([]);
+    expect(call('extractCategoriesFromResponse', { data: [] })).toEqual([]);
+    expect(call('extractGenericProductsFromResponse', { payload: [] })).toEqual([]);
+    expect(call('extractTagsFromResponse', { results: [] })).toEqual([]);
+    expect(call('readEntityId', { id: 2.5 })).toBe(2.5);
+    expect(call('readEntityId', { id: '2' })).toBeNull();
+    expect(call('normalizeUnitType', null)).toBe('Paquet');
+    expect(call('normalizeQuantityUnit', null)).toBe('g');
+    expect(call('normalizePortionUnit', null)).toBeNull();
+    expect(call('normalizePriceUnit', null)).toBeNull();
+    expect(call('readStringFromCandidates', { first: ' ', second: Number.NaN }, ['first', 'second'])).toBeNull();
   });
 
   function resetSpyCalls(): void {

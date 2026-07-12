@@ -94,4 +94,43 @@ describe('NutritionValues', () => {
     component.update();
     expect(component.lastError).toBe('No field to update.');
   });
+
+  it('should expose the service base URL and handle request errors', () => {
+    component.baseUrl = 'http://api.example.test/';
+    expect(component.baseUrl).toBe('http://api.example.test');
+
+    component.form.patchValue({
+      label: 'Protein',
+      amount: 10,
+      unit: 'g',
+      per: 100,
+      productId: 4,
+      id: 2,
+    });
+
+    component.create();
+    let request = httpMock.expectOne('http://api.example.test/nutrition-value');
+    request.flush('create failed', { status: 500, statusText: 'Server error' });
+    expect(component.lastError).toBeTruthy();
+
+    component.getAll();
+    request = httpMock.expectOne('http://api.example.test/nutrition-value');
+    request.flush('list failed', { status: 500, statusText: 'Server error' });
+    expect(component.lastError).toBeTruthy();
+
+    component.getOne();
+    request = httpMock.expectOne('http://api.example.test/nutrition-value/2');
+    request.flush('read failed', { status: 500, statusText: 'Server error' });
+    expect(component.lastError).toBeTruthy();
+
+    component.update();
+    request = httpMock.expectOne('http://api.example.test/nutrition-value/2');
+    request.flush('update failed', { status: 500, statusText: 'Server error' });
+    expect(component.lastError).toBeTruthy();
+
+    component.delete();
+    request = httpMock.expectOne('http://api.example.test/nutrition-value/2');
+    request.flush('delete failed', { status: 500, statusText: 'Server error' });
+    expect(component.lastError).toBeTruthy();
+  });
 });

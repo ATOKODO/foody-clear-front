@@ -1022,6 +1022,96 @@ describe('InputDayFeature', () => {
     component.clear();
     expect(component.activeEmbeddedSection).toBe('stock');
   });
+
+  it('should cover successful editor actions, input changes and inventory caches', () => {
+    const call = privateMethod(component);
+    component.form.patchValue({ dateLocal: '2026-02-16', timezone: 'UTC' });
+    component.inputDayResponse = dayResponse;
+    component.onSelectedInventoryChange([4]);
+    component.onSelectedInventoryChange([4]);
+    component.onProductsSelected(component.selectableProductListItems.slice(0, 1));
+    component.selectedProductRows[0].qty = 1;
+    component.selectedProductRows[0].qtyUnit = 'unit';
+    inputDayServiceMock.createItems.and.returnValue(of({ created: true }));
+    component.createSelectedItems();
+    expect(component.loading).toBeFalse();
+
+    component.itemEditorForm.patchValue({ itemId: null, dateLocal: '2026-02-16', productId: 1, qty: 1, qtyUnit: 'unit' });
+    inputDayServiceMock.createItem.and.returnValue(of({ id: 32 }));
+    component.submitItemEditor();
+    expect(component.loading).toBeFalse();
+    component.inputDayResponse = dayResponse;
+    component.startEditingItem(31);
+    inputDayServiceMock.updateItem.and.returnValue(of({ id: 31 }));
+    component.submitItemEditor();
+    expect(component.loading).toBeFalse();
+    inputDayServiceMock.removeItem.and.returnValue(of(void 0));
+    component.itemEditorForm.patchValue({ itemId: 31 });
+    component.removeItem();
+    expect(component.loading).toBeFalse();
+
+    component.manualTemplateSelectionId = 9;
+    inputDayServiceMock.setTemplate.and.returnValue(of(dayResponse));
+    component.applyManualTemplateSelection();
+    expect(component.templateActionError).toBeNull();
+    component.clearManualTemplateOverride();
+    expect(component.manualTemplateSelectionId).toBeNull();
+    component.selectedInventoryIds = [4];
+    inputDayServiceMock.convertTemplateItem.and.returnValue(of(dayResponse));
+    component.convertTemplateItem(dayResponse.templateItems![0]);
+    expect(component.isConvertingTemplateItem(dayResponse.templateItems![0])).toBeFalse();
+
+    component.onActiveEmbeddedSectionChange('templates');
+    expect(component.isTemplatesSectionActive).toBeTrue();
+    component.onActiveEmbeddedSectionChange('stock');
+    component.onItemEditorSlotIdChange(11);
+    component.onItemEditorSlotIdChange(null);
+    component.resetItemEditor();
+    component.resetCreateComposer();
+    expect(component.trackBySelectedProductRow(0, { productId: 1 } as never)).toBe(1);
+    expect(component.trackByInputDayItem(0, { id: 31 } as never)).toBe(31);
+    expect(component.trackByTemplateItem(0, { id: 18 } as never)).toBe(18);
+    expect(component.getTargetSourceText('cycle')).toContain('cycle');
+    expect(component.getTemplateTargetSourceText(dayResponse.totalsMacros)).toContain('target');
+    expect(component.getSelectedInventoriesTemplateStock(dayResponse.templateItems![0])?.enoughStock).toBeTrue();
+    expect(component.canConvertTemplateItem(dayResponse.templateItems![0])).toBeTrue();
+
+    component.inventories = [{ id: 4, name: 'Inline', inventoryProducts: [{ id: 1, inventoryId: 4, productId: 1, qtyOnHandInUnits: 1, qtyOnHandNormalized: 1 }] } as never];
+    component.selectedInventoryIds = [4];
+    call('refreshSelectedInventoryProducts');
+    expect(component.selectedInventoryProducts.length).toBeGreaterThan(0);
+    component.selectedInventoryIds = [];
+    call('refreshSelectedInventoryProducts');
+    expect(component.selectedInventoryProducts).toEqual([]);
+    call('ensureSelectedInventoriesStillValid');
+    call('ensureSelectedSlotStillValid');
+    expect(call('findItemById', 31)).toBe(dayResponse.items[0]);
+    expect(call('findItemById', 999)).toBeNull();
+    expect(call('findSlotForItem', dayResponse.items[0])).not.toBeNull();
+    call('refreshAvailableSlots');
+    call('syncManualTemplateSelectionFromResponse');
+    call('refreshProductListItems');
+    call('refreshSelectableProductListItems');
+    expect(call('resolveConfiguredBaseUrl')).toBe('http://localhost:3000');
+    component.baseUrl = ' http://custom ';
+    expect(call('resolveConfiguredBaseUrl')).toBe('http://custom');
+    component.baseUrl = '';
+    expect(call('resolveConfiguredBaseUrl')).toBe('http://localhost:3000');
+    expect(call('shouldEagerLoadProducts')).toBeTrue();
+    call('applyServicesBaseUrl');
+    call('syncPendingEditorContextFromInputs');
+    call('applyInitialDateInput');
+    call('handleInitialEditorContextChange');
+    call('handleInitialDateContextChange');
+    call('loadProductsForCurrentContext');
+    call('applyPendingEditorContext');
+    expect(call('buildItemEditorRequest')).toBeNull();
+    expect(call('buildSelectedItemsRequest')).toBeNull();
+    call('clearSelectedProducts');
+    call('clearSelectedInventoryProducts');
+    component.onBaseUrlChange();
+    expect(component.baseUrl).toBe('http://localhost:3000');
+  });
 });
 
 function privateMethod(

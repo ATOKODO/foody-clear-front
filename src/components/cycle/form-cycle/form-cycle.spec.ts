@@ -243,4 +243,68 @@ describe('FormCycle', () => {
     expect(text).toContain('Cycle target');
     expect(text).not.toContain('Reference');
   });
+
+  it('should cover cycle selection guards, nutrition units and timeline helpers', () => {
+    component.form.patchValue({ titre: 'Cycle', durationDays: 1 });
+    component.daySetTimeline = [2];
+    component.onDaySetsSelected([
+      { id: '2', title: 'Existing' },
+      { id: '3', title: 'Ignored overflow' },
+      { id: 'bad', title: 'Invalid' } as never,
+    ]);
+    expect(component.daySetTimeline).toEqual([2]);
+    component.onDaySetsSelected([]);
+    component.onSlotsSelected([{ id: 'bad', title: 'Bad' } as never, { id: '4', title: 'Slot' }]);
+    expect(component.selectedSlotIds).toEqual([4]);
+    component.applyDurationPreset(component.durationPresets[1]);
+    expect(component.durationDays).toBe(14);
+    component.onDurationDaysInput();
+    component.onDaySetOrderDropped({ previousIndex: 0, currentIndex: 0 } as never);
+    component.daySetTimeline = [0, 2, 0];
+    component.onDaySetOrderDropped({ previousIndex: 0, currentIndex: 1 } as never);
+    expect(component.daySetTimeline[1]).toBe(0);
+    component.removeDaySetFromOrder(2);
+    expect(component.selectedDaySetIds).toEqual([]);
+    expect(component.selectedDaySetIdsAsString).toEqual([]);
+    expect(component.timelineSlots[0].title).toBe('Cycle target');
+    expect(component.trackByTimelineSlot(0, { index: 0, daySetId: 0 } as never)).toBe('0-0');
+    expect(component.couleurSelectionnee).toBe('red');
+    expect(component.canSubmit).toBeTrue();
+
+    fixture.componentRef.setInput('nutritionKeys', [
+      { key: 'PROTEIN', value: 'PROTEIN', label: 'Protein', allowedUnits: ['MG', 'G'] },
+      { key: 'CUSTOM', value: 'CUSTOM', label: 'Custom', allowedUnits: [] },
+    ]);
+    fixture.detectChanges();
+    component.nutritionValues = [
+      { nutritionKey: 'PROTEIN', amount: 1, unit: 'BAD', reference: 'PER_100G' },
+      { nutritionKey: 'CUSTOM', amount: 1, unit: '', reference: 'PER_100ML' },
+    ];
+    component.onNutritionKeyChange(0);
+    component.onNutritionKeyChange(1);
+    component.onNutritionKeyChange(99);
+    expect(component.nutritionValues[0].unit).toBe('MG');
+    expect(component.getUnitsForKey('PROTEIN')).toEqual(['MG', 'G']);
+    expect(component.getUnitsForKey('UNKNOWN')).toContain('G');
+    component.addNutritionValue();
+    component.removeNutritionValue(99);
+    component.removeNutritionValue(0);
+    const call = privateMethod(component);
+    expect(call('normalizeSlotIds', [1, 1, 0, -1, 2.5])).toEqual([1]);
+    expect(call('normalizeTemplateId', 3)).toBe(3);
+    expect(call('normalizeTemplateId', 0)).toBeNull();
+    expect(call('normalizeDaySetIds', [1, 1, 0, 2.5])).toEqual([1]);
+    expect(call('normalizeDaySetTimeline', [2.9, -1], 3)).toEqual([2, 0, 0]);
+    expect(call('serializeDaySetTimeline', 4)).toEqual([0, 0, 0, 0]);
+    expect(call('extractAssignedDaySetIds', [0, 2, 2, -1])).toEqual([2]);
+    expect(call('getDaySetTitle', 99)).toBe('Day Set 99');
+    expect(call('normalizePositiveInteger', '3.8', 1)).toBe(3);
+  });
 });
+
+function privateMethod(
+  component: FormCycle,
+): (name: string, ...args: unknown[]) => unknown {
+  const methods = component as unknown as Record<string, (...args: unknown[]) => unknown>;
+  return (name, ...args) => methods[name](...args);
+}

@@ -22,6 +22,10 @@ describe('Tag', () => {
     tagServiceMock.create.calls.reset();
     tagServiceMock.update.calls.reset();
     tagServiceMock.remove.calls.reset();
+    tagServiceMock.findAll.and.returnValue(of([]));
+    tagServiceMock.create.and.returnValue(of({ id: 1, name: 'Bio' }));
+    tagServiceMock.update.and.returnValue(of({ id: 1, name: 'Bio' }));
+    tagServiceMock.remove.and.returnValue(of(void 0));
 
     await TestBed.configureTestingModule({
       imports: [Tag],
@@ -102,6 +106,53 @@ describe('Tag', () => {
     expect(component.lastError).toEqual(jasmine.any(Error));
     component.onMenuClicked();
     expect(component.lastResponse).toEqual(jasmine.objectContaining({ info: jasmine.any(String) }));
+  });
+
+  it('should cover input-triggered creation and mutation guards', () => {
+    const item = { id: '1', name: 'Bio' };
+    component.tags = [{ id: 1, name: 'Bio' }];
+    const changed = spyOn(component.dataChanged, 'emit');
+
+    component.baseUrl = 'http://api.example.test';
+    component.onBaseUrlChange();
+    component.refresh();
+    expect(tagServiceMock.setBaseUrl).toHaveBeenCalledWith('http://api.example.test');
+
+    component.onEditRequested({ id: 'bad', name: 'Invalid' });
+    component.onEditRequested({ id: '99', name: 'Missing' });
+    component.openCreate();
+    expect(component.formVisible).toBeTrue();
+
+    fixture.componentRef.setInput('openCreateRequestId', 1);
+    fixture.detectChanges();
+    fixture.componentRef.setInput('openCreateRequestId', 2);
+    fixture.detectChanges();
+    expect(component.formMode).toBe('add');
+
+    component.tags = [{ id: 1, name: 'Bio' }];
+    component.onEditRequested(item);
+    expect(component.formMode).toBe('edit');
+    const error = new Error('mutation failed');
+    tagServiceMock.update.and.returnValue(of({ id: 1, name: 'Updated' }));
+    component.onFormSubmitted({ mode: 'edit', value: { name: ' Updated ' } });
+    expect(tagServiceMock.update).toHaveBeenCalledWith(1, { name: 'Updated' });
+
+    tagServiceMock.create.and.returnValue(throwError(() => error));
+    component.onFormSubmitted({ mode: 'add', value: { name: 'New' } });
+    expect(component.lastError).toBe(error);
+    tagServiceMock.update.and.returnValue(throwError(() => error));
+    component.editingTagId = 1;
+    component.onFormSubmitted({ mode: 'edit', value: { name: 'Updated' } });
+    expect(component.lastError).toBe(error);
+
+    tagServiceMock.remove.and.returnValue(of(void 0));
+    component.editingTagId = 1;
+    component.onDeleteRequested(item);
+    expect(component.formVisible).toBeFalse();
+    expect(changed).toHaveBeenCalled();
+    tagServiceMock.remove.and.returnValue(throwError(() => error));
+    component.onDeleteRequested(item);
+    expect(component.lastError).toBe(error);
   });
 });
 

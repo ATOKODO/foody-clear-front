@@ -41,6 +41,28 @@ describe('GenericProduct', () => {
     genericProductServiceMock.create.calls.reset();
     genericProductServiceMock.update.calls.reset();
     genericProductServiceMock.remove.calls.reset();
+    genericProductServiceMock.findAll.and.returnValue(of([]));
+    genericProductServiceMock.create.and.returnValue(
+      of({
+        id: 1,
+        name: 'Riz',
+        minQuantityUnit: 1,
+        minQuantityUnitType: 'portion',
+        minQuantityMetric: 500,
+        minQuantityMetricType: 'g',
+      }),
+    );
+    genericProductServiceMock.update.and.returnValue(
+      of({
+        id: 1,
+        name: 'Riz',
+        minQuantityUnit: 1,
+        minQuantityUnitType: 'portion',
+        minQuantityMetric: 500,
+        minQuantityMetricType: 'g',
+      }),
+    );
+    genericProductServiceMock.remove.and.returnValue(of(void 0));
 
     await TestBed.configureTestingModule({
       imports: [GenericProduct],
@@ -205,6 +227,97 @@ describe('GenericProduct', () => {
     expect(component.lastError).toEqual(jasmine.any(Error));
     component.onMenuClicked();
     expect(component.lastResponse).toEqual(jasmine.objectContaining({ info: jasmine.any(String) }));
+  });
+
+  it('should cover request-triggered creation and mutation success/error guards', () => {
+    const item = {
+      id: '1',
+      name: 'Riz',
+      minQuantityUnit: 1,
+      minQuantityUnitType: 'portion',
+      minQuantityMetric: 500,
+      minQuantityMetricType: 'g',
+    } as Parameters<GenericProduct['onEditRequested']>[0];
+    component.genericProducts = [
+      {
+        id: 1,
+        name: 'Riz',
+        minQuantityUnit: 1,
+        minQuantityUnitType: 'portion',
+        minQuantityMetric: 500,
+        minQuantityMetricType: 'g',
+      },
+    ];
+
+    component.baseUrl = 'http://api.example.test';
+    component.onBaseUrlChange();
+    component.refresh();
+    expect(genericProductServiceMock.setBaseUrl).toHaveBeenCalledWith(
+      'http://api.example.test',
+    );
+
+    component.onEditRequested({ ...item, id: 'bad' });
+    component.onEditRequested({ ...item, id: '99' });
+    component.openCreate();
+    expect(component.formVisible).toBeTrue();
+
+    fixture.componentRef.setInput('openCreateRequestId', 1);
+    fixture.detectChanges();
+    fixture.componentRef.setInput('openCreateRequestId', 2);
+    fixture.detectChanges();
+    expect(component.formMode).toBe('add');
+
+    component.editingGenericProductId = 1;
+    component.formVisible = true;
+    component.onFormSubmitted({
+      mode: 'edit',
+      value: {
+        name: ' Updated ',
+        minQuantityUnit: 2,
+        minQuantityUnitType: 'portion',
+        minQuantityMetric: 600,
+        minQuantityMetricType: 'g',
+      },
+    });
+    expect(genericProductServiceMock.update).toHaveBeenCalledWith(
+      1,
+      jasmine.objectContaining({ name: 'Updated' }),
+    );
+
+    const error = new Error('mutation failed');
+    genericProductServiceMock.create.and.returnValue(throwError(() => error));
+    component.onFormSubmitted({
+      mode: 'add',
+      value: {
+        name: 'New',
+        minQuantityUnit: 1,
+        minQuantityUnitType: null,
+        minQuantityMetric: 1,
+        minQuantityMetricType: null,
+      },
+    });
+    expect(component.lastError).toBe(error);
+    genericProductServiceMock.update.and.returnValue(throwError(() => error));
+    component.editingGenericProductId = 1;
+    component.onFormSubmitted({
+      mode: 'edit',
+      value: {
+        name: 'Updated',
+        minQuantityUnit: 1,
+        minQuantityUnitType: null,
+        minQuantityMetric: 1,
+        minQuantityMetricType: null,
+      },
+    });
+    expect(component.lastError).toBe(error);
+
+    genericProductServiceMock.remove.and.returnValue(of(void 0));
+    component.editingGenericProductId = 1;
+    component.onDeleteRequested(item);
+    expect(component.formVisible).toBeFalse();
+    genericProductServiceMock.remove.and.returnValue(throwError(() => error));
+    component.onDeleteRequested(item);
+    expect(component.lastError).toBe(error);
   });
 });
 

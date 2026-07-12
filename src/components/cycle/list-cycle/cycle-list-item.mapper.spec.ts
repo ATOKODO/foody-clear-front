@@ -1,4 +1,11 @@
-import { buildCycleListItem } from './cycle-list-item.mapper';
+import {
+  buildCycleListItem,
+  deriveCycleDurationPresentation,
+  getCycleMacroTotals,
+  resolveCycleDaySetIds,
+  resolveCycleDaySetTimeline,
+  resolveCycleDurationDays,
+} from './cycle-list-item.mapper';
 import {
   Cycle,
   CycleNutritionValue,
@@ -354,6 +361,45 @@ describe('buildCycleListItem', () => {
     expect(weekItem.durationType).toBe('semaine');
     expect(monthItem.durationCount).toBe(1);
     expect(monthItem.durationType).toBe('mois');
+  });
+
+  it('should cover duration, macro and day-set fallback branches', () => {
+    expect(getCycleMacroTotals(createCycle({ nutritionValues: [] as CycleNutritionValue[], energyKcal: 100, proteins: 20, carbs: 30, lipids: 4 }))).toEqual({
+      energyKcal: 100,
+      proteins: 20,
+      carbs: 30,
+      lipids: 4,
+    });
+    expect(getCycleMacroTotals(createCycle({ nutritionValues: [nutritionValue('PROTEIN_CUSTOM', 10), nutritionValue('CARBS_CUSTOM', 20), nutritionValue('FAT_CUSTOM', 3)] }), { proteins: 'PROTEIN_CUSTOM', carbs: 'CARBS_CUSTOM', lipids: 'FAT_CUSTOM' })).toEqual({
+      energyKcal: 147,
+      proteins: 10,
+      carbs: 20,
+      lipids: 3,
+    });
+    expect(resolveCycleDurationDays({ durationDays: 14, durationCount: 1, durationType: 'jour' })).toBe(14);
+    expect(resolveCycleDurationDays({ durationDays: 0, durationCount: 2, durationType: 'semaine' })).toBe(14);
+    expect(resolveCycleDurationDays({ durationDays: 0, durationCount: 2, durationType: 'mois' })).toBe(60);
+    expect(resolveCycleDurationDays({ durationDays: 0, durationCount: 2, durationType: 'jour' })).toBe(2);
+    expect(deriveCycleDurationPresentation(30).durationType).toBe('mois');
+    expect(deriveCycleDurationPresentation(14).durationType).toBe('semaine');
+    expect(deriveCycleDurationPresentation(5).durationType).toBe('jour');
+    expect(resolveCycleDaySetIds({ durationDays: 3, durationCount: 3, durationType: 'jour', daySetOrder: null, daySets: [{ id: 2, title: 'Fallback' }] } as never)).toEqual([2]);
+    expect(resolveCycleDaySetTimeline({ durationDays: 3, durationCount: 3, durationType: 'jour', daySetOrder: null, daySets: [{ id: 2, title: 'Fallback' }] } as never)).toEqual([2, 0, 0]);
+
+    const item = buildCycleListItem(
+      createCycle({
+        daySetOrder: [1, 2],
+        daySets: [
+          createDaySet({ id: 1, title: '', nutritionValues: [], slots: null as never }),
+          createDaySet({ id: 2, title: 'Embedded', nutritionValues: [], slotIds: [99], slots: [] }),
+        ],
+      }),
+      {
+        fallbackDaySets: [createDaySet({ id: 1, title: 'Fallback', nutritionValues: [nutritionValue('PROTEIN', 10)] })],
+        fallbackSlots: [createSlot({ id: 99, title: 'Fallback slot' })],
+      },
+    );
+    expect(item.daySets.map((daySet) => daySet.title)).toEqual(['Fallback', 'Embedded']);
   });
 
 });

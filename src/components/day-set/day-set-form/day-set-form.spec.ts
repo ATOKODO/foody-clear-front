@@ -85,4 +85,59 @@ describe('DaySetForm', () => {
       },
     ]);
   });
+
+  it('should cover form guards, slot/template normalization, and helper actions', () => {
+    const submitted = jasmine.createSpy('submitted');
+    const menuClicked = jasmine.createSpy('menuClicked');
+    component.submitted.subscribe(submitted);
+    component.menuClicked.subscribe(menuClicked);
+
+    component.onMenuClick();
+    component.onSubmit();
+    expect(menuClicked).toHaveBeenCalled();
+    expect(submitted).not.toHaveBeenCalled();
+
+    component.onSlotsSelected([
+      { id: '1', title: 'Breakfast' },
+      { id: '1', title: 'Duplicate' },
+      { id: '0', title: 'Invalid' },
+      { id: 'not-a-number', title: 'Invalid' },
+      { id: '2.5', title: 'Invalid' },
+    ]);
+    expect(component.selectedSlotIds).toEqual([1]);
+    expect(component.selectedSlotIdsAsString).toEqual(['1']);
+
+    component.nutritionValues = [];
+    component.onNutritionKeyChange(0);
+    component.addNutritionValue();
+    component.onNutritionKeyChange(0);
+    component.removeNutritionValue(0);
+    expect(component.nutritionValues).toEqual([]);
+    expect(component.getUnitsForKey('PROTEIN')).toEqual(['G', 'MG']);
+
+    fixture.componentRef.setInput('mode', 'edit');
+    fixture.componentRef.setInput('daySet', {
+      title: 'Stored',
+      nutritionValues: [],
+      slotIds: [2, 2, 0, -1, 3.5],
+      templateId: 4,
+    });
+    fixture.detectChanges();
+    expect(component.heading).toBe('Edit day set');
+    expect(component.selectedSlotIds).toEqual([2]);
+    expect(component.selectedTemplateId).toBe(4);
+
+    component.form.setValue({ title: 'Stored' });
+    component.onSubmit();
+    expect(submitted).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        mode: 'edit',
+        value: jasmine.objectContaining({
+          title: 'Stored',
+          slotIds: [2],
+          templateId: 4,
+        }),
+      }),
+    );
+  });
 });

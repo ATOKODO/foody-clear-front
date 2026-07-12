@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { of, Subject, throwError } from 'rxjs';
 
 import { CategoryStore } from './category.store';
-import { CategoryService } from '../../services/category-service';
+import { CategoryService, type Category } from '../../services/category-service';
 
 describe('CategoryStore', () => {
   let categoryServiceMock: jasmine.SpyObj<CategoryService>;
@@ -223,6 +223,92 @@ describe('CategoryStore', () => {
     expect(store.lastError()).toBe(error);
     expect(store.mutationVersion()).toBe(0);
     expect(categoryServiceMock.findAll).toHaveBeenCalledTimes(1);
+  });
+
+  it('should cover computed state, invalid ids, response fallbacks, and delete errors', () => {
+    categoryServiceMock.findAll.and.returnValue(
+      of({
+        id: 1,
+        name: 'Fresh',
+        warnBeforeDays: ' 4 ',
+        recentlyExpiredDays: '',
+        minQuantity: 'invalid',
+      } as never) as never,
+    );
+    const store = createStore();
+
+    expect(store.dialogTitle()).toBe('Add category');
+    expect(store.dialogSubtitle()).toContain('Regle les alertes');
+    expect(store.isEditing()).toBeFalse();
+    expect(store.hasError()).toBeFalse();
+    expect(store.categoryListItems()[0]).toEqual({
+      id: '1',
+      name: 'Fresh',
+      warnBeforeDays: 4,
+      recentlyExpiredDays: null,
+      minQuantity: null,
+    });
+
+    store.openEditForm({
+      id: 'bad',
+      name: 'Invalid',
+      warnBeforeDays: null,
+      recentlyExpiredDays: null,
+      minQuantity: null,
+    });
+    store.openEditForm({
+      id: '99',
+      name: 'Missing',
+      warnBeforeDays: null,
+      recentlyExpiredDays: null,
+      minQuantity: null,
+    });
+    expect(store.formVisible()).toBeFalse();
+
+    store.openEditForm(store.categoryListItems()[0]);
+    expect(store.isEditing()).toBeTrue();
+    expect(store.dialogTitle()).toBe('Edit category');
+
+    categoryServiceMock.findAll.and.returnValue(of([createCategory({ id: 1 })]));
+    store.refresh();
+    expect(store.formInitialValue()).toEqual(jasmine.objectContaining({ name: 'Fruits' }));
+
+    categoryServiceMock.findAll.and.returnValue(of([createCategory({ id: 2 })]));
+    store.refresh();
+    expect(store.formVisible()).toBeFalse();
+    expect(store.isEditing()).toBeFalse();
+
+    categoryServiceMock.findAll.and.returnValues(
+      of([null] as unknown as Category[]),
+      of(null as unknown as Category[]),
+      of({ payload: [] } as unknown as Category[]),
+    );
+    store.refresh();
+    store.refresh();
+    store.refresh();
+    expect(store.categoryListItems()).toEqual([]);
+
+    store.deleteCategory({
+      id: 'not-a-number',
+      name: 'Invalid',
+      warnBeforeDays: null,
+      recentlyExpiredDays: null,
+      minQuantity: null,
+    });
+    expect(categoryServiceMock.remove).not.toHaveBeenCalledWith(NaN);
+
+    const error = new Error('delete failed');
+    categoryServiceMock.remove.and.returnValue(throwError(() => error));
+    store.deleteCategory({
+      id: '2',
+      name: 'Fruits',
+      warnBeforeDays: null,
+      recentlyExpiredDays: null,
+      minQuantity: null,
+    });
+    expect(store.saving()).toBeFalse();
+    expect(store.lastError()).toBe(error);
+    expect(store.hasError()).toBeTrue();
   });
 });
 

@@ -2,12 +2,13 @@ import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Routes } from '@angular/router';
 import { DateTime } from 'luxon';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { APP_NAVIGATION } from '../../app/app.navigation';
 import { InputDayResponse } from '../../interfaces/input-day.interface';
 import { StatisticsTimelineResponse } from '../../interfaces/statistics.interface';
 import { InventoryService } from '../../services/inventory-service';
 import { InputDayService } from '../../services/input-day-service';
+import { ExternalMealEntryDialogService } from '../../services/external-meal-entry-dialog-service';
 import { ProductService } from '../../services/product-service';
 import { SlotService } from '../../services/slot-service';
 import { StatisticService } from '../../services/statistic-service';
@@ -245,7 +246,23 @@ describe('Home', () => {
     findAll: jasmine.createSpy('findAll').and.returnValue(of([])),
   };
 
+  const externalMealEntryDialogMock = {
+    openCreate: jasmine.createSpy('openCreate').and.returnValue(of(undefined)),
+  };
+
   beforeEach(async () => {
+    inputDayServiceMock.getInputDay.calls.reset();
+    inputDayServiceMock.getInputDay.and.returnValue(of(dayResponse));
+    inputDayServiceMock.convertTemplateItem.calls.reset();
+    inputDayServiceMock.convertTemplateItem.and.returnValue(of(dayResponse));
+    inputDayServiceMock.removeItem.calls.reset();
+    inputDayServiceMock.removeItem.and.returnValue(of(void 0));
+    statisticServiceMock.getTimeline.calls.reset();
+    statisticServiceMock.getTimeline.and.returnValue(of(timelineResponse));
+    slotServiceMock.findAll.calls.reset();
+    slotServiceMock.findAll.and.returnValue(of([]));
+    externalMealEntryDialogMock.openCreate.calls.reset();
+    externalMealEntryDialogMock.openCreate.and.returnValue(of(undefined));
     await TestBed.configureTestingModule({
       imports: [Home],
       providers: [
@@ -256,6 +273,7 @@ describe('Home', () => {
         { provide: InventoryService, useValue: inventoryServiceMock },
         { provide: TemplateService, useValue: templateServiceMock },
         { provide: SlotService, useValue: slotServiceMock },
+        { provide: ExternalMealEntryDialogService, useValue: externalMealEntryDialogMock },
       ],
     }).compileComponents();
 
@@ -297,5 +315,132 @@ describe('Home', () => {
       today,
       timezone,
     );
+  });
+
+  it('should expose dashboard getters and delegate formatting helpers', () => {
+    component.inputDayResponse = dayResponse;
+    component.timelineResponse = timelineResponse;
+    expect(component.loading).toBeFalse();
+    expect(component.showPrimaryLoading).toBeFalse();
+    expect(component.todayTimelineDay).toBe(timelineResponse.days[0]);
+    expect(component.activeCycleLabel).toBe('Cycle prise de masse');
+    expect(component.activeDaySetLabel).toBe('Jour entrainement');
+    expect(component.enteredItemCount).toBe(1);
+    expect(component.pendingTemplateItems).toHaveSize(1);
+    expect(component.convertedTemplateItems).toEqual([]);
+    expect(component.scheduleRows.length).toBeGreaterThan(0);
+    expect(component.dayEntryRows).toHaveSize(1);
+    expect(component.macroCards).toHaveSize(4);
+    expect(component.recentPurchaseEvents).toHaveSize(1);
+    expect(component.todayExpenseTotal).toContain('2');
+    expect(component.purchaseCount).toBe(1);
+    expect(component.incompletePurchaseCount).toBe(0);
+    expect(component.targetSourceLabel).toBe('Day set');
+    expect(component.formatCurrency(2.5)).toContain('2');
+    expect(component.formatItemQty(dayResponse.items[0])).toBe('1 piece');
+    expect(component.formatDateTime(null)).toBe('-');
+    expect(component.getPurchaseEventLabel(timelineResponse.days[0].expenses.events[0])).toContain('2');
+    expect(component.getTemplateStockLabel(dayResponse.templateItems![0])).toBe('Stock OK');
+    expect(component.getTemplateSlotLabel(dayResponse.templateItems![0])).toContain('Petit dejeuner');
+    expect(component.canConvertTemplateItem(dayResponse.templateItems![0])).toBeTrue();
+    expect(component.isConvertedTemplateItem(dayResponse.templateItems![0])).toBeFalse();
+
+    component.loadingDay = true;
+    expect(component.showPrimaryLoading).toBeFalse();
+    component.inputDayResponse = null;
+    expect(component.showPrimaryLoading).toBeTrue();
+    component.loadingTimeline = true;
+    expect(component.loading).toBeTrue();
+  });
+
+  it('should refresh after an external entry and handle conversion actions', () => {
+    const refresh = spyOn(component, 'refreshDashboard').and.callThrough();
+    externalMealEntryDialogMock.openCreate.and.returnValue(of({ dateLocal: today }));
+    component.inputDayResponse = dayResponse;
+    component.openExternalMealEntry();
+    expect(externalMealEntryDialogMock.openCreate).toHaveBeenCalled();
+    expect(refresh).toHaveBeenCalled();
+
+    refresh.calls.reset();
+    externalMealEntryDialogMock.openCreate.and.returnValue(of(undefined));
+    component.openExternalMealEntry();
+    expect(refresh).not.toHaveBeenCalled();
+
+    const item = dayResponse.templateItems![0];
+    inputDayServiceMock.convertTemplateItem.and.returnValue(of(dayResponse));
+    component.loadingDay = false;
+    component.convertTemplateItem(item);
+    expect(inputDayServiceMock.convertTemplateItem).toHaveBeenCalledWith(today, item.id, [4]);
+
+    component.loadingDay = true;
+    component.convertTemplateItem(item);
+    component.loadingDay = false;
+    component.convertTemplateItem({ ...item, stockAvailability: { ...item.stockAvailability, enoughStock: false } });
+
+    inputDayServiceMock.convertTemplateItem.and.returnValue(throwError(() => new Error('convert')));
+    component.convertTemplateItem(item);
+    expect(component.dayError).toEqual(jasmine.any(Error));
+    expect(component.loadingDay).toBeFalse();
+
+    inputDayServiceMock.removeItem.and.returnValue(of(void 0));
+    component.inputDayResponse = {
+      ...dayResponse,
+      items: [{ ...dayResponse.items[0], templateItemId: item.id }],
+    };
+    component.revertTemplateItem(item);
+    expect(inputDayServiceMock.removeItem).toHaveBeenCalledWith(today, 31);
+    inputDayServiceMock.removeItem.and.returnValue(throwError(() => new Error('revert')));
+    component.revertTemplateItem({ ...item, convertedItemId: 31 });
+    expect(component.dayError).toEqual(jasmine.any(Error));
+  });
+
+  it('should cover loading success and error paths for planning, stats and slots', async () => {
+    const internals = component as any;
+    const slot = {
+      id: 11,
+      key: 'breakfast',
+      title: 'Breakfast',
+      sortOrder: 1,
+      startTime: '08:00',
+      endTime: '09:00',
+    };
+    slotServiceMock.findAll.and.returnValue(of([slot]));
+    internals.slotCatalogLoaded = false;
+    internals.ensureSlotCatalogLoaded();
+    expect(internals.slotCatalog).toEqual([slot]);
+    expect(internals.slotCatalogLoaded).toBeTrue();
+    const slotCalls = slotServiceMock.findAll.calls.count();
+    internals.ensureSlotCatalogLoaded();
+    expect(slotServiceMock.findAll.calls.count()).toBe(slotCalls);
+
+    slotServiceMock.findAll.and.returnValue(throwError(() => new Error('slots')));
+    internals.slotCatalogLoaded = false;
+    internals.loadSlotCatalog();
+    expect(internals.slotCatalog).toEqual([]);
+    expect(internals.slotCatalogLoaded).toBeTrue();
+
+    inputDayServiceMock.getInputDay.and.returnValue(of(dayResponse));
+    internals.loadTodayPlanning();
+    expect(component.inputDayResponse).toBe(dayResponse);
+    inputDayServiceMock.getInputDay.and.returnValue(throwError(() => new Error('planning')));
+    internals.loadTodayPlanning();
+    expect(component.inputDayResponse).toBeNull();
+    expect(component.dayError).toEqual(jasmine.any(Error));
+
+    statisticServiceMock.getTimeline.and.returnValue(of(timelineResponse));
+    internals.loadTodayStats();
+    expect(component.timelineResponse).toBe(timelineResponse);
+    statisticServiceMock.getTimeline.and.returnValue(throwError(() => new Error('stats')));
+    internals.loadTodayStats();
+    expect(component.timelineResponse).toBeNull();
+    expect(component.timelineError).toEqual(jasmine.any(Error));
+
+    const task = jasmine.createSpy('task');
+    internals.runAfterFirstPaint(task);
+    await new Promise((resolve) => globalThis.setTimeout(resolve, 0));
+    expect(task).toHaveBeenCalled();
+    spyOn(component, 'refreshDashboard');
+    component.onInputDayItemsChanged();
+    expect(component.refreshDashboard).toHaveBeenCalled();
   });
 });

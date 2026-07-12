@@ -9,6 +9,7 @@ import { DaySetService } from '../../services/day-set-service';
 import { SlotService } from '../../services/slot-service';
 import { MealPrepService } from '../../services/meal-prep-service';
 import { TemplateItemDraft } from '../../components/template/template-form/template-form';
+import type { Template } from '../../interfaces/template.interface';
 
 describe('TemplateFeature', () => {
   let component: TemplateFeature;
@@ -334,5 +335,114 @@ describe('TemplateFeature', () => {
       slotId: null,
       preferredTime: '07:30',
     });
+  });
+
+  it('should expose store state and delegate all editor actions', () => {
+    const store = (component as any).store as any;
+    const template = templates[0];
+
+    component.baseUrl = 'http://changed.local';
+    expect(component.baseUrl).toBe('http://changed.local');
+    component.templates = templates;
+    component.products = [];
+    component.dishes = [];
+    component.meals = [];
+    component.daySets = [];
+    component.slots = [];
+    component.selectedTemplateId = 1;
+    component.selectedTemplate = template;
+    component.compareDaySetId = 9;
+    component.loadingTemplates = true;
+    component.loadingProducts = true;
+    component.loadingMealPrep = true;
+    component.loadingDaySets = true;
+    component.loadingSlots = true;
+    component.savingTemplate = true;
+    component.savingItem = true;
+    component.lastError = 'error';
+    component.itemError = 'item error';
+    component.lastResponse = { ok: true };
+
+    expect(component.templates).toBe(templates);
+    expect(component.products).toEqual([]);
+    expect(component.dishes).toEqual([]);
+    expect(component.meals).toEqual([]);
+    expect(component.daySets).toEqual([]);
+    expect(component.slots).toEqual([]);
+    expect(component.selectedTemplateId).toBe(1);
+    expect(component.selectedTemplate).toBe(template);
+    expect(component.compareDaySetId).toBe(9);
+    expect(component.loadingTemplates).toBeTrue();
+    expect(component.loadingProducts).toBeTrue();
+    expect(component.loadingMealPrep).toBeTrue();
+    expect(component.loadingDaySets).toBeTrue();
+    expect(component.loadingSlots).toBeTrue();
+    expect(component.savingTemplate).toBeTrue();
+    expect(component.savingItem).toBeTrue();
+    expect(component.lastError).toBe('error');
+    expect(component.itemError).toBe('item error');
+    expect(component.lastResponse).toEqual({ ok: true });
+    expect(component.productOptions).toEqual([]);
+    expect(component.dishOptions).toEqual([]);
+    expect(component.mealOptions).toEqual([]);
+    expect(component.daySetOptions).toEqual([]);
+    expect(component.slotOptions).toEqual([]);
+    expect(component.busy).toBeTrue();
+
+    component.editingTemplateId = null;
+    expect(component.editedTemplate).toBeNull();
+    component.editingTemplateId = 99;
+    expect(component.editedTemplate).toBeNull();
+    component.editingTemplateId = 1;
+    expect(component.editedTemplate).toBe(template);
+    component.formMode = 'add';
+    expect(component.formDialogTitle).toBe('Nouveau template');
+    expect(component.formDialogSubtitle).toContain('Create');
+    component.formMode = 'edit';
+    expect(component.formDialogTitle).toBe('Edit template');
+    expect(component.formDialogSubtitle).toContain('Update');
+
+    spyOn(store, 'onBaseUrlChange');
+    spyOn(store, 'onRefreshRequested');
+    spyOn(store, 'selectTemplate');
+    spyOn(store, 'onCompareDaySetChange');
+    component.onBaseUrlChange();
+    component.onRefreshRequested();
+    component.selectTemplate(2);
+    component.onCompareDaySetChange(null);
+    expect(store.onBaseUrlChange).toHaveBeenCalled();
+    expect(store.onRefreshRequested).toHaveBeenCalled();
+    expect(store.selectTemplate).toHaveBeenCalledWith(2);
+    expect(store.onCompareDaySetChange).toHaveBeenCalledWith(null);
+
+    component.selectedTemplateId = null;
+    component.selectedTemplate = null;
+    component.openSelectedTemplateEditor();
+    component.selectedTemplateId = 1;
+    component.selectedTemplate = template;
+    spyOn(store, 'loadTemplateForEdit').and.callFake((_id: number, callback: (id: number) => void) => callback(1));
+    component.onTemplateEditRequested(1);
+    expect(component.formMode).toBe('edit');
+    expect(component.editingTemplateId).toBe(1);
+    component.closeEditorDialog();
+
+    spyOn(store, 'saveTemplate').and.callFake((_event: unknown, _id: number | null, callback: (value: Template) => void) => callback(template));
+    component.onTemplateSubmitted({ mode: 'add', value: { title: 'New', items: [] } } as any);
+    expect(component.editingTemplateId).toBe(1);
+    expect(component.formMode).toBe('edit');
+
+    spyOn(store, 'deleteTemplate').and.callFake((_id: number, _editingId: number | null, callback: () => void) => callback());
+    component.onTemplateDeleteRequested(1);
+    spyOn(store, 'saveItem').and.callFake((_id: number | null, _draft: TemplateItemDraft, callback: (value: Template) => void) => callback(template));
+    component.onItemSubmitted({ id: null } as TemplateItemDraft);
+    expect(component.editingTemplateId).toBe(1);
+    spyOn(store, 'deleteItem');
+    component.onItemDeleted(11);
+    expect(store.deleteItem).toHaveBeenCalledWith(1, 11);
+
+    component.startCreateTemplate();
+    component.closeEditorDialog();
+    expect(component.formMode).toBe('add');
+    expect(component.editingTemplateId).toBeNull();
   });
 });

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProductList } from './product-list';
+import type { ProductListItem } from './product-list-item.model';
 
 describe('ProductList', () => {
   let component: ProductList;
@@ -198,5 +199,115 @@ describe('ProductList', () => {
 
     expect(nativeElement.querySelector('mat-card')).toBeNull();
     expect(nativeElement.textContent).toContain('No product available.');
+  });
+
+  it('should cover product formatting, event guards, and search normalization', () => {
+    const products: ProductListItem[] = [
+      {
+        id: '10',
+        name: 'Riz complet',
+        barcode: '123',
+        unitType: 'Paquet',
+        quantityPerUnit: 500,
+        quantityUnit: 'g',
+        portionCount: 2,
+        portionUnit: 'tranche',
+        price: 2.345,
+        priceUnit: 'kg',
+        tagNames: [' Bio ', ''],
+        category: ' Epicerie ',
+        genericProduct: 'Riz',
+        availableQuantity: 1200.456,
+        availableQuantityUnit: 'g',
+      },
+      {
+        id: '11',
+        name: 'Pomme',
+        unitType: 'Piece',
+        quantityPerUnit: undefined,
+        quantityUnit: null,
+        portionCount: 0,
+        portionUnit: '',
+        price: null,
+        availableQuantity: null,
+      },
+    ];
+    const selected: unknown[] = [];
+    const selectedMany: unknown[] = [];
+    const added: unknown[] = [];
+    const edited: unknown[] = [];
+    const deleted: unknown[] = [];
+    component.selected.subscribe((value) => selected.push(value));
+    component.selectedMany.subscribe((value) => selectedMany.push(value));
+    component.addRequested.subscribe((value) => added.push(value));
+    component.editRequested.subscribe((value) => edited.push(value));
+    component.deleteRequested.subscribe((value) => deleted.push(value));
+
+    fixture.componentRef.setInput('products', products);
+    fixture.detectChanges();
+    expect(component.trackById(0, products[0])).toBe('10');
+    expect(component.isRowActive(products[0], 0)).toBeTrue();
+    expect(component.isRowActive(products[1], 1)).toBeFalse();
+    expect(component.getUnitDisplay(products[0])).toBe('500 g (2 tranche)');
+    expect(component.getUnitDisplay(products[1])).toBe('Piece');
+    expect(component.getPriceDisplay(products[0])).toBe('2.35 / kg');
+    expect(component.getPriceDisplay(products[1])).toBe('-');
+    expect(component.getAvailableQuantityDisplay(products[0])).toBe('1200.46 g');
+    expect(component.getAvailableQuantityDisplay(products[1])).toBe('-');
+    expect(component.getTagNamesDisplay(products[0])).toBe('Bio');
+    expect(component.getTagNamesDisplay({ id: '12', name: 'No tags' })).toBe('-');
+    expect(component.getLinkedEntityDisplay('  Category  ')).toBe('Category');
+    expect(component.getLinkedEntityDisplay(' ')).toBe('-');
+
+    component.onRowClick(products[0]);
+    component.onRowKeydown(
+      new KeyboardEvent('keydown', { key: 'Escape' }),
+      products[0],
+    );
+
+    fixture.componentRef.setInput('mode', 'select-single');
+    fixture.componentRef.setInput('selectedIds', ['11', '10']);
+    fixture.detectChanges();
+    expect(component.isSelected('10')).toBeTrue();
+    expect(component.isSelected('11')).toBeFalse();
+    const enter = new KeyboardEvent('keydown', { key: 'Enter' });
+    spyOn(enter, 'preventDefault');
+    component.onRowKeydown(enter, products[1]);
+    expect(enter.preventDefault).toHaveBeenCalled();
+    expect(selected).toEqual([products[1]]);
+
+    fixture.componentRef.setInput('mode', 'select-multi');
+    fixture.detectChanges();
+    component.onCheckboxChange(products[0], true);
+    component.onCheckboxChange(products[0], false);
+    const click = new MouseEvent('click');
+    spyOn(click, 'stopPropagation');
+    component.onCheckboxClick(click, products[1]);
+    expect(click.stopPropagation).toHaveBeenCalled();
+    expect(selectedMany.length).toBe(3);
+
+    fixture.componentRef.setInput('mode', 'manage');
+    fixture.detectChanges();
+    component.onAddClick();
+    component.onEditClick(products[0]);
+    component.onDeleteClick(products[0]);
+    expect(added).toHaveSize(1);
+    expect(edited).toEqual([products[0]]);
+    expect(deleted).toEqual([products[0]]);
+
+    component.onSearchTermChange('  RÍZ  ');
+    expect(component.resolvedProducts).toEqual([products[0]]);
+    component.onSearchTermChange('missing');
+    expect(component.resolvedProducts).toEqual([]);
+    component.onSearchTermChange('');
+    expect(component.resolvedProducts).toEqual(products);
+
+    const insertAvailableQtyColumn = (component as any)
+      .insertAvailableQtyColumn as (columns: string[]) => string[];
+    expect(insertAvailableQtyColumn(['name'])).toEqual(['name', 'availableQty']);
+    expect(insertAvailableQtyColumn(['unit', 'availableQty'])).toEqual([
+      'unit',
+      'availableQty',
+    ]);
   });
 });

@@ -250,6 +250,94 @@ describe('ListCycle', () => {
     ).not.toBeNull();
   });
 
+  it('should cover cycle labels, keyboard guards, selection toggles, and status branches', () => {
+    const cycles = [createCycle(), createCycle({ id: 2, title: 'Repos' })];
+    const selected: unknown[] = [];
+    const selectedMany: unknown[] = [];
+    component.selected.subscribe((value) => selected.push(value));
+    component.selectedMany.subscribe((value) => selectedMany.push(value));
+
+    fixture.componentRef.setInput('cycles', cycles);
+    fixture.componentRef.setInput('activeCycleId', 2);
+    fixture.componentRef.setInput('selectedIds', [1, 2]);
+    fixture.detectChanges();
+    expect(component.trackById(0, cycles[0])).toBe(1);
+    expect(component.trackByMetric(0, cycles[0].daySetMetrics[0])).toBe('kcal');
+    expect(component.trackByDaySetId(0, cycles[0].daySets[0])).toBe(1);
+    expect(component.trackBySlotId(0, cycles[0].daySets[0].slots[0])).toContain('breakfast');
+    expect(component.trackByEmbeddedCard(0, component.getEmbeddedSummaryCards(cycles[0])[0])).toBe('kcal');
+    expect(component.isRowActive(cycles[1], 1)).toBeTrue();
+    expect(component.hasSlotMetrics(cycles[0].daySets[0])).toBeTrue();
+    expect(component.hasSlotMetrics({ ...cycles[0].daySets[0], slotMetrics: [] })).toBeFalse();
+    expect(component.formatAmount(2)).toBe('2');
+    expect(component.formatAmount(2.5)).toBe('2.5');
+    expect(component.formatPercent(null)).toBe('Target 0');
+    expect(component.formatPercent(25.5)).toBe('25.5%');
+    expect(component.formatDuration(1, 'mois')).toBe('1 month');
+    expect(component.formatDuration(2, 'mois')).toBe('2 months');
+    expect(component.formatDuration(1, 'semaine')).toBe('1 week');
+    expect(component.formatDuration(2, 'jour')).toBe('2 days');
+    expect(component.getStatusLabel('over')).toBe('Over');
+    expect(component.getStatusLabel('exact')).toBe('On target');
+    expect(component.getStatusLabel('missing')).toBe('Unavailable');
+    expect(component.getStatusLabel('under')).toBe('Below target');
+    expect(component.getStatusClass('over')).toBe('lc-status-over');
+
+    component.onRowClick(cycles[0]);
+    component.onRowKeydown(
+      new KeyboardEvent('keydown', { key: 'Escape' }),
+      cycles[0],
+    );
+    component.onCheckboxChange(cycles[0], true);
+    const event = new MouseEvent('click');
+    spyOn(event, 'stopPropagation');
+    component.onCheckboxClick(event, cycles[0]);
+    component.onToggleExpanded(event, 1);
+    component.onToggleExpanded(event, 1);
+    component.stopPropagation(event);
+    expect(event.stopPropagation).toHaveBeenCalled();
+
+    fixture.componentRef.setInput('mode', 'select-single');
+    fixture.componentRef.setInput('selectedIds', [1, 2]);
+    fixture.detectChanges();
+    expect(component.isSelected(1)).toBeTrue();
+    const enter = new KeyboardEvent('keydown', { key: 'Enter' });
+    spyOn(enter, 'preventDefault');
+    component.onRowKeydown(enter, cycles[1]);
+    expect(enter.preventDefault).toHaveBeenCalled();
+    expect(selected).toEqual([cycles[1]]);
+
+    fixture.componentRef.setInput('mode', 'select-multi');
+    fixture.detectChanges();
+    component.onCheckboxChange(cycles[0], true);
+    component.onCheckboxChange(cycles[0], false);
+    expect(selectedMany.length).toBe(2);
+
+    component.onEdit(cycles[0]);
+    component.onDelete(cycles[0]);
+    component.onAddCycle();
+    fixture.componentRef.setInput('mode', 'manage');
+    fixture.detectChanges();
+    component.onAddCycle();
+    expect(component.getToggleLabel(1)).toBe('View details');
+  });
+
+  it('should resolve embedded summary comparison states at zero and above target', () => {
+    const cycle = createCycle({
+      energyKcal: 10,
+      proteins: 100,
+      carbs: 0,
+      lipids: 0,
+      daySetTotals: { energyKcal: 0, proteins: 120, carbs: 0, lipids: 0 },
+    });
+    const cards = component.getEmbeddedSummaryCards(cycle);
+    expect(cards[0].percentage).toBe(0);
+    expect(cards[0].status).toBe('under');
+    expect(cards[2].percentage).toBeNull();
+    expect(cards[2].status).toBe('exact');
+    expect(cards[1].status).toBe('over');
+  });
+
 });
 
 function createMetric(
