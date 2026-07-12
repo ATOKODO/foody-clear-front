@@ -271,6 +271,7 @@ describe('ListCycle', () => {
     expect(component.hasSlotMetrics({ ...cycles[0].daySets[0], slotMetrics: [] })).toBeFalse();
     expect(component.formatAmount(2)).toBe('2');
     expect(component.formatAmount(2.5)).toBe('2.5');
+    expect(component.formatAmount(2.05)).toBe('2.05');
     expect(component.formatPercent(null)).toBe('Target 0');
     expect(component.formatPercent(25.5)).toBe('25.5%');
     expect(component.formatDuration(1, 'mois')).toBe('1 month');

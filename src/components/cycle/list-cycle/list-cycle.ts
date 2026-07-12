@@ -186,9 +186,12 @@ export class ListCycle implements OnInit, OnChanges {
   }
 
   formatAmount(value: number): string {
-    return Number.isInteger(value)
-      ? String(value)
-      : value.toFixed(2).replace(/\.?0+$/, '');
+    if (Number.isInteger(value)) {
+      return String(value);
+    }
+
+    const formatted = value.toFixed(2);
+    return formatted.endsWith('0') ? formatted.slice(0, -1) : formatted;
   }
 
   formatPercent(percentage: number | null): string {
