@@ -1,3 +1,5 @@
+![Foody Clear banner and logo](assets/banner-logo.png)
+
 # Foody Clear — Angular Frontend
 
 Foody Clear is an open-source food management application that brings product catalogs, inventory, shopping, meal preparation, planning, and nutrition tracking together in one place.
@@ -5,6 +7,21 @@ Foody Clear is an open-source food management application that brings product ca
 This repository contains **only the Angular frontend** for Foody Clear. It consumes a separate backend API to read and store data.
 
 > The project is currently in **alpha** (`1.0.0-alpha.1`): it is under active development, and breaking changes may still occur.
+
+> **Language note:** English is the target language for the current interface and documentation, but some screens, labels, test data, or older parts of the codebase may still be in French.
+
+## Table of Contents
+
+- [Features](#features)
+- [Roadmap and Deployment Scope](#roadmap-and-deployment-scope)
+- [An Entirely Vibe-Coded Project](#an-entirely-vibe-coded-project)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Installation and Development](#installation-and-development)
+- [Available Commands](#available-commands)
+- [Forks and Contributions](#forks-and-contributions)
+- [License](#license)
 
 ## Features
 
@@ -26,6 +43,7 @@ The next features currently planned are:
 - **Multiple profiles**, so several people or usage contexts can keep separate food data, goals, and planning.
 - **Barcode-based product lookup**, using the Open Food Facts API to retrieve product information and speed up catalog entry.
 - **Offline PWA support**, allowing the application to remain usable and manage local data without a network connection.
+- **Internationalization (i18n)**, adding French as a fully supported interface language and replacing the remaining mixed-language content with translated resources.
 
 For now, Foody Clear is intended to remain a **locally hosted application**. Cloud services, remote accounts, and authentication are not part of the current scope. The project still uses a separated frontend/backend architecture to keep responsibilities and data flows clearly isolated, even though both parts are designed to run locally.
 
@@ -49,6 +67,8 @@ Development and refactoring are guided in particular by:
 - **SonarQube Community**, to guide fixes, reduce technical debt, and support refactoring.
 
 These tools serve as guardrails, but they do not replace a critical review of generated code.
+
+![SonarQube Community quality gates for the Foody Clear backend and frontend](assets/sonarqube.png)
 
 ## Tech Stack
 
