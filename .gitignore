@@ -8,11 +8,30 @@
 
 # Node
 /node_modules
-npm-debug.log
-yarn-error.log
+*.log
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+credentials.json
+service-account*.json
+*-service-account.json
+secrets.json
 
 # IDEs and editors
 .idea/
+.codex/
 .project
 .classpath
 .c9/
@@ -42,11 +61,11 @@ testem.log
 Thumbs.db
 
 # Playwright
-node_modules/
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
 
-.scannerwork/   
+# SonarQube
+.scannerwork/

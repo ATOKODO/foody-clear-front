@@ -1,7 +1,46 @@
+# Git and local tooling
+.git
+.vscode
+.idea
+.codex
+
+# Dependencies and generated output
 node_modules
 dist
 .angular
-.git
+coverage
+tmp
+out-tsc
+bazel-out
+
+# Test artifacts
 playwright-report
 test-results
-coverage
+blob-report
+playwright/.cache
+playwright/.auth
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+credentials.json
+service-account*.json
+*-service-account.json
+secrets.json
+
+# Local analysis and system files
+.scannerwork
+*.log
+.DS_Store
+Thumbs.db
