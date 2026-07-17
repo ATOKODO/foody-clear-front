@@ -1,6 +1,23 @@
 {
   "name": "foody-clear-front",
   "version": "1.0.0-alpha.1",
+  "description": "Angular frontend for the Foody Clear food management application.",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "author": "ATOKODO",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ATOKODO/foody-clear-front.git"
+  },
+  "homepage": "https://github.com/ATOKODO/foody-clear-front#readme",
+  "keywords": [
+    "angular",
+    "food-management",
+    "inventory",
+    "meal-planning",
+    "nutrition",
+    "shopping-list"
+  ],
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -24,7 +41,6 @@
       }
     ]
   },
-  "private": true,
   "dependencies": {
     "@angular/animations": "22.0.7",
     "@angular/cdk": "22.0.2",
