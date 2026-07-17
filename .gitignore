@@ -38,6 +38,7 @@ secrets.json
 *.launch
 .settings/
 *.sublime-workspace
+.agents/*
 
 # Visual Studio Code
 .vscode/*
