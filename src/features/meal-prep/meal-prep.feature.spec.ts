@@ -111,8 +111,20 @@ describe('MealPrepFeature', () => {
     fixture.detectChanges();
   });
 
-  function internals(): any {
-    return component as any;
+  interface WritableState<T> {
+    set(value: T): void;
+  }
+
+  interface MealPrepInternals {
+    dishesState: WritableState<PreparedDish[]>;
+    mealsState: WritableState<PreparedMeal[]>;
+    selectedDishIdState: WritableState<number | null>;
+    selectedMealIdState: WritableState<number | null>;
+    savingState: WritableState<boolean>;
+  }
+
+  function internals(): MealPrepInternals {
+    return component as unknown as MealPrepInternals;
   }
 
   it('loads the workspace and exposes sorted state and labels', () => {

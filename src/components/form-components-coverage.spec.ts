@@ -126,7 +126,10 @@ describe('form component branches', () => {
     expect(component.form.controls.endTime.value).toBe('');
     expect(component.nutritionValues.length).toBeGreaterThan(0);
     expect(component.getUnitsForKey('PROTEIN')).toEqual(['G', 'MG']);
-    const internals = component as any;
+    const internals = component as unknown as {
+      normalizeTime(value: string): string | null;
+      toInputTime(value: string | null): string;
+    };
     expect(internals.normalizeTime('  ')).toBeNull();
     expect(internals.normalizeTime('08:00')).toBe('08:00');
     expect(internals.toInputTime(null)).toBe('');

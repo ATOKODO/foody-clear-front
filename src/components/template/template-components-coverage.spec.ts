@@ -31,7 +31,7 @@ describe('template component branches', () => {
     const selected: number[] = [];
     const edited: number[] = [];
     const deleted: number[] = [];
-    const compared: Array<number | null> = [];
+    const compared: (number | null)[] = [];
     component.templateSelected.subscribe((id) => selected.push(id));
     component.editRequested.subscribe((id) => edited.push(id));
     component.deleteRequested.subscribe((id) => deleted.push(id));
@@ -77,8 +77,20 @@ describe('template component branches', () => {
     expect(component.getTargetSourceText('daySet')).toContain('day set');
     expect(component.getTargetSourceText('cycle')).toContain('cycle');
     expect(component.getTargetSourceText('none')).toBe('No target');
-    expect(component.getSlotMacroEntries({ slot: {}, targets: {}, deltaToTargets: {}, incompleteNutritionKeys: [], energyKcal: 2 } as any)).toEqual([{ key: 'energyKcal', value: 2 }]);
-    expect(component.formatMacroValue('missing' as any)).toBe('missing');
+    expect(
+      component.getSlotMacroEntries({
+        slot: {},
+        targets: {},
+        deltaToTargets: {},
+        incompleteNutritionKeys: [],
+        energyKcal: 2,
+      } as unknown as Parameters<TemplateList['getSlotMacroEntries']>[0]),
+    ).toEqual([{ key: 'energyKcal', value: 2 }]);
+    expect(
+      component.formatMacroValue(
+        'missing' as unknown as Parameters<TemplateList['formatMacroValue']>[0],
+      ),
+    ).toBe('missing');
     expect(component.formatMacroValue(2.345)).toBe('2,35');
     expect(component.formatNutritionAmount(null)).toBe('-');
     expect(component.formatNutritionAmount(Number.NaN)).toBe('-');
@@ -201,7 +213,16 @@ describe('template component branches', () => {
     expect(component.formatPreferredTime(' 08:30:00 ')).toBe('08:30');
     expect(component.formatNutritionAmount(2.345)).toBe('2,35');
 
-    const internals = component as any;
+    const internals = component as unknown as {
+      normalizePortionQtyUnit(value: unknown): unknown;
+      normalizeQtyUnitSelection(
+        value: unknown,
+        options: { value: string; label: string }[],
+      ): unknown;
+      toTitleCase(value: string): string;
+      hasSelectedSource(): boolean;
+      resolveItemType(item: Partial<TemplateItem>): 'product' | 'dish' | 'meal';
+    };
     expect(internals.normalizePortionQtyUnit(null)).toBeNull();
     expect(internals.normalizePortionQtyUnit('portion')).toBe('portion');
     expect(internals.normalizePortionQtyUnit('invalid')).toBeNull();

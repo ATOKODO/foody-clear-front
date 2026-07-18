@@ -7,6 +7,8 @@ import { GenericProductService } from '../../services/generic-product-service';
 import { ProductService } from '../../services/product-service';
 import { MetaService } from '../../services/meta-service';
 import { TagService } from '../../services/tag-service';
+import type { ProductFormValue } from '../../components/product/product-form/product-form';
+import type { ProductListItem } from '../../components/product/product-list/product-list';
 import type { Product as ProductModel } from '../../services/product-service';
 
 describe('Product', () => {
@@ -418,7 +420,7 @@ describe('Product', () => {
 
   it('should cover product hub actions, CRUD callbacks and error branches', () => {
     const error = new Error('product failure');
-    const value = {
+    const value: ProductFormValue = {
       name: 'Product',
       barcode: null,
       categoryId: null,
@@ -436,7 +438,7 @@ describe('Product', () => {
       url: null,
       memo: null,
       nutritionValues: [],
-    } as any;
+    };
 
     component.onBaseUrlChange();
     component.activeView = 'product';
@@ -468,18 +470,18 @@ describe('Product', () => {
     expect(component.formVisible).toBeTrue();
     component.onCancelForm();
     component.products = [buildProduct({ id: 8, name: 'Edit me' })];
-    component.onEditRequested({ id: 'bad' } as any);
-    component.onEditRequested({ id: '99' } as any);
+    component.onEditRequested({ id: 'bad' } as unknown as ProductListItem);
+    component.onEditRequested({ id: '99' } as unknown as ProductListItem);
     component.onEditRequested(component.productListItems()[0]);
     expect(component.formMode).toBe('edit');
     component.onCancelForm();
 
     productServiceMock.remove.and.returnValue(of(void 0));
     component.editingProductId = 8;
-    component.onDeleteRequested({ id: '8' } as any);
+    component.onDeleteRequested({ id: '8' } as unknown as ProductListItem);
     expect(component.saving).toBeFalse();
     productServiceMock.remove.and.returnValue(throwError(() => error));
-    component.onDeleteRequested({ id: '8' } as any);
+    component.onDeleteRequested({ id: '8' } as unknown as ProductListItem);
     expect(component.lastError).toBe(error);
     productServiceMock.remove.and.returnValue(of(void 0));
 

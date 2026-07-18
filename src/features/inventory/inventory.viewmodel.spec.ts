@@ -3,6 +3,7 @@ import type { Product } from '../../services/product-service';
 import type { Inventory, InventoryProduct } from '../../interfaces/inventory.interface';
 import {
   INVENTORY_PURCHASE_ACCOUNTING_MODE_OPTIONS,
+  type InventoryManagedProductRow,
   buildInventoryListItems,
   buildProductListItems,
   extractInventoriesFromResponse,
@@ -82,7 +83,12 @@ describe('inventory viewmodel', () => {
     expect(newRows[0].qty).toBeNull();
     expect(newRows[0].qtyUnit).toBe('unit');
     expect(newRows[0].purchaseAccountingMode).toBe('paid');
-    const existing = { ...row, qtyUnit: 'g' as const, purchaseAccountingMode: 'invalid' as any };
+    const existing = {
+      ...row,
+      qtyUnit: 'g' as const,
+      purchaseAccountingMode:
+        'invalid' as unknown as typeof row.purchaseAccountingMode,
+    };
     const updatedRows = syncInventorySelectedProductRows([productItem], [existing]);
     expect(updatedRows[0].qty).toBe(2);
     expect(updatedRows[0].qtyUnit).toBe('g');
@@ -104,8 +110,16 @@ describe('inventory viewmodel', () => {
     expect(validatePositiveInventoryQtyRows([])).toBeNull();
     expect(validatePositiveInventoryQtyRows([row])).toBeNull();
     expect(validatePositiveInventoryQtyRows([{ ...row, qty: 0 }])).toContain('quantite');
-    expect(validateManagedInventoryProductRows([{ ...row, currentQty: 0 } as any])).toBeNull();
-    expect(validateManagedInventoryProductRows([{ ...row, qty: -1 } as any])).toContain('quantite');
+    expect(
+      validateManagedInventoryProductRows([
+        { ...row, currentQty: 0 } as unknown as InventoryManagedProductRow,
+      ]),
+    ).toBeNull();
+    expect(
+      validateManagedInventoryProductRows([
+        { ...row, qty: -1 } as unknown as InventoryManagedProductRow,
+      ]),
+    ).toContain('quantite');
   });
 
   it('extracts response shapes and builds managed rows', () => {

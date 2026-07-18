@@ -202,7 +202,7 @@ describe('ExternalMealEntryDialog', () => {
 
 function privateMethod(
   component: ExternalMealEntryDialog,
-): (name: string, ...args: unknown[]) => any {
+): (name: string, ...args: unknown[]) => unknown {
   const methods = component as unknown as Record<string, (...args: unknown[]) => unknown>;
   return (name, ...args) => methods[name](...args);
 }

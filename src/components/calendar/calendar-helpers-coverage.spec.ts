@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import type { CalendarDaySlot, CalendarInsertedProduct } from '../../interfaces/calendar.interface';
+import type { CalendarDaySlot } from '../../interfaces/calendar.interface';
 import type {
   InputDayDaySetSlotSummary,
   InputDayItemSummary,
@@ -150,11 +150,11 @@ describe('calendar helper branches', () => {
       endTime: null,
       nutritionValue: null,
     };
-    const catalog = [
+    const catalog: Parameters<typeof resolveCalendarDaySlots>[1] = [
       { id: 1, key: 'breakfast', title: 'Breakfast', sortOrder: 1, startTime: '08:00:00', endTime: '10:00:00' },
       { id: 2, key: 'lunch', title: 'Lunch', sortOrder: 2, startTime: '12:00:00', endTime: '14:00:00' },
       { id: 3, key: 'dinner', title: 'Dinner', sortOrder: 4, startTime: null, endTime: null },
-    ] as any;
+    ];
     const dayResponse = response({
       daySet: {
         id: 1,
@@ -305,11 +305,25 @@ describe('calendar helper branches', () => {
     expect(formatCalendarWeekMacroValue('donnee incomplete')).toBe('...');
     expect(formatCalendarWeekMacroValue(120)).toContain('120');
     expect(formatCalendarMetricValue(12.3)).toContain('12');
-    expect(formatCalendarMetricValue('  text ' as any)).toBe('  text ');
-    expect(formatCalendarMetricValue(' ' as any)).toBe('--');
+    expect(
+      formatCalendarMetricValue(
+        '  text ' as unknown as Parameters<typeof formatCalendarMetricValue>[0],
+      ),
+    ).toBe('  text ');
+    expect(
+      formatCalendarMetricValue(
+        ' ' as unknown as Parameters<typeof formatCalendarMetricValue>[0],
+      ),
+    ).toBe('--');
     expect(formatCalendarSignedMetricValue(2)).toContain('+');
     expect(formatCalendarSignedMetricValue(-2)).toContain('-');
-    expect(formatCalendarSignedMetricValue('text' as any)).toBe('text');
+    expect(
+      formatCalendarSignedMetricValue(
+        'text' as unknown as Parameters<
+          typeof formatCalendarSignedMetricValue
+        >[0],
+      ),
+    ).toBe('text');
     expect(formatCalendarSignedMetricValue(null)).toBe('--');
     expect(formatCalendarQuantityLabel(12.34)).toContain('12');
 
@@ -325,13 +339,42 @@ describe('calendar helper branches', () => {
     } as unknown as InputDayTotalsMacrosBySlotEntry;
     expect(buildCalendarDaySlotMacroGroups([macroSlot])[0].cards.length).toBeGreaterThan(0);
     expect(buildCalendarDaySlotMacroGroups([{ ...macroSlot, energyKcal: null, proteins: null, carbs: null, lipids: null, targets: null, deltaToTargets: null } as unknown as InputDayTotalsMacrosBySlotEntry]).length).toBe(0);
-    expect(buildCalendarMonthAlertBadges([{ key: 'energyKcal', status: 'over' } as any], [{ key: 'proteins', status: 'over' } as any], 1).length).toBe(3);
+    expect(
+      buildCalendarMonthAlertBadges(
+        [
+          { key: 'energyKcal', status: 'over' } as unknown as Parameters<
+            typeof buildCalendarMonthAlertBadges
+          >[0][number],
+        ],
+        [
+          { key: 'proteins', status: 'over' } as unknown as Parameters<
+            typeof buildCalendarMonthAlertBadges
+          >[1][number],
+        ],
+        1,
+      ).length,
+    ).toBe(3);
     expect(buildCalendarMonthAlertBadges([], [], 2).at(-1)?.text).toContain('2');
     expect(buildCalendarMacroHighlights(null)).toEqual([]);
-    expect(buildCalendarMacroHighlights({ energyKcal: 120, proteins: 'donnee incomplete', carbs: null, lipids: 12 } as any)).toHaveSize(3);
+    expect(
+      buildCalendarMacroHighlights({
+        energyKcal: 120,
+        proteins: 'donnee incomplete',
+        carbs: null,
+        lipids: 12,
+      } as unknown as Parameters<typeof buildCalendarMacroHighlights>[0]),
+    ).toHaveSize(3);
     expect(buildCalendarMacroComparisonsFromTotals(null)).toEqual([]);
     expect(buildCalendarMacroComparisonsFromTotals({ dayTotal: { energyKcal: 100, proteins: 20, carbs: 30, lipids: 10 }, targets: { energyKcal: 0, proteins: 20, carbs: 40, lipids: 10 }, bySlot: [], deltaToTargets: null, incompleteNutritionKeys: [], targetSource: 'daySet' })).toHaveSize(4);
-    expect(buildCalendarDayMacroCards({ energyKcal: 100, custom: 'x' } as any, { energyKcal: 120 }, { energyKcal: -20 })).toHaveSize(2);
+    expect(
+      buildCalendarDayMacroCards(
+        { energyKcal: 100, custom: 'x' } as unknown as Parameters<
+          typeof buildCalendarDayMacroCards
+        >[0],
+        { energyKcal: 120 },
+        { energyKcal: -20 },
+      ),
+    ).toHaveSize(2);
     expect(getCalendarMetricEntries(null)).toEqual([]);
     expect(getCalendarMetricEntries({ custom: 2, proteins: 20 }).map((entry) => entry.key)).toEqual(['proteins', 'custom']);
     expect(compareCalendarMacroKeys('proteins', 'custom')).toBeLessThan(0);

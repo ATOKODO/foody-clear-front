@@ -395,7 +395,15 @@ describe('Home', () => {
   });
 
   it('should cover loading success and error paths for planning, stats and slots', async () => {
-    const internals = component as any;
+    const internals = component as unknown as {
+      slotCatalogLoaded: boolean;
+      slotCatalog: unknown[];
+      ensureSlotCatalogLoaded(): void;
+      loadSlotCatalog(): void;
+      loadTodayPlanning(): void;
+      loadTodayStats(): void;
+      runAfterFirstPaint(task: () => void): void;
+    };
     const slot = {
       id: 11,
       key: 'breakfast',

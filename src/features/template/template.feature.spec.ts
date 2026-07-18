@@ -10,6 +10,7 @@ import { SlotService } from '../../services/slot-service';
 import { MealPrepService } from '../../services/meal-prep-service';
 import { TemplateItemDraft } from '../../components/template/template-form/template-form';
 import type { Template } from '../../interfaces/template.interface';
+import type { TemplateFeatureStore } from './template.store';
 
 describe('TemplateFeature', () => {
   let component: TemplateFeature;
@@ -338,7 +339,9 @@ describe('TemplateFeature', () => {
   });
 
   it('should expose store state and delegate all editor actions', () => {
-    const store = (component as any).store as any;
+    const store = (
+      component as unknown as { store: TemplateFeatureStore }
+    ).store;
     const template = templates[0];
 
     component.baseUrl = 'http://changed.local';
@@ -427,7 +430,7 @@ describe('TemplateFeature', () => {
     component.closeEditorDialog();
 
     spyOn(store, 'saveTemplate').and.callFake((_event: unknown, _id: number | null, callback: (value: Template) => void) => callback(template));
-    component.onTemplateSubmitted({ mode: 'add', value: { title: 'New', items: [] } } as any);
+    component.onTemplateSubmitted({ mode: 'add', title: 'New' });
     expect(component.editingTemplateId).toBe(1);
     expect(component.formMode).toBe('edit');
 

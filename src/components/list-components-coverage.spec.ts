@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { CategoryForm } from './category/category-form/category-form';
 import { CategoryList } from './category/category-list/category-list';
 import { GenericProductList } from './generic-product/generic-product-list/generic-product-list';
@@ -65,7 +65,11 @@ describe('list and form component branches', () => {
       minQuantity: 7,
     });
 
-    const normalize = (component as any).normalizeNonNegativeNumber as (value: unknown) => number | null;
+    const normalize = (
+      component as unknown as {
+        normalizeNonNegativeNumber(value: unknown): number | null;
+      }
+    ).normalizeNonNegativeNumber;
     expect(normalize(2)).toBe(2);
     expect(normalize(-1)).toBeNull();
     expect(normalize(Number.NaN)).toBeNull();

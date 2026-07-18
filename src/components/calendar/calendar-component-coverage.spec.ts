@@ -165,13 +165,23 @@ describe('Calendar component branches', () => {
     expect(component.getDaySetSlotCount()).toBe(2);
     expect(component.getDayTemplateTimelineBlocks()).toHaveSize(1);
     expect(component.getDaySetTimelineBlocks()).toHaveSize(2);
-    expect(component.getDayTemplateBlockEmptyText({ slotKey: 'breakfast' } as any)).toContain('planned');
+    expect(
+      component.getDayTemplateBlockEmptyText(
+        { slotKey: 'breakfast' } as Parameters<
+          Calendar['getDayTemplateBlockEmptyText']
+        >[0],
+      ),
+    ).toContain('planned');
 
     component.toggleDaySlotStats();
     component.toggleDaySlotStats();
     component.onDayClick({ date: '2026-02-17', dateObj: DateTime.fromISO('2026-02-17'), dayNumber: 17, isToday: false, isCurrentMonth: true, isWeekend: false } as CalendarDay);
     component.onHourClick({ hour: 8, label: '08:00', assignment: { id: '5', type: 'cycle' } }, '2026-02-17', 30);
-    component.onMonthClick(component.monthDays.find((day) => day.isCurrentMonth) as any);
+    component.onMonthClick(
+      component.monthDays.find(
+        (day) => day.isCurrentMonth,
+      ) as unknown as Parameters<Calendar['onMonthClick']>[0],
+    );
     component.onManageItems('');
     component.onManageAssignment('');
     component.onMonthDayClick({ date: '2026-02-01', dateObj: DateTime.fromISO('2026-02-01'), dayNumber: 1, isToday: false, isCurrentMonth: false, isWeekend: false });
@@ -180,9 +190,24 @@ describe('Calendar component branches', () => {
     component.requestOpenDayView('2026-02-17');
     component.onCurrentDayClick();
     component.onItemClick({ id: 44, dateLocal: '2026-02-17', productId: 10, productName: 'Porridge', qty: 100, occurredAt: null, insertedAt: '2026-02-17T08:00:00Z', slotId: 1, slotTitle: 'Breakfast', slotKey: 'breakfast', templateItemId: null } as CalendarInsertedProduct, '2026-02-17', { stopPropagation: jasmine.createSpy('stop') } as unknown as Event);
-    component.onDayTemplateItemConvert({ id: 9, inventoryId: null, stockAvailable: true } as any, { stopPropagation: jasmine.createSpy('stop') } as unknown as Event);
-    component.onDayTemplateItemConvert({ id: 9, inventoryId: 2, stockAvailable: false } as any, { stopPropagation: jasmine.createSpy('stop') } as unknown as Event);
-    component.onDayTemplateItemConvert({ id: 9, inventoryId: 2, stockAvailable: true } as any, { stopPropagation: jasmine.createSpy('stop') } as unknown as Event);
+    component.onDayTemplateItemConvert(
+      { id: 9, inventoryId: null, stockAvailable: true } as Parameters<
+        Calendar['onDayTemplateItemConvert']
+      >[0],
+      { stopPropagation: jasmine.createSpy('stop') } as unknown as Event,
+    );
+    component.onDayTemplateItemConvert(
+      { id: 9, inventoryId: 2, stockAvailable: false } as Parameters<
+        Calendar['onDayTemplateItemConvert']
+      >[0],
+      { stopPropagation: jasmine.createSpy('stop') } as unknown as Event,
+    );
+    component.onDayTemplateItemConvert(
+      { id: 9, inventoryId: 2, stockAvailable: true } as Parameters<
+        Calendar['onDayTemplateItemConvert']
+      >[0],
+      { stopPropagation: jasmine.createSpy('stop') } as unknown as Event,
+    );
     component.onDayTemplateItemRevert({ id: 44, dateLocal: '2026-02-17', productId: 10, productName: 'Porridge', qty: 1, occurredAt: null, insertedAt: '2026-02-17T08:00:00Z', slotId: 1, slotTitle: 'Breakfast', slotKey: 'breakfast', templateItemId: null } as CalendarInsertedProduct, { stopPropagation: jasmine.createSpy('stop') } as unknown as Event);
     component.onDayTemplateItemRevert({ id: 44, dateLocal: '2026-02-17', productId: 10, productName: 'Porridge', qty: 1, occurredAt: null, insertedAt: '2026-02-17T08:00:00Z', slotId: 1, slotTitle: 'Breakfast', slotKey: 'breakfast', templateItemId: 9 } as CalendarInsertedProduct, { stopPropagation: jasmine.createSpy('stop') } as unknown as Event);
 
@@ -194,8 +219,21 @@ describe('Calendar component branches', () => {
     expect(convertEvents).toEqual([{ dateLocal: '2026-02-17', templateItemId: 9, inventoryId: 2 }]);
     expect(revertEvents).toEqual([{ dateLocal: '2026-02-17', itemId: 44 }]);
 
-    component.onWeekTimelineBlockClick({ date: '2026-02-17' } as any, { startMinute: 1500 } as any, { stopPropagation: jasmine.createSpy('stop') } as unknown as Event);
-    component.onDayTimelineBlockClick({ startMinute: 1500 } as any, { stopPropagation: jasmine.createSpy('stop') } as unknown as Event);
+    component.onWeekTimelineBlockClick(
+      { date: '2026-02-17' } as Parameters<
+        Calendar['onWeekTimelineBlockClick']
+      >[0],
+      { startMinute: 1500 } as Parameters<
+        Calendar['onWeekTimelineBlockClick']
+      >[1],
+      { stopPropagation: jasmine.createSpy('stop') } as unknown as Event,
+    );
+    component.onDayTimelineBlockClick(
+      { startMinute: 1500 } as Parameters<
+        Calendar['onDayTimelineBlockClick']
+      >[0],
+      { stopPropagation: jasmine.createSpy('stop') } as unknown as Event,
+    );
     component.onDayHalfHourClick(-2, 30);
     component.onDayHalfHourClick(30, 0);
 

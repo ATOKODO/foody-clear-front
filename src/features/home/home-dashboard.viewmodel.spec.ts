@@ -178,7 +178,12 @@ describe('home dashboard viewmodel', () => {
     expect(buildHomeMacroCards(null, null)[0].actual).toBe('-');
     expect(formatCurrency(12.5)).toContain('12');
     expect(formatCurrency(Number.NaN)).toContain('0');
-    expect(formatHomeItemQty({ qty: 1.234, qtyUnit: null } as any)).toBe('1.23');
+    expect(
+      formatHomeItemQty({
+        qty: 1.234,
+        qtyUnit: null,
+      } as InputDayTemplateItemSummary),
+    ).toBe('1.23');
     expect(formatHomeDateTime(null, 'UTC')).toBe('-');
     expect(formatHomeDateTime('not-a-date', 'UTC')).toBe('not-a-date');
     expect(formatHomeDateTime('2026-07-11T08:30:00+02:00', 'Europe/Paris')).toBe('08:30');

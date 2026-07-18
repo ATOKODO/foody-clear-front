@@ -74,8 +74,12 @@ describe('GenericProductForm', () => {
     component.onSubmit();
     expect(submitted).not.toHaveBeenCalled();
 
-    const normalizeNumber = (component as any)
-      .normalizeNonNegativeNumber as (value: unknown) => number | null;
+    const internals = component as unknown as {
+      normalizeNonNegativeNumber(value: unknown): number | null;
+      normalizeNullableQuantityUnit(value: unknown): string | null;
+      normalizeNullablePortionUnit(value: unknown): string | null;
+    };
+    const normalizeNumber = internals.normalizeNonNegativeNumber;
     expect(normalizeNumber(3)).toBe(3);
     expect(normalizeNumber(-1)).toBeNull();
     expect(normalizeNumber(Number.NaN)).toBeNull();
@@ -85,9 +89,9 @@ describe('GenericProductForm', () => {
     expect(normalizeNumber(null)).toBeNull();
 
     const normalizeQuantityUnit = (value: unknown): string | null =>
-      (component as any).normalizeNullableQuantityUnit.call(component, value);
+      internals.normalizeNullableQuantityUnit.call(component, value);
     const normalizePortionUnit = (value: unknown): string | null =>
-      (component as any).normalizeNullablePortionUnit.call(component, value);
+      internals.normalizeNullablePortionUnit.call(component, value);
     expect(normalizeQuantityUnit(' g ')).toBe('g');
     expect(normalizeQuantityUnit('invalid')).toBeNull();
     expect(normalizeQuantityUnit(2)).toBeNull();

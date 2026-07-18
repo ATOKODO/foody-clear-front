@@ -302,8 +302,11 @@ describe('ProductList', () => {
     component.onSearchTermChange('');
     expect(component.resolvedProducts).toEqual(products);
 
-    const insertAvailableQtyColumn = (component as any)
-      .insertAvailableQtyColumn as (columns: string[]) => string[];
+    const insertAvailableQtyColumn = (
+      component as unknown as {
+        insertAvailableQtyColumn(columns: string[]): string[];
+      }
+    ).insertAvailableQtyColumn;
     expect(insertAvailableQtyColumn(['name'])).toEqual(['name', 'availableQty']);
     expect(insertAvailableQtyColumn(['unit', 'availableQty'])).toEqual([
       'unit',

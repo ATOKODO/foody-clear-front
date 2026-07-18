@@ -1,7 +1,6 @@
 import type {
   PreparedDish,
   PreparedMeal,
-  PreparedMealItem,
 } from '../../interfaces/meal-prep.interface';
 import type { Product } from '../../services/product-service';
 import {
