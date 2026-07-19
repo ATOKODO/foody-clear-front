@@ -14,7 +14,7 @@ export function resolveInputDayDateLocal(value: Date | string | null): string | 
 }
 
 export function resolveInputDayTimezone(value: unknown, fallbackTimezone: string): string {
-  const timezone = JSON.stringify(value ?? fallbackTimezone).trim();
+  const timezone = typeof value === 'string' ? value.trim() : '';
   return timezone === '' ? fallbackTimezone : timezone;
 }
 
