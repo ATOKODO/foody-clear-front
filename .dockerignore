@@ -4,6 +4,7 @@
 .idea
 .codex
 .agents
+scripts/figma-capture.local.html
 
 # Dependencies and generated output
 node_modules
