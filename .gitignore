@@ -55,6 +55,7 @@ secrets.json
 /connect.lock
 /coverage
 /libpeerconnection.log
+/scripts/figma-capture.local.html
 testem.log
 /typings
 
