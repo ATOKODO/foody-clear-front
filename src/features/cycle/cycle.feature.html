@@ -115,12 +115,12 @@
 </section>
 
 <ng-template #cycleFormDialog>
-  <div class="cycle-form-dialog" data-testid="cycle-dialog">
-    <div class="cycle-form-dialog__header">
+  <div class="app-dialog" data-testid="cycle-dialog">
+    <div class="app-dialog-header">
       <div>
-        <p class="cycle-form-dialog__eyebrow">Cycle</p>
-        <h3 class="cycle-form-dialog__title">{{ formDialogTitle }}</h3>
-        <p class="cycle-form-dialog__subtitle">{{ formDialogSubtitle }}</p>
+        <p class="app-dialog-eyebrow">Cycle</p>
+        <h3 class="app-dialog-title">{{ formDialogTitle }}</h3>
+        <p class="app-dialog-subtitle">{{ formDialogSubtitle }}</p>
       </div>
 
       <button mat-stroked-button type="button" (click)="onCancelForm()">
@@ -128,7 +128,7 @@
       </button>
     </div>
 
-    <mat-dialog-content class="cycle-form-dialog__content">
+    <mat-dialog-content class="app-dialog-content">
       <app-form-cycle
         [mode]="formMode"
         [cycle]="formInitialValue"
@@ -145,22 +145,22 @@
 </ng-template>
 
 <ng-template #cycleImpactDialog>
-  <div class="cycle-form-dialog" data-testid="cycle-impact-dialog">
-    <div class="cycle-form-dialog__header">
+  <div class="app-dialog" data-testid="cycle-impact-dialog">
+    <div class="app-dialog-header">
       <div>
-        <p class="cycle-form-dialog__eyebrow">Planning</p>
-        <h3 class="cycle-form-dialog__title">Assignment impact</h3>
-        <p class="cycle-form-dialog__subtitle">
+        <p class="app-dialog-eyebrow">Planning</p>
+        <h3 class="app-dialog-title">Assignment impact</h3>
+        <p class="app-dialog-subtitle">
           The cycle duration changes. Choose how to recalculate the timeline.
         </p>
       </div>
     </div>
 
-    <mat-dialog-content class="cycle-form-dialog__content space-y-5">
+    <mat-dialog-content class="app-dialog-content space-y-5">
       <section class="space-y-3">
         <div>
-          <p class="text-sm font-semibold text-slate-900">Recalculation scope</p>
-          <p class="mt-1 text-sm text-slate-600">
+          <p class="text-sm font-semibold text-app-text-strong">Recalculation scope</p>
+          <p class="mt-1 text-sm text-app-text">
             `Future` applies the change from today ({{
               impactEffectiveDateLocal
             }}). `All` recalculates the entire timeline.
@@ -180,8 +180,8 @@
 
       <section class="space-y-3">
         <div>
-          <p class="text-sm font-semibold text-slate-900">Gap handling</p>
-          <p class="mt-1 text-sm text-slate-600">
+          <p class="text-sm font-semibold text-app-text-strong">Gap handling</p>
+          <p class="mt-1 text-sm text-app-text">
             `Preserve` keeps existing gaps. `Compact` closes the sequence with no empty gaps.
           </p>
         </div>

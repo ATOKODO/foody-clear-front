@@ -1,29 +1,30 @@
+@use "mixins" as ds;
+
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .master-detail-layout {
   display: grid;
   grid-template-columns: minmax(17rem, var(--master-detail-side-width, 22rem)) minmax(0, 1fr);
-  gap: 1rem;
+  gap: var(--app-space-4);
   align-items: start;
 }
 
 .master-detail-layout__side,
 .master-detail-layout__detail {
+  @include ds.surface-card(var(--app-radius-sm), none);
+
   display: grid;
-  gap: 0.875rem;
-  padding: 0.875rem;
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.75rem;
-  background: white;
+  gap: var(--app-space-3);
+  padding: var(--app-space-3);
 }
 
 .master-detail-layout__side-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--app-space-4);
 }
 
 .master-detail-layout__side-header h3,
@@ -32,38 +33,24 @@
 }
 
 .master-detail-layout__side-header h3 {
-  color: #0f172a;
-  font-size: 1rem;
-  font-weight: 700;
+  color: var(--app-text-strong);
+  font-size: var(--app-font-size-md);
+  font-weight: var(--app-font-weight-bold);
 }
 
 .master-detail-layout__side-header p {
-  margin-top: 0.15rem;
-  color: rgb(100 116 139);
-  font-size: 0.85rem;
+  margin-top: var(--app-space-1);
+  color: var(--app-text-muted);
+  font-size: var(--app-font-size-sm);
 }
 
-:host-context(.dark) .master-detail-layout__side,
-:host-context(.dark) .master-detail-layout__detail {
-  border-color: var(--app-border);
-  background: var(--app-surface);
-}
-
-:host-context(.dark) .master-detail-layout__side-header h3 {
-  color: rgb(226 232 240);
-}
-
-:host-context(.dark) .master-detail-layout__side-header p {
-  color: rgb(148 163 184);
-}
-
-@media (max-width: 1100px) {
+@include ds.media-down(shell) {
   .master-detail-layout {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 640px) {
+@include ds.media-down(small) {
   .master-detail-layout__side-header {
     align-items: stretch;
     flex-direction: column;

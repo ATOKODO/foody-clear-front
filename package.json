@@ -29,7 +29,8 @@
     "e2e:headed": "playwright test --headed",
     "e2e:smoke": "playwright test --grep @smoke",
     "e2e:report": "playwright show-report",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "style:check": "node scripts/check-styles.mjs"
   },
   "prettier": {
     "overrides": [
@@ -52,11 +53,8 @@
     "@angular/platform-browser": "^22.0.7",
     "@angular/router": "^22.0.7",
     "@ngrx/signals": "^21.1.0",
-    "@tailwindcss/postcss": "^4.1.18",
     "luxon": "^3.7.2",
-    "postcss": "^8.5.6",
     "rxjs": "~7.8.0",
-    "tailwindcss": "^4.1.18",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
@@ -73,6 +71,7 @@
     "@angular/compiler-cli": "^22.0.7",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.58.2",
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/jasmine": "~5.1.0",
     "@types/luxon": "^3.7.1",
     "@types/node": "^25.5.0",
@@ -85,7 +84,8 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "postcss": "^8.5.3",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18",
     "typescript": "~6.0.3",
     "typescript-eslint": "8.60.1"
   }

@@ -1,6 +1,8 @@
+@use "@angular/material" as mat;
+@use "mixins" as ds;
+
 :host {
-  display: block;
-  width: 100%;
+  @include ds.host-block(100%);
 }
 
 .segmented-toggle__shell {
@@ -10,15 +12,31 @@
 }
 
 .segmented-toggle {
-  --segmented-toggle-height: 3.35rem;
+  --segmented-toggle-height: 3.25rem;
+
+  @include mat.button-toggle-overrides(
+    (
+      background-color: var(--app-action-secondary-bg),
+      divider-color: var(--app-action-secondary-border),
+      height: var(--segmented-toggle-height),
+      label-text-size: var(--app-font-size-sm),
+      label-text-weight: var(--app-font-weight-medium),
+      selected-state-background-color: var(--app-action-primary-bg),
+      selected-state-text-color: var(--app-action-primary-text),
+      shape: var(--app-radius-pill),
+      text-color: var(--app-action-secondary-text),
+    )
+  );
+
   display: flex;
   width: 100%;
-  gap: 0.65rem;
-  padding: 0.5rem;
-  border: 1px solid rgb(203 213 225 / 0.95);
-  border-radius: 1.8rem;
-  background: rgb(248 250 252);
-  box-shadow: 0 10px 24px -20px rgb(15 23 42 / 0.18);
+  gap: var(--app-space-3);
+  padding: var(--app-space-2);
+  overflow: visible;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-xl);
+  background: var(--app-surface-soft);
+  box-shadow: var(--app-shadow-sm);
 }
 
 .segmented-toggle mat-button-toggle {
@@ -27,96 +45,33 @@
   min-width: 0;
   min-height: var(--segmented-toggle-height);
   overflow: hidden;
-  border: 2px solid #4d8078;
-  border-radius: 9999px;
-  background: #c6fbf2;
-  color: #003732;
+  border: 2px solid var(--app-action-secondary-border);
+  border-radius: var(--app-radius-pill);
+  background: var(--app-action-secondary-bg);
+  color: var(--app-action-secondary-text);
   margin: 0;
   width: 100%;
+  transition: var(--app-transition-colors);
 }
 
-:host ::ng-deep .segmented-toggle.mat-button-toggle-group-appearance-standard {
-  border: 0;
+.segmented-toggle mat-button-toggle.mat-button-toggle-checked {
+  border-color: var(--app-action-primary-border);
+  background: var(--app-action-primary-bg);
+  color: var(--app-action-primary-text);
+  box-shadow: var(--app-shadow-sm);
 }
 
-:host ::ng-deep .segmented-toggle .mat-button-toggle {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-:host ::ng-deep .segmented-toggle .mat-button-toggle-appearance-standard + .mat-button-toggle-appearance-standard {
-  border-left: 2px solid #4d8078;
-}
-
-:host ::ng-deep .segmented-toggle .mat-button-toggle-button {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  color: inherit;
-}
-
-:host ::ng-deep .segmented-toggle .mat-button-toggle-label-content {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  min-height: calc(var(--segmented-toggle-height) - 4px);
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  padding: 0.68rem 0.9rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  line-height: 1.2;
-  text-align: center;
-  white-space: nowrap;
-}
-
-:host ::ng-deep .segmented-toggle .mat-button-toggle-checked {
-  border-color: #003913;
-  background: #cfffa9;
-  color: #003913;
-  box-shadow: 0 10px 24px rgb(15 23 42 / 0.12);
-}
-
-:host ::ng-deep .segmented-toggle .mat-button-toggle-checked .mat-button-toggle-button {
-  color: inherit;
-}
-
-:host ::ng-deep .segmented-toggle .mat-button-toggle-focus-overlay {
-  border-radius: inherit;
-}
-
-:host-context(.dark) .segmented-toggle {
-  border-color: var(--app-border-strong);
-  background: rgb(15 23 42 / 0.92);
-}
-
-:host-context(.dark) .segmented-toggle mat-button-toggle {
-  border-color: rgb(110 231 210 / 0.35);
-  background: rgb(8 67 61 / 0.82);
-  color: #d1fae5;
-}
-
-:host ::ng-deep :host-context(.dark) .segmented-toggle .mat-button-toggle-checked {
-  border-color: rgb(207 255 169 / 0.4);
-  background: rgb(77 124 15 / 0.92);
-  color: #ecfccb;
-}
-
-@media (max-width: 900px) {
+@include ds.media-down(large) {
   .segmented-toggle {
     flex-wrap: wrap;
   }
 
   .segmented-toggle mat-button-toggle {
-    flex-basis: calc(50% - 0.325rem);
+    flex-basis: calc(50% - var(--app-space-2));
   }
 }
 
-@media (max-width: 640px) {
+@include ds.media-down(small) {
   .segmented-toggle {
     flex-direction: column;
   }
@@ -124,5 +79,15 @@
   .segmented-toggle mat-button-toggle {
     width: 100%;
     flex-basis: auto;
+  }
+}
+
+.segmented-toggle mat-button-toggle:focus-within {
+  @include ds.focus-ring;
+}
+
+@include ds.reduced-motion {
+  .segmented-toggle mat-button-toggle {
+    transition: none;
   }
 }

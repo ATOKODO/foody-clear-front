@@ -1,15 +1,16 @@
+@use "mixins" as ds;
+@use "../feature-mixins" as feature;
+
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .day-set-feature--embedded {
-  display: grid;
-  gap: 1rem;
+  @include feature.embedded-feature;
 }
 
 .day-set-feature__dialog-card {
-  display: flex;
-  flex-direction: column;
+  @include feature.embedded-dialog-card(--day-set-dialog-top-offset);
   isolation: isolate;
   overflow: hidden;
   background: var(--app-surface);
@@ -21,18 +22,14 @@
   min-height: 0;
 }
 
-.day-set-feature__dialog-card--embedded {
-  max-height: calc(100vh - var(--day-set-dialog-top-offset, 0px) - 2rem);
-}
-
 .day-set-feature__dialog-header {
   position: sticky;
   top: 0;
   z-index: 10;
   flex: 0 0 auto;
   background: var(--app-surface);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid var(--app-border);
+  box-shadow: var(--app-shadow-sm);
 }
 
 .day-set-feature__dialog-content {
@@ -46,13 +43,9 @@
 }
 
 .app-modal-backdrop--embedded-day-set {
-  inset: var(--day-set-dialog-top-offset, 0px) 0 0 0;
+  @include feature.embedded-backdrop-offset(--day-set-dialog-top-offset);
 }
 
 .app-modal-shell--embedded-day-set {
-  top: var(--day-set-dialog-top-offset, 0px);
-  right: 0;
-  bottom: 0;
-  left: 0;
-  place-items: start center;
+  @include feature.embedded-shell-offset(--day-set-dialog-top-offset);
 }

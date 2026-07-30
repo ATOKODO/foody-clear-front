@@ -7,12 +7,12 @@
     @if (hasItems) {
       <ng-container [ngTemplateOutlet]="tableContent" />
     } @else {
-      <p class="dsl-empty text-sm text-slate-600">No day set available.</p>
+      <p class="dsl-empty text-sm text-app-text">No day set available.</p>
     }
   } @else {
     <mat-card class="overflow-hidden rounded-2xl">
-      <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-6">
-        <h2 class="text-base font-semibold text-slate-900">Day Sets</h2>
+      <div class="flex items-center justify-between gap-3 border-b border-app-border bg-app-surface-soft px-4 py-3 sm:px-6">
+        <h2 class="text-base font-semibold text-app-text-strong">Day Sets</h2>
         @if (isManageMode) {
           <button
             mat-raised-button
@@ -31,7 +31,7 @@
         </div>
       } @else {
         <mat-card appearance="outlined" class="rounded-xl">
-          <mat-card-content class="p-4 text-sm text-slate-600">
+          <mat-card-content class="p-4 text-sm text-app-text">
             No day set available.
           </mat-card-content>
         </mat-card>
@@ -41,7 +41,7 @@
 
 
   <ng-template #tableContent>
-    <div class="dsl-table-shell overflow-x-auto rounded-xl border border-slate-200">
+    <div class="dsl-table-shell overflow-x-auto rounded-xl border border-app-border">
       <table mat-table [dataSource]="resolvedDaySets" class="day-set-table w-full">
         <ng-container matColumnDef="select">
           <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
@@ -61,7 +61,7 @@
             <div class="leading-tight">
               <p>{{ item.title }}</p>
               @if (item.templateTitle) {
-                <p class="text-xs text-slate-500">
+                <p class="text-xs text-app-text-muted">
                   Template: {{ item.templateTitle }}
                 </p>
               }

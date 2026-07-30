@@ -1,24 +1,20 @@
+@use "mixins" as ds;
+
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .fc-field {
   width: 100%;
-  --mat-form-field-filled-container-color: var(--app-form-field-bg);
-  --mat-form-field-filled-label-text-color: var(--app-form-field-label);
-  --mat-form-field-filled-input-text-color: var(--app-form-field-input);
-  --mat-form-field-filled-active-indicator-color: var(--app-form-field-indicator);
-  --mat-form-field-filled-focus-active-indicator-color: var(--app-form-field-focus);
-  --mat-form-field-filled-container-shape: 4px;
 }
 
 .fc-order-list {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--app-space-3);
 }
 
 .fc-order-item {
-  transition: box-shadow 150ms ease, border-color 150ms ease;
+  transition: var(--app-transition-colors);
 }
 
 .fc-order-item.cdk-drag-preview {
@@ -30,7 +26,7 @@
 }
 
 .fc-order-list.cdk-drop-list-dragging .fc-order-item:not(.cdk-drag-placeholder) {
-  transition: transform 150ms ease;
+  transition: transform var(--app-duration-fast) var(--app-ease-standard);
 }
 
 .fc-drag-handle {
@@ -39,4 +35,15 @@
 
 .fc-drag-handle:active {
   cursor: grabbing;
+}
+
+.fc-drag-handle:focus-visible {
+  @include ds.focus-ring;
+}
+
+@include ds.reduced-motion {
+  .fc-order-item,
+  .fc-order-list.cdk-drop-list-dragging .fc-order-item:not(.cdk-drag-placeholder) {
+    transition: none;
+  }
 }

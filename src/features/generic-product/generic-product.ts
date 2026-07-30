@@ -34,9 +34,8 @@ import type { PortionUnit, QuantityUnit } from '../../services/product-service';
     UiErrorPanel,
     GenericProductList,
     GenericProductForm
-],
+  ],
   templateUrl: './generic-product.html',
-  styleUrl: './generic-product.scss',
 })
 export class GenericProduct implements OnInit, OnChanges {
   private readonly gpSrv = inject(GenericProductService);

@@ -28,7 +28,7 @@ export interface InventoryFormValue {
     MatInputModule
 ],
   templateUrl: './inventory-form.html',
-  styleUrl: './inventory-form.scss',
+  host: { style: 'display: block' },
 })
 export class InventoryForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);

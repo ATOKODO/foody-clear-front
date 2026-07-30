@@ -23,6 +23,7 @@ import {
 } from '../../interfaces/calendar.interface';
 import { CycleAssignment } from '../../interfaces/cycle-assignment.interface';
 import { Slot } from '../../interfaces/slot.interface';
+import { resolveCycleToneClass } from '../shared/cycle-tone';
 import {
   InputDayMacroValue,
   InputDayItemSummary,
@@ -762,7 +763,7 @@ export class Calendar implements OnInit, OnChanges {
         return {
           title: assignment.cycleName ?? assignment.label ?? 'Active cycle',
           progress: formatCalendarAssignmentProgress(assignment),
-          colorClass: assignment.color ?? 'bg-slate-700',
+          colorClass: assignment.color ?? 'app-tone--neutral',
         };
       }
     }
@@ -775,7 +776,7 @@ export class Calendar implements OnInit, OnChanges {
     return {
       title: assignment.cycleTitle,
       progress: `Day ${assignment.dayIndex}`,
-      colorClass: 'bg-slate-700',
+      colorClass: 'app-tone--neutral',
     };
   }
 
@@ -1644,18 +1645,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   private resolveCycleColorClass(color: string): string {
-    const normalized = color.trim().toLowerCase();
-    const colorMap: Record<string, string> = {
-      red: 'bg-red-500',
-      blue: 'bg-blue-500',
-      green: 'bg-green-500',
-      yellow: 'bg-yellow-500',
-      orange: 'bg-orange-500',
-      purple: 'bg-purple-500',
-      pink: 'bg-pink-500',
-    };
-
-    return colorMap[normalized] ?? 'bg-slate-500';
+    return resolveCycleToneClass(color);
   }
 
   private normalizeTimezone(): string {

@@ -1,41 +1,30 @@
+@use "mixins" as ds;
+@use "../feature-mixins" as feature;
 
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .meal-prep-page {
-  min-height: calc(100vh - 11rem);
+  min-height: calc(100dvh - 11rem);
 }
 
 .meal-prep-page__toggle-wrap {
   width: min(100%, 82rem);
-  margin: 0 auto 0.75rem;
+  margin: 0 auto var(--app-space-3);
 }
 
 .meal-prep-panel {
-  width: min(100%, 82rem);
-  margin: 0 auto;
-  overflow: hidden;
-  border: 1px solid rgb(226 232 240 / 0.92);
-  border-radius: 0.75rem;
-  background: rgb(255 255 255 / 0.94);
+  @include feature.feature-panel(82rem);
 }
 
 .meal-prep-panel__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgb(226 232 240 / 0.92);
-  background: rgb(246 249 252 / 0.94);
+  @include feature.panel-header;
 }
 
 .meal-prep-panel__eyebrow,
 .meal-prep-panel__title,
 .meal-prep-panel__subtitle,
-.meal-prep-section-header h3,
-.meal-prep-section-header p,
 .meal-prep-workspace__header h3,
 .meal-prep-workspace__header p,
 .meal-prep-detail-card__header h4,
@@ -44,28 +33,21 @@
 }
 
 .meal-prep-panel__eyebrow {
-  color: #4d8078;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: uppercase;
+  @include ds.eyebrow;
 }
 
 .meal-prep-panel__title {
-  color: #0f172a;
-  font-size: 1.2rem;
-  font-weight: 700;
+  @include feature.panel-title;
 }
 
 .meal-prep-panel__subtitle {
   margin-top: 0.2rem;
   max-width: 48rem;
-  color: rgb(71 85 105);
+  color: var(--app-text);
   font-size: 0.9rem;
 }
 
 .meal-prep-panel__actions,
-.meal-prep-inline-actions,
 .meal-prep-toolbar,
 .meal-prep-summary,
 .meal-prep-detail-card__header,
@@ -76,191 +58,144 @@
 }
 
 .meal-prep-panel__actions,
-.meal-prep-inline-actions {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.meal-prep-action {
-  border-width: 2px;
-  border-radius: 9999px;
-  font-weight: 500;
-  letter-spacing: 0;
-}
-
-.meal-prep-action--secondary {
-  border-color: #4d8078;
-  background: #c6fbf2;
-  color: #003732;
-}
-
-.meal-prep-action--primary {
-  border-color: #003913;
-  background: #cfffa9;
-  color: #003913;
-}
-
-.meal-prep-action--danger {
-  border-color: rgb(239 68 68 / 0.7);
-  background: rgb(254 226 226);
-  color: rgb(127 29 29);
-}
-
-.meal-prep-panel__content {
-  display: grid;
-  gap: 1rem;
-  padding: 1rem;
-}
-
-.meal-prep-toolbar {
-  justify-content: flex-end;
-  gap: 1rem;
-}
-
 .meal-prep-summary {
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
+.meal-prep-action {
+  @include ds.action-base(var(--app-font-weight-medium));
+  letter-spacing: 0;
+}
+
+.meal-prep-action:focus-visible,
+.meal-prep-list-card__select:focus-visible {
+  @include ds.focus-ring;
+}
+
+.meal-prep-action--secondary {
+  @include ds.action-tone(secondary);
+}
+
+.meal-prep-action--primary {
+  @include ds.action-tone(primary);
+}
+
+.meal-prep-action--danger {
+  @include ds.action-tone(danger);
+}
+
+.meal-prep-panel__content,
+.meal-prep-editor-card,
+.meal-prep-detail-card {
+  display: grid;
+  gap: var(--app-space-4);
+  padding: var(--app-space-4);
+}
+
+.meal-prep-toolbar {
+  justify-content: flex-end;
+  gap: var(--app-space-4);
+}
+
 .meal-prep-summary span,
 .meal-prep-badge,
 .meal-prep-feedback {
-  border-radius: 999px;
+  border-radius: var(--app-radius-pill);
   padding: 0.4rem 0.7rem;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: var(--app-font-weight-semibold);
 }
 
 .meal-prep-summary span,
 .meal-prep-badge {
-  background: rgb(241 245 249);
-  color: rgb(15 23 42);
+  background: var(--app-surface-muted);
+  color: var(--app-text-strong);
 }
 
 .meal-prep-feedback {
   width: fit-content;
-  background: rgb(236 253 245);
-  color: rgb(6 95 70);
+  background: var(--app-success-bg);
+  color: var(--app-success-text);
 }
 
-.meal-prep-workspace,
 .meal-prep-editor-card,
 .meal-prep-detail-card {
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.75rem;
-  background: white;
+  @include feature.workspace-card;
 }
 
-.meal-prep-workspace {
-  display: grid;
-  gap: 0.875rem;
-  padding: 0.875rem;
-}
-
-.meal-prep-section-header,
 .meal-prep-workspace__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--app-space-4);
 }
 
-.meal-prep-section-header h3,
-.meal-prep-workspace__header h3 {
-  color: #0f172a;
-  font-size: 1rem;
-  font-weight: 700;
+.meal-prep-workspace__header h3,
+.meal-prep-detail-card__header h4 {
+  @include feature.section-heading;
 }
 
-.meal-prep-section-header p,
 .meal-prep-workspace__header p {
-  margin-top: 0.15rem;
-  color: rgb(100 116 139);
-  font-size: 0.85rem;
+  @include feature.section-copy;
 }
 
 .meal-prep-stack,
 .meal-prep-lines,
 .meal-prep-detail-card__body {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--app-space-3);
 }
 
 .meal-prep-list-card {
-  display: grid;
-  gap: 0.35rem;
-  width: 100%;
-  padding: 0.85rem 0.9rem;
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.5rem;
-  background: rgb(255 255 255);
-  text-align: left;
-  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  @include feature.selectable-card;
 }
 
 .meal-prep-list-card__select {
-  min-width: 0;
-  display: grid;
-  gap: 0.35rem;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
+  @include feature.selectable-card-control;
 }
 
 .meal-prep-list-card:hover,
+.meal-prep-list-card:focus-within,
 .meal-prep-list-card.is-active {
-  border-color: #4d8078;
-  background: rgb(240 253 250);
-  box-shadow: 0 8px 24px rgb(15 23 42 / 0.06);
+  @include feature.selectable-card-active;
 }
 
 .meal-prep-list-card__title {
-  color: rgb(15 23 42);
-  font-weight: 700;
+  color: var(--app-text-strong);
+  font-weight: var(--app-font-weight-bold);
 }
 
 .meal-prep-list-card__meta,
 .meal-prep-empty {
-  color: rgb(100 116 139);
-  font-size: 0.875rem;
+  color: var(--app-text-muted);
+  font-size: var(--app-font-size-sm);
 }
 
 .meal-prep-list-card__status {
   width: fit-content;
-  border-radius: 999px;
-  background: rgb(255 237 213);
-  color: rgb(154 52 18);
+  border-radius: var(--app-radius-pill);
   padding: 0.25rem 0.55rem;
-  font-size: 0.75rem;
-  font-weight: 700;
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-bold);
 }
 
 .meal-prep-list-card__status.is-ready {
-  background: rgb(220 252 231);
-  color: rgb(22 101 52);
-}
-
-.meal-prep-editor-card,
-.meal-prep-detail-card {
-  display: grid;
-  gap: 1rem;
-  padding: 1rem;
+  background: var(--app-success-bg);
+  color: var(--app-success-text);
 }
 
 .meal-prep-line-card {
   display: grid;
   grid-template-columns: minmax(14rem, 1.5fr) minmax(7rem, 0.7fr) minmax(10rem, 0.8fr) auto;
-  gap: 0.75rem;
   align-items: start;
-  padding: 0.75rem;
-  border: 1px solid rgb(226 232 240);
+  gap: var(--app-space-3);
+  padding: var(--app-space-3);
+  border: 1px solid var(--app-border);
   border-radius: 0.65rem;
-  background: rgb(248 250 252);
+  background: var(--app-surface-soft);
 }
 
 .meal-prep-line-card--meal {
@@ -270,22 +205,22 @@
 .meal-prep-line-card__source {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.35rem 0.75rem;
   align-items: center;
   min-height: 3.5rem;
+  gap: 0.35rem var(--app-space-3);
 }
 
 .meal-prep-line-card__label {
   grid-column: 1 / -1;
-  color: rgb(100 116 139);
-  font-size: 0.75rem;
-  font-weight: 700;
+  color: var(--app-text-muted);
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-bold);
   text-transform: uppercase;
 }
 
 .meal-prep-line-card__source strong {
   min-width: 0;
-  color: rgb(15 23 42);
+  color: var(--app-text-strong);
   overflow-wrap: anywhere;
 }
 
@@ -293,124 +228,39 @@
   width: 100%;
 }
 
-.meal-prep-inline-actions--footer {
-  border-top: 1px solid rgb(226 232 240);
-  padding-top: 1rem;
-}
-
 .meal-prep-detail-card__header {
   justify-content: space-between;
 }
 
-.meal-prep-detail-card__header h4 {
-  color: rgb(15 23 42);
-  font-size: 1rem;
-  font-weight: 700;
-}
-
 .meal-prep-detail-card__header p {
-  margin-top: 0.15rem;
-  color: rgb(100 116 139);
-  font-size: 0.875rem;
+  @include feature.section-copy(var(--app-font-size-sm));
 }
 
 .meal-prep-detail-row {
   justify-content: space-between;
   padding-top: 0.55rem;
-  border-top: 1px solid rgb(241 245 249);
-  color: rgb(51 65 85);
+  border-top: 1px solid var(--app-border-soft);
+  color: var(--app-text);
   font-size: 0.925rem;
 }
 
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: var(--app-overlay);
-  backdrop-filter: blur(6px);
+.meal-prep-list-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-2);
+  margin-top: 0.35rem;
 }
 
-.modal-shell {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
+.meal-prep-empty--large {
+  @include feature.empty-large;
 }
 
-.modal-backdrop--meal-prep {
-  z-index: 910;
+.meal-prep-editor-card--modal {
+  border: 0;
+  padding: 0;
 }
 
-.modal-shell--meal-prep {
-  z-index: 911;
-}
-
-.modal-card {
-  width: min(1200px, calc(100vw - 2rem));
-  max-height: calc(100vh - 2rem);
-  overflow: auto;
-  border: 1px solid var(--app-border);
-  border-radius: 1rem;
-  background: var(--app-surface);
-  box-shadow: var(--app-shadow-lg);
-}
-
-.modal-card--wide {
-  width: min(1280px, calc(100vw - 2rem));
-}
-
-:host-context(.dark) .meal-prep-panel,
-:host-context(.dark) :host-context(.dark) .meal-prep-workspace,
-:host-context(.dark) .meal-prep-editor-card,
-:host-context(.dark) .meal-prep-detail-card,
-:host-context(.dark) .meal-prep-list-card {
-  border-color: var(--app-border);
-  background: var(--app-surface);
-}
-
-:host-context(.dark) .meal-prep-panel__header {
-  border-bottom-color: var(--app-border);
-  background: var(--app-form-field-bg);
-}
-
-:host-context(.dark) .meal-prep-panel__title,
-:host-context(.dark) .meal-prep-section-header h3,
-:host-context(.dark) .meal-prep-workspace__header h3,
-:host-context(.dark) .meal-prep-list-card__title,
-:host-context(.dark) .meal-prep-line-card__source strong,
-:host-context(.dark) .meal-prep-detail-card__header h4 {
-  color: rgb(226 232 240);
-}
-
-:host-context(.dark) .meal-prep-panel__subtitle,
-:host-context(.dark) .meal-prep-section-header p,
-:host-context(.dark) .meal-prep-workspace__header p,
-:host-context(.dark) .meal-prep-list-card__meta,
-:host-context(.dark) .meal-prep-empty,
-:host-context(.dark) .meal-prep-detail-card__header p,
-:host-context(.dark) .meal-prep-detail-row,
-:host-context(.dark) .meal-prep-line-card__label {
-  color: rgb(148 163 184);
-}
-
-:host-context(.dark) .meal-prep-line-card {
-  border-color: var(--app-border);
-  background: var(--app-form-field-bg);
-}
-
-:host-context(.dark) .meal-prep-action--secondary {
-  border-color: rgb(110 231 210 / 0.35);
-  background: rgb(8 67 61 / 0.82);
-  color: #d1fae5;
-}
-
-:host-context(.dark) .meal-prep-action--primary {
-  border-color: rgb(207 255 169 / 0.4);
-  background: rgb(77 124 15 / 0.92);
-  color: #ecfccb;
-}
-
-@media (max-width: 1100px) {
+@include ds.media-down(workspace) {
   .meal-prep-line-card,
   .meal-prep-line-card--meal {
     grid-template-columns: 1fr;
@@ -421,13 +271,12 @@
   }
 }
 
-@media (max-width: 640px) {
+@include ds.media-down(small) {
   .meal-prep-page {
     min-height: auto;
   }
 
   .meal-prep-panel__header,
-  .meal-prep-section-header,
   .meal-prep-workspace__header,
   .meal-prep-detail-card__header {
     flex-direction: column;
@@ -435,45 +284,23 @@
   }
 
   .meal-prep-panel__actions,
-  .meal-prep-inline-actions,
   .meal-prep-summary {
     justify-content: stretch;
   }
 
   .meal-prep-action,
-  .meal-prep-panel__actions button,
-  .meal-prep-inline-actions button {
+  .meal-prep-panel__actions button {
     width: 100%;
   }
 
   .meal-prep-panel__content {
-    padding-inline: 0.75rem;
+    padding-inline: var(--app-space-3);
   }
 }
 
-.meal-prep-list-card__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.35rem;
-}
-
-.meal-prep-empty--large {
-  display: grid;
-  min-height: 16rem;
-  place-items: center;
-  border: 1px dashed rgb(203 213 225);
-  border-radius: 0.75rem;
-  background: rgb(248 250 252);
-  text-align: center;
-}
-
-.meal-prep-editor-card--modal {
-  border: 0;
-  padding: 0;
-}
-
-:host-context(.dark) .meal-prep-empty--large {
-  border-color: var(--app-border);
-  background: var(--app-form-field-bg);
+@include ds.reduced-motion {
+  .meal-prep-action,
+  .meal-prep-list-card {
+    transition: none;
+  }
 }

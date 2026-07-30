@@ -1,19 +1,22 @@
 <div class="calendar-shell flex flex-col" data-testid="calendar-root">
   @if (showHeader()) {
-    <header class="border-b border-gray-200 px-4 py-3 shadow-sm">
+    <header class="border-b border-app-border px-4 py-3 shadow-app-sm">
       <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div class="flex items-center gap-3">
           <button
+            type="button"
             (click)="goToToday()"
             data-testid="calendar-today"
-            class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium transition-colors hover:bg-gray-50">
+            class="rounded-lg border border-app-border-strong px-4 py-2 text-sm font-medium transition-colors hover:bg-app-surface-soft">
             Today
           </button>
           <div class="flex items-center gap-2">
             <button
+              type="button"
               (click)="navigate('prev')"
+              aria-label="Previous period"
               data-testid="calendar-prev"
-              class="rounded-lg p-2 transition-colors hover:bg-gray-100">
+              class="rounded-lg p-2 transition-colors hover:bg-app-surface-muted">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
               </svg>
@@ -22,9 +25,11 @@
               {{ currentViewLabel }}
             </h2>
             <button
+              type="button"
               (click)="navigate('next')"
+              aria-label="Next period"
               data-testid="calendar-next"
-              class="rounded-lg p-2 transition-colors hover:bg-gray-100">
+              class="rounded-lg p-2 transition-colors hover:bg-app-surface-muted">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -52,20 +57,26 @@
 
   <main class="calendar-main flex-1 overflow-auto p-4">
     @if (loading) {
-      <div class="flex h-full items-center justify-center">
-        <div class="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
+      <div
+        class="flex h-full items-center justify-center"
+        role="status"
+        aria-live="polite"
+        aria-label="Loading calendar">
+        <div
+          class="h-12 w-12 animate-spin rounded-full border-b-2 border-app-accent"
+          aria-hidden="true"></div>
       </div>
     }
 
     @if (currentView === 'year' && !loading) {
       <div
-        class="calendar-year-panel overflow-hidden rounded-[1.5rem] border border-slate-200 shadow-sm">
-        <div class="calendar-year-summary border-b border-slate-200 p-4 sm:p-5">
+        class="calendar-year-panel overflow-hidden rounded-[1.5rem] border border-app-border shadow-app-sm">
+        <div class="calendar-year-summary border-b border-app-border p-4 sm:p-5">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p class="calendar-week-summary__eyebrow">Year view</p>
-              <h3 class="text-xl font-semibold text-slate-950">{{ currentViewLabel }}</h3>
-              <p class="mt-1 max-w-2xl text-sm text-slate-600">
+              <h3 class="text-xl font-semibold text-app-text-strong">{{ currentViewLabel }}</h3>
+              <p class="mt-1 max-w-2xl text-sm text-app-text">
                 The year view condenses active months, scheduled days, and cycle changes into one overview.
               </p>
             </div>
@@ -170,13 +181,13 @@
 
     @if (currentView === 'month' && !loading) {
       <div
-        class="calendar-month-panel overflow-hidden rounded-[1.5rem] border border-slate-200 shadow-sm">
-        <div class="calendar-month-summary border-b border-slate-200 p-4 sm:p-5">
+        class="calendar-month-panel overflow-hidden rounded-[1.5rem] border border-app-border shadow-app-sm">
+        <div class="calendar-month-summary border-b border-app-border p-4 sm:p-5">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p class="calendar-week-summary__eyebrow">Month view</p>
-              <h3 class="text-xl font-semibold text-slate-950">{{ currentViewLabel }}</h3>
-              <p class="mt-1 max-w-2xl text-sm text-slate-600">
+              <h3 class="text-xl font-semibold text-app-text-strong">{{ currentViewLabel }}</h3>
+              <p class="mt-1 max-w-2xl text-sm text-app-text">
                 The month view highlights active days, cycle changes, and quick actions.
               </p>
             </div>
@@ -339,7 +350,7 @@
                           }
                         }
                         @if (!getWeekDayResponse(day.date) && !day.assignment) {
-                          <div class="text-sm text-slate-500">
+                          <div class="text-sm text-app-text-muted">
                             No tracking data for this day.
                           </div>
                         }
@@ -366,13 +377,13 @@
     }
 
     @if (currentView === 'week' && !loading) {
-      <div class="calendar-week-panel overflow-hidden rounded-[1.5rem] border border-slate-200 shadow-sm">
-        <div class="calendar-week-summary border-b border-slate-200 p-4 sm:p-5">
+      <div class="calendar-week-panel overflow-hidden rounded-[1.5rem] border border-app-border shadow-app-sm">
+        <div class="calendar-week-summary border-b border-app-border p-4 sm:p-5">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p class="calendar-week-summary__eyebrow">Week view</p>
-              <h3 class="text-xl font-semibold text-slate-950">Week summary</h3>
-              <p class="mt-1 max-w-2xl text-sm text-slate-600">
+              <h3 class="text-xl font-semibold text-app-text-strong">Week summary</h3>
+              <p class="mt-1 max-w-2xl text-sm text-app-text">
                 Each day combines cycle, macros, and slots in a single view.
               </p>
             </div>
@@ -396,12 +407,12 @@
             </div>
           </div>
           @if (loadingDayItems()) {
-            <p class="mt-3 text-xs text-slate-500">
+            <p class="mt-3 text-xs text-app-text-muted">
               Loading week products...
             </p>
           }
           @if (dayItemsError()) {
-            <p class="mt-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-700">
+            <p class="mt-2 rounded border border-app-danger-border bg-app-danger-surface px-2 py-1 text-xs text-app-danger">
               Unable to load week products.
             </p>
           }
@@ -428,7 +439,7 @@
                   <button
                     type="button"
                     [attr.data-testid]="'calendar-week-mobile-items-' + day.date"
-                    class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-slate-300 px-2.5 py-1 text-[10px] font-medium text-slate-600 hover:bg-slate-100"
+                    class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-app-border-strong px-2.5 py-1 text-[10px] font-medium text-app-text hover:bg-app-surface-muted"
                     (click)="$event.stopPropagation(); onManageItems(day.date)">
                     Items
                   </button>
@@ -437,7 +448,8 @@
                     color="primary"
                     type="button"
                     [attr.data-testid]="'calendar-week-mobile-add-' + day.date"
-                    class="calendar-add-trigger-week h-8 w-8 !shadow-sm"
+                    class="calendar-add-trigger-week h-8 w-8 shadow-app-sm"
+                    [attr.aria-label]="'Add an item for ' + day.date"
                     (click)="$event.stopPropagation(); onDayClick(day)">
                     +
                   </button>
@@ -446,7 +458,7 @@
               @if (getWeekDayCycleTitle(day); as cycleTitle) {
                 <div
                   class="calendar-week-mobile__assignment"
-                  [class]="day.assignment?.color ?? 'bg-slate-500'">
+                  [class]="day.assignment?.color ?? 'app-tone--neutral'">
                   <span class="truncate">{{ cycleTitle }}</span>
                   @if (getWeekDayCycleProgress(day); as progress) {
                     <span class="calendar-week-mobile__assignment-progress">
@@ -547,7 +559,7 @@
                 @if (getWeekDayCycleTitle(day); as cycleTitle) {
                   <div
                     class="calendar-week-grid__assignment"
-                    [class]="day.assignment?.color ?? 'bg-slate-500'">
+                    [class]="day.assignment?.color ?? 'app-tone--neutral'">
                     <span class="truncate">{{ cycleTitle }}</span>
                     @if (getWeekDayCycleProgress(day); as progress) {
                       <span class="calendar-week-grid__assignment-progress">
@@ -569,7 +581,7 @@
                   <button
                     type="button"
                     [attr.data-testid]="'calendar-week-items-' + day.date"
-                    class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-slate-300 px-2.5 py-1 text-[10px] font-medium text-slate-600 hover:bg-slate-100"
+                    class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-app-border-strong px-2.5 py-1 text-[10px] font-medium text-app-text hover:bg-app-surface-muted"
                     (click)="$event.stopPropagation(); onManageItems(day.date)">
                     Items
                   </button>
@@ -578,7 +590,8 @@
                     color="primary"
                     type="button"
                     [attr.data-testid]="'calendar-week-add-' + day.date"
-                    class="calendar-add-trigger-week h-8 w-8 !shadow-sm"
+                    class="calendar-add-trigger-week h-8 w-8 shadow-app-sm"
+                    [attr.aria-label]="'Add an item for ' + day.date"
                     (click)="$event.stopPropagation(); onDayClick(day)">
                     +
                   </button>
@@ -660,8 +673,8 @@
 
     @if (currentView === 'day' && !loading) {
       <div
-        class="calendar-day-panel overflow-hidden rounded-[1.5rem] border border-slate-200 shadow-sm">
-        <div class="calendar-day-summary border-b border-slate-200 p-4 sm:p-5">
+        class="calendar-day-panel overflow-hidden rounded-[1.5rem] border border-app-border shadow-app-sm">
+        <div class="calendar-day-summary border-b border-app-border p-4 sm:p-5">
           <div class="calendar-day-summary__top">
             <div>
               <p class="calendar-week-summary__eyebrow">Day view</p>
@@ -745,7 +758,7 @@
               }
               @if (getDaySlotMacroGroups(); as slotGroups) {
                 @if (slotGroups.length > 0) {
-                  <div class="mt-4 border-t border-slate-200 pt-4">
+                  <div class="mt-4 border-t border-app-border pt-4">
                     <button
                       mat-stroked-button
                       type="button"
@@ -757,11 +770,11 @@
                     @if (showDaySlotStats) {
                       <div class="mt-4 space-y-4" data-testid="calendar-day-slot-stats">
                         @for (group of slotGroups; track trackByDaySlotMacroGroup($index, group)) {
-                          <section class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                          <section class="rounded-2xl border border-app-border bg-app-surface-soft p-4">
                             <div class="flex flex-wrap items-start justify-between gap-2">
                               <div>
-                                <p class="m-0 text-sm font-extrabold text-slate-900">{{ group.title }}</p>
-                                <p class="mt-1 text-xs font-semibold text-slate-500">{{ group.rangeLabel }}</p>
+                                <p class="m-0 text-sm font-extrabold text-app-text-strong">{{ group.title }}</p>
+                                <p class="mt-1 text-xs font-semibold text-app-text-muted">{{ group.rangeLabel }}</p>
                               </div>
                               <span class="calendar-day-summary__source-pill">Slot target</span>
                             </div>
@@ -782,12 +795,12 @@
             </section>
           </div>
           @if (loadingDayItems()) {
-            <p class="mt-3 text-xs text-slate-500">
+            <p class="mt-3 text-xs text-app-text-muted">
               Loading day products...
             </p>
           }
           @if (dayItemsError()) {
-            <p class="mt-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-700">
+            <p class="mt-2 rounded border border-app-danger-border bg-app-danger-surface px-2 py-1 text-xs text-app-danger">
               Unable to load day products.
             </p>
           }
@@ -883,7 +896,7 @@
                                 <span class="calendar-week-block__item-name">{{ plannedItem.productName }}</span>
                                 <button
                                   type="button"
-                                  class="rounded-full border border-sky-300 bg-sky-50 px-2 py-1 text-[0.64rem] font-bold text-sky-700 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+                                  class="rounded-full border border-app-info-border bg-app-info-surface px-2 py-1 text-[0.64rem] font-bold text-app-info disabled:cursor-not-allowed disabled:border-app-border disabled:bg-app-surface-muted disabled:text-app-text-muted"
                                   [attr.data-testid]="'calendar-day-convert-template-' + plannedItem.id"
                                   [disabled]="!plannedItem.stockAvailable || loadingDayItems()"
                                   (click)="onDayTemplateItemConvert(plannedItem, $event)">
@@ -941,7 +954,7 @@
                               @if (product.templateItemId !== null) {
                                 <button
                                   type="button"
-                                  class="mt-2 rounded-full border border-amber-300 bg-amber-50 px-2 py-1 text-[0.64rem] font-bold text-amber-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                  class="mt-2 rounded-full border border-app-warning-border bg-app-warning-surface px-2 py-1 text-[0.64rem] font-bold text-app-warning disabled:cursor-not-allowed disabled:opacity-60"
                                   [attr.data-testid]="'calendar-day-revert-template-' + product.id"
                                   [disabled]="loadingDayItems()"
                                   (click)="onDayTemplateItemRevert(product, $event)">

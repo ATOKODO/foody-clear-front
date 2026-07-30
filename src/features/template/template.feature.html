@@ -94,12 +94,12 @@
 </section>
 
 <ng-template #templateEditorDialog>
-  <div class="template-form-dialog" data-testid="template-dialog">
-    <div class="template-form-dialog__header">
+  <div class="app-dialog" data-testid="template-dialog">
+    <div class="app-dialog-header">
       <div>
-        <p class="template-form-dialog__eyebrow">Template</p>
-        <h3 class="template-form-dialog__title">{{ formDialogTitle }}</h3>
-        <p class="template-form-dialog__subtitle">{{ formDialogSubtitle }}</p>
+        <p class="app-dialog-eyebrow">Template</p>
+        <h3 class="app-dialog-title">{{ formDialogTitle }}</h3>
+        <p class="app-dialog-subtitle">{{ formDialogSubtitle }}</p>
       </div>
 
       <button
@@ -112,7 +112,7 @@
       </button>
     </div>
 
-    <mat-dialog-content class="template-form-dialog__content space-y-6">
+    <mat-dialog-content class="app-dialog-content space-y-6">
       <app-template-form [mode]="formMode"
         [template]="editedTemplate"
         [products]="productOptions"

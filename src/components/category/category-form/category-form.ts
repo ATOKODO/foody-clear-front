@@ -29,9 +29,9 @@ export interface CategoryFormValue {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule
-],
+  ],
   templateUrl: './category-form.html',
-  styleUrl: './category-form.scss',
+  host: { style: 'display: block' },
 })
 export class CategoryForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);

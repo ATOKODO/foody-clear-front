@@ -1,0 +1,206 @@
+@use "mixins";
+
+.app-page {
+  width: 100%;
+  max-width: var(--app-page-max);
+  margin-inline: auto;
+  padding: var(--app-space-6) var(--app-space-5) var(--app-space-8);
+}
+
+.app-page--wide {
+  max-width: var(--app-page-max-wide);
+}
+
+.app-page--compact {
+  max-width: var(--app-page-max-compact);
+}
+
+.app-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-2);
+}
+
+.app-status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--app-space-8);
+  padding: 0.35rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-pill);
+  font-size: 0.78rem;
+  font-weight: var(--app-font-weight-bold);
+}
+
+.app-status-pill--neutral {
+  background: var(--app-surface-muted);
+  color: var(--app-text);
+}
+
+.app-status-pill--saving,
+.app-status-pill--warning {
+  border-color: var(--app-warning-border);
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
+}
+
+.app-status-pill--info {
+  border-color: var(--app-info-border);
+  background: var(--app-info-bg);
+  color: var(--app-info-text);
+}
+
+.app-status-pill--success {
+  border-color: var(--app-success-border);
+  background: var(--app-success-bg);
+  color: var(--app-success-text);
+}
+
+.app-alert {
+  display: grid;
+  gap: var(--app-space-3);
+  padding: 0.95rem var(--app-space-4);
+  border: 1px solid var(--app-warning-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
+}
+
+.app-alert--error {
+  border-color: var(--app-danger-border);
+  background: var(--app-danger-bg);
+  color: var(--app-danger-text);
+}
+
+.app-alert__copy {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.app-alert__title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: var(--app-font-weight-extrabold);
+}
+
+.app-alert__message {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.app-alert__details summary {
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: var(--app-font-weight-bold);
+}
+
+.app-alert__details pre {
+  margin: var(--app-space-3) 0 0;
+  padding: 0.85rem;
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--app-text-strong) 8%, transparent);
+  font-family: var(--app-font-mono);
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.app-code-panel {
+  max-width: 100%;
+  overflow: auto;
+  padding: var(--app-space-4);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface-muted);
+  color: var(--app-text-strong);
+  font-family: var(--app-font-mono);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.app-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--app-z-modal-backdrop);
+  padding: 0;
+  border: 0;
+  background: var(--app-overlay);
+  backdrop-filter: blur(6px);
+}
+
+.app-modal-shell {
+  position: fixed;
+  inset: 0;
+  z-index: var(--app-z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--app-space-4);
+}
+
+.app-modal-card {
+  width: min(var(--app-dialog-max), calc(100vw - var(--app-space-8)));
+  max-height: calc(100vh - var(--app-space-8));
+  overflow: auto;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-lg);
+}
+
+.app-modal-card--wide {
+  width: min(var(--app-dialog-max-wide), calc(100vw - var(--app-space-8)));
+}
+
+.app-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--app-space-4);
+  padding: var(--app-space-5) var(--app-space-5) var(--app-space-4);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.app-dialog-eyebrow {
+  @include mixins.eyebrow;
+}
+
+.app-dialog-title {
+  margin-top: 0.35rem;
+  color: var(--app-text-strong);
+  font-size: 1.35rem;
+  font-weight: var(--app-font-weight-extrabold);
+}
+
+.app-dialog-subtitle {
+  margin-top: 0.35rem;
+  color: var(--app-text);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.app-dialog-content {
+  max-height: calc(90vh - 7rem);
+  padding: var(--app-space-5);
+}
+
+.app-dialog {
+  display: flex;
+  max-height: min(90vh, 61.25rem);
+  flex-direction: column;
+  background: linear-gradient(
+    180deg,
+    var(--app-surface-soft) 0%,
+    var(--app-surface) 18%
+  );
+}
+
+@include mixins.media-down(small) {
+  .app-page {
+    padding: var(--app-space-4) 0.9rem var(--app-space-6);
+  }
+
+  .app-dialog-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

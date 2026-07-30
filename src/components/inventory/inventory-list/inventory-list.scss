@@ -1,5 +1,7 @@
+@use "mixins" as ds;
+
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .inventory-list--embedded {
@@ -11,83 +13,65 @@
 }
 
 .inventory-list__table-wrap {
-  background: #f9faf4;
-  border-color: rgb(193 201 190 / 0.75);
+  background: var(--app-surface);
+  border-color: var(--app-border);
 }
 
-.inventory-table .mat-mdc-header-row {
-  background: #f6f9fc;
+.inventory-table [mat-header-row] {
+  background: var(--app-surface-soft);
 }
 
-.inventory-table .mat-mdc-header-cell {
+.inventory-table [mat-header-cell] {
   height: 3.5rem;
-  font-weight: 600;
-  color: #0f172a;
-  border-bottom-color: rgb(113 121 112 / 0.55);
+  font-weight: var(--app-font-weight-semibold);
+  color: var(--app-text-strong);
+  border-bottom-color: var(--app-border-strong);
 }
 
-.inventory-table .mat-mdc-cell {
+.inventory-table [mat-cell] {
   min-height: 3.25rem;
-  color: #191c19;
-  background: #f9faf4;
-  border-bottom-color: rgb(113 121 112 / 0.4);
+  color: var(--app-text);
+  background: var(--app-surface);
+  border-bottom-color: var(--app-border);
 }
 
-.inventory-table .mat-mdc-row.il-selectable {
+.inventory-table [mat-row].il-selectable {
   cursor: pointer;
 }
 
-.inventory-table .mat-mdc-row.il-active {
-  background: rgb(59 130 246 / 0.14);
+.inventory-table [mat-row].il-selectable:focus-visible {
+  @include ds.focus-ring;
 }
 
-.inventory-table .mat-mdc-row.il-active .mat-mdc-cell {
-  background: rgb(59 130 246 / 0.14);
+.inventory-table [mat-row].il-active {
+  background: var(--app-info-bg);
+}
+
+.inventory-table [mat-row].il-active [mat-cell] {
+  background: var(--app-info-bg);
 }
 
 .inventory-list__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--app-space-2);
 }
 
 .inventory-list__action {
   min-width: 0;
-  border-width: 2px;
-  border-radius: 9999px;
-  font-weight: 500;
+  @include ds.action-base;
 }
 
 .inventory-list__action--edit {
-  border-color: #8c7600;
-  background: #ffe167;
-  color: #544600;
+  @include ds.action-tone(edit);
 }
 
 .inventory-list__action--delete {
-  border-color: #de3731;
-  background: #ff897e;
-  color: #690005;
+  @include ds.action-tone(danger);
 }
 
-:host-context(.dark) .inventory-list__table-wrap {
-  background: rgb(17 24 39 / 0.78);
-  border-color: var(--app-border);
-}
-
-:host-context(.dark) .inventory-table .mat-mdc-header-row,
-:host-context(.dark) .inventory-table .mat-mdc-header-cell {
-  background: rgb(30 41 59 / 0.92);
-  color: rgb(226 232 240);
-}
-
-:host-context(.dark) .inventory-table .mat-mdc-cell {
-  background: rgb(17 24 39 / 0.78);
-  color: rgb(226 232 240);
-  border-bottom-color: rgb(148 163 184 / 0.24);
-}
-
-:host-context(.dark) .inventory-table .mat-mdc-row.il-active,
-:host-context(.dark) .inventory-table .mat-mdc-row.il-active .mat-mdc-cell {
-  background: rgb(37 99 235 / 0.22);
+@include ds.reduced-motion {
+  .inventory-list__action {
+    transition: none;
+  }
 }

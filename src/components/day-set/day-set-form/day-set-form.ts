@@ -40,9 +40,9 @@ export interface DaySetFormValue {
     MatInputModule,
     MatSelectModule,
     SlotList
-],
+  ],
   templateUrl: './day-set-form.html',
-  styleUrl: './day-set-form.scss',
+  host: { style: 'display: block' },
 })
 export class DaySetForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);

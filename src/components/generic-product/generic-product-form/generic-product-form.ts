@@ -33,9 +33,9 @@ export interface GenericProductFormValue {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule
-],
+  ],
   templateUrl: './generic-product-form.html',
-  styleUrl: './generic-product-form.scss',
+  host: { style: 'display: block' },
 })
 export class GenericProductForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);

@@ -306,8 +306,8 @@ describe('Calendar component branches', () => {
     expect(callPrivate('isDateInRange', '2026-02-17', '2026-02-16', '2026-02-22')).toBeTrue();
     expect(callPrivate('isDateRangeOverlappingMonth', { startDateLocal: 'invalid', endDateLocal: 'invalid' }, { year: 2026, month: 2 })).toBeFalse();
     expect(callPrivate('isDateRangeOverlappingMonth', assignment, { year: 2026, month: 2 })).toBeTrue();
-    expect(callPrivate('resolveCycleColorClass', 'red')).toBe('bg-red-500');
-    expect(callPrivate('resolveCycleColorClass', 'unknown')).toBe('bg-slate-500');
+    expect(callPrivate('resolveCycleColorClass', 'red')).toBe('app-tone--red');
+    expect(callPrivate('resolveCycleColorClass', 'unknown')).toBe('app-tone--neutral');
     expect(callPrivate('resolveMonthStartDateTime', { year: 2026, month: 2 })).toEqual(jasmine.any(DateTime));
     expect(callPrivate('findAssignmentForDate', '2026-02-17')).toBe(assignment);
     expect(callPrivate('findAssignmentForDate', '2026-03-01')).toBeUndefined();

@@ -34,14 +34,12 @@ export class App {
   currentEntry: AppNavigationEntry = APP_NAVIGATION[0].entries[0];
   currentGroupLabel = APP_NAVIGATION[0].label;
   mobileNavigationOpen = false;
-  themeMode: ThemeMode = 'light';
 
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly themeService = inject(ThemeService);
 
   constructor() {
-    this.themeMode = this.themeService.mode;
     this.syncNavigationContext(this.router.url);
 
     this.router.events
@@ -53,12 +51,10 @@ export class App {
         this.syncNavigationContext(event.urlAfterRedirects);
         this.closeMobileNavigation();
       });
+  }
 
-    this.themeService.mode$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((mode) => {
-        this.themeMode = mode;
-      });
+  get themeMode(): ThemeMode {
+    return this.themeService.modeSignal();
   }
 
   get isDarkMode(): boolean {

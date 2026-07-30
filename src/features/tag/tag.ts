@@ -30,9 +30,8 @@ import {
     UiErrorPanel,
     TagList,
     TagForm
-],
+  ],
   templateUrl: './tag.html',
-  styleUrl: './tag.scss',
 })
 export class Tag implements OnInit, OnChanges {
   private readonly tagSrv = inject(TagService);

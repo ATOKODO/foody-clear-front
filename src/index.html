@@ -5,6 +5,23 @@
   <title>FoodyClearFront</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    (() => {
+      let storedTheme = null;
+
+      try {
+        storedTheme = globalThis.localStorage.getItem('theme');
+      } catch {
+        // Storage can be unavailable in hardened or private browsing contexts.
+      }
+
+      const prefersDark = globalThis.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+      const useDarkTheme = storedTheme === 'dark' || (storedTheme !== 'light' && prefersDark);
+
+      document.documentElement.classList.toggle('dark', useDarkTheme);
+    })();
+  </script>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body class="">

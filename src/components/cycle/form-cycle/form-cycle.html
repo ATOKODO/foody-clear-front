@@ -1,5 +1,5 @@
 <section
-  class="mx-auto max-w-4xl text-gray-900 dark:text-gray-100"
+  class="mx-auto max-w-4xl text-app-text-strong"
   [class.px-4]="!inDialog()"
   [class.py-10]="!inDialog()"
   [class.px-3]="inDialog()"
@@ -21,8 +21,8 @@
         <mat-select formControlName="couleur">
           <mat-select-trigger>
             <span
-              class="inline-flex h-4 w-24 rounded-full align-middle"
-              [style.backgroundColor]="couleurSelectionnee"
+              class="app-tone-swatch inline-flex h-4 w-24 rounded-full align-middle"
+              [class]="resolveCycleToneClass(couleurSelectionnee)"
               aria-hidden="true"
             ></span>
           </mat-select-trigger>
@@ -31,8 +31,8 @@
             <mat-option [value]="option.value">
               <span class="inline-flex items-center gap-3">
                 <span
-                  class="inline-flex h-3 w-8 rounded-full"
-                  [style.backgroundColor]="option.value"
+                  class="app-tone-swatch inline-flex h-3 w-8 rounded-full"
+                  [class]="resolveCycleToneClass(option.value)"
                   aria-hidden="true"
                 ></span>
                 <span>{{ option.label }}</span>
@@ -60,10 +60,10 @@
         </mat-form-field>
 
         <div class="md:col-span-8">
-          <p class="text-sm font-semibold text-slate-900">
+          <p class="text-sm font-semibold text-app-text-strong">
             Duration shortcuts
           </p>
-          <p class="mt-1 text-sm text-slate-600">
+          <p class="mt-1 text-sm text-app-text">
             These buttons prefill the number of days. You can then adjust the value manually.
           </p>
 
@@ -84,14 +84,14 @@
 
     <div class="space-y-3">
       <div class="flex items-center justify-between gap-3">
-        <h3 class="text-base font-semibold text-slate-900">Nutrition values</h3>
+        <h3 class="text-base font-semibold text-app-text-strong">Nutrition values</h3>
         <button mat-stroked-button type="button" (click)="addNutritionValue()">
           Add value
         </button>
       </div>
 
       @if (nutritionKeys().length === 0) {
-        <p class="text-sm text-slate-600">
+        <p class="text-sm text-app-text">
           Nutrition meta keys are not loaded, free entry mode is enabled
           active.
         </p>
@@ -156,14 +156,14 @@
     <div class="space-y-3" data-testid="cycle-default-slots">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 class="text-base font-semibold text-slate-900">
+          <h3 class="text-base font-semibold text-app-text-strong">
             Default cycle slots
           </h3>
-          <p class="text-sm text-slate-600">
+          <p class="text-sm text-app-text">
             These slots are applied to all cycle days that do not use a day set.
           </p>
         </div>
-        <p class="text-sm text-slate-500">
+        <p class="text-sm text-app-text-muted">
           Selected: {{ selectedSlotIds.length }}
         </p>
       </div>
@@ -198,23 +198,23 @@
     <div class="space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 class="text-base font-semibold text-slate-900">
+          <h3 class="text-base font-semibold text-app-text-strong">
             Cycle day sets
           </h3>
-          <p class="text-sm text-slate-600">
+          <p class="text-sm text-app-text">
             Selected: {{ selectedDaySetIds.length }} /
             {{ maxSelectableDaySets }}
           </p>
         </div>
 
-        <p class="text-sm text-slate-500">
+        <p class="text-sm text-app-text-muted">
           Checked day sets replace the first remaining day based on the cycle.
         </p>
       </div>
 
       @if (showSelectionError && hasSelectedDaySetOverflow) {
         <p
-          class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger"
         >
           Some day sets are placed beyond the cycle duration. Move them into the valid area or remove them before saving.
         </p>
@@ -231,8 +231,8 @@
 
     <div class="space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <h3 class="text-base font-semibold text-slate-900">Cycle order</h3>
-        <p class="text-sm text-slate-500">
+        <h3 class="text-base font-semibold text-app-text-strong">Cycle order</h3>
+        <p class="text-sm text-app-text-muted">
           Drag and drop days to place day sets among the default days.
         </p>
       </div>
@@ -246,11 +246,11 @@
         @for (slot of timelineSlots; track trackByTimelineSlot($index, slot)) {
           <div
             cdkDrag
-            class="fc-order-item rounded-xl border px-4 py-3 shadow-sm"
-            [class.border-red-300]="slot.isOverflow"
-            [class.bg-red-50]="slot.isOverflow"
-            [class.border-slate-200]="!slot.isOverflow"
-            [class.bg-white]="!slot.isOverflow"
+            class="fc-order-item rounded-xl border px-4 py-3 shadow-app-sm"
+            [class.border-app-danger-border]="slot.isOverflow"
+            [class.bg-app-danger-surface]="slot.isOverflow"
+            [class.border-app-border]="!slot.isOverflow"
+            [class.bg-app-surface]="!slot.isOverflow"
           >
             <div class="flex items-center justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
@@ -263,18 +263,18 @@
                   Move
                 </button>
                 <div class="min-w-0">
-                  <p class="truncate text-sm font-semibold text-slate-900">
+                  <p class="truncate text-sm font-semibold text-app-text-strong">
                     Day {{ slot.dayNumber }}. {{ slot.title }}
                   </p>
                   @if (slot.isDefault) {
-                    <p class="text-xs text-slate-500">
+                    <p class="text-xs text-app-text-muted">
                       Day based on the cycle target.
                     </p>
                   } @else {
                     <p
                       class="text-xs"
-                      [class.text-red-700]="slot.isOverflow"
-                      [class.text-slate-500]="!slot.isOverflow"
+                      [class.text-app-danger]="slot.isOverflow"
+                      [class.text-app-text-muted]="!slot.isOverflow"
                     >
                       @if (slot.isOverflow) {
                         Position is outside the cycle duration. Move this day set before saving.
@@ -301,7 +301,7 @@
 
         @if (timelineSlots.length === 0) {
           <p
-            class="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500"
+            class="rounded-xl border border-dashed border-app-border-strong px-4 py-6 text-sm text-app-text-muted"
           >
             No day configured.
           </p>

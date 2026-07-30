@@ -109,12 +109,12 @@
 </section>
 
 <ng-template #productFormDialog>
-  <div class="product-form-dialog" data-testid="product-dialog">
-    <div class="product-form-dialog__header">
+  <div class="app-dialog" data-testid="product-dialog">
+    <div class="app-dialog-header">
       <div>
-        <p class="product-form-dialog__eyebrow">Product</p>
-        <h3 class="product-form-dialog__title">{{ formDialogTitle }}</h3>
-        <p class="product-form-dialog__subtitle">{{ formDialogSubtitle }}</p>
+        <p class="app-dialog-eyebrow">Product</p>
+        <h3 class="app-dialog-title">{{ formDialogTitle }}</h3>
+        <p class="app-dialog-subtitle">{{ formDialogSubtitle }}</p>
       </div>
 
       <button mat-stroked-button type="button" (click)="onCancelForm()" [disabled]="saving">
@@ -122,7 +122,7 @@
       </button>
     </div>
 
-    <mat-dialog-content class="product-form-dialog__content">
+    <mat-dialog-content class="app-dialog-content">
       <app-product-form [mode]="formMode"
         [product]="formInitialValue"
         [showHeading]="false"

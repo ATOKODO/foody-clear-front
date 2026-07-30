@@ -39,9 +39,9 @@ export interface SlotFormValue {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule
-],
+  ],
   templateUrl: './slot-form.html',
-  styleUrl: './slot-form.scss',
+  host: { style: 'display: block' },
 })
 export class SlotForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);

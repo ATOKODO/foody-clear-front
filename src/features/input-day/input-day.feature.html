@@ -1,9 +1,9 @@
 @if (isStandaloneMode) {
   <section class="app-page app-page--wide">
     <mat-card class="overflow-hidden rounded-2xl">
-      <div class="bg-slate-900 px-4 py-4 text-white sm:px-6 sm:py-5">
+      <div class="bg-app-hero px-4 py-4 text-app-on-color sm:px-6 sm:py-5">
         <h2 class="text-xl font-semibold">Day entries</h2>
-        <p class="mt-1 text-sm text-slate-300">
+        <p class="mt-1 text-sm text-app-on-color-muted">
           Manage entries, the active template, and daily totals.
         </p>
       </div>
@@ -18,11 +18,11 @@
 } @else {
   <div class="space-y-5">
     <div
-      class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3"
+      class="flex flex-wrap items-start justify-between gap-3 border-b border-app-border pb-3"
     >
       <div>
-        <h2 class="text-lg font-semibold text-slate-900">Day entries</h2>
-        <p class="text-sm text-slate-500">
+        <h2 class="text-lg font-semibold text-app-text-strong">Day entries</h2>
+        <p class="text-sm text-app-text-muted">
           {{ selectedDateLabel }}
         </p>
       </div>
@@ -87,14 +87,14 @@
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           @if (isStandaloneMode && lockDate()) {
             <div
-              class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3"
+              class="rounded-lg border border-app-border bg-app-surface-soft px-4 py-3"
             >
               <p
-                class="text-xs font-semibold uppercase tracking-wide text-slate-500"
+                class="text-xs font-semibold uppercase tracking-wide text-app-text-muted"
               >
                 Date
               </p>
-              <p class="mt-1 text-sm text-slate-900">{{ selectedDateLabel }}</p>
+              <p class="mt-1 text-sm text-app-text-strong">{{ selectedDateLabel }}</p>
             </div>
           }
 
@@ -163,7 +163,7 @@
 
         @if (initialDateError) {
           <p
-            class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger"
           >
             {{ initialDateError }}
           </p>
@@ -204,7 +204,7 @@
 
   @if (shouldShowEmbeddedInventoryGuide) {
     <p
-      class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+      class="rounded-lg border border-app-border bg-app-surface-soft px-3 py-2 text-sm text-app-text"
     >
       Select at least one inventory to display products, templates, and entered items.
     </p>
@@ -239,21 +239,21 @@
         <mat-card-content class="space-y-4 pt-2">
           @if (productsError) {
             <p
-              class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger"
             >
               Unable to load products.
             </p>
           }
           @if (inventoriesError) {
             <p
-              class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger"
             >
               Unable to load inventories.
             </p>
           }
           @if (inventoryProductsError) {
             <p
-              class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger"
             >
               Unable to load products from the selected inventory.
             </p>
@@ -276,17 +276,17 @@
                 />
               </mat-form-field>
               <div
-                class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3"
+                class="rounded-lg border border-app-border bg-app-surface-soft px-4 py-3"
               >
                 <p
-                  class="text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  class="text-xs font-semibold uppercase tracking-wide text-app-text-muted"
                 >
                   Inventory actif
                 </p>
-                <p class="mt-1 text-sm text-slate-900">
+                <p class="mt-1 text-sm text-app-text-strong">
                   {{ selectedInventoriesLabel }}
                 </p>
-                <p class="mt-1 text-xs text-slate-500">
+                <p class="mt-1 text-xs text-app-text-muted">
                   Inventory selection is available in the day context.
                 </p>
               </div>
@@ -356,7 +356,7 @@
             </div>
             @if (itemEditorError) {
               <p
-                class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger"
               >
                 {{ itemEditorError }}
               </p>
@@ -393,7 +393,7 @@
           } @else {
             @if (hasSelectedInventories) {
               @if (loadingInventoryProducts) {
-                <p class="text-sm text-slate-500">
+                <p class="text-sm text-app-text-muted">
                   Loading inventory products...
                 </p>
               }
@@ -408,14 +408,14 @@
               @if (selectedProductRows.length > 0) {
                 <div
                   [formGroup]="itemEditorForm"
-                  class="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                  class="rounded-xl border border-app-border bg-app-surface-soft p-4"
                 >
                   <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p class="text-sm font-semibold text-slate-900">
+                      <p class="text-sm font-semibold text-app-text-strong">
                         Shared details
                       </p>
-                      <p class="text-sm text-slate-600">
+                      <p class="text-sm text-app-text">
                         {{ selectedProductRows.length }}
                         {{
                           selectedProductRows.length > 1
@@ -426,9 +426,9 @@
                       </p>
                     </div>
                     <div
-                      class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+                      class="rounded-lg border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text"
                     >
-                      <span class="font-medium text-slate-900"
+                      <span class="font-medium text-app-text-strong"
                         >Slot batch:</span
                       >
                       {{ selectedBatchSlotLabel }}
@@ -464,9 +464,9 @@
                     </mat-form-field>
                   </div>
                 </div>
-                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                <div class="overflow-x-auto rounded-xl border border-app-border">
                   <table class="w-full min-w-[640px] text-sm">
-                    <thead class="bg-slate-50 text-left text-slate-700">
+                    <thead class="bg-app-surface-soft text-left text-app-text">
                       <tr>
                         <th class="px-3 py-2">Product</th>
                         <th class="px-3 py-2">Qty</th>
@@ -483,9 +483,9 @@
                           [attr.data-testid]="
                             'input-day-selected-product-' + row.productId
                           "
-                          class="border-t border-slate-100 align-top"
+                          class="border-t border-app-border-soft align-top"
                         >
-                          <td class="px-3 py-2 font-medium text-slate-900">
+                          <td class="px-3 py-2 font-medium text-app-text-strong">
                             {{ row.productName }}
                           </td>
                           <td class="px-3 py-2">
@@ -534,7 +534,7 @@
                 </div>
                 @if (itemsFormError) {
                   <p
-                    class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                    class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger"
                   >
                     {{ itemsFormError }}
                   </p>
@@ -561,14 +561,14 @@
                 </div>
               } @else {
                 <p
-                  class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+                  class="rounded-lg border border-app-border bg-app-surface-soft px-3 py-2 text-sm text-app-text"
                 >
                   Select one or more products to show the entry fields and prepare the add action.
                 </p>
               }
             } @else {
               <p
-                class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600"
+                class="rounded-lg border border-app-border bg-app-surface-soft px-3 py-2 text-sm text-app-text"
               >
                 Select at least one inventory in Day context to show its products.
               </p>
@@ -580,7 +580,7 @@
     @if (inputDayResponse; as response) {
       <div class="space-y-3">
         @if (isStandaloneMode) {
-          <h3 class="text-base font-semibold text-slate-900">
+          <h3 class="text-base font-semibold text-app-text-strong">
             Resume de la day
           </h3>
         }
@@ -588,32 +588,32 @@
           <mat-card appearance="outlined" class="rounded-xl">
             <mat-card-content class="space-y-3 p-4">
               <div class="grid gap-3 sm:grid-cols-2">
-                <p class="text-sm text-slate-700">
-                  <span class="font-semibold text-slate-900">Date:</span>
+                <p class="text-sm text-app-text">
+                  <span class="font-semibold text-app-text-strong">Date:</span>
                   {{ response.dateLocal }}
                 </p>
-                <p class="text-sm text-slate-700">
-                  <span class="font-semibold text-slate-900">Timezone:</span>
+                <p class="text-sm text-app-text">
+                  <span class="font-semibold text-app-text-strong">Timezone:</span>
                   {{ response.timezone }}
                 </p>
               </div>
               @if (response.assignment; as assignment) {
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p class="text-sm font-semibold text-slate-900">
+                <div class="rounded-lg border border-app-border bg-app-surface-soft p-3">
+                  <p class="text-sm font-semibold text-app-text-strong">
                     Active cycle
                   </p>
-                  <p class="text-sm text-slate-700">
+                  <p class="text-sm text-app-text">
                     Cycle #{{ assignment.cycleId }} -
                     {{ assignment.cycleTitle }}
                   </p>
-                  <p class="text-sm text-slate-700">
+                  <p class="text-sm text-app-text">
                     Du {{ assignment.startDateLocal }} au
                     {{ assignment.endDateLocal }} (day
                     {{ assignment.dayIndex }})
                   </p>
                 </div>
               } @else {
-                <p class="text-sm text-slate-600">
+                <p class="text-sm text-app-text">
                   No assignation pour cette date.
                 </p>
               }
@@ -625,7 +625,7 @@
             <mat-card-content class="space-y-3 p-4">
               @if (response.daySet; as daySet) {
                 <div>
-                  <p class="text-sm font-semibold text-slate-900">
+                  <p class="text-sm font-semibold text-app-text-strong">
                     DaySet #{{ daySet.id }} - {{ daySet.title }}
                   </p>
                   @if (hasEntries(daySet.nutritionValue)) {
@@ -635,7 +635,7 @@
                         track target
                       ) {
                         <span
-                          class="rounded-full bg-indigo-50 px-2 py-1 text-xs text-indigo-700"
+                          class="input-day-status input-day-status--info rounded-full px-2 py-1 text-xs"
                         >
                           {{ target.key }}:
                           {{ formatNutritionAmount(target.value) }}
@@ -643,15 +643,15 @@
                       }
                     </div>
                   } @else {
-                    <p class="text-xs text-slate-500">
+                    <p class="text-xs text-app-text-muted">
                       No nutrition target is defined for this day set.
                     </p>
                   }
                   <div
-                    class="overflow-x-auto rounded-lg border border-slate-200"
+                    class="overflow-x-auto rounded-lg border border-app-border"
                   >
                     <table class="min-w-full text-sm">
-                      <thead class="bg-slate-50 text-left text-slate-700">
+                      <thead class="bg-app-surface-soft text-left text-app-text">
                         <tr>
                           <th class="px-3 py-2">Slot</th>
                           <th class="px-3 py-2">Schedule</th>
@@ -660,10 +660,10 @@
                       </thead>
                       <tbody>
                         @for (slot of daySet.slots; track slot) {
-                          <tr class="border-t border-slate-100">
+                          <tr class="border-t border-app-border-soft">
                             <td class="px-3 py-2">
                               {{ slot.sortOrder }}. {{ slot.title }}
-                              <span class="text-slate-500"
+                              <span class="text-app-text-muted"
                                 >({{ slot.slotKey }})</span
                               >
                             </td>
@@ -679,7 +679,7 @@
                                     track target
                                   ) {
                                     <span
-                                      class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700"
+                                      class="rounded bg-app-surface-muted px-2 py-0.5 text-xs text-app-text"
                                     >
                                       {{ target.key }}:
                                       {{ formatNutritionAmount(target.value) }}
@@ -687,7 +687,7 @@
                                   }
                                 </div>
                               } @else {
-                                <span class="text-xs text-slate-500">-</span>
+                                <span class="text-xs text-app-text-muted">-</span>
                               }
                             </td>
                           </tr>
@@ -698,11 +698,11 @@
                 </div>
               } @else {
                 @if (response.totalsMacros?.targetSource === "cycle") {
-                  <p class="text-sm text-slate-600">
+                  <p class="text-sm text-app-text">
                     No active day set for this day. Daily targets come from the cycle.
                   </p>
                 } @else {
-                  <p class="text-sm text-slate-600">No daySet retourne.</p>
+                  <p class="text-sm text-app-text">No daySet retourne.</p>
                 }
               }
             </mat-card-content>
@@ -713,10 +713,10 @@
             <mat-card-content class="space-y-4 p-4">
               <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p class="text-sm font-semibold text-slate-900">
+                  <p class="text-sm font-semibold text-app-text-strong">
                     Associated template
                   </p>
-                  <p class="text-sm text-slate-600">
+                  <p class="text-sm text-app-text">
                     {{ activeTemplateLabel }}
                   </p>
                 </div>
@@ -754,22 +754,22 @@
               </div>
               @if (templateError) {
                 <p
-                  class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                  class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger"
                 >
                   {{ templateError }}
                 </p>
               }
               @if (templateActionError) {
                 <p
-                  class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                  class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger"
                 >
                   {{ templateActionError }}
                 </p>
               }
               @if (templateItems.length > 0) {
-                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                <div class="overflow-x-auto rounded-lg border border-app-border">
                   <table class="min-w-full text-sm">
-                    <thead class="bg-slate-50 text-left text-slate-700">
+                    <thead class="bg-app-surface-soft text-left text-app-text">
                       <tr>
                         <th class="px-3 py-2">Product</th>
                         <th class="px-3 py-2">Qty</th>
@@ -790,37 +790,35 @@
                           [attr.data-testid]="
                             'input-day-template-item-' + item.id
                           "
-                          class="border-t border-slate-100 align-top"
+                          class="border-t border-app-border-soft align-top"
                         >
                           <td class="px-3 py-2">
-                            <p class="font-medium text-slate-900">
+                            <p class="font-medium text-app-text-strong">
                               {{ item.productName }}
                             </p>
-                            <p class="text-xs text-slate-500">
+                            <p class="text-xs text-app-text-muted">
                               #{{ item.productId }}
                             </p>
                           </td>
                           <td class="px-3 py-2">
                             {{ formatNutritionAmount(item.qty) }}
-                            <span class="text-slate-500">{{
+                            <span class="text-app-text-muted">{{
                               item.qtyUnit ?? "-"
                             }}</span>
                           </td>
                           <td class="px-3 py-2">
                             {{ resolveTemplateItemSlotTitle(item) }}
-                            <span class="text-xs text-slate-500"
+                            <span class="text-xs text-app-text-muted"
                               >({{ resolveTemplateItemSlotKey(item) }})</span
                             >
                           </td>
                           <td class="px-3 py-2">
                             <span
-                              class="rounded-full px-2 py-1 text-xs font-medium"
-                              [class.bg-sky-100]="item.status === 'pending'"
-                              [class.text-sky-700]="item.status === 'pending'"
-                              [class.bg-emerald-100]="
-                                item.status === 'converted'
+                              class="input-day-status rounded-full px-2 py-1 text-xs font-medium"
+                              [class.input-day-status--info]="
+                                item.status === 'pending'
                               "
-                              [class.text-emerald-700]="
+                              [class.input-day-status--success]="
                                 item.status === 'converted'
                               "
                             >
@@ -833,17 +831,11 @@
                           </td>
                           <td class="px-3 py-2">
                             <span
-                              class="rounded-full px-2 py-1 text-xs font-medium"
-                              [class.bg-emerald-100]="
+                              class="input-day-status rounded-full px-2 py-1 text-xs font-medium"
+                              [class.input-day-status--success]="
                                 item.stockAvailability.enoughStock
                               "
-                              [class.text-emerald-700]="
-                                item.stockAvailability.enoughStock
-                              "
-                              [class.bg-red-100]="
-                                !item.stockAvailability.enoughStock
-                              "
-                              [class.text-red-700]="
+                              [class.input-day-status--danger]="
                                 !item.stockAvailability.enoughStock
                               "
                             >
@@ -853,7 +845,7 @@
                                   : "Low stock"
                               }}
                             </span>
-                            <p class="mt-2 text-xs text-slate-600">
+                            <p class="mt-2 text-xs text-app-text">
                               {{
                                 formatNutritionAmount(
                                   item.stockAvailability
@@ -874,7 +866,7 @@
                               getSelectedInventoriesTemplateStock(item);
                               as inventoryStock
                             ) {
-                              <p class="text-sm text-slate-700">
+                              <p class="text-sm text-app-text">
                                 {{
                                   formatNutritionAmount(
                                     inventoryStock.qtyAvailableNormalized
@@ -883,10 +875,10 @@
                               </p>
                               <p
                                 class="text-xs font-medium"
-                                [class.text-emerald-700]="
+                                [class.input-day-text--success]="
                                   inventoryStock.enoughStock
                                 "
-                                [class.text-red-700]="
+                                [class.input-day-text--danger]="
                                   !inventoryStock.enoughStock
                                 "
                               >
@@ -897,7 +889,7 @@
                                 }}
                               </p>
                             } @else {
-                              <p class="text-xs text-slate-500">
+                              <p class="text-xs text-app-text-muted">
                                 Select at least one inventory.
                               </p>
                             }
@@ -905,7 +897,7 @@
                           <td class="px-3 py-2">
                             <details>
                               <summary
-                                class="cursor-pointer text-xs font-medium text-slate-700"
+                                class="cursor-pointer text-xs font-medium text-app-text"
                               >
                                 View
                               </summary>
@@ -914,7 +906,7 @@
                                   stock of item.stockByInventory;
                                   track stock
                                 ) {
-                                  <p class="text-xs text-slate-600">
+                                  <p class="text-xs text-app-text">
                                     {{ stock.inventoryName }}:
                                     {{
                                       formatNutritionAmount(
@@ -923,10 +915,12 @@
                                     }}
                                     <span
                                       class="font-medium"
-                                      [class.text-emerald-700]="
+                                      [class.input-day-text--success]="
                                         stock.enoughStock
                                       "
-                                      [class.text-red-700]="!stock.enoughStock"
+                                      [class.input-day-text--danger]="
+                                        !stock.enoughStock
+                                      "
                                     >
                                       ({{ stock.enoughStock ? "OK" : "KO" }})
                                     </span>
@@ -961,7 +955,7 @@
                   </table>
                 </div>
               } @else {
-                <p class="text-sm text-slate-600">
+                <p class="text-sm text-app-text">
                   No template line for this day.
                 </p>
               }
@@ -970,11 +964,11 @@
         }
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-content class="space-y-3 p-4">
-            <p class="text-sm font-semibold text-slate-900">Entered items</p>
+            <p class="text-sm font-semibold text-app-text-strong">Entered items</p>
             @if (response.items.length > 0) {
-              <div class="overflow-x-auto rounded-lg border border-slate-200">
+              <div class="overflow-x-auto rounded-lg border border-app-border">
                 <table class="min-w-full text-sm">
-                  <thead class="bg-slate-50 text-left text-slate-700">
+                  <thead class="bg-app-surface-soft text-left text-app-text">
                     <tr>
                       <th class="px-3 py-2">Product</th>
                       <th class="px-3 py-2">Inventory</th>
@@ -994,18 +988,18 @@
                     ) {
                       <tr
                         [attr.data-testid]="'input-day-item-' + item.id"
-                        class="border-t border-slate-100 align-top"
+                        class="border-t border-app-border-soft align-top"
                       >
                         <td class="px-3 py-2">
-                          <p class="font-medium text-slate-900">
+                          <p class="font-medium text-app-text-strong">
                             {{ item.productName }}
-                            <span class="text-slate-500"
+                            <span class="text-app-text-muted"
                               >(#{{ item.productId }})</span
                             >
                           </p>
                           @if (item.templateItemId) {
                             <span
-                              class="mt-1 inline-flex rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                              class="input-day-status input-day-status--success mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
                             >
                               Effective depuis template
                             </span>
@@ -1014,7 +1008,7 @@
                         <td class="px-3 py-2">{{ item.inventoryId ?? "-" }}</td>
                         <td class="px-3 py-2">
                           {{ formatNutritionAmount(item.qty) }}
-                          <span class="text-slate-500">{{
+                          <span class="text-app-text-muted">{{
                             item.qtyUnit ?? "-"
                           }}</span>
                         </td>
@@ -1037,7 +1031,7 @@
                               track nutrition
                             ) {
                               <span
-                                class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700"
+                                class="rounded bg-app-surface-muted px-2 py-0.5 text-xs text-app-text"
                               >
                                 {{ nutrition.key }}:
                                 {{ formatNutritionAmount(nutrition.value) }}
@@ -1072,7 +1066,7 @@
                 </table>
               </div>
             } @else {
-              <p class="text-sm text-slate-600">
+              <p class="text-sm text-app-text">
                 No item logged for this day.
               </p>
             }
@@ -1102,17 +1096,17 @@
                 />
               </mat-form-field>
               <div
-                class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3"
+                class="rounded-lg border border-app-border bg-app-surface-soft px-4 py-3"
               >
                 <p
-                  class="text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  class="text-xs font-semibold uppercase tracking-wide text-app-text-muted"
                 >
                   Inventory actif
                 </p>
-                <p class="mt-1 text-sm text-slate-900">
+                <p class="mt-1 text-sm text-app-text-strong">
                   {{ selectedInventoriesLabel }}
                 </p>
-                <p class="mt-1 text-xs text-slate-500">
+                <p class="mt-1 text-xs text-app-text-muted">
                   Inventory selection is available in the day context.
                 </p>
               </div>
@@ -1182,7 +1176,7 @@
             </div>
             @if (itemEditorError) {
               <p
-                class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger"
               >
                 {{ itemEditorError }}
               </p>
@@ -1224,26 +1218,26 @@
             @if (response.totalsMacros; as totals) {
               <mat-card appearance="outlined" class="rounded-xl">
                 <mat-card-content class="space-y-3 p-4">
-                  <p class="text-sm font-semibold text-slate-900">
+                  <p class="text-sm font-semibold text-app-text-strong">
                     Actual / day set
                   </p>
-                  <p class="text-xs text-slate-500">
+                  <p class="text-xs text-app-text-muted">
                     {{ getTargetSourceText(totals.targetSource) }}
                   </p>
                   <div class="grid gap-3 md:grid-cols-3">
-                    <div class="rounded-lg border border-slate-200 p-3">
+                    <div class="rounded-lg border border-app-border p-3">
                       <p
-                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-app-text-muted"
                       >
                         Total day
                       </p>
-                      <div class="space-y-1 text-sm text-slate-700">
+                      <div class="space-y-1 text-sm text-app-text">
                         @for (
                           entry of totals.dayTotal | keyvalue;
                           track entry
                         ) {
                           <p>
-                            <span class="font-medium text-slate-900"
+                            <span class="font-medium text-app-text-strong"
                               >{{ entry.key }}:</span
                             >
                             {{ formatMacroValue(entry.value) }}
@@ -1251,20 +1245,20 @@
                         }
                       </div>
                     </div>
-                    <div class="rounded-lg border border-slate-200 p-3">
+                    <div class="rounded-lg border border-app-border p-3">
                       <p
-                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-app-text-muted"
                       >
                         Targets
                       </p>
                       @if (hasEntries(totals.targets)) {
-                        <div class="space-y-1 text-sm text-slate-700">
+                        <div class="space-y-1 text-sm text-app-text">
                           @for (
                             entry of totals.targets | keyvalue;
                             track entry
                           ) {
                             <p>
-                              <span class="font-medium text-slate-900"
+                              <span class="font-medium text-app-text-strong"
                                 >{{ entry.key }}:</span
                               >
                               {{ formatNutritionAmount(entry.value) }}
@@ -1272,23 +1266,23 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-slate-500">No target.</p>
+                        <p class="text-sm text-app-text-muted">No target.</p>
                       }
                     </div>
-                    <div class="rounded-lg border border-slate-200 p-3">
+                    <div class="rounded-lg border border-app-border p-3">
                       <p
-                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-app-text-muted"
                       >
                         Target delta
                       </p>
                       @if (hasEntries(totals.deltaToTargets)) {
-                        <div class="space-y-1 text-sm text-slate-700">
+                        <div class="space-y-1 text-sm text-app-text">
                           @for (
                             entry of totals.deltaToTargets | keyvalue;
                             track entry
                           ) {
                             <p>
-                              <span class="font-medium text-slate-900"
+                              <span class="font-medium text-app-text-strong"
                                 >{{ entry.key }}:</span
                               >
                               {{ formatMacroValue(entry.value) }}
@@ -1296,7 +1290,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-slate-500">No delta.</p>
+                        <p class="text-sm text-app-text-muted">No delta.</p>
                       }
                     </div>
                   </div>
@@ -1306,26 +1300,26 @@
             @if (response.projectedTotalsMacros; as projectedTotals) {
               <mat-card appearance="outlined" class="rounded-xl">
                 <mat-card-content class="space-y-3 p-4">
-                  <p class="text-sm font-semibold text-slate-900">
+                  <p class="text-sm font-semibold text-app-text-strong">
                     Actual + template / day set
                   </p>
-                  <p class="text-xs text-slate-500">
+                  <p class="text-xs text-app-text-muted">
                     {{ getTemplateTargetSourceText(projectedTotals) }}
                   </p>
                   <div class="grid gap-3 md:grid-cols-3">
-                    <div class="rounded-lg border border-slate-200 p-3">
+                    <div class="rounded-lg border border-app-border p-3">
                       <p
-                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-app-text-muted"
                       >
                         Total day
                       </p>
-                      <div class="space-y-1 text-sm text-slate-700">
+                      <div class="space-y-1 text-sm text-app-text">
                         @for (
                           entry of projectedTotals.dayTotal | keyvalue;
                           track entry
                         ) {
                           <p>
-                            <span class="font-medium text-slate-900"
+                            <span class="font-medium text-app-text-strong"
                               >{{ entry.key }}:</span
                             >
                             {{ formatMacroValue(entry.value) }}
@@ -1333,20 +1327,20 @@
                         }
                       </div>
                     </div>
-                    <div class="rounded-lg border border-slate-200 p-3">
+                    <div class="rounded-lg border border-app-border p-3">
                       <p
-                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-app-text-muted"
                       >
                         Targets
                       </p>
                       @if (hasEntries(projectedTotals.targets)) {
-                        <div class="space-y-1 text-sm text-slate-700">
+                        <div class="space-y-1 text-sm text-app-text">
                           @for (
                             entry of projectedTotals.targets | keyvalue;
                             track entry
                           ) {
                             <p>
-                              <span class="font-medium text-slate-900"
+                              <span class="font-medium text-app-text-strong"
                                 >{{ entry.key }}:</span
                               >
                               {{ formatNutritionAmount(entry.value) }}
@@ -1354,23 +1348,23 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-slate-500">No target.</p>
+                        <p class="text-sm text-app-text-muted">No target.</p>
                       }
                     </div>
-                    <div class="rounded-lg border border-slate-200 p-3">
+                    <div class="rounded-lg border border-app-border p-3">
                       <p
-                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"
+                        class="mb-2 text-xs font-semibold uppercase tracking-wide text-app-text-muted"
                       >
                         Target delta
                       </p>
                       @if (hasEntries(projectedTotals.deltaToTargets)) {
-                        <div class="space-y-1 text-sm text-slate-700">
+                        <div class="space-y-1 text-sm text-app-text">
                           @for (
                             entry of projectedTotals.deltaToTargets | keyvalue;
                             track entry
                           ) {
                             <p>
-                              <span class="font-medium text-slate-900"
+                              <span class="font-medium text-app-text-strong"
                                 >{{ entry.key }}:</span
                               >
                               {{ formatMacroValue(entry.value) }}
@@ -1378,7 +1372,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-slate-500">No delta.</p>
+                        <p class="text-sm text-app-text-muted">No delta.</p>
                       }
                     </div>
                   </div>
@@ -1392,7 +1386,7 @@
     @if (isStandaloneMode) {
       <div class="space-y-3">
         <mat-divider />
-        <h3 class="text-base font-semibold text-slate-900">Derniere reponse</h3>
+        <h3 class="text-base font-semibold text-app-text-strong">Derniere reponse</h3>
         <pre
           class="app-code-panel input-day-response max-h-[65vh] p-3 text-[11px] sm:p-4 sm:text-xs"
         >

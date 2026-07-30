@@ -34,6 +34,7 @@ import {
   getFallbackUnitsForNutritionKey,
   resolveDefaultNutritionKeys,
 } from '../../shared/default-nutrition-values';
+import { resolveCycleToneClass } from '../../shared/cycle-tone';
 
 export type TypeDuree = 'jour' | 'semaine' | 'mois';
 export type CycleFormMode = 'add' | 'edit';
@@ -95,6 +96,7 @@ export class FormCycle implements OnInit, OnChanges {
   readonly templates = input<TemplateSummary[]>([]);
   readonly showHeading = input(true);
   readonly inDialog = input(false);
+  readonly resolveCycleToneClass = resolveCycleToneClass;
 
   readonly submitted = output<{
     mode: CycleFormMode;

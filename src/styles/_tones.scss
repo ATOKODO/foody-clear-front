@@ -1,0 +1,75 @@
+@mixin data-tone($start, $end, $border) {
+  --app-tone-background: linear-gradient(135deg, #{$start}, #{$end});
+  --app-tone-border: #{$border};
+  --app-tone-color: #{$end};
+}
+
+.app-tone--blue {
+  @include data-tone(
+    var(--app-data-blue-start),
+    var(--app-data-blue-end),
+    var(--app-data-blue-border)
+  );
+}
+
+.app-tone--green {
+  @include data-tone(
+    var(--app-data-green-start),
+    var(--app-data-green-end),
+    var(--app-data-green-border)
+  );
+}
+
+.app-tone--red {
+  @include data-tone(
+    var(--app-data-red-start),
+    var(--app-data-red-end),
+    var(--app-data-red-border)
+  );
+}
+
+.app-tone--orange {
+  @include data-tone(
+    var(--app-data-orange-start),
+    var(--app-data-orange-end),
+    var(--app-data-orange-border)
+  );
+}
+
+.app-tone--violet {
+  @include data-tone(
+    var(--app-data-violet-start),
+    var(--app-data-violet-end),
+    var(--app-data-violet-border)
+  );
+}
+
+.app-tone--pink {
+  @include data-tone(
+    var(--app-data-pink-start),
+    var(--app-data-pink-end),
+    var(--app-data-pink-border)
+  );
+}
+
+.app-tone--amber {
+  @include data-tone(
+    var(--app-data-amber-start),
+    var(--app-data-amber-end),
+    var(--app-data-amber-border)
+  );
+}
+
+.app-tone--neutral {
+  --app-tone-background: linear-gradient(
+    135deg,
+    var(--app-contrast-surface),
+    var(--app-contrast-surface-muted)
+  );
+  --app-tone-border: var(--app-border-strong);
+  --app-tone-color: var(--app-text-muted);
+}
+
+.app-tone-swatch {
+  background-color: var(--app-tone-color, var(--app-text-muted));
+}

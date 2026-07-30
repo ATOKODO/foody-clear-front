@@ -128,16 +128,18 @@
 </section>
 
 @if (activeModal) {
-  <button type="button" class="modal-backdrop" aria-label="Close modal" (click)="closeActiveModal()"></button>
+  <button type="button" class="app-modal-backdrop" aria-label="Close modal" (click)="closeActiveModal()"></button>
 }
 @if (activeModal) {
-  <div class="modal-shell" [attr.data-testid]="'planning-modal-' + activeModal">
+  <div class="app-modal-shell" [attr.data-testid]="'planning-modal-' + activeModal">
     <mat-card
-      class="modal-card planning-modal"
+      class="app-modal-card planning-modal"
       [class.planning-modal--actions]="activeModal === 'actions'"
       [class.planning-modal--assignment]="activeModal === 'assignment'"
-      [class.planning-modal--items]="activeModal === 'items'"
-      [class.modal-card--wide]="activeModal === 'items'"
+      [class.app-modal-card--wide]="activeModal === 'items'"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Planning dialog"
       >
       @if (activeModal === 'actions') {
         <div class="planning-actions-modal">

@@ -1,0 +1,36 @@
+@use "tailwindcss";
+
+// Tailwind utilities expose design-system roles instead of palette implementation details.
+@theme inline {
+  --color-app-background: var(--app-bg);
+  --color-app-surface: var(--app-surface);
+  --color-app-surface-soft: var(--app-surface-soft);
+  --color-app-surface-muted: var(--app-surface-muted);
+  --color-app-border-soft: var(--app-border-soft);
+  --color-app-border: var(--app-border);
+  --color-app-border-strong: var(--app-border-strong);
+  --color-app-text: var(--app-text);
+  --color-app-text-strong: var(--app-text-strong);
+  --color-app-text-muted: var(--app-text-muted);
+  --color-app-on-color: var(--app-text-on-color);
+  --color-app-on-color-muted: var(--app-text-on-color-muted);
+  --color-app-accent: var(--app-accent);
+  --color-app-info-surface: var(--app-info-bg);
+  --color-app-info-border: var(--app-info-border);
+  --color-app-info: var(--app-info-text);
+  --color-app-success-surface: var(--app-success-bg);
+  --color-app-success-border: var(--app-success-border);
+  --color-app-success: var(--app-success-text);
+  --color-app-warning-surface: var(--app-warning-bg);
+  --color-app-warning-border: var(--app-warning-border);
+  --color-app-warning: var(--app-warning-text);
+  --color-app-danger-surface: var(--app-danger-bg);
+  --color-app-danger-border: var(--app-danger-border);
+  --color-app-danger: var(--app-danger-text);
+  --shadow-app-sm: var(--app-shadow-sm);
+  --shadow-app-lg: var(--app-shadow-lg);
+}
+
+@utility bg-app-hero {
+  background: var(--app-panel-hero);
+}

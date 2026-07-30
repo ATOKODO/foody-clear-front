@@ -1,12 +1,14 @@
+@use "mixins" as ds;
+
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .dsl-shell {
   width: 100%;
   max-width: 72rem;
   margin-inline: auto;
-  padding: 1.5rem 1rem;
+  padding: var(--app-space-6) var(--app-space-4);
 }
 
 .dsl-shell--embedded {
@@ -26,25 +28,25 @@
   background: var(--app-surface);
 }
 
-.day-set-table .mat-mdc-header-row {
+.day-set-table [mat-header-row] {
   background: var(--app-surface-soft);
 }
 
-.day-set-table .mat-mdc-header-cell {
-  font-size: 0.75rem;
-  font-weight: 700;
+.day-set-table [mat-header-cell] {
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-bold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--app-text);
 }
 
-.day-set-table .mat-mdc-cell,
-.day-set-table .mat-mdc-header-cell {
-  padding-left: 1rem;
-  padding-right: 1rem;
+.day-set-table [mat-cell],
+.day-set-table [mat-header-cell] {
+  padding-left: var(--app-space-4);
+  padding-right: var(--app-space-4);
 }
 
-.day-set-table .mat-mdc-cell.dsl-actions-cell {
+.day-set-table [mat-cell].dsl-actions-cell {
   text-align: right;
   white-space: nowrap;
 }
@@ -54,36 +56,40 @@
   flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--app-space-2);
 }
 
 .dsl-action {
   min-width: 6.5rem;
-  border-width: 2px;
-  border-radius: 9999px;
-  font-weight: 500;
+  @include ds.action-base;
 }
 
 .dsl-action--edit {
-  border-color: #8c7600;
-  background: #ffe167;
-  color: #544600;
+  @include ds.action-tone(edit);
 }
 
 .dsl-action--delete {
-  border-color: #de3731;
-  background: #ff897e;
-  color: #690005;
+  @include ds.action-tone(danger);
 }
 
-.day-set-table .mat-mdc-row.dsl-selectable {
+.day-set-table [mat-row].dsl-selectable {
   cursor: pointer;
 }
 
-.day-set-table .mat-mdc-row.dsl-active {
+.day-set-table [mat-row].dsl-selectable:focus-visible {
+  @include ds.focus-ring;
+}
+
+.day-set-table [mat-row].dsl-active {
   background: var(--app-surface-strong);
 }
 
-.day-set-table .mat-mdc-row.dsl-disabled {
+.day-set-table [mat-row].dsl-disabled {
   opacity: 0.6;
+}
+
+@include ds.reduced-motion {
+  .dsl-action {
+    transition: none;
+  }
 }

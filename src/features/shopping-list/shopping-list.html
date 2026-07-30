@@ -228,15 +228,15 @@
   @if (store.isListEditorOpen) {
     <button
       type="button"
-      class="shopping-list-modal-backdrop"
+      class="app-modal-backdrop"
       aria-label="Close l'edition de liste"
       (click)="store.closeListEditor()">
     </button>
   }
 
   @if (store.isListEditorOpen) {
-    <dialog open class="shopping-list-modal-shell" aria-label="Editer une liste de course">
-      <mat-card class="shopping-list-modal-card shopping-list-modal-card--wide">
+    <div class="app-modal-shell shopping-list-modal-shell">
+      <mat-card class="app-modal-card shopping-list-modal-card" role="dialog" aria-modal="true" aria-label="Editer une liste de course">
         <div class="shopping-list-modal-card__header">
           <div>
             <p class="shopping-list-panel__eyebrow">Courses</p>
@@ -463,21 +463,21 @@
           }
         </div>
       </mat-card>
-    </dialog>
+    </div>
   }
 
   @if (store.isTemplateEditorOpen) {
     <button
       type="button"
-      class="shopping-list-modal-backdrop"
+      class="app-modal-backdrop"
       aria-label="Close template editor"
       (click)="store.closeTemplateEditor()">
     </button>
   }
 
   @if (store.isTemplateEditorOpen) {
-    <dialog open class="shopping-list-modal-shell" aria-label="Edit shopping template">
-      <mat-card class="shopping-list-modal-card">
+    <div class="app-modal-shell shopping-list-modal-shell">
+      <mat-card class="app-modal-card shopping-list-modal-card" role="dialog" aria-modal="true" aria-label="Edit shopping template">
         <div class="shopping-list-modal-card__header">
           <div>
             <p class="shopping-list-panel__eyebrow">Template</p>
@@ -532,21 +532,21 @@
           }
         </div>
       </mat-card>
-    </dialog>
+    </div>
   }
 
   @if (store.isProductPickerOpen) {
     <button
       type="button"
-      class="shopping-list-modal-backdrop"
+      class="app-modal-backdrop"
       aria-label="Close la selection produit"
       (click)="store.closeProductPicker()">
     </button>
   }
 
   @if (store.isProductPickerOpen) {
-    <dialog open class="shopping-list-modal-shell shopping-list-modal-shell--picker" aria-label="Select a product">
-      <mat-card class="shopping-list-modal-card shopping-list-modal-card--picker">
+    <div class="app-modal-shell shopping-list-modal-shell shopping-list-modal-shell--picker">
+      <mat-card class="app-modal-card shopping-list-modal-card shopping-list-modal-card--picker" role="dialog" aria-modal="true" aria-label="Select a product">
         <div class="shopping-list-modal-card__header">
           <div>
             <p class="shopping-list-panel__eyebrow">Product selection</p>
@@ -572,6 +572,6 @@
           />
         </div>
       </mat-card>
-    </dialog>
+    </div>
   }
 </section>

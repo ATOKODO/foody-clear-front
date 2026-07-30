@@ -16,18 +16,56 @@ function createMatchMedia(matches: boolean): (query: string) => MediaQueryList {
     }) as MediaQueryList;
 }
 
+function createControlledMatchMedia(initialMatches: boolean): {
+  matchMedia: (query: string) => MediaQueryList;
+  emit: (matches: boolean) => void;
+} {
+  let matches = initialMatches;
+  const listeners = new Set<(event: MediaQueryListEvent) => void>();
+  const mediaQuery = {
+    get matches() {
+      return matches;
+    },
+    media: '(prefers-color-scheme: dark)',
+    onchange: null,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    addEventListener: (
+      _type: string,
+      listener: (event: MediaQueryListEvent) => void,
+    ) => listeners.add(listener),
+    removeEventListener: (
+      _type: string,
+      listener: (event: MediaQueryListEvent) => void,
+    ) => listeners.delete(listener),
+    dispatchEvent: () => false,
+  } as unknown as MediaQueryList;
+
+  return {
+    matchMedia: () => mediaQuery,
+    emit: (nextMatches: boolean) => {
+      matches = nextMatches;
+      const event = {
+        matches: nextMatches,
+        media: mediaQuery.media,
+      } as MediaQueryListEvent;
+      listeners.forEach((listener) => listener(event));
+    },
+  };
+}
+
 describe('ThemeService', () => {
   beforeEach(() => {
     globalThis.localStorage.removeItem('theme');
     document.documentElement.classList.remove('dark');
-    document.documentElement.style.colorScheme = 'light';
+    document.documentElement.style.removeProperty('color-scheme');
   });
 
   afterEach(() => {
     TestBed.resetTestingModule();
     globalThis.localStorage.removeItem('theme');
     document.documentElement.classList.remove('dark');
-    document.documentElement.style.colorScheme = 'light';
+    document.documentElement.style.removeProperty('color-scheme');
   });
 
   it('should restore the saved theme on init', () => {
@@ -39,8 +77,8 @@ describe('ThemeService', () => {
     const documentRef = TestBed.inject(DOCUMENT);
 
     expect(service.mode).toBe('dark');
+    expect(service.modeSignal()).toBe('dark');
     expect(documentRef.documentElement.classList.contains('dark')).toBeTrue();
-    expect(documentRef.documentElement.style.colorScheme).toBe('dark');
   });
 
   it('should toggle the theme and persist the new mode', () => {
@@ -72,6 +110,21 @@ describe('ThemeService', () => {
 
     expect(globalThis.localStorage.getItem('theme')).toBeNull();
     expect(service.mode).toBe('dark');
+    expect(document.documentElement.classList.contains('dark')).toBeTrue();
+  });
+
+  it('should follow system changes when no explicit mode is saved', () => {
+    const controlledMatchMedia = createControlledMatchMedia(false);
+    spyOn(globalThis, 'matchMedia').and.callFake(controlledMatchMedia.matchMedia);
+
+    TestBed.configureTestingModule({});
+    const service = TestBed.inject(ThemeService);
+
+    expect(service.modeSignal()).toBe('light');
+
+    controlledMatchMedia.emit(true);
+
+    expect(service.modeSignal()).toBe('dark');
     expect(document.documentElement.classList.contains('dark')).toBeTrue();
   });
 });

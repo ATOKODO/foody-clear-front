@@ -1,49 +1,52 @@
+@use "mixins" as ds;
+
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .template-list-shell {
   display: block;
 }
 
-.template-master__content {
+.template-master__content,
+.template-detail,
+.template-detail__side {
   display: grid;
-  gap: 1rem;
+  gap: var(--app-space-4);
 }
 
 .template-master__count-badge {
-  border-radius: 999px;
-  background: rgb(241 245 249);
-  color: rgb(71 85 105);
-  padding: 0.25rem 0.625rem;
-  font-size: 0.75rem;
-  font-weight: 600;
+  border-radius: var(--app-radius-pill);
+  background: var(--app-surface-muted);
+  color: var(--app-text);
+  padding: var(--app-space-1) var(--app-space-3);
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-semibold);
 }
 
 .template-master__stack {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--app-space-3);
 }
 
 .template-master__card {
+  @include ds.surface-card(var(--app-radius-xs), none);
+
   display: grid;
-  gap: 0.35rem;
+  gap: var(--app-space-1);
   width: 100%;
-  padding: 0.85rem 0.9rem;
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.5rem;
-  background: rgb(255 255 255);
+  padding: var(--app-space-3) var(--app-space-4);
   text-align: left;
-  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  transition: var(--app-transition-colors);
 }
 
 .template-master__card-select {
   display: grid;
-  gap: 0.35rem;
+  gap: var(--app-space-1);
   width: 100%;
   padding: 0;
   border: 0;
-  background: transparent;
+  background: none;
   color: inherit;
   text-align: left;
   font: inherit;
@@ -52,9 +55,13 @@
 
 .template-master__card:hover,
 .template-master__card.is-active {
-  border-color: #4d8078;
-  background: rgb(240 253 250);
-  box-shadow: 0 8px 24px rgb(15 23 42 / 0.06);
+  border-color: var(--app-accent);
+  background: var(--app-accent-soft);
+  box-shadow: var(--app-shadow-sm);
+}
+
+.template-master__card-select:focus-visible {
+  @include ds.focus-ring;
 }
 
 .template-master__card.is-disabled {
@@ -62,108 +69,68 @@
 }
 
 .template-master__card-title {
-  color: rgb(15 23 42);
-  font-weight: 700;
+  color: var(--app-text-strong);
+  font-weight: var(--app-font-weight-bold);
 }
 
 .template-master__card-meta,
 .template-master__empty {
-  color: rgb(100 116 139);
-  font-size: 0.875rem;
+  color: var(--app-text-muted);
+  font-size: var(--app-font-size-sm);
 }
 
 .template-master__card-status {
   width: fit-content;
-  border-radius: 999px;
-  background: rgb(224 242 254);
-  color: rgb(3 105 161);
-  padding: 0.25rem 0.55rem;
-  font-size: 0.75rem;
-  font-weight: 700;
+  border-radius: var(--app-radius-pill);
+  background: var(--app-info-bg);
+  color: var(--app-info-text);
+  padding: var(--app-space-1) var(--app-space-2);
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-bold);
 }
 
 .template-master__card-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--app-space-2);
 }
 
 .template-master__action {
   min-width: 0;
-  border-width: 2px;
-  border-radius: 9999px;
-  font-weight: 500;
+  @include ds.action-base(var(--app-font-weight-medium));
+
   letter-spacing: 0;
 }
 
 .template-master__action--edit {
-  border-color: #4d8078;
-  background: #c6fbf2;
-  color: #003732;
+  @include ds.action-tone(edit);
 }
 
 .template-master__action--delete {
-  border-color: rgb(239 68 68 / 0.7);
-  background: rgb(254 226 226);
-  color: rgb(127 29 29);
+  @include ds.action-tone(danger);
 }
 
 .template-master__empty {
-  border: 1px dashed rgb(203 213 225);
-  border-radius: 0.75rem;
-  background: rgb(248 250 252);
-  padding: 1rem;
-}
-
-.template-detail {
-  display: grid;
-  gap: 1rem;
-}
-
-.template-detail__side {
-  display: grid;
-  gap: 1rem;
+  border: 1px dashed var(--app-border);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-surface-soft);
+  padding: var(--app-space-4);
 }
 
 .template-compare-card__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--app-space-4);
 }
 
 .template-compare-card__field {
   width: min(100%, 22rem);
 }
 
-:host-context(.dark) .template-master__card {
-  background: rgb(15 23 42 / 0.82);
-  border-color: var(--app-border);
-}
-
-:host-context(.dark) .template-master__card:hover,
-:host-context(.dark) .template-master__card.is-active {
-  background: rgb(13 148 136 / 0.18);
-  border-color: rgb(45 212 191 / 0.55);
-}
-
-:host-context(.dark) .template-master__card-title {
-  color: rgb(226 232 240);
-}
-
-:host-context(.dark) .template-master__card-meta,
-:host-context(.dark) .template-master__empty {
-  color: rgb(148 163 184);
-}
-
-:host-context(.dark) .template-master__empty {
-  background: rgb(15 23 42 / 0.82);
-  border-color: var(--app-border);
-}
-
-@media (max-width: 640px) {
+@include ds.media-down(small) {
   .template-master__content {
-    padding: 0.8rem;
+    padding: var(--app-space-3);
   }
 
   .template-compare-card__header {
@@ -172,5 +139,12 @@
 
   .template-compare-card__field {
     width: 100%;
+  }
+}
+
+@include ds.reduced-motion {
+  .template-master__card,
+  .template-master__action {
+    transition: none;
   }
 }

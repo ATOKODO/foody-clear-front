@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TypeDuree } from '../form-cycle/form-cycle';
+import { resolveCycleToneClass } from '../../shared/cycle-tone';
 
 export type CycleListMode = 'manage' | 'select-single' | 'select-multi';
 export type CycleBreakdownStatus = 'under' | 'exact' | 'over' | 'missing';
@@ -93,6 +94,7 @@ export class ListCycle implements OnInit, OnChanges {
   readonly activeCycleId = input<number | null>(null);
   readonly showAddButton = input(true);
   readonly embedded = input(false);
+  readonly resolveCycleToneClass = resolveCycleToneClass;
 
   readonly addRequested = output<void>();
   readonly editRequested = output<CycleListItem>();

@@ -50,7 +50,7 @@ export interface TemplateFormSubmittedEvent {
     MatSelectModule,
   ],
   templateUrl: './template-form.html',
-  styleUrl: './template-form.scss',
+  host: { style: 'display: block' },
 })
 export class TemplateForm implements OnInit, OnChanges {
   readonly mode = input<TemplateFormMode>('add');

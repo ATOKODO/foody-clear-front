@@ -1,0 +1,59 @@
+@use "@angular/material" as mat;
+@use "tokens";
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        theme-type: color-scheme,
+        primary: mat.$spring-green-palette,
+        tertiary: mat.$azure-palette,
+      ),
+      typography: (
+        plain-family: tokens.$font-family-sans,
+        brand-family: tokens.$font-family-sans,
+      ),
+      density: 0,
+    )
+  );
+
+  @include tokens.app-tokens;
+
+  @include mat.card-overrides(
+    (
+      elevated-container-color: var(--app-surface-raised),
+      elevated-container-elevation: var(--app-shadow-sm),
+      filled-container-color: var(--app-surface-muted),
+      outlined-container-color: var(--app-surface),
+      outlined-container-elevation: var(--app-shadow-sm),
+      outlined-outline-color: var(--app-border),
+    )
+  );
+
+  @include mat.dialog-overrides(
+    (
+      container-color: var(--app-surface),
+      container-elevation-shadow: var(--app-shadow-lg),
+      container-shape: var(--app-radius-lg),
+      subhead-color: var(--app-text-strong),
+      supporting-text-color: var(--app-text),
+    )
+  );
+
+  @include mat.form-field-overrides(
+    (
+      filled-active-indicator-color: var(--app-form-field-indicator),
+      filled-container-color: var(--app-form-field-bg),
+      filled-container-shape: var(--app-radius-md),
+      filled-focus-active-indicator-color: var(--app-form-field-focus),
+      filled-input-text-color: var(--app-form-field-input),
+      filled-label-text-color: var(--app-form-field-label),
+    )
+  );
+
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}

@@ -18,7 +18,7 @@
 </ng-template>
 
 <ng-template #tableContent>
-  <div class="overflow-x-auto rounded-xl border border-slate-200">
+  <div class="overflow-x-auto rounded-xl border border-app-border">
     <table mat-table [dataSource]="resolvedProducts" class="product-table w-full">
       <ng-container matColumnDef="select">
         <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
@@ -133,8 +133,8 @@
     class="w-full"
     [class]="compact() ? '' : 'mx-auto max-w-6xl py-4'">
     <mat-card class="overflow-hidden rounded-2xl" [class.shadow-none]="compact()">
-      <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-6">
-        <h2 class="text-base font-semibold text-slate-900">Products</h2>
+      <div class="flex items-center justify-between gap-3 border-b border-app-border bg-app-surface-soft px-4 py-3 sm:px-6">
+        <h2 class="text-base font-semibold text-app-text-strong">Products</h2>
         @if (isManageMode) {
           <button
             mat-raised-button
@@ -153,13 +153,13 @@
           <ng-container [ngTemplateOutlet]="tableContent" />
         } @else if (hasActiveSearch && hasSourceItems) {
           <mat-card appearance="outlined" class="rounded-xl">
-            <mat-card-content class="p-4 text-sm text-slate-600">
+            <mat-card-content class="p-4 text-sm text-app-text">
               No product matches the search.
             </mat-card-content>
           </mat-card>
         } @else {
           <mat-card appearance="outlined" class="rounded-xl">
-            <mat-card-content class="p-4 text-sm text-slate-600">
+            <mat-card-content class="p-4 text-sm text-app-text">
               No product available.
             </mat-card-content>
           </mat-card>
@@ -173,9 +173,9 @@
     @if (hasItems) {
       <ng-container [ngTemplateOutlet]="tableContent" />
     } @else if (hasActiveSearch && hasSourceItems) {
-      <p class="product-list__empty text-sm text-slate-600">No product matches the search.</p>
+      <p class="product-list__empty text-sm text-app-text">No product matches the search.</p>
     } @else {
-      <p class="product-list__empty text-sm text-slate-600">No product available.</p>
+      <p class="product-list__empty text-sm text-app-text">No product available.</p>
     }
   </div>
 }

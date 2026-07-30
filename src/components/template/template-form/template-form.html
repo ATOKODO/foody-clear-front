@@ -30,7 +30,7 @@
     }
   </div>
 
-  <p class="text-sm text-slate-600">
+  <p class="text-sm text-app-text">
     Le template peut contenir des products simples, des dishs et des meals.
     La conversion reste previsionnelle tant qu'elle n'est pas appliquee dans le day.
   </p>
@@ -162,7 +162,7 @@
           }
         </div>
         @if (itemError(); as itemError) {
-          <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger">
             {{ itemError }}
           </p>
         }
@@ -195,9 +195,9 @@
       </mat-card-header>
       <mat-card-content class="pt-2">
         @if (template.items.length > 0) {
-          <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <div class="overflow-x-auto rounded-xl border border-app-border">
             <table class="min-w-full text-sm">
-              <thead class="bg-slate-50 text-left text-slate-700">
+              <thead class="bg-app-surface-soft text-left text-app-text">
                 <tr>
                   <th class="px-3 py-2">Item</th>
                   <th class="px-3 py-2">Qty</th>
@@ -210,24 +210,24 @@
                 @for (item of template.items; track item.id) {
                   <tr
                     [attr.data-testid]="'template-item-edit-row-' + item.id"
-                    class="border-t border-slate-100 align-top"
+                    class="border-t border-app-border-soft align-top"
                   >
                     <td class="px-3 py-2">
-                      <p class="font-medium text-slate-900">
+                      <p class="font-medium text-app-text-strong">
                         {{ resolveTemplateItemLabel(item) }}
                       </p>
-                      <p class="text-xs text-slate-500">
+                      <p class="text-xs text-app-text-muted">
                         {{ resolveTemplateItemTypeLabel(item) }}
                       </p>
                     </td>
                     <td class="px-3 py-2">
                       {{ formatNutritionAmount(item.qty) }}
-                      <span class="text-slate-500">{{ item.qtyUnit ?? "-" }}</span>
+                      <span class="text-app-text-muted">{{ item.qtyUnit ?? "-" }}</span>
                     </td>
                     <td class="px-3 py-2">
                       {{ resolveTemplateItemSlotLabel(item) }}
                       @if (item.slotId === null) {
-                        <p class="text-xs text-slate-500">
+                        <p class="text-xs text-app-text-muted">
                           Heure : {{ formatPreferredTime(item.preferredTime) }}
                         </p>
                       }
@@ -235,10 +235,10 @@
                     <td class="px-3 py-2">
                       <span
                         class="rounded-full px-2 py-1 text-xs font-medium"
-                        [class.bg-emerald-100]="item.stockAvailability.enoughStock"
-                        [class.text-emerald-700]="item.stockAvailability.enoughStock"
-                        [class.bg-red-100]="!item.stockAvailability.enoughStock"
-                        [class.text-red-700]="!item.stockAvailability.enoughStock"
+                        [class.bg-app-success-surface]="item.stockAvailability.enoughStock"
+                        [class.text-app-success]="item.stockAvailability.enoughStock"
+                        [class.bg-app-danger-surface]="!item.stockAvailability.enoughStock"
+                        [class.text-app-danger]="!item.stockAvailability.enoughStock"
                       >
                         {{ item.stockAvailability.enoughStock ? "Stock OK" : "Low stock" }}
                       </span>
@@ -272,14 +272,14 @@
             </table>
           </div>
         } @else {
-          <p class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+          <p class="rounded-lg border border-app-border bg-app-surface-soft px-3 py-2 text-sm text-app-text">
             No ligne dans ce template.
           </p>
         }
       </mat-card-content>
     </mat-card>
   } @else {
-    <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+    <div class="rounded-xl border border-dashed border-app-border-strong bg-app-surface-soft px-4 py-6 text-sm text-app-text">
       Commence par creer le template pour pouvoir ajouter ses lignes.
     </div>
   }

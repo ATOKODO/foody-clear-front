@@ -18,7 +18,6 @@ import { CategoryStore } from './category.store';
 ],
   providers: [CategoryStore],
   templateUrl: './category.html',
-  styleUrl: './category.scss',
 })
 export class Category {
   readonly embedded = input(false);

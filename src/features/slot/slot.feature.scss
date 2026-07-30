@@ -1,19 +1,16 @@
+@use "mixins" as ds;
+@use "../feature-mixins" as feature;
+
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .slot-feature--embedded {
-  display: grid;
-  gap: 1rem;
+  @include feature.embedded-feature;
 }
 
 .slot-feature__dialog-card {
-  display: flex;
-  flex-direction: column;
-}
-
-.slot-feature__dialog-card--embedded {
-  max-height: calc(100vh - var(--slot-dialog-top-offset, 0px) - 2rem);
+  @include feature.embedded-dialog-card(--slot-dialog-top-offset);
 }
 
 .slot-feature__dialog-header {
@@ -29,13 +26,9 @@
 }
 
 .app-modal-backdrop--embedded-slot {
-  inset: var(--slot-dialog-top-offset, 0px) 0 0 0;
+  @include feature.embedded-backdrop-offset(--slot-dialog-top-offset);
 }
 
 .app-modal-shell--embedded-slot {
-  top: var(--slot-dialog-top-offset, 0px);
-  right: 0;
-  bottom: 0;
-  left: 0;
-  place-items: start center;
+  @include feature.embedded-shell-offset(--slot-dialog-top-offset);
 }

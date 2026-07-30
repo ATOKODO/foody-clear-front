@@ -1,46 +1,21 @@
+@use "mixins" as ds;
+@use "../feature-mixins" as feature;
 
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .inventory-page {
-  position: relative;
-  min-height: calc(100vh - 11rem);
-}
-
-.inventory-page::before {
-  content: '';
-  position: absolute;
-  inset: 0 1.25rem auto;
-  height: 16rem;
-  background:
-    radial-gradient(circle at top center, rgb(16 185 129 / 0.1), transparent 58%),
-    radial-gradient(circle at top center, rgb(59 130 246 / 0.06), transparent 72%);
-  pointer-events: none;
-}
-
-.inventory-page > * {
-  position: relative;
-  z-index: 1;
+  @include feature.page-decoration;
+  min-height: calc(100dvh - 11rem);
 }
 
 .inventory-panel {
-  width: min(100%, 72rem);
-  margin: 0 auto;
-  overflow: hidden;
-  border: 1px solid rgb(226 232 240 / 0.92);
-  border-radius: 0.75rem;
-  background: rgb(255 255 255 / 0.94);
+  @include feature.feature-panel(var(--app-page-max-compact));
 }
 
 .inventory-panel__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgb(226 232 240 / 0.92);
-  background: rgb(246 249 252 / 0.92);
+  @include feature.panel-header;
 }
 
 .inventory-panel__eyebrow,
@@ -54,61 +29,49 @@
 }
 
 .inventory-panel__eyebrow {
-  color: #4d8078;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  @include ds.eyebrow;
 }
 
 .inventory-panel__title {
-  color: #0f172a;
-  font-size: 1.2rem;
-  font-weight: 700;
+  @include feature.panel-title;
 }
 
 .inventory-panel__subtitle {
   margin-top: 0.2rem;
   max-width: 46rem;
-  color: rgb(71 85 105);
+  color: var(--app-text);
   font-size: 0.9rem;
 }
 
 .inventory-panel__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.625rem;
+  @include feature.panel-actions;
 }
 
 .inventory-action {
-  border-width: 2px;
-  border-radius: 9999px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  @include ds.action-base(var(--app-font-weight-medium));
+}
+
+.inventory-action:focus-visible,
+.inventory-list-card__select:focus-visible {
+  @include ds.focus-ring;
 }
 
 .inventory-action--secondary {
-  border-color: #4d8078;
-  background: #c6fbf2;
-  color: #003732;
+  @include ds.action-tone(secondary);
 }
 
 .inventory-action--primary {
-  border-color: #003913;
-  background: #cfffa9;
-  color: #003913;
+  @include ds.action-tone(primary);
 }
 
 .inventory-action--danger {
-  border-color: rgb(239 68 68 / 0.7);
-  background: rgb(254 226 226);
-  color: rgb(127 29 29);
+  @include ds.action-tone(danger);
 }
 
 .inventory-panel__content {
   display: grid;
-  gap: 1rem;
-  padding: 1rem;
+  gap: var(--app-space-4);
+  padding: var(--app-space-4);
 }
 
 .inventory-summary,
@@ -126,90 +89,66 @@
 }
 
 .inventory-summary span {
-  border-radius: 999px;
-  background: rgb(241 245 249);
-  color: rgb(15 23 42);
-  padding: 0.4rem 0.7rem;
-  font-size: 0.8rem;
-  font-weight: 600;
+  @include feature.summary-pill;
 }
 
 .inventory-stack,
 .inventory-detail-list {
   display: grid;
-  gap: 0.75rem;
+  gap: var(--app-space-3);
 }
 
 .inventory-list-card {
-  display: grid;
-  gap: 0.35rem;
-  width: 100%;
-  padding: 0.85rem 0.9rem;
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.5rem;
-  background: rgb(255 255 255);
-  text-align: left;
-  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  @include feature.selectable-card;
 }
 
 .inventory-list-card__select {
-  min-width: 0;
-  display: grid;
-  gap: 0.35rem;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  font: inherit;
-  cursor: pointer;
+  @include feature.selectable-card-control;
 }
 
 .inventory-list-card:hover,
+.inventory-list-card:focus-within,
 .inventory-list-card.is-active {
-  border-color: #4d8078;
-  background: rgb(240 253 250);
-  box-shadow: 0 8px 24px rgb(15 23 42 / 0.06);
+  @include feature.selectable-card-active;
 }
 
 .inventory-list-card__title {
-  color: rgb(15 23 42);
-  font-weight: 700;
+  color: var(--app-text-strong);
+  font-weight: var(--app-font-weight-bold);
 }
 
 .inventory-list-card__meta,
 .inventory-empty {
-  color: rgb(100 116 139);
-  font-size: 0.875rem;
+  color: var(--app-text-muted);
+  font-size: var(--app-font-size-sm);
 }
 
 .inventory-list-card__status {
   width: fit-content;
-  border-radius: 999px;
-  background: rgb(220 252 231);
-  color: rgb(22 101 52);
+  border-radius: var(--app-radius-pill);
   padding: 0.25rem 0.55rem;
-  font-size: 0.75rem;
-  font-weight: 700;
+  background: var(--app-success-bg);
+  color: var(--app-success-text);
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-bold);
 }
 
 .inventory-list-card__status--empty {
-  background: rgb(255 237 213);
-  color: rgb(154 52 18);
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
 }
 
 .inventory-list-card__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--app-space-2);
 }
 
-.inventory-workspace,
 .inventory-detail-card {
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.75rem;
-  background: white;
+  @include feature.workspace-card;
+  display: grid;
+  gap: 0.875rem;
+  padding: 0.875rem;
 }
 
 .inventory-workspace__header,
@@ -219,48 +158,38 @@
 
 .inventory-workspace__header h3,
 .inventory-detail-card__header h4 {
-  color: #0f172a;
-  font-size: 1rem;
-  font-weight: 700;
+  @include feature.section-heading;
 }
 
 .inventory-workspace__header p,
 .inventory-detail-card__header p {
-  margin-top: 0.15rem;
-  color: rgb(100 116 139);
-  font-size: 0.85rem;
-}
-
-.inventory-detail-card {
-  display: grid;
-  gap: 0.875rem;
-  padding: 0.875rem;
+  @include feature.section-copy;
 }
 
 .inventory-detail-row {
   justify-content: space-between;
-  padding: 0.75rem 0.85rem;
-  border: 1px solid rgb(226 232 240);
-  border-radius: 0.5rem;
-  background: rgb(248 250 252);
+  padding: var(--app-space-3) 0.85rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-xs);
+  background: var(--app-surface-soft);
 }
 
 .inventory-detail-row__product {
   display: grid;
-  gap: 0.15rem;
   min-width: 0;
+  gap: 0.15rem;
 }
 
 .inventory-detail-row__product strong,
 .inventory-detail-row__qty strong,
 .inventory-detail-row__normalized strong {
-  color: rgb(15 23 42);
+  color: var(--app-text-strong);
 }
 
 .inventory-detail-row__product span,
 .inventory-detail-row__qty span,
 .inventory-detail-row__normalized span {
-  color: rgb(100 116 139);
+  color: var(--app-text-muted);
   font-size: 0.8rem;
 }
 
@@ -272,128 +201,22 @@
 }
 
 .inventory-empty--large {
-  padding: 0.75rem 0;
+  padding: var(--app-space-3) 0;
 }
 
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: var(--app-overlay);
-  backdrop-filter: blur(6px);
+.inventory-modal-card--form {
+  width: min(67.5rem, calc(100vw - var(--app-space-8)));
 }
 
-.modal-shell {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
+.inventory-modal-backdrop--nested {
+  z-index: calc(var(--app-z-modal-backdrop) + 10);
 }
 
-.modal-backdrop--inventory {
-  z-index: 900;
+.inventory-modal-shell--nested {
+  z-index: calc(var(--app-z-modal) + 10);
 }
 
-.modal-shell--inventory {
-  z-index: 901;
-}
-
-.modal-card--inventory {
-  width: min(1080px, calc(100vw - 2rem));
-}
-
-.modal-backdrop--nested {
-  z-index: 910;
-}
-
-.modal-shell--nested {
-  z-index: 911;
-}
-
-.modal-card {
-  width: min(1200px, calc(100vw - 2rem));
-  max-height: calc(100vh - 2rem);
-  overflow: auto;
-  border-radius: 1rem;
-  border: 1px solid var(--app-border);
-  background: var(--app-surface);
-  box-shadow: var(--app-shadow-lg);
-}
-
-.modal-card--wide {
-  width: min(1280px, calc(100vw - 2rem));
-}
-
-:host-context(.dark) .inventory-panel {
-  border-color: var(--app-border);
-  background: var(--app-surface);
-}
-
-:host-context(.dark) .inventory-panel__header {
-  border-bottom-color: var(--app-border);
-  background: var(--app-form-field-bg);
-}
-
-:host-context(.dark) .inventory-panel__title {
-  color: rgb(226 232 240);
-}
-
-:host-context(.dark) .inventory-action--secondary {
-  border-color: rgb(110 231 210 / 0.35);
-  background: rgb(8 67 61 / 0.82);
-  color: #d1fae5;
-}
-
-:host-context(.dark) .inventory-action--primary {
-  border-color: rgb(207 255 169 / 0.4);
-  background: rgb(22 101 52 / 0.92);
-  color: #f0fdf4;
-}
-
-:host-context(.dark) .inventory-action--danger {
-  border-color: rgb(248 113 113 / 0.4);
-  background: rgb(127 29 29 / 0.32);
-  color: rgb(254 226 226);
-}
-
-:host-context(.dark) .inventory-panel__eyebrow,
-:host-context(.dark) .inventory-panel__title,
-:host-context(.dark) .inventory-workspace__header h3,
-:host-context(.dark) .inventory-detail-card__header h4,
-:host-context(.dark) .inventory-detail-row__product strong,
-:host-context(.dark) .inventory-detail-row__qty strong,
-:host-context(.dark) .inventory-detail-row__normalized strong,
-:host-context(.dark) .inventory-summary span,
-:host-context(.dark) .inventory-list-card__title {
-  color: rgb(226 232 240);
-}
-
-:host-context(.dark) .inventory-panel__subtitle,
-:host-context(.dark) .inventory-workspace__header p,
-:host-context(.dark) .inventory-detail-card__header p,
-:host-context(.dark) .inventory-list-card__meta,
-:host-context(.dark) .inventory-empty,
-:host-context(.dark) .inventory-detail-row__product span,
-:host-context(.dark) .inventory-detail-row__qty span,
-:host-context(.dark) .inventory-detail-row__normalized span {
-  color: rgb(148 163 184);
-}
-
-:host-context(.dark) .inventory-summary span,
-:host-context(.dark) .inventory-list-card,
-:host-context(.dark) .inventory-detail-card,
-:host-context(.dark) .inventory-detail-row {
-  border-color: var(--app-border);
-  background: rgb(15 23 42 / 0.82);
-}
-
-:host-context(.dark) .inventory-list-card:hover,
-:host-context(.dark) .inventory-list-card.is-active {
-  background: rgb(13 148 136 / 0.18);
-  border-color: rgb(45 212 191 / 0.55);
-}
-
-@media (max-width: 640px) {
+@include ds.media-down(small) {
   .inventory-page {
     min-height: auto;
   }
@@ -405,7 +228,7 @@
   .inventory-panel__header {
     flex-direction: column;
     align-items: stretch;
-    padding-inline: 1rem;
+    padding-inline: var(--app-space-4);
   }
 
   .inventory-panel__actions {
@@ -417,17 +240,24 @@
   }
 
   .inventory-panel__content {
-    padding-inline: 0.75rem;
+    padding-inline: var(--app-space-3);
   }
 
   .inventory-detail-row {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
   }
 
   .inventory-detail-row__qty,
   .inventory-detail-row__normalized {
     justify-items: start;
     text-align: left;
+  }
+}
+
+@include ds.reduced-motion {
+  .inventory-action,
+  .inventory-list-card {
+    transition: none;
   }
 }

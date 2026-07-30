@@ -1,0 +1,91 @@
+@use "sass:map";
+@use "tokens";
+
+@mixin media-down($breakpoint) {
+  @media (max-width: tokens.breakpoint($breakpoint)) {
+    @content;
+  }
+}
+
+@mixin media-below($breakpoint) {
+  @media (max-width: calc(tokens.breakpoint($breakpoint) - 0.0625rem)) {
+    @content;
+  }
+}
+
+@mixin media-up($breakpoint) {
+  @media (min-width: tokens.breakpoint($breakpoint)) {
+    @content;
+  }
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+@mixin host-block($width: null) {
+  display: block;
+
+  @if $width != null {
+    width: $width;
+  }
+}
+
+@mixin eyebrow {
+  color: var(--app-text-muted);
+  font-size: var(--app-eyebrow-size);
+  font-weight: var(--app-font-weight-bold);
+  letter-spacing: var(--app-eyebrow-tracking);
+  text-transform: uppercase;
+}
+
+@mixin focus-ring {
+  outline: 3px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@mixin surface-card($radius: var(--app-radius-md), $shadow: var(--app-shadow-sm)) {
+  border: 1px solid var(--app-border);
+  border-radius: $radius;
+  background: var(--app-surface);
+  box-shadow: $shadow;
+}
+
+@mixin action-base($weight: var(--app-font-weight-semibold)) {
+  border-width: 2px;
+  border-radius: var(--app-radius-pill);
+  font-weight: $weight;
+  letter-spacing: 0.01em;
+  transition: var(--app-transition-colors);
+}
+
+@mixin action-tone($tone) {
+  border-color: var(--app-action-#{$tone}-border);
+  background: var(--app-action-#{$tone}-bg);
+  color: var(--app-action-#{$tone}-text);
+}
+
+@mixin filled-field-overrides($shape: var(--app-radius-xs)) {
+  --mat-form-field-filled-container-color: var(--app-form-field-bg);
+  --mat-form-field-filled-label-text-color: var(--app-form-field-label);
+  --mat-form-field-filled-input-text-color: var(--app-form-field-input);
+  --mat-form-field-filled-active-indicator-color: var(
+    --app-form-field-indicator
+  );
+  --mat-form-field-filled-focus-active-indicator-color: var(
+    --app-form-field-focus
+  );
+  --mat-form-field-filled-container-shape: #{$shape};
+}
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

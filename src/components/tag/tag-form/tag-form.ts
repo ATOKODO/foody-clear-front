@@ -26,9 +26,9 @@ export interface TagFormValue {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule
-],
+  ],
   templateUrl: './tag-form.html',
-  styleUrl: './tag-form.scss',
+  host: { style: 'display: block' },
 })
 export class TagForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);

@@ -1,5 +1,8 @@
+@use "mixins" as ds;
+@use "../feature-mixins" as feature;
+
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .planning-feature__header {
@@ -50,6 +53,13 @@
   box-shadow: var(--app-shadow-lg);
 }
 
+.planning-feature__today-button:focus-visible,
+.planning-feature__refresh-button:focus-visible,
+.planning-feature__nav-button:focus-visible,
+.planning-action-card:focus-visible {
+  @include ds.focus-ring;
+}
+
 .planning-feature__period-switcher {
   display: inline-flex;
   align-items: center;
@@ -95,7 +105,7 @@
   border: 1px solid var(--app-border);
   border-radius: 1.4rem;
   background:
-    radial-gradient(circle at top right, rgb(59 130 246 / 0.08), transparent 36%),
+    radial-gradient(circle at top right, var(--app-info-bg), transparent 36%),
     linear-gradient(180deg, var(--app-surface) 0%, var(--app-surface-soft) 100%);
   box-shadow: var(--app-shadow-lg);
 }
@@ -116,22 +126,8 @@
   padding: 0 1rem 1rem;
 }
 
-.modal-card {
-  width: min(960px, calc(100vw - 2rem));
-  max-height: calc(100vh - 2rem);
-  overflow: auto;
-  border-radius: 1rem;
-  border: 1px solid var(--app-border);
-  background: var(--app-surface);
-  box-shadow: var(--app-shadow-lg);
-}
-
-.modal-card--wide {
-  width: min(1200px, calc(100vw - 2rem));
-}
-
 .planning-modal {
-  width: min(880px, calc(100vw - 2rem));
+  width: min(55rem, calc(100vw - var(--app-space-8)));
 }
 
 .planning-modal--actions {
@@ -141,6 +137,10 @@
 
 .planning-modal--assignment {
   width: min(940px, calc(100vw - 1.5rem));
+}
+
+.planning-modal.app-modal-card--wide {
+  width: min(75rem, calc(100vw - var(--app-space-8)));
 }
 
 .planning-actions-modal {
@@ -153,7 +153,7 @@
   padding: 1.4rem 1.5rem 1rem;
   border-bottom: 1px solid var(--app-border);
   background:
-    radial-gradient(circle at top right, rgb(59 130 246 / 0.14), transparent 42%),
+    radial-gradient(circle at top right, var(--app-info-bg), transparent 42%),
     linear-gradient(180deg, var(--app-surface-raised), var(--app-surface));
 }
 
@@ -256,13 +256,13 @@
 
 .planning-action-card--cycle {
   background:
-    radial-gradient(circle at top right, rgb(16 185 129 / 0.14), transparent 40%),
+    radial-gradient(circle at top right, var(--app-accent-soft), transparent 40%),
     linear-gradient(180deg, var(--app-surface-raised), var(--app-surface));
 }
 
 .planning-action-card--item {
   background:
-    radial-gradient(circle at top right, rgb(59 130 246 / 0.14), transparent 40%),
+    radial-gradient(circle at top right, var(--app-info-bg), transparent 40%),
     linear-gradient(180deg, var(--app-surface-raised), var(--app-surface));
 }
 
@@ -280,7 +280,7 @@
   border: 1px solid var(--app-border);
   background: var(--app-surface-muted);
   color: var(--app-text-strong);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
+  box-shadow: inset 0 1px 0 var(--app-border-soft);
 }
 
 .planning-action-card__icon svg,
@@ -340,7 +340,7 @@
   padding: 1.4rem 1.5rem 1rem;
   border-bottom: 1px solid var(--app-border);
   background:
-    radial-gradient(circle at top right, rgb(59 130 246 / 0.1), transparent 42%),
+    radial-gradient(circle at top right, var(--app-info-bg), transparent 42%),
     linear-gradient(180deg, var(--app-surface-raised), var(--app-surface));
 }
 
@@ -361,7 +361,7 @@
 .planning-assignment-modal__content {
   padding: 1.2rem 1.5rem 0;
   background:
-    radial-gradient(circle at top right, rgb(59 130 246 / 0.06), transparent 30%),
+    radial-gradient(circle at top right, var(--app-info-bg), transparent 30%),
     linear-gradient(180deg, var(--app-surface), var(--app-surface-soft));
 }
 
@@ -377,10 +377,10 @@
 .planning-assignment-modal__actions {
   padding: 1rem 1.5rem 1.4rem;
   border-top: 1px solid var(--app-border);
-  background: linear-gradient(180deg, rgb(255 255 255 / 0), var(--app-surface));
+  background: linear-gradient(180deg, transparent, var(--app-surface));
 }
 
-@media (min-width: 720px) {
+@include ds.media-up(tablet) {
   .planning-actions-modal__header {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: flex-start;
@@ -391,7 +391,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@include ds.media-down(small) {
   .planning-feature__header {
     padding-bottom: 0.85rem;
   }
@@ -462,7 +462,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@include ds.media-up(shell) {
   .planning-feature__header {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
@@ -474,40 +474,11 @@
   }
 }
 
-:host-context(.dark) .planning-feature__surface {
-  background:
-    radial-gradient(circle at top right, rgb(59 130 246 / 0.12), transparent 34%),
-    linear-gradient(180deg, var(--app-surface) 0%, var(--app-surface-soft) 100%);
-}
-
-:host-context(.dark) :is(
+@include ds.reduced-motion {
   .planning-feature__today-button,
   .planning-feature__refresh-button,
   .planning-feature__nav-button,
-  .planning-feature__period-switcher,
-  .planning-actions-modal__date-pill,
-  .planning-action-card__icon
-) {
-  border-color: var(--app-border);
-  box-shadow: var(--app-shadow-sm);
-}
-
-:host-context(.dark) .planning-feature__today-button,
-:host-context(.dark) .planning-feature__refresh-button,
-:host-context(.dark) .planning-feature__nav-button {
-  background: var(--app-surface-raised);
-  color: var(--app-text-strong);
-}
-
-:host-context(.dark) .planning-feature__period-switcher {
-  background: var(--app-surface-soft);
-}
-
-:host-context(.dark) .planning-feature__nav-button {
-  background: var(--app-surface-muted);
-}
-
-:host-context(.dark) .planning-action-card__icon,
-:host-context(.dark) .planning-actions-modal__date-pill {
-  background: var(--app-surface-muted);
+  .planning-action-card {
+    transition: none;
+  }
 }

@@ -1,0 +1,305 @@
+@use "sass:map";
+@use "sass:meta";
+
+$font-family-sans: ("Aptos", "Segoe UI Variable", "Segoe UI", sans-serif);
+$font-family-mono: (ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+
+$breakpoints: (
+  compact: 35rem,
+  small: 40rem,
+  tablet: 45rem,
+  medium: 48rem,
+  large: 56.25rem,
+  shell: 64rem,
+  workspace: 68.75rem,
+  wide: 73.75rem,
+  extra-wide: 80rem,
+);
+
+@function breakpoint($name) {
+  $value: map.get($breakpoints, $name);
+
+  @if $value == null {
+    @error "Unknown design-system breakpoint: #{$name}";
+  }
+
+  @return $value;
+}
+
+@mixin app-tokens {
+  // Typography
+  --app-font-sans: #{meta.inspect($font-family-sans)};
+  --app-font-mono: #{meta.inspect($font-family-mono)};
+  --app-font-size-xs: 0.75rem;
+  --app-font-size-sm: 0.875rem;
+  --app-font-size-md: 1rem;
+  --app-font-size-lg: 1.25rem;
+  --app-font-size-xl: 1.5rem;
+  --app-font-weight-medium: 500;
+  --app-font-weight-semibold: 600;
+  --app-font-weight-bold: 700;
+  --app-font-weight-extrabold: 800;
+  --app-eyebrow-size: 0.72rem;
+  --app-eyebrow-tracking: 0.14em;
+
+  // Spacing
+  --app-space-0: 0;
+  --app-space-1: 0.25rem;
+  --app-space-2: 0.5rem;
+  --app-space-3: 0.75rem;
+  --app-space-4: 1rem;
+  --app-space-5: 1.25rem;
+  --app-space-6: 1.5rem;
+  --app-space-8: 2rem;
+  --app-space-10: 2.5rem;
+
+  // Shape and layout
+  --app-radius-xs: 0.5rem;
+  --app-radius-sm: 0.75rem;
+  --app-radius-md: 1rem;
+  --app-radius-lg: 1.25rem;
+  --app-radius-xl: 1.5rem;
+  --app-radius-pill: 999px;
+  --app-page-max: 88rem;
+  --app-page-max-wide: 110rem;
+  --app-page-max-compact: 72rem;
+  --app-dialog-max: 64rem;
+  --app-dialog-max-wide: 80rem;
+
+  // Motion and stacking
+  --app-duration-fast: 150ms;
+  --app-duration-standard: 180ms;
+  --app-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --app-transition-colors:
+    color var(--app-duration-fast) var(--app-ease-standard),
+    border-color var(--app-duration-fast) var(--app-ease-standard),
+    background-color var(--app-duration-fast) var(--app-ease-standard),
+    box-shadow var(--app-duration-fast) var(--app-ease-standard);
+  --app-transition-interactive:
+    transform var(--app-duration-fast) var(--app-ease-standard),
+    var(--app-transition-colors);
+  --app-z-header: 70;
+  --app-z-navigation-backdrop: 80;
+  --app-z-navigation: 90;
+  --app-z-modal-backdrop: 900;
+  --app-z-modal: 901;
+
+  // Material-backed semantic colors
+  --app-bg: var(--mat-sys-surface);
+  --app-bg-alt: var(--mat-sys-surface-container-low);
+  --app-surface-solid: var(--mat-sys-surface-container-lowest);
+  --app-surface: color-mix(
+    in srgb,
+    var(--mat-sys-surface-container-lowest) 94%,
+    transparent
+  );
+  --app-surface-raised: color-mix(
+    in srgb,
+    var(--mat-sys-surface-container-lowest) 82%,
+    transparent
+  );
+  --app-surface-soft: var(--mat-sys-surface-container-low);
+  --app-surface-muted: var(--mat-sys-surface-container);
+  --app-surface-strong: var(--mat-sys-surface-container-high);
+  --app-surface-highest: var(--mat-sys-surface-container-highest);
+  --app-border-soft: color-mix(
+    in srgb,
+    var(--mat-sys-outline-variant) 55%,
+    transparent
+  );
+  --app-border: var(--mat-sys-outline-variant);
+  --app-border-strong: var(--mat-sys-outline);
+  --app-text: var(--mat-sys-on-surface-variant);
+  --app-text-strong: var(--mat-sys-on-surface);
+  --app-text-muted: color-mix(
+    in srgb,
+    var(--mat-sys-on-surface-variant) 76%,
+    transparent
+  );
+  --app-text-on-color: #f8fafc;
+  --app-text-on-color-muted: color-mix(
+    in srgb,
+    var(--app-text-on-color) 78%,
+    transparent
+  );
+  --app-on-color-border: color-mix(
+    in srgb,
+    var(--app-text-on-color) 24%,
+    transparent
+  );
+  --app-on-color-surface: color-mix(
+    in srgb,
+    var(--app-text-on-color) 14%,
+    transparent
+  );
+  --app-contrast-surface: light-dark(#0f172a, #020617);
+  --app-contrast-surface-muted: color-mix(
+    in srgb,
+    var(--app-contrast-surface) 82%,
+    transparent
+  );
+  --app-accent: var(--mat-sys-primary);
+  --app-accent-strong: var(--mat-sys-primary);
+  --app-accent-soft: color-mix(
+    in srgb,
+    var(--mat-sys-primary) 18%,
+    transparent
+  );
+  --app-focus-ring: color-mix(
+    in srgb,
+    var(--mat-sys-primary) 42%,
+    transparent
+  );
+
+  // Feedback colors
+  --app-success-bg: color-mix(
+    in srgb,
+    var(--mat-sys-primary) 14%,
+    transparent
+  );
+  --app-success-border: color-mix(
+    in srgb,
+    var(--mat-sys-primary) 28%,
+    transparent
+  );
+  --app-success-text: var(--mat-sys-primary);
+  --app-info-bg: color-mix(
+    in srgb,
+    var(--mat-sys-tertiary) 14%,
+    transparent
+  );
+  --app-info-border: color-mix(
+    in srgb,
+    var(--mat-sys-tertiary) 28%,
+    transparent
+  );
+  --app-info-text: var(--mat-sys-tertiary);
+  --app-info-strong-text: light-dark(#172554, #dbeafe);
+  --app-warning-color: light-dark(#b45309, #fcd34d);
+  --app-warning-bg: color-mix(
+    in srgb,
+    var(--app-warning-color) 14%,
+    transparent
+  );
+  --app-warning-border: color-mix(
+    in srgb,
+    var(--app-warning-color) 28%,
+    transparent
+  );
+  --app-warning-text: var(--app-warning-color);
+  --app-danger-bg: color-mix(
+    in srgb,
+    var(--mat-sys-error) 14%,
+    transparent
+  );
+  --app-danger-border: color-mix(
+    in srgb,
+    var(--mat-sys-error) 28%,
+    transparent
+  );
+  --app-danger-text: var(--mat-sys-error);
+  --app-state-under-bg: var(--app-info-bg);
+  --app-state-under-border: var(--app-info-border);
+  --app-state-under-text: var(--app-info-text);
+  --app-state-exact-bg: var(--app-success-bg);
+  --app-state-exact-border: var(--app-success-border);
+  --app-state-exact-text: var(--app-success-text);
+  --app-state-over-bg: var(--app-warning-bg);
+  --app-state-over-border: var(--app-warning-border);
+  --app-state-over-text: var(--app-warning-text);
+  --app-state-missing-bg: var(--app-danger-bg);
+  --app-state-missing-border: var(--app-danger-border);
+  --app-state-missing-text: var(--app-danger-text);
+
+  // Shared action states
+  --app-action-primary-bg: var(--mat-sys-primary-container);
+  --app-action-primary-border: var(--mat-sys-primary);
+  --app-action-primary-text: var(--mat-sys-on-primary-container);
+  --app-action-secondary-bg: var(--mat-sys-secondary-container);
+  --app-action-secondary-border: var(--mat-sys-secondary);
+  --app-action-secondary-text: var(--mat-sys-on-secondary-container);
+  --app-action-edit-bg: color-mix(
+    in srgb,
+    var(--app-warning-color) 24%,
+    var(--app-surface-solid)
+  );
+  --app-action-edit-border: var(--app-warning-color);
+  --app-action-edit-text: light-dark(#544600, #fff8eb);
+  --app-action-danger-bg: var(--mat-sys-error-container);
+  --app-action-danger-border: var(--mat-sys-error);
+  --app-action-danger-text: var(--mat-sys-on-error-container);
+
+  // Elevation, overlays, and decorated surfaces
+  --app-shadow-sm: var(--mat-sys-level1);
+  --app-shadow-md: var(--mat-sys-level2);
+  --app-shadow-lg: var(--mat-sys-level4);
+  --app-shadow-color: color-mix(
+    in srgb,
+    var(--mat-sys-shadow) 36%,
+    transparent
+  );
+  --app-hero-start: light-dark(#091221, #08101b);
+  --app-hero-middle: light-dark(#0f172a, #0d1728);
+  --app-hero-end: light-dark(#1f2b43, #1c2b47);
+  --app-panel-hero: linear-gradient(
+    135deg,
+    var(--app-hero-start) 0%,
+    var(--app-hero-middle) 56%,
+    var(--app-hero-end) 100%
+  );
+  --app-calendar-panel-bg:
+    radial-gradient(circle at top right, var(--app-info-bg), transparent 26%),
+    linear-gradient(
+      180deg,
+      var(--app-surface-soft) 0%,
+      var(--app-surface-solid) 24rem
+    );
+  --app-calendar-summary-bg:
+    linear-gradient(135deg, var(--app-surface), var(--app-surface-soft)),
+    linear-gradient(120deg, var(--app-border-soft), var(--app-info-bg));
+  --app-overlay-start: color-mix(
+    in srgb,
+    var(--mat-sys-scrim) 58%,
+    transparent
+  );
+  --app-overlay-end: color-mix(
+    in srgb,
+    var(--mat-sys-scrim) 78%,
+    transparent
+  );
+  --app-overlay: linear-gradient(
+    145deg,
+    var(--app-overlay-start),
+    var(--app-overlay-end)
+  );
+
+  // Form controls
+  --app-form-field-bg: var(--mat-sys-surface-container);
+  --app-form-field-label: var(--mat-sys-on-surface-variant);
+  --app-form-field-input: var(--mat-sys-on-surface);
+  --app-form-field-indicator: var(--mat-sys-outline);
+  --app-form-field-focus: var(--mat-sys-primary);
+
+  // Data-visualisation palette
+  --app-data-blue-start: #1d4ed8;
+  --app-data-blue-end: #3b82f6;
+  --app-data-blue-border: rgb(147 197 253 / 0.44);
+  --app-data-green-start: #166534;
+  --app-data-green-end: #22c55e;
+  --app-data-green-border: rgb(134 239 172 / 0.44);
+  --app-data-red-start: #b91c1c;
+  --app-data-red-end: #ef4444;
+  --app-data-red-border: rgb(252 165 165 / 0.42);
+  --app-data-orange-start: #c2410c;
+  --app-data-orange-end: #fb923c;
+  --app-data-orange-border: rgb(253 186 116 / 0.44);
+  --app-data-violet-start: #6d28d9;
+  --app-data-violet-end: #a855f7;
+  --app-data-violet-border: rgb(196 181 253 / 0.44);
+  --app-data-pink-start: #be185d;
+  --app-data-pink-end: #ec4899;
+  --app-data-pink-border: rgb(249 168 212 / 0.42);
+  --app-data-amber-start: #92400e;
+  --app-data-amber-end: #d97706;
+  --app-data-amber-border: rgb(250 204 21 / 0.42);
+}

@@ -1,5 +1,19 @@
+@use "@angular/material" as mat;
+@use "mixins" as ds;
+
+@mixin outlined-action-tone($tone) {
+  @include ds.action-tone($tone);
+  @include mat.button-overrides(
+    (
+      outlined-label-text-color: var(--app-action-#{$tone}-text),
+      outlined-outline-color: var(--app-action-#{$tone}-border),
+      outlined-state-layer-color: var(--app-action-#{$tone}-text),
+    )
+  );
+}
+
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .lc-shell__header,
@@ -14,6 +28,7 @@
 }
 
 .lc-shell__title {
+  color: var(--app-text-strong);
   letter-spacing: -0.02em;
 }
 
@@ -22,74 +37,48 @@
 }
 
 .lc-card {
-  border-color: var(--app-border);
-  transition:
-    border-color 150ms ease,
-    box-shadow 150ms ease,
-    transform 150ms ease;
+  @include ds.surface-card(var(--app-radius-lg), var(--app-shadow-sm));
+
+  transition: var(--app-transition-colors);
 }
 
-.lc-card:hover {
-  border-color: var(--app-border-strong);
-}
-
+.lc-card:hover,
 .lc-card-active {
   border-color: var(--app-border-strong);
-  box-shadow: 0 0 0 1px rgb(15 23 42 / 0.08);
+  box-shadow: var(--app-shadow-md);
 }
 
 .lc-card--embedded {
-  border-color: rgb(202 209 197 / 0.96);
-  background: linear-gradient(180deg, #fffef9 0%, #f6f8f1 100%);
-  box-shadow: 0 14px 32px -28px rgb(15 23 42 / 0.28);
+  background: var(--app-surface);
 }
 
-.lc-card--embedded.lc-card-active {
-  border-color: rgb(161 177 150 / 0.92);
-  box-shadow:
-    0 16px 34px -26px rgb(15 23 42 / 0.34),
-    0 0 0 1px rgb(134 157 118 / 0.16);
+.lc-card--embedded.lc-card-active,
+.lc-card--select-single.lc-card-active {
+  border-color: var(--app-accent);
 }
 
 .lc-card--select-single {
-  border-color: #dbe5f1;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-  box-shadow:
-    0 16px 40px rgb(15 23 42 / 0.06),
-    0 2px 8px rgb(15 23 42 / 0.04);
-}
-
-.lc-card--select-single:hover {
-  border-color: #cbd8ea;
-  box-shadow:
-    0 18px 44px rgb(15 23 42 / 0.08),
-    0 4px 10px rgb(15 23 42 / 0.04);
-}
-
-.lc-card--select-single.lc-card-active {
-  border-color: #d2ddeb;
-  box-shadow:
-    0 18px 44px rgb(15 23 42 / 0.09),
-    0 0 0 1px rgb(148 163 184 / 0.18);
+  background: var(--app-surface-solid);
 }
 
 .lc-card--select-single .lc-card__content {
-  padding: 1.75rem;
+  padding: var(--app-space-8);
+}
+
+.lc-summary-panel,
+.lc-subsection,
+.lc-embedded-summary,
+.lc-breakdown-card {
+  border: 1px solid var(--app-border);
 }
 
 .lc-summary-panel {
   align-self: start;
-  border: 1px solid var(--app-border);
-  background: linear-gradient(
-    180deg,
-    var(--app-surface) 0%,
-    var(--app-surface-soft) 100%
-  );
+  background: var(--app-surface);
 }
 
 .lc-subsection {
   align-self: start;
-  border: 1px solid var(--app-border);
   background: var(--app-surface-soft);
 }
 
@@ -98,38 +87,31 @@
   width: 0.9rem;
   height: 0.9rem;
   flex: 0 0 auto;
-  border-radius: 9999px;
-  border: 2px solid rgb(255 255 255 / 0.8);
+  border: 2px solid var(--app-surface-solid);
+  border-radius: var(--app-radius-pill);
   box-shadow: 0 0 0 1px var(--app-border-strong);
 }
 
 .lc-meta-chip {
   display: inline-flex;
   align-items: center;
-  border-radius: 9999px;
-  border: 1px solid var(--app-border-strong);
+  padding: var(--app-space-1) var(--app-space-3);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-pill);
   background: var(--app-surface-soft);
-  padding: 0.2rem 0.6rem;
-  font-size: 0.75rem;
-  font-weight: 600;
   color: var(--app-text);
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-semibold);
 }
 
 .lc-section-label {
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--app-text);
+  @include ds.eyebrow;
 }
 
 .lc-macro-card {
   border: 1px solid var(--app-border);
-  background: linear-gradient(
-    180deg,
-    var(--app-surface-soft) 0%,
-    var(--app-surface-muted) 100%
-  );
+  background: var(--app-surface-soft);
+  color: var(--app-text);
 }
 
 .lc-stat-card {
@@ -138,16 +120,14 @@
 
 .lc-card__body--embedded {
   display: grid;
-  gap: 1rem;
+  gap: var(--app-space-4);
 }
 
 .lc-embedded-summary {
-  border: 1px solid rgb(220 226 212 / 0.96);
-  background: linear-gradient(180deg, #fbfcf7 0%, #f5f8ef 100%);
+  background: var(--app-surface-soft);
 }
 
 .lc-breakdown-card {
-  border: 1px solid var(--app-border);
   background: var(--app-surface);
 }
 
@@ -164,138 +144,163 @@
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: flex-start;
-  gap: 0.75rem;
+  gap: var(--app-space-3);
 }
 
 .lc-breakdown-card.lc-status-under {
-  background: linear-gradient(180deg, #f5f8ff 0%, #edf3ff 100%);
-  border-color: #c6d5ff;
+  border-color: var(--app-state-under-border);
+  background: var(--app-state-under-bg);
 }
 
 .lc-breakdown-card.lc-status-exact {
-  background: linear-gradient(180deg, #effcf4 0%, #e0f7e8 100%);
-  border-color: #b6e5c3;
+  border-color: var(--app-state-exact-border);
+  background: var(--app-state-exact-bg);
 }
 
 .lc-breakdown-card.lc-status-over {
-  background: linear-gradient(180deg, #fff1ef 0%, #ffe4df 100%);
-  border-color: #f1bfb8;
+  border-color: var(--app-state-over-border);
+  background: var(--app-state-over-bg);
 }
 
 .lc-breakdown-card.lc-status-missing {
-  background: linear-gradient(180deg, #fff8eb 0%, #ffefd1 100%);
-  border-color: #f3d8a0;
+  border-color: var(--app-state-missing-border);
+  background: var(--app-state-missing-bg);
 }
 
 .lc-status-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 9999px;
-  border: 1px solid transparent;
-  padding: 0.28rem 0.75rem;
-  font-size: 0.78rem;
-  font-weight: 700;
+  flex-shrink: 0;
+  min-height: 2rem;
+  max-width: 100%;
+  padding: var(--app-space-1) var(--app-space-3);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-pill);
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-bold);
   letter-spacing: 0.02em;
   line-height: 1.1;
-  flex-shrink: 0;
-  max-width: 100%;
-  min-height: 2rem;
   text-align: center;
   white-space: nowrap;
 }
 
 .lc-status-badge.lc-status-under {
-  background: #dfe9ff;
-  border-color: #c5d8ff;
-  color: #3353d3;
+  border-color: var(--app-state-under-border);
+  background: var(--app-state-under-bg);
+  color: var(--app-state-under-text);
 }
 
 .lc-status-badge.lc-status-exact {
-  background: #daf6e3;
-  border-color: #b7e7c6;
-  color: #18724d;
+  border-color: var(--app-state-exact-border);
+  background: var(--app-state-exact-bg);
+  color: var(--app-state-exact-text);
 }
 
 .lc-status-badge.lc-status-over {
-  background: #ffdeda;
-  border-color: #f6c1b7;
-  color: #991b1b;
+  border-color: var(--app-state-over-border);
+  background: var(--app-state-over-bg);
+  color: var(--app-state-over-text);
 }
 
 .lc-status-badge.lc-status-missing {
-  background: #ffedd1;
-  border-color: #f8d7a0;
-  color: #92400e;
+  border-color: var(--app-state-missing-border);
+  background: var(--app-state-missing-bg);
+  color: var(--app-state-missing-text);
 }
 
 .lc-status-text.lc-status-under {
-  color: #1e3a8a;
+  color: var(--app-state-under-text);
 }
 
 .lc-status-text.lc-status-exact {
-  color: #18724d;
+  color: var(--app-state-exact-text);
 }
 
 .lc-status-text.lc-status-over {
-  color: #d0331e;
+  color: var(--app-state-over-text);
 }
 
 .lc-status-text.lc-status-missing {
-  color: #b86a00;
+  color: var(--app-state-missing-text);
 }
 
 .lc-breakdown-card__label {
-  font-weight: 700;
+  color: var(--app-text-muted);
+  font-weight: var(--app-font-weight-bold);
 }
 
 .lc-breakdown-card__value {
+  color: var(--app-text-strong);
   line-height: 1.35;
 }
 
 .lc-breakdown-card__percentage {
-  font-size: 0.92rem;
-  font-weight: 800;
+  font-size: var(--app-font-size-sm);
+  font-weight: var(--app-font-weight-extrabold);
 }
 
 .lc-breakdown-card__caption {
+  color: var(--app-text-muted);
   line-height: 1.35;
 }
 
 .lc-overview-badge {
   display: inline-flex;
   align-items: center;
-  border-radius: 9999px;
-  padding: 0.3rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: var(--app-space-1) var(--app-space-3);
+  border-radius: var(--app-radius-pill);
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-semibold);
 }
 
 .lc-overview-badge-over {
-  background: var(--app-danger-bg);
-  color: var(--app-danger-text);
+  background: var(--app-state-over-bg);
+  color: var(--app-state-over-text);
 }
 
 .lc-overview-badge-missing {
-  background: var(--app-warning-bg);
-  color: var(--app-warning-text);
+  background: var(--app-state-missing-bg);
+  color: var(--app-state-missing-text);
 }
 
 .lc-detail-panel {
   position: relative;
+  border-top-color: var(--app-border);
+}
+
+.lc-detail-panel :is(.bg-app-surface, .bg-app-surface-soft) {
+  border-color: var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
+}
+
+.lc-detail-panel :is(.border-app-border, .border-app-border-strong) {
+  border-color: var(--app-border);
+}
+
+.lc-shell :is(.text-app-text-muted, .text-app-text, .text-app-text) {
+  color: var(--app-text-muted);
+}
+
+.lc-cycle-title,
+.lc-dayset-title,
+.lc-slot-title,
+.lc-macro-card__value {
+  color: var(--app-text-strong);
 }
 
 .lc-slot-key {
   display: inline-flex;
   align-items: center;
-  border-radius: 9999px;
+  padding: var(--app-space-1) var(--app-space-2);
+  border-radius: var(--app-radius-pill);
   background: var(--app-surface-strong);
-  padding: 0.15rem 0.5rem;
-  font-size: 0.7rem;
-  font-weight: 700;
+  color: var(--app-text);
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-bold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--app-text);
 }
 
 .lc-toggle-btn {
@@ -304,298 +309,181 @@
 
 .lc-card__footer {
   align-items: center;
+  border-top-color: var(--app-border);
 }
 
+.lc-toggle-btn,
 .lc-footer-action {
   min-width: 0;
-  border-width: 2px;
-  border-radius: 9999px;
-  font-weight: 700;
+  @include ds.action-base;
+  @include outlined-action-tone(secondary);
+  @include mat.button-overrides(
+    (
+      outlined-container-shape: var(--app-radius-pill),
+      outlined-label-text-weight: var(--app-font-weight-semibold),
+      outlined-outline-width: 2px,
+    )
+  );
+}
+
+.lc-footer-action--detail {
+  @include outlined-action-tone(primary);
+}
+
+.lc-footer-action--danger {
+  @include outlined-action-tone(danger);
+}
+
+.lc-toggle-btn:focus-visible,
+.lc-footer-action:focus-visible,
+.lc-card--select-single:focus-visible {
+  @include ds.focus-ring;
 }
 
 .lc-shell--select-single .lc-shell__header {
-  margin-bottom: 1.45rem;
+  margin-bottom: var(--app-space-6);
 }
 
 .lc-shell--select-single .lc-shell__title {
+  color: var(--app-text-strong);
   font-size: clamp(1.7rem, 2vw, 2.05rem);
-  font-weight: 800;
+  font-weight: var(--app-font-weight-extrabold);
   line-height: 1.05;
-  color: #23314a;
 }
 
 .lc-shell--select-single .lc-card__body {
-  gap: 1.5rem;
+  gap: var(--app-space-6);
 }
 
 .lc-shell--select-single .lc-card__top,
 .lc-shell--select-single .lc-card__main {
-  gap: 1.35rem;
+  gap: var(--app-space-5);
 }
 
 .lc-shell--select-single .lc-color-dot {
   width: 1rem;
   height: 1rem;
-  border: 3px solid rgb(255 255 255 / 0.92);
-  box-shadow:
-    0 0 0 4px rgb(148 163 184 / 0.14),
-    0 0 0 1px rgb(148 163 184 / 0.22);
+  border-width: 3px;
+  box-shadow: 0 0 0 3px var(--app-focus-ring);
 }
 
 .lc-shell--select-single .lc-cycle-title {
+  color: var(--app-text-strong);
   font-size: clamp(1.45rem, 1.4rem + 0.5vw, 1.9rem);
-  font-weight: 800;
+  font-weight: var(--app-font-weight-extrabold);
   line-height: 1.08;
   letter-spacing: -0.035em;
-  color: #23314a;
 }
 
 .lc-shell--select-single .lc-card__meta {
-  row-gap: 0.65rem;
+  row-gap: var(--app-space-3);
 }
 
 .lc-shell--select-single .lc-meta-chip {
-  border-color: #d8e2ef;
-  background: #ffffff;
-  padding: 0.35rem 0.82rem;
-  color: #64748b;
-  font-size: 0.82rem;
-  font-weight: 500;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8);
+  padding: var(--app-space-1) var(--app-space-3);
+  background: var(--app-surface);
+  color: var(--app-text-muted);
+  font-size: var(--app-font-size-sm);
+  font-weight: var(--app-font-weight-medium);
 }
 
 .lc-shell--select-single .lc-card__alerts {
-  margin-top: 0.95rem;
+  margin-top: var(--app-space-4);
 }
 
 .lc-shell--select-single .lc-overview-badge {
-  padding: 0.42rem 0.82rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.lc-shell--select-single .lc-overview-badge-over {
-  background: #fff1f2;
-  color: #991b1b;
-}
-
-.lc-shell--select-single .lc-overview-badge-missing {
-  background: #fff7ed;
-  color: #9a3412;
+  padding: var(--app-space-2) var(--app-space-3);
+  font-size: var(--app-font-size-xs);
+  font-weight: var(--app-font-weight-bold);
 }
 
 .lc-summary-grid--select-single {
-  gap: 1.55rem;
   grid-template-columns: minmax(0, 1fr);
+  gap: var(--app-space-6);
 }
 
 .lc-summary-panel--select-single {
-  border: 0;
-  background: transparent;
   padding: 0;
+  border: 0;
+  background: none;
 }
 
 .lc-shell--select-single .lc-section-label {
-  font-size: 0.94rem;
-  font-weight: 800;
+  color: var(--app-text-strong);
+  font-size: var(--app-font-size-md);
+  font-weight: var(--app-font-weight-extrabold);
   letter-spacing: 0.05em;
-  color: #24324a;
 }
 
 .lc-shell--select-single .lc-summary-panel__subtitle {
-  margin-top: 0.35rem;
-  font-size: 1rem;
+  margin-top: var(--app-space-1);
+  color: var(--app-text-muted);
+  font-size: var(--app-font-size-md);
   line-height: 1.45;
-  color: #6b7d95;
 }
 
 .lc-shell--select-single .lc-macro-grid--select-single {
-  gap: 0.9rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--app-space-4);
 }
 
 .lc-shell--select-single .lc-macro-card {
   min-height: 5.5rem;
-  border-color: #d9e3f0;
-  border-radius: 1rem;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: 0 6px 16px rgb(15 23 42 / 0.04);
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-sm);
 }
 
-.lc-shell--select-single .lc-macro-card__label {
-  font-size: 0.84rem;
-  font-weight: 700;
+.lc-shell--select-single .lc-macro-card__label,
+.lc-shell--select-single .lc-breakdown-card__label {
+  color: var(--app-text-muted);
+  font-size: var(--app-font-size-sm);
+  font-weight: var(--app-font-weight-bold);
   letter-spacing: 0.08em;
-  color: #7486a0;
 }
 
 .lc-shell--select-single .lc-macro-card__value {
-  margin-top: 0.55rem;
-  font-size: 1.45rem;
-  font-weight: 800;
+  margin-top: var(--app-space-2);
+  color: var(--app-text-strong);
+  font-size: var(--app-font-size-xl);
+  font-weight: var(--app-font-weight-extrabold);
   line-height: 1.15;
-  color: #1f2937;
 }
 
 .lc-panel-head--select-single {
-  gap: 1rem;
+  gap: var(--app-space-4);
 }
 
 .lc-shell--select-single .lc-breakdown-grid--select-single {
-  gap: 0.85rem;
   grid-template-columns: minmax(0, 1fr);
+  gap: var(--app-space-3);
 }
 
 .lc-shell--select-single .lc-breakdown-card--select-single {
   min-height: 0;
-  padding: 1rem 1.1rem;
-  border-radius: 1rem;
-  box-shadow: 0 8px 20px rgb(15 23 42 / 0.05);
-}
-
-.lc-shell--select-single .lc-breakdown-card.lc-status-under {
-  background: #ffffff;
-  border-color: #dbe5f1;
-}
-
-.lc-shell--select-single .lc-breakdown-card.lc-status-exact {
-  background: #ecfdf5;
-  border-color: #a7f3d0;
-}
-
-.lc-shell--select-single .lc-breakdown-card.lc-status-over {
-  background: #fff5f5;
-  border-color: #fecaca;
-}
-
-.lc-shell--select-single .lc-breakdown-card.lc-status-missing {
-  background: #fff8eb;
-  border-color: #fed7aa;
-}
-
-.lc-shell--select-single .lc-breakdown-head {
-  align-items: flex-start;
-  gap: 0.75rem;
-}
-
-.lc-shell--select-single .lc-breakdown-card__label {
-  font-size: 0.84rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #7486a0;
+  padding: var(--app-space-4);
+  border-radius: var(--app-radius-md);
+  box-shadow: var(--app-shadow-sm);
 }
 
 .lc-shell--select-single .lc-breakdown-card__value {
-  font-size: 1.08rem;
-  font-weight: 800;
+  color: var(--app-text-strong);
+  font-size: var(--app-font-size-md);
+  font-weight: var(--app-font-weight-extrabold);
   line-height: 1.25;
-  color: #1f2937;
 }
 
 .lc-shell--select-single .lc-breakdown-card__percentage {
-  font-size: 1.08rem;
-  font-weight: 800;
-}
-
-.lc-shell--select-single .lc-status-badge {
-  padding: 0.25rem 0.72rem;
-  font-size: 0.76rem;
-  font-weight: 700;
-}
-
-.lc-shell--select-single .lc-status-badge.lc-status-under {
-  background: #dbeafe;
-  border-color: #bfdbfe;
-  color: #1e3a8a;
-}
-
-.lc-shell--select-single .lc-status-badge.lc-status-exact {
-  background: #dcfce7;
-  border-color: #bbf7d0;
-  color: #15803d;
-}
-
-.lc-shell--select-single .lc-status-badge.lc-status-over {
-  background: #ffe4e6;
-  border-color: #fecdd3;
-  color: #991b1b;
-}
-
-.lc-shell--select-single .lc-status-badge.lc-status-missing {
-  background: #ffedd5;
-  border-color: #fed7aa;
-  color: #c2410c;
-}
-
-.lc-shell--select-single .lc-status-text.lc-status-under {
-  color: #334155;
-}
-
-.lc-shell--select-single .lc-status-text.lc-status-exact {
-  color: #15803d;
-}
-
-.lc-shell--select-single .lc-status-text.lc-status-over {
-  color: #dc2626;
-}
-
-.lc-shell--select-single .lc-status-text.lc-status-missing {
-  color: #c2410c;
+  font-size: var(--app-font-size-md);
+  font-weight: var(--app-font-weight-extrabold);
 }
 
 .lc-shell--select-single .lc-detail-panel {
-  margin-top: 0.25rem;
-  border-top-color: #e2e8f0;
-  padding-top: 1.25rem;
+  margin-top: var(--app-space-1);
+  padding-top: var(--app-space-5);
 }
 
-:host
-  ::ng-deep
-  .lc-shell--select-single
-  .lc-toggle-btn.mat-mdc-outlined-button {
-  border-color: #10b981;
-  border-radius: 9999px;
-  background: #f0fdf4;
-  color: #047857;
-  box-shadow: none;
-}
-
-:host ::ng-deep .lc-shell--select-single .lc-toggle-btn .mdc-button__label {
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-:host ::ng-deep .lc-footer-action.mat-mdc-outlined-button {
-  border-radius: 9999px;
-  box-shadow: none;
-}
-
-:host ::ng-deep .lc-footer-action .mdc-button__label {
-  font-weight: 700;
-}
-
-:host ::ng-deep .lc-footer-action--detail.mat-mdc-outlined-button {
-  border-color: #4d8078;
-  background: #c6fbf2;
-  color: #0c5249;
-}
-
-:host
-  ::ng-deep
-  .lc-footer-action:not(.lc-footer-action--detail):not(
-    .lc-footer-action--danger
-  ).mat-mdc-outlined-button {
-  border-color: #cfd6bc;
-  background: #fffef8;
-  color: #315026;
-}
-
-:host ::ng-deep .lc-footer-action--danger.mat-mdc-outlined-button {
-  border-color: #efc0b4;
-  background: #fff4f1;
-  color: #b9371a;
-}
-
-@media (min-width: 520px) {
+@include ds.media-up(compact) {
   .lc-shell--select-single .lc-macro-grid--select-single {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -607,132 +495,30 @@
   }
 }
 
-@media (max-width: 640px) {
+@include ds.media-down(small) {
   .lc-stat-card,
   .lc-breakdown-card-compact {
     min-height: 0;
   }
 
-  .lc-card__footer > * {
-    width: 100%;
-  }
-
+  .lc-card__footer > *,
   .lc-toggle-btn {
     width: 100%;
   }
 
   .lc-card--select-single .lc-card__content {
-    padding: 1.2rem;
+    padding: var(--app-space-5);
   }
 
   .lc-shell--select-single .lc-macro-card__value {
-    font-size: 1.35rem;
+    font-size: var(--app-font-size-lg);
   }
 }
 
-@media (max-width: 519px) {
-  .lc-shell--select-single .lc-macro-grid--select-single {
-    grid-template-columns: minmax(0, 1fr);
+@include ds.reduced-motion {
+  .lc-card,
+  .lc-toggle-btn,
+  .lc-footer-action {
+    transition: none;
   }
-}
-
-:host-context(.dark)
-  :is(
-    .lc-shell__title,
-    .lc-cycle-title,
-    .lc-breakdown-card__value,
-    .lc-macro-card__value,
-    .lc-dayset-title,
-    .lc-slot-title,
-    .text-slate-900
-  ) {
-  color: var(--app-text-strong) !important;
-}
-
-:host-context(.dark) :is(.text-slate-500, .text-slate-600, .text-slate-700) {
-  color: var(--app-text-muted) !important;
-}
-
-:host-context(.dark)
-  :is(
-    .bg-white,
-    .bg-slate-50,
-    .lc-card--embedded,
-    .lc-card--select-single,
-    .lc-embedded-summary,
-    .lc-shell--select-single .lc-meta-chip,
-    .lc-shell--select-single .lc-macro-card,
-    .lc-detail-panel .rounded-2xl,
-    .lc-detail-panel .rounded-xl
-  ) {
-  border-color: var(--app-border) !important;
-  background: var(--app-surface) !important;
-  color: var(--app-text) !important;
-}
-
-:host-context(.dark)
-  :is(
-    .lc-breakdown-card,
-    .lc-breakdown-card.lc-status-under,
-    .lc-breakdown-card.lc-status-exact,
-    .lc-breakdown-card.lc-status-over,
-    .lc-breakdown-card.lc-status-missing,
-    .lc-shell--select-single .lc-breakdown-card.lc-status-under,
-    .lc-shell--select-single .lc-breakdown-card.lc-status-exact,
-    .lc-shell--select-single .lc-breakdown-card.lc-status-over,
-    .lc-shell--select-single .lc-breakdown-card.lc-status-missing
-  ) {
-  background: var(--app-surface-muted) !important;
-  border-color: var(--app-border-strong) !important;
-}
-
-:host-context(.dark)
-  :is(
-    .lc-status-badge.lc-status-under,
-    .lc-status-badge.lc-status-exact,
-    .lc-status-badge.lc-status-over,
-    .lc-status-badge.lc-status-missing,
-    .lc-shell--select-single .lc-status-badge.lc-status-under,
-    .lc-shell--select-single .lc-status-badge.lc-status-exact,
-    .lc-shell--select-single .lc-status-badge.lc-status-over,
-    .lc-shell--select-single .lc-status-badge.lc-status-missing
-  ) {
-  background: var(--app-surface-strong) !important;
-  border-color: var(--app-border-strong) !important;
-}
-
-:host-context(.dark)
-  :is(
-    .lc-status-text.lc-status-under,
-    .lc-shell--select-single .lc-status-text.lc-status-under
-  ) {
-  color: var(--app-info-text) !important;
-}
-
-:host-context(.dark)
-  :is(
-    .lc-status-text.lc-status-exact,
-    .lc-shell--select-single .lc-status-text.lc-status-exact
-  ) {
-  color: var(--app-success-text) !important;
-}
-
-:host-context(.dark)
-  :is(
-    .lc-status-text.lc-status-over,
-    .lc-shell--select-single .lc-status-text.lc-status-over
-  ) {
-  color: var(--app-danger-text) !important;
-}
-
-:host-context(.dark)
-  :is(
-    .lc-status-text.lc-status-missing,
-    .lc-shell--select-single .lc-status-text.lc-status-missing
-  ) {
-  color: var(--app-warning-text) !important;
-}
-
-:host-context(.dark) :is(.border-slate-200, .border-slate-300) {
-  border-color: var(--app-border) !important;
 }

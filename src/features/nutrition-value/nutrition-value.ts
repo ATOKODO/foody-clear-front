@@ -33,9 +33,8 @@ import {
     MatInputModule,
     MatProgressBarModule,
     UiErrorPanel
-],
+  ],
   templateUrl: './nutrition-value.html',
-  styleUrl: './nutrition-value.scss',
 })
 export class NutritionValues implements OnInit {
   private readonly fb = inject(FormBuilder);

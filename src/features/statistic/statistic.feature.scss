@@ -1,8 +1,15 @@
+@use "@angular/material" as mat;
+@use "mixins" as ds;
+
+:host {
+  @include ds.host-block;
+}
+
 .stat-page {
   --stat-bg: linear-gradient(
     135deg,
-    rgb(16 185 129 / 0.08) 0%,
-    rgb(59 130 246 / 0.08) 42%,
+    var(--app-accent-soft) 0%,
+    var(--app-info-bg) 42%,
     transparent 100%
   );
   --stat-ink: var(--app-text-strong);
@@ -18,19 +25,6 @@
   background: var(--stat-bg);
 }
 
-.stat-hero {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  align-items: center;
-}
-
-.stat-hero__copy {
-  display: grid;
-  gap: 0.25rem;
-}
-
-.stat-hero h1,
 .stat-card h2 {
   margin: 0;
 }
@@ -109,66 +103,39 @@
   font-size: 1.5rem;
 }
 
-.stat-banner {
-  padding: 0.8rem 1rem;
-  border-radius: 0.9rem;
-  border: 1px solid var(--app-warning-border);
-  background: var(--app-warning-bg);
-  color: var(--app-warning-text);
-}
-
 .stat-view-switch {
   width: fit-content;
 }
 
-:host ::ng-deep .stat-view-switch.mat-button-toggle-group,
-:host ::ng-deep .stat-card__head mat-button-toggle-group {
+.stat-view-switch.mat-button-toggle-group,
+.stat-card__head mat-button-toggle-group {
+  @include mat.button-toggle-overrides(
+    (
+      background-color: var(--app-action-secondary-bg),
+      divider-color: var(--app-action-secondary-border),
+      label-text-weight: var(--app-font-weight-medium),
+      selected-state-background-color: var(--app-action-primary-bg),
+      selected-state-text-color: var(--app-action-primary-text),
+      shape: var(--app-radius-pill),
+      text-color: var(--app-action-secondary-text),
+    )
+  );
   gap: 0.5rem;
   padding: 0.35rem;
-  border: 1px solid rgb(203 213 225);
-  border-radius: 9999px;
-  background: rgb(248 250 252);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-pill);
+  background: var(--app-surface-soft);
 }
 
-:host ::ng-deep .stat-view-switch .mat-button-toggle,
-:host ::ng-deep .stat-card__head mat-button-toggle {
-  border: 2px solid #4d8078;
-  border-radius: 9999px;
-  background: #c6fbf2;
-  color: #003732;
+.stat-view-switch mat-button-toggle,
+.stat-card__head mat-button-toggle {
+  border: 2px solid var(--app-action-secondary-border);
+  border-radius: var(--app-radius-pill);
 }
 
-:host ::ng-deep .stat-view-switch .mat-button-toggle-label-content,
-:host ::ng-deep .stat-card__head .mat-button-toggle-label-content {
-  padding: 0.55rem 0.95rem;
-  font-weight: 500;
-}
-
-:host ::ng-deep .stat-view-switch .mat-button-toggle-checked,
-:host ::ng-deep .stat-card__head .mat-button-toggle-checked {
-  border-color: #003913;
-  background: #cfffa9;
-  color: #003913;
-}
-
-:host-context(.dark) ::ng-deep .stat-view-switch.mat-button-toggle-group,
-:host-context(.dark) ::ng-deep .stat-card__head mat-button-toggle-group {
-  border-color: var(--app-border);
-  background: rgb(15 23 42 / 0.92);
-}
-
-:host-context(.dark) ::ng-deep .stat-view-switch .mat-button-toggle,
-:host-context(.dark) ::ng-deep .stat-card__head mat-button-toggle {
-  border-color: rgb(110 231 210 / 0.35);
-  background: rgb(8 67 61 / 0.82);
-  color: #d1fae5;
-}
-
-:host-context(.dark) ::ng-deep .stat-view-switch .mat-button-toggle-checked,
-:host-context(.dark) ::ng-deep .stat-card__head .mat-button-toggle-checked {
-  border-color: rgb(207 255 169 / 0.4);
-  background: rgb(77 124 15 / 0.92);
-  color: #ecfccb;
+.stat-view-switch .mat-button-toggle-checked,
+.stat-card__head .mat-button-toggle-checked {
+  border-color: var(--app-action-primary-border);
 }
 
 .stat-filters {
@@ -209,6 +176,11 @@
   box-shadow: 0 0 0 2px var(--stat-accent-soft);
 }
 
+.expense-bar:focus-visible,
+.target-bar:focus-visible {
+  @include ds.focus-ring;
+}
+
 .expense-bar__rail,
 .target-bar__stacks {
   width: 100%;
@@ -234,7 +206,11 @@
 }
 
 .expense-bar__fill {
-  background: linear-gradient(180deg, var(--app-accent-strong) 0%, #14b8a6 100%);
+  background: linear-gradient(
+    180deg,
+    var(--app-accent-strong) 0%,
+    var(--app-data-green-end) 100%
+  );
 }
 
 .target-bar__goal {
@@ -242,7 +218,11 @@
 }
 
 .target-bar__actual {
-  background: linear-gradient(180deg, var(--app-info-text) 0%, #60a5fa 100%);
+  background: linear-gradient(
+    180deg,
+    var(--app-info-text) 0%,
+    var(--app-data-blue-end) 100%
+  );
 }
 
 .expense-bar__amount,
@@ -327,16 +307,11 @@
   gap: 1rem;
 }
 
-.stat-card--error {
-  border-color: var(--app-danger-border);
-}
-
-@media (max-width: 760px) {
+@include ds.media-down(medium) {
   .stat-page {
     padding: 0;
   }
 
-  .stat-hero,
   .stat-toolbar-card__top {
     align-items: start;
     flex-direction: column;

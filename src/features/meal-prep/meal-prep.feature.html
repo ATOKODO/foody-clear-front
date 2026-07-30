@@ -265,14 +265,14 @@
 @if (isEditorOpen) {
   <button
     type="button"
-    class="modal-backdrop modal-backdrop--meal-prep"
+    class="app-modal-backdrop"
     aria-label="Close editor"
     (click)="closeEditor()"
     ></button>
 }
 @if (isEditorOpen) {
-  <div class="modal-shell modal-shell--meal-prep" data-testid="meal-prep-editor-dialog">
-    <mat-card class="modal-card modal-card--wide" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+  <div class="app-modal-shell" data-testid="meal-prep-editor-dialog">
+    <mat-card class="app-modal-card app-modal-card--wide" role="dialog" aria-modal="true" aria-label="Meal prep editor" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
       <mat-card-header>
         <mat-card-title>
           @if (activeView === 'dish') {
@@ -424,14 +424,14 @@
 @if (isProductPickerOpen) {
   <button
     type="button"
-    class="modal-backdrop modal-backdrop--meal-prep"
+    class="app-modal-backdrop"
     aria-label="Close product picker"
     (click)="closeProductPicker()"
     ></button>
 }
 @if (isProductPickerOpen) {
-  <div class="modal-shell modal-shell--meal-prep" data-testid="meal-prep-product-picker-dialog">
-    <mat-card class="modal-card modal-card--wide" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+  <div class="app-modal-shell" data-testid="meal-prep-product-picker-dialog">
+    <mat-card class="app-modal-card app-modal-card--wide" role="dialog" aria-modal="true" aria-label="Choose a product" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
       <mat-card-header>
         <mat-card-title>Choose a product</mat-card-title>
         <mat-card-subtitle>
@@ -440,7 +440,7 @@
       </mat-card-header>
       <mat-card-content class="space-y-4 pt-2">
         @if (loading) {
-          <p class="text-sm text-slate-500">Loading products...</p>
+          <p class="text-sm text-app-text-muted">Loading products...</p>
         }
         <app-product-list
           [mode]="'select-single'"

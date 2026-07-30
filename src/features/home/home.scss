@@ -1,5 +1,8 @@
+@use "mixins" as ds;
+@use "../feature-mixins" as feature;
+
 :host {
-  display: block;
+  @include ds.host-block;
 }
 
 .home-dashboard {
@@ -30,7 +33,6 @@
 
 .home-dashboard__eyebrow,
 .home-panel__eyebrow,
-.home-dashboard__kpi-label,
 .home-schedule__group-label {
   margin: 0;
   color: var(--app-text-muted);
@@ -63,18 +65,23 @@
 
 .home-dashboard__hero-link,
 .home-panel__link {
+  @include ds.action-base(var(--app-font-weight-medium));
   display: inline-flex;
   min-height: 2.6rem;
   align-items: center;
   justify-content: center;
-  border-width: 2px;
   border-style: solid;
-  border-radius: 9999px;
   padding: 0.68rem 0.9rem;
   font-size: 0.86rem;
-  font-weight: 500;
   letter-spacing: 0;
   text-decoration: none;
+}
+
+.home-dashboard__hero-link:focus-visible,
+.home-panel__link:focus-visible,
+.home-schedule__action:focus-visible,
+.home-editor-launch__button:focus-visible {
+  @include ds.focus-ring;
 }
 
 button.home-dashboard__hero-link {
@@ -87,17 +94,14 @@ button.home-dashboard__hero-link {
 }
 
 .home-dashboard__hero-link--primary {
-  border-color: #003913;
-  background: #cfffa9;
-  color: #003913;
+  @include ds.action-tone(primary);
 }
 
 .home-dashboard__hero-link--secondary,
 .home-dashboard__hero-link--ghost,
-.home-panel__link--secondary {
-  border-color: #4d8078;
-  background: #c6fbf2;
-  color: #003732;
+.home-panel__link--secondary,
+.home-schedule__action--secondary {
+  @include ds.action-tone(secondary);
 }
 
 .home-dashboard__main-grid {
@@ -256,31 +260,21 @@ button.home-dashboard__hero-link {
 }
 
 .home-schedule__action {
+  @include ds.action-base(var(--app-font-weight-medium));
   display: inline-flex;
   min-height: 1.9rem;
   align-items: center;
   justify-content: center;
-  border-width: 2px;
   border-style: solid;
-  border-radius: 9999px;
   padding: 0.35rem 0.65rem;
   font: inherit;
   font-size: 0.74rem;
-  font-weight: 500;
   letter-spacing: 0;
   white-space: nowrap;
 }
 
-.home-schedule__action--secondary {
-  border-color: #4d8078;
-  background: #c6fbf2;
-  color: #003732;
-}
-
 .home-schedule__action--revert {
-  border-color: rgb(239 68 68 / 0.7);
-  background: rgb(254 226 226);
-  color: rgb(127 29 29);
+  @include ds.action-tone(danger);
 }
 
 .home-schedule__action:disabled {
@@ -383,7 +377,9 @@ button.home-dashboard__hero-link {
 }
 
 .home-macro__top span,
-.home-macro__meta {
+.home-macro__meta,
+.home-expense span,
+.home-expense small {
   color: var(--app-text-muted);
   font-size: 0.78rem;
 }
@@ -448,12 +444,6 @@ button.home-dashboard__hero-link {
   overflow-wrap: anywhere;
 }
 
-.home-expense span,
-.home-expense small {
-  color: var(--app-text-muted);
-  font-size: 0.78rem;
-}
-
 .home-expense small {
   flex: 0 0 auto;
   color: var(--app-text-strong);
@@ -490,40 +480,13 @@ button.home-dashboard__hero-link {
   cursor: pointer;
 }
 
-:host-context(.dark) .home-dashboard__hero-link,
-:host-context(.dark) .home-panel__link {
-  border-color: rgba(148, 163, 184, 0.26);
-  background: #142234;
-  color: #ecf7f3;
-}
-
-:host-context(.dark) .home-dashboard__hero-link--primary {
-  border-color: #7bcf96;
-  background: #183326;
-  color: #eaffef;
-}
-
-:host-context(.dark) .home-dashboard__hero-link--secondary,
-:host-context(.dark) .home-dashboard__hero-link--ghost,
-:host-context(.dark) .home-panel__link,
-:host-context(.dark) .home-panel__link--secondary {
-  border-color: #5caea2;
-  background: #133631;
-  color: #e7fffb;
-}
-
-:host-context(.dark) .home-dashboard__hero-link:hover,
-:host-context(.dark) .home-panel__link:hover {
-  filter: brightness(1.06);
-}
-
-@media (max-width: 1180px) {
+@include ds.media-down(wide) {
   .home-dashboard__main-grid {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 760px) {
+@include ds.media-down(medium) {
   .home-dashboard__hero {
     align-items: stretch;
     flex-direction: column;
@@ -532,14 +495,6 @@ button.home-dashboard__hero-link {
   .home-dashboard__hero-actions,
   .home-dashboard__hero-link {
     width: 100%;
-  }
-
-  .home-dashboard__overview {
-    grid-template-columns: 1fr;
-  }
-
-  .home-dashboard__kpi--wide {
-    grid-column: auto;
   }
 
   .home-schedule__row {
@@ -561,5 +516,13 @@ button.home-dashboard__hero-link {
   .home-day-entry {
     grid-template-columns: 1fr;
     align-items: start;
+  }
+}
+
+@include ds.reduced-motion {
+  .home-dashboard__hero-link,
+  .home-panel__link,
+  .home-schedule__action {
+    transition: none;
   }
 }

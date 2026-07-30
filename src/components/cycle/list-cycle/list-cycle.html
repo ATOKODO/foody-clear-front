@@ -10,7 +10,7 @@
       class="lc-shell__header mb-4 flex items-center justify-between gap-3"
       [class.lc-shell__header--select-single]="isSingleSelectMode"
     >
-      <h3 class="lc-shell__title text-lg font-semibold text-slate-900">
+      <h3 class="lc-shell__title text-lg font-semibold text-app-text-strong">
         Cycles
       </h3>
       @if (isManageMode && showAddButton()) {
@@ -55,15 +55,15 @@
               <div class="lc-card__body lc-card__body--embedded">
                 <div class="lc-card__identity flex flex-wrap items-start gap-3">
                   <span
-                    class="lc-color-dot mt-1"
-                    [style.backgroundColor]="cycle.color"
+                    class="app-tone-swatch lc-color-dot mt-1"
+                    [class]="resolveCycleToneClass(cycle.color)"
                   ></span>
                   <div class="lc-card__identity-copy min-w-0 flex-1">
                     <div
                       class="lc-card__meta flex flex-wrap items-center gap-2"
                     >
                       <p
-                        class="lc-cycle-title text-base font-semibold text-slate-900"
+                        class="lc-cycle-title text-base font-semibold text-app-text-strong"
                       >
                         {{ cycle.title }}
                       </p>
@@ -110,7 +110,7 @@
                   <div class="lc-embedded-summary__copy">
                     <p class="lc-section-label">Cycle target</p>
                     <p
-                      class="lc-summary-panel__subtitle text-xs text-slate-500"
+                      class="lc-summary-panel__subtitle text-xs text-app-text-muted"
                     >
                       Summary view of the target and the effective daily average.
                     </p>
@@ -128,7 +128,7 @@
                       >
                         <div class="lc-breakdown-head">
                           <p
-                            class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500"
+                            class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
                           >
                             {{ card.label }}
                           </p>
@@ -140,7 +140,7 @@
                           </span>
                         </div>
                         <p
-                          class="lc-breakdown-card__value mt-3 text-sm font-semibold text-slate-900"
+                          class="lc-breakdown-card__value mt-3 text-sm font-semibold text-app-text-strong"
                         >
                           {{ formatAmount(card.value) }} /
                           {{ formatAmount(card.target) }} {{ card.unit }}
@@ -152,7 +152,7 @@
                           {{ formatPercent(card.percentage) }}
                         </p>
                         <p
-                          class="lc-breakdown-card__caption mt-2 text-xs text-slate-500"
+                          class="lc-breakdown-card__caption mt-2 text-xs text-app-text-muted"
                         >
                           {{ card.caption }}
                         </p>
@@ -189,15 +189,15 @@
                         class="lc-card__identity flex flex-wrap items-start gap-3"
                       >
                         <span
-                          class="lc-color-dot mt-1"
-                          [style.backgroundColor]="cycle.color"
+                          class="app-tone-swatch lc-color-dot mt-1"
+                          [class]="resolveCycleToneClass(cycle.color)"
                         ></span>
                         <div class="lc-card__identity-copy min-w-0 flex-1">
                           <div
                             class="lc-card__meta flex flex-wrap items-center gap-2"
                           >
                             <p
-                              class="lc-cycle-title text-base font-semibold text-slate-900"
+                              class="lc-cycle-title text-base font-semibold text-app-text-strong"
                             >
                               {{ cycle.title }}
                             </p>
@@ -265,7 +265,7 @@
                           <div class="lc-summary-panel__copy">
                             <p class="lc-section-label">Cycle target</p>
                             <p
-                              class="lc-summary-panel__subtitle text-xs text-slate-500"
+                              class="lc-summary-panel__subtitle text-xs text-app-text-muted"
                             >
                               Target macros for a typical cycle day.
                             </p>
@@ -277,57 +277,57 @@
                             "
                           >
                             <div
-                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700"
+                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-app-text"
                             >
                               <p
-                                class="lc-macro-card__label text-xs uppercase tracking-wide text-slate-500"
+                                class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
                               >
                                 KCAL
                               </p>
                               <p
-                                class="lc-macro-card__value mt-1 text-base font-semibold text-slate-900"
+                                class="lc-macro-card__value mt-1 text-base font-semibold text-app-text-strong"
                               >
                                 {{ formatAmount(cycle.energyKcal) }} kcal
                               </p>
                             </div>
                             <div
-                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700"
+                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-app-text"
                             >
                               <p
-                                class="lc-macro-card__label text-xs uppercase tracking-wide text-slate-500"
+                                class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
                               >
                                 Proteins
                               </p>
                               <p
-                                class="lc-macro-card__value mt-1 text-base font-semibold text-slate-900"
+                                class="lc-macro-card__value mt-1 text-base font-semibold text-app-text-strong"
                               >
                                 {{ formatAmount(cycle.proteins) }} g
                               </p>
                             </div>
                             <div
-                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700"
+                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-app-text"
                             >
                               <p
-                                class="lc-macro-card__label text-xs uppercase tracking-wide text-slate-500"
+                                class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
                               >
                                 Carbs
                               </p>
                               <p
-                                class="lc-macro-card__value mt-1 text-base font-semibold text-slate-900"
+                                class="lc-macro-card__value mt-1 text-base font-semibold text-app-text-strong"
                               >
                                 {{ formatAmount(cycle.carbs) }} g
                               </p>
                             </div>
                             <div
-                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-slate-700"
+                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-app-text"
                             >
                               <p
-                                class="lc-macro-card__label text-xs uppercase tracking-wide text-slate-500"
+                                class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
                               >
                                 Fats
                               </p>
                               <p
-                                class="lc-macro-card__value mt-1 text-base font-semibold text-slate-900"
+                                class="lc-macro-card__value mt-1 text-base font-semibold text-app-text-strong"
                               >
                                 {{ formatAmount(cycle.lipids) }} g
                               </p>
@@ -351,7 +351,7 @@
                                 Effective daily average / cycle target
                               </p>
                               <p
-                                class="lc-summary-panel__subtitle text-xs text-slate-500"
+                                class="lc-summary-panel__subtitle text-xs text-app-text-muted"
                               >
                                 {{ cycle.daySets.length }} linked day set(s)
                               </p>
@@ -367,7 +367,7 @@
                             </button>
                           </div>
                           @if (cycle.missingDayCount > 0) {
-                            <p class="mt-2 text-xs text-amber-700">
+                            <p class="mt-2 text-xs text-app-warning">
                               {{ cycle.missingDayCount }} day(s) without a day set
                               use the cycle target directly.
                             </p>
@@ -391,7 +391,7 @@
                               >
                                 <div class="lc-breakdown-head">
                                   <p
-                                    class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500"
+                                    class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
                                   >
                                     {{ metric.label }}
                                   </p>
@@ -406,7 +406,7 @@
                                   class="mt-2 flex flex-wrap items-end justify-between gap-x-3 gap-y-1"
                                 >
                                   <p
-                                    class="lc-breakdown-card__value text-sm font-semibold text-slate-900"
+                                    class="lc-breakdown-card__value text-sm font-semibold text-app-text-strong"
                                   >
                                     {{ formatAmount(metric.value) }} /
                                     {{ formatAmount(metric.target) }}
@@ -453,7 +453,7 @@
               </div>
             }
             @if (isExpanded(cycle.id)) {
-              <div class="lc-detail-panel border-t border-slate-200 pt-3">
+              <div class="lc-detail-panel border-t border-app-border pt-3">
                 @if (cycle.daySets.length > 0) {
                   <div class="grid gap-3">
                     @for (
@@ -461,7 +461,7 @@
                       track trackByDaySetId($index, daySet)
                     ) {
                       <div
-                        class="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"
+                        class="rounded-2xl border border-app-border bg-app-surface p-3 shadow-app-sm"
                       >
                         <div
                           class="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between"
@@ -469,7 +469,7 @@
                           <div class="min-w-0">
                             <div class="flex flex-wrap items-center gap-2">
                               <p
-                                class="lc-dayset-title text-sm font-semibold text-slate-900"
+                                class="lc-dayset-title text-sm font-semibold text-app-text-strong"
                               >
                                 {{ daySet.title }}
                               </p>
@@ -477,7 +477,7 @@
                                 >{{ daySet.slots.length }} slot(s)</span
                               >
                             </div>
-                            <p class="text-xs text-slate-500">
+                            <p class="text-xs text-app-text-muted">
                               Day set share in cycle
                             </p>
                           </div>
@@ -518,7 +518,7 @@
                                 >
                                   <div class="lc-breakdown-head">
                                     <p
-                                      class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500"
+                                      class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
                                     >
                                       {{ metric.label }}
                                     </p>
@@ -531,7 +531,7 @@
                                   </div>
                                   <div class="mt-3 grid gap-2">
                                     <p
-                                      class="lc-breakdown-card__value text-sm font-semibold text-slate-900"
+                                      class="lc-breakdown-card__value text-sm font-semibold text-app-text-strong"
                                     >
                                       {{ formatAmount(metric.value) }} /
                                       {{ formatAmount(metric.target) }}
@@ -554,7 +554,7 @@
                                 <p class="lc-section-label">
                                   Slot totals / day set
                                 </p>
-                                <p class="text-xs text-slate-500">
+                                <p class="text-xs text-app-text-muted">
                                   {{ daySet.slots.length }} resolved slot(s)
                                 </p>
                               </div>
@@ -571,7 +571,7 @@
                                   >
                                     <div class="lc-breakdown-head">
                                       <p
-                                        class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500"
+                                        class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
                                       >
                                         {{ metric.label }}
                                       </p>
@@ -584,7 +584,7 @@
                                     </div>
                                     <div class="mt-3 grid gap-2">
                                       <p
-                                        class="lc-breakdown-card__value text-sm font-semibold text-slate-900"
+                                        class="lc-breakdown-card__value text-sm font-semibold text-app-text-strong"
                                       >
                                         {{ formatAmount(metric.value) }} /
                                         {{ formatAmount(metric.target) }}
@@ -602,7 +602,7 @@
                               </div>
                             } @else {
                               <p
-                                class="lc-slot-missing mt-2 text-sm text-amber-700"
+                                class="lc-slot-missing mt-2 text-sm text-app-warning"
                               >
                                 Slot breakdown is unavailable for this day set.
                               </p>
@@ -616,7 +616,7 @@
                               track trackBySlotId($index, slot)
                             ) {
                               <div
-                                class="rounded-xl border border-slate-200 bg-slate-50 p-3"
+                                class="rounded-xl border border-app-border bg-app-surface-soft p-3"
                               >
                                 <div
                                   class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between"
@@ -626,7 +626,7 @@
                                       class="flex flex-wrap items-center gap-2"
                                     >
                                       <p
-                                        class="lc-slot-title text-sm font-semibold text-slate-900"
+                                        class="lc-slot-title text-sm font-semibold text-app-text-strong"
                                       >
                                         {{ slot.title }}
                                       </p>
@@ -637,7 +637,7 @@
                                       }
                                     </div>
                                     @if (slot.timeRange) {
-                                      <p class="text-xs text-slate-500">
+                                      <p class="text-xs text-app-text-muted">
                                         {{ slot.timeRange }}
                                       </p>
                                     }
@@ -656,7 +656,7 @@
                                     >
                                       <div class="lc-breakdown-head">
                                         <p
-                                          class="lc-breakdown-card__label text-xs uppercase tracking-wide text-slate-500"
+                                          class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
                                         >
                                           {{ metric.label }}
                                         </p>
@@ -671,7 +671,7 @@
                                       </div>
                                       <div class="mt-3 grid gap-2">
                                         <p
-                                          class="lc-breakdown-card__value text-sm font-semibold text-slate-900"
+                                          class="lc-breakdown-card__value text-sm font-semibold text-app-text-strong"
                                         >
                                           {{ formatAmount(metric.value) }} /
                                           {{ formatAmount(metric.target) }}
@@ -694,7 +694,7 @@
                           </div>
                         } @else {
                           @if (!daySet.hasMissingSlotBreakdown) {
-                            <p class="mt-3 text-sm text-slate-500">
+                            <p class="mt-3 text-sm text-app-text-muted">
                               No slot linked to this day set.
                             </p>
                           }
@@ -703,7 +703,7 @@
                     }
                   </div>
                 } @else {
-                  <p class="text-sm text-slate-500">
+                  <p class="text-sm text-app-text-muted">
                     No day set linked to this cycle.
                   </p>
                 }
@@ -711,7 +711,7 @@
             }
             @if (isEmbeddedManageMode) {
               <div
-                class="lc-card__footer flex flex-wrap gap-2 border-t border-slate-200 pt-3"
+                class="lc-card__footer flex flex-wrap gap-2 border-t border-app-border pt-3"
               >
                 <button
                   mat-stroked-button
@@ -749,10 +749,10 @@
     </div>
   } @else {
     @if (isEmbeddedManageMode) {
-      <p class="lc-empty text-sm text-slate-600">No cycle available.</p>
+      <p class="lc-empty text-sm text-app-text">No cycle available.</p>
     } @else {
       <mat-card appearance="outlined" class="rounded-xl">
-        <mat-card-content class="p-4 text-sm text-slate-600">
+        <mat-card-content class="p-4 text-sm text-app-text">
           No cycle available.
         </mat-card-content>
       </mat-card>

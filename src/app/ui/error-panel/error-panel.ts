@@ -20,13 +20,7 @@ import { JsonPipe } from '@angular/common';
       </section>
     }
     `,
-  styles: [
-    `
-      :host {
-        display: block;
-      }
-    `,
-  ],
+  host: { style: 'display: block' },
 })
 export class UiErrorPanel {
   readonly error = input<unknown>(null);

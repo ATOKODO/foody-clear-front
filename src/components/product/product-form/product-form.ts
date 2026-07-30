@@ -68,9 +68,9 @@ export interface ProductFormValue {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule
-],
+  ],
   templateUrl: './product-form.html',
-  styleUrl: './product-form.scss',
+  host: { style: 'display: block' },
 })
 export class ProductForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
