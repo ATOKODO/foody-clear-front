@@ -21,6 +21,31 @@ describe('ProductForm', () => {
     expect(component).toBeTruthy();
   });
 
+  it('imports scanned product facts for review without saving or adding invented nutrition', () => {
+    const submitted = jasmine.createSpy('submitted');
+    component.submitted.subscribe(submitted);
+    component.selectedTab = 2;
+    component.onFoodFactsSelected({
+      barcode: '3017624010701', name: 'Nutella', brands: 'Ferrero', quantity: '400 g',
+      quantityPerUnit: 400, quantityUnit: 'g', ingredients: null, allergens: [], nutriScore: 'E',
+      imageUrl: null, sourceUrl: 'https://world.openfoodfacts.org/product/3017624010701',
+      nutritionValues: [{ nutritionKey: 'SALT', amount: 0, unit: 'G', reference: 'PER_100G' }],
+    });
+    expect(component.selectedTab).toBe(0);
+    expect(component.form.getRawValue()).toEqual(jasmine.objectContaining({ name: 'Nutella', barcode: '3017624010701', quantityPerUnit: 400, quantityUnit: 'g', unitType: 'Autre' }));
+    expect(component.nutritionValues).toEqual([{ nutritionKey: 'SALT', amount: 0, unit: 'G', reference: 'PER_100G' }]);
+    expect(submitted).not.toHaveBeenCalled();
+    expect(component.importNotice).toContain('Vérifiez');
+  });
+
+  it('requires the user to complete missing scanned name or quantity', () => {
+    component.onFoodFactsSelected({ barcode: '12345678', name: null, brands: null, quantity: null,
+      quantityPerUnit: null, quantityUnit: null, ingredients: null, allergens: [], nutriScore: null,
+      imageUrl: null, sourceUrl: 'https://world.openfoodfacts.org/product/12345678', nutritionValues: [] });
+    expect(component.form.invalid).toBeTrue();
+    expect(component.nutritionValues).toEqual([]);
+  });
+
   it('provides a valid example without technical fields and submits it from JSON', () => {
     const emitted: unknown[] = [];
     component.submitted.subscribe((event) => emitted.push(event));

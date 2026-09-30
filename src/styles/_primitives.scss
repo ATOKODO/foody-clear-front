@@ -180,12 +180,14 @@
 
 .app-dialog-content {
   max-height: calc(90vh - 7rem);
+  min-height: 0;
   padding: var(--app-space-5);
 }
 
 .app-dialog {
   display: flex;
   max-height: min(90vh, 61.25rem);
+  max-height: min(90dvh, 61.25rem);
   flex-direction: column;
   background: linear-gradient(
     180deg,

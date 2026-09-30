@@ -30,7 +30,8 @@
     "e2e:smoke": "playwright test --grep @smoke",
     "e2e:report": "playwright show-report",
     "lint": "ng lint",
-    "style:check": "node scripts/check-styles.mjs"
+    "style:check": "node scripts/check-styles.mjs",
+    "e2e:pwa": "npm run build && playwright test --config=playwright.pwa.config.ts"
   },
   "prettier": {
     "overrides": [
@@ -52,7 +53,10 @@
     "@angular/material": "^22.0.2",
     "@angular/platform-browser": "^22.0.7",
     "@angular/router": "^22.0.7",
+    "@angular/service-worker": "22.0.7",
     "@ngrx/signals": "^21.1.0",
+    "@zxing/browser": "0.2.0",
+    "@zxing/library": "0.22.0",
     "luxon": "^3.7.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

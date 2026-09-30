@@ -18,6 +18,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { parseProductJson } from './product-json';
+import { ProductScanner } from '../product-scanner/product-scanner';
+import type { FoodFactsProduct } from '../../../services/open-food-facts-service';
 import { NutritionReference } from '../../../interfaces/cycle.interface';
 import { Category as ProductCategoryOption } from '../../../services/category-service';
 import { GenericProduct as ProductGenericProductOption } from '../../../services/generic-product-service';
@@ -75,6 +77,7 @@ export interface ProductFormValue {
     MatSelectModule,
     MatTabsModule,
     NgTemplateOutlet,
+    ProductScanner,
   ],
   templateUrl: './product-form.html',
   host: { style: 'display: block' },
@@ -91,6 +94,8 @@ export class ProductForm implements OnInit, OnChanges {
   readonly showHeading = input(true);
   readonly tags = input<ProductTagOption[]>([]);
   readonly saving = input(false);
+  selectedTab = 0;
+  importNotice: string | null = null;
   readonly jsonText = signal('');
   readonly jsonResult = computed(() => parseProductJson(this.jsonText(), {
     categories: this.categories(),
@@ -274,6 +279,23 @@ export class ProductForm implements OnInit, OnChanges {
     if (this.mode() === 'add' && value && !this.saving()) {
       this.submitted.emit({ mode: 'add', value });
     }
+  }
+
+  onFoodFactsSelected(product: FoodFactsProduct): void {
+    if (this.mode() !== 'add' || this.saving()) return;
+    this.form.patchValue({
+      name: product.name ?? '',
+      barcode: product.barcode,
+      unitType: 'Autre',
+      quantityPerUnit: product.quantityPerUnit ?? 0,
+      quantityUnit: product.quantityUnit ?? 'g',
+      url: product.sourceUrl,
+      memo: [product.brands, `Source : ${product.sourceUrl} (Open Food Facts, ODbL)`].filter(Boolean).join('\n'),
+    });
+    this.nutritionValues = product.nutritionValues.map((value) => ({ ...value }));
+    this.form.markAsDirty();
+    this.selectedTab = 0;
+    this.importNotice = 'Informations Open Food Facts chargées. Vérifiez le nom, le contenant, la quantité et la nutrition avant de valider.';
   }
 
   addNutritionValue(): void {

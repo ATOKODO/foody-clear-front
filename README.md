@@ -35,14 +35,15 @@ This repository contains **only the Angular frontend** for Foody Clear. It consu
 - **Daily tracking**: log consumed products and external meals, and convert planned items into actual consumption entries.
 - **Statistics**: expense history, nutrition-goal tracking, and product price trends.
 - **Light and dark themes** with a responsive interface built using Angular Material, Tailwind CSS, and SCSS.
+- **Mobile webapp**: installable PWA, home-screen icons, an offline application shell and an installation guide. See [mobile HTTPS setup](deploy/mobile/README.md).
+- **Barcode scanner**: camera scan or manual code entry, read-only Open Food Facts product preview, and import into the product form for review.
 
 ## Roadmap and Deployment Scope
 
 The next features currently planned are:
 
 - **Multiple profiles**, so several people or usage contexts can keep separate food data, goals, and planning.
-- **Barcode-based product lookup**, using the Open Food Facts API to retrieve product information and speed up catalog entry.
-- **Offline PWA support**, allowing the application to remain usable and manage local data without a network connection.
+- **Offline data editing and synchronization**, beyond the currently cached PWA application shell.
 - **Internationalization (i18n)**, adding French as a fully supported interface language and replacing the remaining mixed-language content with translated resources.
 
 For now, Foody Clear is intended to remain a **locally hosted application**. Cloud services, remote accounts, and authentication are not part of the current scope. The project still uses a separated frontend/backend architecture to keep responsibilities and data flows clearly isolated, even though both parts are designed to run locally.

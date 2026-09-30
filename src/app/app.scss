@@ -8,6 +8,7 @@
 .app-shell {
   display: grid;
   min-height: 100vh;
+  min-height: 100dvh;
   grid-template-columns: 19rem minmax(0, 1fr);
 }
 
@@ -25,6 +26,7 @@
   top: 0;
   display: flex;
   height: 100vh;
+  height: 100dvh;
   flex-direction: column;
   gap: 1.5rem;
   overflow: auto;
@@ -41,7 +43,7 @@
       transparent 28%
     ),
     linear-gradient(180deg, var(--app-surface) 0%, var(--app-surface-soft) 100%);
-  padding: 1.25rem 1rem 1rem;
+  padding: max(1.25rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
   box-shadow: inset -1px 0 0 var(--app-border-soft);
   z-index: var(--app-z-navigation);
 }
@@ -240,7 +242,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.25rem;
+  padding: max(1rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right)) 1rem max(1.25rem, env(safe-area-inset-left));
   border-bottom: 1px solid var(--app-border);
   background: color-mix(
     in srgb,
@@ -255,6 +257,13 @@
   min-width: 0;
   align-items: center;
   gap: 0.85rem;
+}
+
+.app-shell__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--app-space-3);
 }
 
 .app-shell__menu-button {
@@ -348,6 +357,7 @@
 
 .app-shell__content {
   min-width: 0;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 @include mixins.media-down(shell) {
@@ -376,11 +386,11 @@
   .app-shell__header {
     align-items: flex-start;
     flex-direction: column;
-    padding: 0.9rem 1rem;
+    padding: max(0.9rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0.9rem max(1rem, env(safe-area-inset-left));
   }
 
   .app-shell__header-primary,
-  .app-theme-toggle {
+  .app-shell__header-actions {
     width: 100%;
   }
 
@@ -390,6 +400,8 @@
 }
 
 @include mixins.media-down(compact) {
+  .app-theme-toggle__copy { display: none; }
+
   .app-shell__header-title {
     font-size: 1.12rem;
   }

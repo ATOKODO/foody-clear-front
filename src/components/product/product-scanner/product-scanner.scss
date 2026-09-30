@@ -1,0 +1,26 @@
+@use "mixins";
+
+:host { display: block; }
+.scanner { display: grid; gap: var(--app-space-4); padding-block: var(--app-space-5); }
+.scanner__camera { border-radius: var(--app-radius-md); overflow: hidden; }
+.scanner__camera[hidden] { display: none; }
+.scanner__camera video { display: block; width: 100%; max-height: 20rem; object-fit: cover; background: var(--app-surface-muted); }
+.scanner__search { display: flex; flex-wrap: wrap; gap: var(--app-space-3); align-items: start; }
+.scanner__search mat-form-field { flex: 1 1 14rem; min-width: 0; }
+.scanner__search button { min-height: 3rem; }
+.scanner__result { display: grid; gap: var(--app-space-4); padding: var(--app-space-4); border: 1px solid var(--app-border); border-radius: var(--app-radius-md); overflow-wrap: anywhere; }
+.scanner__identity { display: flex; flex-wrap: wrap; gap: var(--app-space-4); }
+.scanner__identity img { width: 5rem; height: 7rem; object-fit: contain; }
+.scanner__identity h3 { font-weight: var(--app-font-weight-bold); font-size: 1.2rem; }
+.scanner__details { display: grid; gap: var(--app-space-2); }
+.scanner__details h4 { font-weight: var(--app-font-weight-semibold); }
+.scanner__nutrition { overflow: auto; }
+.scanner__nutrition table { width: 100%; text-align: left; }
+.scanner__nutrition caption { text-align: left; margin-bottom: var(--app-space-2); }
+.scanner__nutrition th, .scanner__nutrition td { padding: var(--app-space-2); border-bottom: 1px solid var(--app-border); }
+.scanner__source { font-size: 0.85rem; color: var(--app-text-muted); }
+.scanner__source a { text-decoration: underline; }
+
+@include mixins.media-down(small) {
+  .scanner__search button { width: 100%; }
+}

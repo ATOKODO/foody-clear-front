@@ -1,0 +1,4 @@
+https://{$FOODY_HOST:foody.home.arpa} {
+    tls internal
+    reverse_proxy front:80
+}

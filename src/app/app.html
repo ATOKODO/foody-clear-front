@@ -71,6 +71,8 @@
         </div>
       </div>
 
+      <div class="app-shell__header-actions">
+      <app-pwa-controls />
       <button
         type="button"
         class="app-theme-toggle"
@@ -104,9 +106,13 @@
           <span class="app-theme-toggle__subtitle">{{ themeToggleLabel }}</span>
         </span>
       </button>
+      </div>
     </header>
 
     <main class="app-shell__content">
+      @if (!pwa.online()) {
+        <p class="app-alert" role="status">Hors connexion. L’app reste accessible ; les recherches et les enregistrements nécessitent une connexion au serveur.</p>
+      }
       <router-outlet />
     </main>
   </div>

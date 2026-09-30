@@ -18,10 +18,12 @@ import {
   findNavigationContextByUrl,
 } from './app.navigation';
 import { ThemeMode, ThemeService } from '../services/theme-service';
+import { PwaControls } from './ui/pwa-controls/pwa-controls';
+import { PwaService } from '../services/pwa-service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, PwaControls],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {
@@ -29,6 +31,7 @@ import { ThemeMode, ThemeService } from '../services/theme-service';
   },
 })
 export class App {
+  readonly pwa = inject(PwaService);
   readonly navigationGroups = APP_SIDEBAR_NAVIGATION;
 
   currentEntry: AppNavigationEntry = APP_NAVIGATION[0].entries[0];
