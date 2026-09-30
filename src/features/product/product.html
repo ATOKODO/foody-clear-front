@@ -123,9 +123,13 @@
     </div>
 
     <mat-dialog-content class="app-dialog-content">
+      @if (lastError) {
+        <app-ui-error-panel [error]="lastError" />
+      }
       <app-product-form [mode]="formMode"
         [product]="formInitialValue"
         [showHeading]="false"
+        [saving]="saving"
         [categories]="categoryOptions"
         [genericProducts]="genericProductOptions"
         [tags]="tagOptions"

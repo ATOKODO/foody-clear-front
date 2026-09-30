@@ -262,6 +262,7 @@ export class Product implements OnInit {
   }
 
   onAddRequested(): void {
+    this.lastError = null;
     this.formMode = 'add';
     this.editingProductId = null;
     this.formInitialValue = null;
@@ -281,6 +282,7 @@ export class Product implements OnInit {
     }
 
     this.formMode = 'edit';
+    this.lastError = null;
     this.editingProductId = product.id;
     this.formInitialValue = this.toFormValue(product);
     this.loadLinkedOptions();

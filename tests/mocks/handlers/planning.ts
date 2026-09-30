@@ -294,9 +294,6 @@ async function deleteCycle(context: MockApiRequestContext, cycle: MockCycle): Pr
   );
   await context.noContent();
 }
-  }
-  return false;
-}
 
 async function handleTemplateCollectionRequest(context: MockApiRequestContext): Promise<boolean> {
   const { path } = context;

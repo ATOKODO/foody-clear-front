@@ -21,6 +21,40 @@ describe('ProductForm', () => {
     expect(component).toBeTruthy();
   });
 
+  it('provides a valid example without technical fields and submits it from JSON', () => {
+    const emitted: unknown[] = [];
+    component.submitted.subscribe((event) => emitted.push(event));
+    component.jsonText.set(component.jsonExample());
+    expect(component.jsonResult().error).toBeNull();
+    expect(component.jsonExample()).not.toMatch(/"(?:id|categoryId|genericProductId|tagIds|quantityNormalized|portionQuantityNormalized)"/);
+    component.onJsonSubmit();
+    expect(emitted).toEqual([{ mode: 'add', value: component.jsonResult().value }]);
+  });
+
+  it('never submits invalid JSON or submits while saving or editing', () => {
+    const emitted: unknown[] = [];
+    component.submitted.subscribe((event) => emitted.push(event));
+    component.jsonText.set('{');
+    component.onJsonSubmit();
+    component.jsonText.set(component.jsonExample());
+    fixture.componentRef.setInput('saving', true);
+    component.onJsonSubmit();
+    fixture.componentRef.setInput('saving', false);
+    fixture.componentRef.setInput('mode', 'edit');
+    component.onJsonSubmit();
+    expect(emitted).toEqual([]);
+  });
+
+  it('keeps pasted JSON and updates name resolution when linked data arrives', () => {
+    const text = JSON.stringify({ name: 'Avoine', unitType: 'Paquet', quantityPerUnit: 500, quantityUnit: 'g', category: 'Céréales' });
+    component.jsonText.set(text);
+    expect(component.jsonResult().value).toBeNull();
+    fixture.componentRef.setInput('categories', [{ id: 7, name: 'Céréales' }]);
+    fixture.detectChanges();
+    expect(component.jsonText()).toBe(text);
+    expect(component.jsonResult().value?.categoryId).toBe(7);
+  });
+
   it('should initialize add mode with default values', () => {
     expect(component.form.getRawValue().name).toBe('');
     expect(component.nutritionValues).toEqual([

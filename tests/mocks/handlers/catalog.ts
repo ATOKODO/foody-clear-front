@@ -456,6 +456,9 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
     }
   }
 
+    return false;
+  };
+
   const handlers = [
     handleMetaRequest,
     handleCategoryRequest,

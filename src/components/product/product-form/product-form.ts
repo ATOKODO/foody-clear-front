@@ -4,15 +4,20 @@ import {
   OnChanges,
   OnInit,
   SimpleChanges,
+  computed,
   inject,
   input,
-  output
+  output,
+  signal,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
+import { parseProductJson } from './product-json';
 import { NutritionReference } from '../../../interfaces/cycle.interface';
 import { Category as ProductCategoryOption } from '../../../services/category-service';
 import { GenericProduct as ProductGenericProductOption } from '../../../services/generic-product-service';
@@ -67,7 +72,9 @@ export interface ProductFormValue {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule
+    MatSelectModule,
+    MatTabsModule,
+    NgTemplateOutlet,
   ],
   templateUrl: './product-form.html',
   host: { style: 'display: block' },
@@ -83,6 +90,38 @@ export class ProductForm implements OnInit, OnChanges {
   readonly quantityUnits = input<QuantityUnitMeta[]>([]);
   readonly showHeading = input(true);
   readonly tags = input<ProductTagOption[]>([]);
+  readonly saving = input(false);
+  readonly jsonText = signal('');
+  readonly jsonResult = computed(() => parseProductJson(this.jsonText(), {
+    categories: this.categories(),
+    genericProducts: this.genericProducts(),
+    tags: this.tags(),
+    nutritionKeys: this.nutritionKeys(),
+    unitTypes: this.unitTypeOptions,
+    portionUnits: this.portionUnitOptions,
+    priceUnits: this.priceUnitOptions.map((option) => option.value),
+  }));
+  readonly jsonExample = computed(() => JSON.stringify({
+    name: 'Flocons d’avoine',
+    barcode: '3012345678901',
+    ...(this.categories().length ? { category: this.categories()[0].name } : {}),
+    ...(this.genericProducts().length ? { genericProduct: this.genericProducts()[0].name } : {}),
+    tags: this.tags().slice(0, 1).map((tag) => tag.name),
+    unitType: 'Paquet',
+    quantityPerUnit: 500,
+    quantityUnit: 'g',
+    portionCount: 10,
+    portionUnit: 'portion',
+    price: 2.5,
+    priceUnit: 'paquet',
+    memo: 'À conserver au sec',
+    nutritionValues: [{
+      nutritionKey: resolveDefaultNutritionKeys(this.nutritionKeys())[1],
+      amount: 13,
+      unit: 'G',
+      reference: 'PER_100G',
+    }],
+  }, null, 2));
 
   readonly submitted = output<{
     mode: ProductFormMode;
@@ -170,6 +209,7 @@ export class ProductForm implements OnInit, OnChanges {
   }
 
   onSubmit(): void {
+    if (this.saving()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -227,6 +267,13 @@ export class ProductForm implements OnInit, OnChanges {
         nutritionValues,
       },
     });
+  }
+
+  onJsonSubmit(): void {
+    const value = this.jsonResult().value;
+    if (this.mode() === 'add' && value && !this.saving()) {
+      this.submitted.emit({ mode: 'add', value });
+    }
   }
 
   addNutritionValue(): void {
