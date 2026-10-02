@@ -75,6 +75,7 @@ export class SlotFeatureStore {
   }
 
   onAddRequested(): boolean {
+    if (this.saving) return false;
     this.formMode = 'add';
     this.editingSlotId = null;
     this.formInitialValue = null;
@@ -87,6 +88,7 @@ export class SlotFeatureStore {
   }
 
   onEditRequested(item: SlotListItem): boolean {
+    if (this.saving) return false;
     const slotId = getSlotIdFromListItem(item);
     if (slotId === null) {
       return false;
@@ -108,6 +110,7 @@ export class SlotFeatureStore {
     item: SlotListItem,
     onDataChanged: () => void,
   ): void {
+    if (this.saving) return;
     const slotId = getSlotIdFromListItem(item);
     if (slotId === null) {
       return;
@@ -138,6 +141,7 @@ export class SlotFeatureStore {
     event: { mode: SlotFormMode; value: SlotFormValue },
     onDataChanged: () => void,
   ): void {
+    if (this.saving) return;
     const payload = toCreateSlotDto(event.value);
     this.saving = true;
 
@@ -170,6 +174,7 @@ export class SlotFeatureStore {
   }
 
   onCancelForm(): void {
+    if (this.saving) return;
     this.closeForm();
   }
 

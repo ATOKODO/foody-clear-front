@@ -1,22 +1,12 @@
 import type { MealPrepEntryType, MealPrepResolvedProductLine } from './meal-prep.interface';
 
-export type ProductQuantityInputUnit =
-  | 'mg'
-  | 'g'
-  | 'kg'
-  | 'ml'
-  | 'l'
-  | 'unit'
-  | 'pack'
-  | 'tranche'
-  | 'piece'
-  | 'part'
-  | 'bouteille'
-  | 'portion';
+import type { ProductQuantityInputUnit } from './quantity.interface';
+export type { ProductQuantityInputUnit } from './quantity.interface';
 
 export interface InputDayItemCommand {
   productId: number;
-  inventoryId: number;
+  inventoryId?: number;
+  inventoryIds?: number[];
   qty: number;
   occurredAt?: string;
   qtyUnit?: ProductQuantityInputUnit;
@@ -31,7 +21,8 @@ export interface CreateInputDayItemsDto {
 export interface UpdateInputDayItemDto {
   dateLocal: string;
   productId: number;
-  inventoryId: number;
+  inventoryId?: number;
+  inventoryIds?: number[];
   qty: number;
   occurredAt?: string;
   qtyUnit?: ProductQuantityInputUnit;
@@ -106,6 +97,7 @@ export interface InputDayItemSummary {
   productId: number;
   productName: string;
   inventoryId: number | null;
+  inventoryAllocations?: { inventoryId: number; qtyNormalized: number }[];
   qty: number;
   qtyUnit: ProductQuantityInputUnit | null;
   qtyNormalized: number;
@@ -122,6 +114,7 @@ export interface InputDayTemplateStockByInventory {
   inventoryName: string;
   qtyAvailableNormalized: number;
   enoughStock: boolean;
+  productStocks?: { productId: number; requestedQtyNormalized: number; qtyAvailableNormalized: number }[];
 }
 
 export interface InputDayTemplateItemSummary {

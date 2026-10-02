@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
+import type { ProductPriceHistoryStatsResponse, StatisticsTimelineResponse } from '../../interfaces/statistics.interface';
 
 import { StatisticFeature } from './statistic.feature';
 import { StatisticService } from '../../services/statistic-service';
@@ -175,6 +176,42 @@ describe('StatisticFeature', () => {
     expect(component).toBeTruthy();
   });
 
+  it('keeps the latest period when timeline replies arrive out of order', () => {
+    const old = new Subject<StatisticsTimelineResponse>();
+    const current = new Subject<StatisticsTimelineResponse>();
+    statisticService.getTimeline.and.returnValues(old, current);
+    component.applyQuickRange(7);
+    component.applyQuickRange(14);
+    const response = { ...defaultTimelineResponse, fromDateLocal: component.fromDateLocal, toDateLocal: component.toDateLocal } as StatisticsTimelineResponse;
+    current.next(response);
+    old.error(new Error('Old period failed'));
+    expect(component.timelineResponse).toBe(response);
+    expect(component.timelineError).toBeNull();
+    expect(component.loadingTimeline).toBeFalse();
+  });
+
+  it('keeps the latest product and clears a pending history when no product is selected', () => {
+    const old = new Subject<ProductPriceHistoryStatsResponse>();
+    const current = new Subject<ProductPriceHistoryStatsResponse>();
+    const pending = new Subject<ProductPriceHistoryStatsResponse>();
+    statisticService.getProductPriceHistory.and.returnValues(old, current, pending);
+    component.selectedPriceProductId = 1;
+    component.onPriceProductChange();
+    component.selectedPriceProductId = 2;
+    component.onPriceProductChange();
+    const response = { product: { id: 2, name: 'B' }, changes: [] } as unknown as ProductPriceHistoryStatsResponse;
+    current.next(response);
+    old.error(new Error('Old product failed'));
+    expect(component.priceHistoryResponse).toBe(response);
+    expect(component.priceHistoryError).toBeNull();
+    component.onPriceProductChange();
+    component.selectedPriceProductId = null;
+    component.onPriceProductChange();
+    pending.next(response);
+    expect(component.priceHistoryResponse).toBeNull();
+    expect(component.loadingPriceHistory).toBeFalse();
+  });
+
   it('should show targets as the default first statistics view', () => {
     expect(component.activeView).toBe('targets');
     expect(component.views.map((view) => view.value)).toEqual([
@@ -182,6 +219,18 @@ describe('StatisticFeature', () => {
       'expenses',
       'prices',
     ]);
+  });
+
+  it('refreshes the current period after an exclusion completes for an older period', () => {
+    const mutation = new Subject<StatisticsTimelineResponse>();
+    statisticService.updatePurchaseEventExclusion.and.returnValue(mutation);
+    component.excludePurchaseEvent(component.timelineResponse!.days[0].expenses.events[0]);
+    component.applyQuickRange(7);
+    const current = { ...defaultTimelineResponse, fromDateLocal: component.fromDateLocal, toDateLocal: component.toDateLocal } as StatisticsTimelineResponse;
+    statisticService.getTimeline.and.returnValue(of(current));
+    mutation.next(defaultTimelineResponse as StatisticsTimelineResponse);
+    expect(component.timelineResponse).toBe(current);
+    expect(statisticService.getTimeline).toHaveBeenCalledWith(component.fromDateLocal, component.toDateLocal, component.timezone);
   });
 
   it('should exclude a refunded purchase event from statistics', () => {

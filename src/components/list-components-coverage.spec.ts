@@ -144,7 +144,7 @@ describe('list and form component branches', () => {
     component.onCheckboxChange(categories[0], false);
     const clickEvent = new MouseEvent('click');
     spyOn(clickEvent, 'stopPropagation');
-    component.onCheckboxClick(clickEvent, categories[1]);
+    component.onCheckboxClick(clickEvent);
     expect(clickEvent.stopPropagation).toHaveBeenCalled();
     component.onRowClick(categories[1]);
     expect(selected).toHaveSize(2);
@@ -189,8 +189,8 @@ describe('list and form component branches', () => {
     component.onCheckboxChange(tags[0], false);
     const event = new MouseEvent('click');
     spyOn(event, 'stopPropagation');
-    component.onCheckboxClick(event, tags[1]);
-    expect(selectedMany).toHaveSize(3);
+    component.onCheckboxClick(event);
+    expect(selectedMany).toHaveSize(2);
     expect(event.stopPropagation).toHaveBeenCalled();
 
     fixture.componentRef.setInput('mode', 'manage');
@@ -248,8 +248,8 @@ describe('list and form component branches', () => {
     component.onCheckboxChange(items[0], false);
     const event = new MouseEvent('click');
     spyOn(event, 'stopPropagation');
-    component.onCheckboxClick(event, items[1]);
-    expect(selectedMany).toHaveSize(3);
+    component.onCheckboxClick(event);
+    expect(selectedMany).toHaveSize(2);
     expect(event.stopPropagation).toHaveBeenCalled();
 
     fixture.componentRef.setInput('mode', 'manage');

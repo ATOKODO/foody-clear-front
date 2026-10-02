@@ -1,3 +1,4 @@
+import { UiModal } from '../../app/ui/modal/modal';
 
 import { Component, OnChanges, OnInit, SimpleChanges, input, output, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +22,7 @@ import {
 
 @Component({
   selector: 'app-tag',
-  imports: [
+  imports: [UiModal,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -97,6 +98,7 @@ export class Tag implements OnInit, OnChanges {
   }
 
   onAddRequested(): void {
+    if (this.saving()) return;
     this.formMode = 'add';
     this.editingTagId = null;
     this.formInitialValue = null;
@@ -108,6 +110,7 @@ export class Tag implements OnInit, OnChanges {
   }
 
   onEditRequested(item: TagListItem): void {
+    if (this.saving()) return;
     const tagId = Number(item.id);
     if (!Number.isInteger(tagId) || tagId < 1) {
       return;
@@ -125,6 +128,7 @@ export class Tag implements OnInit, OnChanges {
   }
 
   onDeleteRequested(item: TagListItem): void {
+    if (this.saving()) return;
     const tagId = Number(item.id);
     if (!Number.isInteger(tagId) || tagId < 1) {
       return;
@@ -152,6 +156,7 @@ export class Tag implements OnInit, OnChanges {
   }
 
   onFormSubmitted(event: { mode: TagFormMode; value: TagFormValue }): void {
+    if (this.saving()) return;
     this.saving.set(true);
 
     if (event.mode === 'edit' && this.editingTagId !== null) {
@@ -198,6 +203,7 @@ export class Tag implements OnInit, OnChanges {
   }
 
   onCancelForm(): void {
+    if (this.saving()) return;
     this.formVisible = false;
     this.formMode = 'add';
     this.editingTagId = null;

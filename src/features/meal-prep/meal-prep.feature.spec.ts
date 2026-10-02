@@ -140,7 +140,7 @@ describe('MealPrepFeature', () => {
     expect(component.selectedDish).toBe(dish);
     expect(component.selectedMeal).toBe(meal);
     expect(component.loading).toBeFalse();
-    expect(component.getDishQtyUnitOptions(component.dishDraftLines[0])).toHaveSize(3);
+    expect(component.getDishQtyUnitOptions(component.dishDraftLines[0])).toHaveSize(5);
     expect(component.getMealQtyUnitOptions(component.mealDraftLines[0])).toEqual([
       { value: 'unit', label: 'Unit' },
     ]);

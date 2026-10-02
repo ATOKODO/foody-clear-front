@@ -25,14 +25,14 @@ test.describe('Input day - template', () => {
     await selectMatOption(page, page.getByTestId('input-day-inventory-select'), 'Frigo maison (#1)');
 
     await selectMatOption(page, page.getByTestId('input-day-template-select'), 'Template E2E');
-    await page.getByTestId('input-day-template-apply').click();
 
-    await expect(page.getByText('Template E2E (override manuel)')).toBeVisible();
+    await expect(page.getByText('Template E2E (manual override)')).toBeVisible();
     const templateRow = page.getByTestId('input-day-template-item-4');
     await expect(templateRow).toBeVisible();
     await templateRow.getByTestId('input-day-convert-template-4').click();
 
+    await expect.poll(() => mockApi.state.templateConversions.length).toBe(1);
     await expect(page.getByTestId('input-day-item-3')).toContainText('Banane');
-    await expect(page.getByTestId('input-day-template-item-4')).toContainText('Converti');
+    await expect(page.getByTestId('input-day-template-item-4')).toContainText('Converted');
   });
 });

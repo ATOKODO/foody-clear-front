@@ -7,18 +7,18 @@ test('creates, updates and deletes a slot', async ({ page, mockApi }) => {
   const updatedTitle = `${createdTitle} renomme`;
 
   await gotoRoute(page, '/slot');
-  await expectShellTitle(page, 'Plages horaires');
+  await expectShellTitle(page, 'Time slots');
 
   await clickTestId(page, 'slot-add');
   const dialog = page.getByTestId('slot-dialog');
   await expect(dialog).toBeVisible();
 
-  await fillLabeledInput(dialog, 'Key', 'late_snack');
-  await fillLabeledInput(dialog, 'Titre', createdTitle);
-  await fillLabeledInput(dialog, 'Ordre', '4');
-  await fillLabeledInput(dialog, 'Heure de debut', '21:00');
-  await fillLabeledInput(dialog, 'Heure de fin', '21:30');
-  await dialog.getByRole('button', { name: 'Valider' }).click();
+  await dialog.locator('input[formcontrolname="key"]').fill('late_snack');
+  await fillLabeledInput(dialog, 'Title', createdTitle);
+  await fillLabeledInput(dialog, 'Order', '4');
+  await fillLabeledInput(dialog, 'Start time', '21:00');
+  await fillLabeledInput(dialog, 'End time', '21:30');
+  await dialog.getByRole('button', { name: 'Save' }).click();
 
   await expect.poll(() => mockApi.state.slots.some((slot) => slot.title === createdTitle)).toBe(true);
   const slotId = mockApi.state.slots.find((slot) => slot.title === createdTitle)?.id;
@@ -29,8 +29,8 @@ test('creates, updates and deletes a slot', async ({ page, mockApi }) => {
   await clickTestId(page, `slot-edit-${slotId}`);
   const editDialog = page.getByTestId('slot-dialog');
   await expect(editDialog).toBeVisible();
-  await fillLabeledInput(editDialog, 'Titre', updatedTitle);
-  await editDialog.getByRole('button', { name: 'Valider' }).click();
+  await fillLabeledInput(editDialog, 'Title', updatedTitle);
+  await editDialog.getByRole('button', { name: 'Save' }).click();
 
   await expect.poll(() => mockApi.state.slots.find((slot) => slot.id === slotId)?.title).toBe(updatedTitle);
   await expect(page.getByTestId(`slot-row-${slotId}`)).toContainText(updatedTitle);

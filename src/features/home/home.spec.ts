@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, DeferBlockState, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter, Routes } from '@angular/router';
 import { DateTime } from 'luxon';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { APP_NAVIGATION } from '../../app/app.navigation';
 import { InputDayResponse } from '../../interfaces/input-day.interface';
 import { StatisticsTimelineResponse } from '../../interfaces/statistics.interface';
@@ -14,6 +15,7 @@ import { SlotService } from '../../services/slot-service';
 import { StatisticService } from '../../services/statistic-service';
 import { TemplateService } from '../../services/template-service';
 import { Home } from './home';
+import { InputDayFeature } from '../input-day/input-day.feature';
 
 @Component({
   standalone: true,
@@ -301,6 +303,59 @@ describe('Home', () => {
 
   it('should load today planning on init', () => {
     expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith(today, timezone);
+  });
+
+  it('refreshes the date and planning links at local midnight', fakeAsync(() => {
+    let now = DateTime.fromISO('2026-10-24T23:59:00', { zone: 'Europe/Paris' });
+    spyOn(DateTime, 'local').and.callFake(() => now as ReturnType<typeof DateTime.local>);
+    component.refreshDashboard();
+    now = now.plus({ minutes: 1 });
+    tick(60_000);
+    fixture.detectChanges();
+
+    expect(component.todayDateLocal).toBe('2026-10-25');
+    expect(component.planningTodayQueryParams).toEqual({ view: 'day', date: '2026-10-25' });
+    expect(inputDayServiceMock.getInputDay).toHaveBeenCalledWith('2026-10-25', 'Europe/Paris');
+    expect(statisticServiceMock.getTimeline).toHaveBeenCalledWith('2026-10-25', '2026-10-25', 'Europe/Paris');
+    fixture.destroy();
+  }));
+
+  it('updates the date in an already opened quick-entry form', async () => {
+    const [quickEntry] = await fixture.getDeferBlocks();
+    await quickEntry.render(DeferBlockState.Complete);
+    fixture.detectChanges();
+    const now = DateTime.local().plus({ days: 1 });
+    spyOn(DateTime, 'local').and.callFake(() => now as ReturnType<typeof DateTime.local>);
+    component.refreshDashboard();
+    fixture.detectChanges();
+    const inputForm = fixture.debugElement.query(By.directive(InputDayFeature)).componentInstance as InputDayFeature;
+    expect(inputForm.initialDateLocal()).toBe(now.toISODate());
+  });
+
+  it('refreshes a suspended dashboard on focus and ignores previous-day replies', () => {
+    let now = DateTime.fromISO('2026-10-01T23:50:00', { zone: 'Europe/Paris' });
+    spyOn(DateTime, 'local').and.callFake(() => now as ReturnType<typeof DateTime.local>);
+    const oldDay = new Subject<InputDayResponse>();
+    const newDay = new Subject<InputDayResponse>();
+    const oldTimeline = new Subject<StatisticsTimelineResponse>();
+    const newTimeline = new Subject<StatisticsTimelineResponse>();
+    inputDayServiceMock.getInputDay.and.callFake((date: string) => date === '2026-10-01' ? oldDay : newDay);
+    statisticServiceMock.getTimeline.and.callFake((date: string) => date === '2026-10-01' ? oldTimeline : newTimeline);
+    component.refreshDashboard();
+    now = now.plus({ days: 1 });
+    window.dispatchEvent(new Event('focus'));
+    const currentDay = { ...dayResponse, dateLocal: '2026-10-02' };
+    const currentTimeline = { ...timelineResponse, fromDateLocal: '2026-10-02', toDateLocal: '2026-10-02' };
+    newDay.next(currentDay);
+    newTimeline.next(currentTimeline);
+    oldDay.next(dayResponse);
+    oldTimeline.error(new Error('late failure'));
+
+    expect(component.todayDateLocal).toBe('2026-10-02');
+    expect(component.inputDayResponse).toBe(currentDay);
+    expect(component.timelineResponse).toBe(currentTimeline);
+    expect(component.timelineError).toBeNull();
+    expect(component.loading).toBeFalse();
   });
 
   it('should load planning and statistics on manual refresh', () => {

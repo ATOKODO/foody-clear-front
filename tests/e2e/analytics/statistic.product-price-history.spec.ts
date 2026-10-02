@@ -5,7 +5,7 @@ import { expectShellTitle, gotoRoute } from '../../helpers/navigation';
 test.describe('Statistics price history', () => {
   test('switches products and reflects the price history', async ({ page }) => {
     await gotoRoute(page, '/statistic');
-    await expectShellTitle(page, 'Statistiques');
+    await expectShellTitle(page, 'Statistics');
 
     await page.getByTestId('stat-view-prices').click();
     await expect(page.getByTestId('stat-price-timeline')).toBeVisible();

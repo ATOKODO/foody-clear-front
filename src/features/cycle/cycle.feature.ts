@@ -281,6 +281,7 @@ export class CycleFeature implements OnInit {
   }
 
   onAddRequested(): void {
+    if (this.saving) return;
     this.formMode = 'add';
     this.formInitialValue = null;
     this.editingCycleId = null;
@@ -288,6 +289,7 @@ export class CycleFeature implements OnInit {
   }
 
   onEditRequested(item: CycleListItem): void {
+    if (this.saving) return;
     const cycle = this.cycles.find((value) => value.id === item.id);
     if (!cycle) {
       return;
@@ -304,12 +306,13 @@ export class CycleFeature implements OnInit {
   }
 
   onDeleteRequested(item: CycleListItem): void {
-    this.savingState.set(true);
+    if (this.saving) return;
+    this.setSaving(true);
     this.cycleSrv.remove(item.id).subscribe({
       next: () => {
         this.lastResponse = { deleted: true, id: item.id };
         this.lastError = null;
-        this.savingState.set(false);
+        this.setSaving(false);
 
         if (this.editingCycleId === item.id) {
           this.onCancelForm();
@@ -319,12 +322,13 @@ export class CycleFeature implements OnInit {
       },
       error: (error) => {
         this.lastError = error;
-        this.savingState.set(false);
+        this.setSaving(false);
       },
     });
   }
 
   onFormSubmitted(event: { mode: CycleFormMode; value: CycleFormValue }): void {
+    if (this.saving) return;
     const payload = this.toCreateDto(event.value);
 
     if (event.mode === 'edit' && this.editingCycleId !== null) {
@@ -337,23 +341,24 @@ export class CycleFeature implements OnInit {
       return;
     }
 
-    this.savingState.set(true);
+    this.setSaving(true);
     this.cycleSrv.create(payload).subscribe({
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
-        this.savingState.set(false);
+        this.setSaving(false);
         this.closeFormDialog('submitted');
         this.loadCycles();
       },
       error: (error) => {
         this.lastError = error;
-        this.savingState.set(false);
+        this.setSaving(false);
       },
     });
   }
 
   onCancelForm(): void {
+    if (this.saving) return;
     this.closeFormDialog('cancelled');
   }
 
@@ -390,6 +395,12 @@ export class CycleFeature implements OnInit {
     this.loadCycles();
   }
 
+  private setSaving(value: boolean): void {
+    this.savingState.set(value);
+    if (this.dialogRef) this.dialogRef.disableClose = value;
+    if (this.impactDialogRef) this.impactDialogRef.disableClose = value;
+  }
+
   private openFormDialog(): void {
     const cycleFormDialogTemplate = this.cycleFormDialogTemplate();
     if (!cycleFormDialogTemplate || this.dialogRef !== null) {
@@ -401,7 +412,7 @@ export class CycleFeature implements OnInit {
     this.dialogRef = this.dialog.open(cycleFormDialogTemplate, {
       width: '1100px',
       maxWidth: '96vw',
-      autoFocus: false,
+      autoFocus: 'first-tabbable',
       restoreFocus: true,
     });
 
@@ -437,7 +448,7 @@ export class CycleFeature implements OnInit {
     this.impactDialogRef = this.dialog.open(cycleImpactDialogTemplate, {
       width: '560px',
       maxWidth: '96vw',
-      autoFocus: false,
+      autoFocus: 'first-tabbable',
       restoreFocus: true,
       disableClose: this.saving,
     });
@@ -585,18 +596,18 @@ export class CycleFeature implements OnInit {
       ...impactOptions,
     };
 
-    this.savingState.set(true);
+    this.setSaving(true);
     this.cycleSrv.update(cycleId, updatePayload).subscribe({
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
-        this.savingState.set(false);
+        this.setSaving(false);
         this.closeFormDialog('submitted');
         this.loadCycles();
       },
       error: (error) => {
         this.lastError = error;
-        this.savingState.set(false);
+        this.setSaving(false);
       },
     });
   }

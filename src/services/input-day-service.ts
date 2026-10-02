@@ -88,7 +88,7 @@ export class InputDayService {
     return this.http.post<InputDayResponse>(
       `${this.baseUrl}/input-days/${dateLocal}/template-items/${templateItemId}/convert`,
       {
-        inventoryId: inventoryIds[0] ?? null,
+        inventoryIds: [...new Set(inventoryIds)],
       },
     );
   }

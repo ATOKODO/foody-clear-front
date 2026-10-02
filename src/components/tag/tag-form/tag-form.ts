@@ -33,6 +33,7 @@ export interface TagFormValue {
 export class TagForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
+  readonly saving = input(false);
   readonly mode = input<TagFormMode>('add');
   readonly tag = input<Partial<TagFormValue> | null>(null);
   readonly showHeading = input(true);
@@ -66,6 +67,7 @@ export class TagForm implements OnInit, OnChanges {
   }
 
   onSubmit(): void {
+    if (this.saving()) return;
     if (this.form.controls.name.invalid) {
       this.form.controls.name.markAsTouched();
       return;

@@ -7,15 +7,15 @@ test('creates, renames and deletes a template', async ({ page, mockApi }) => {
   const updatedTitle = `${createdTitle} renomme`;
 
   await gotoRoute(page, '/template');
-  await expectShellTitle(page, 'Modeles');
+  await expectShellTitle(page, 'Templates');
 
   await clickTestId(page, 'template-add');
   const dialog = page.getByTestId('template-dialog');
   await expect(dialog).toBeVisible();
 
-  await fillLabeledInput(dialog, 'Titre du template', createdTitle);
+  await fillLabeledInput(dialog, 'Template title', createdTitle);
   await dialog.getByTestId('template-save').click();
-  await dialog.getByRole('button', { name: 'Fermer' }).click();
+  await dialog.getByRole('button', { name: 'Close' }).click();
   await expect(dialog).toHaveCount(0);
 
   await expect.poll(() => mockApi.state.templates.some((template) => template.title === createdTitle)).toBe(true);
@@ -27,7 +27,7 @@ test('creates, renames and deletes a template', async ({ page, mockApi }) => {
   await clickTestId(page, 'template-edit');
   const editDialog = page.getByTestId('template-dialog');
   await expect(editDialog).toBeVisible();
-  await fillLabeledInput(editDialog, 'Titre du template', updatedTitle);
+  await fillLabeledInput(editDialog, 'Template title', updatedTitle);
   await editDialog.getByTestId('template-save').click();
 
   await expect.poll(() => mockApi.state.templates.find((template) => template.id === templateId)?.title).toBe(updatedTitle);

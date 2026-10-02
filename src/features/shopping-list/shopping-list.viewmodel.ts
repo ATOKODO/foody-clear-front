@@ -1,3 +1,7 @@
+import type { QtyUnitOption } from '../../interfaces/quantity.interface';
+export type { QtyUnitOption } from '../../interfaces/quantity.interface';
+import { buildProductQtyUnitOptions, normalizeQuantityInputUnit } from '../../utils/product-quantity';
+export { normalizeQtyUnitSelection } from '../../utils/product-quantity';
 import type { SegmentedToggleOption } from '../../app/ui/segmented-toggle/segmented-toggle';
 import type { ProductListItem } from '../../components/product/product-list/product-list';
 import { mapProductToProductListItem } from '../../components/product/product-list/product-list-item.mapper';
@@ -15,30 +19,11 @@ import type { Product } from '../../services/product-service';
 
 export type ShoppingListView = 'list' | 'template';
 
-export interface QtyUnitOption {
-  value: ProductQuantityInputUnit;
-  label: string;
-}
-
 export const SHOPPING_LIST_VIEW_OPTIONS: readonly SegmentedToggleOption<ShoppingListView>[] = [
   { value: 'list', label: 'Shopping list' },
   { value: 'template', label: 'Shopping template' },
 ];
 
-const ALLOWED_QTY_UNITS = new Set<ProductQuantityInputUnit>([
-  'mg',
-  'g',
-  'kg',
-  'ml',
-  'l',
-  'unit',
-  'pack',
-  'tranche',
-  'piece',
-  'part',
-  'bouteille',
-  'portion',
-]);
 
 type ShoppingListProductItem = ShoppingListItem | ShoppingListTemplateItem;
 type LinkedProduct = InventoryLinkedProduct | Product;
@@ -84,57 +69,13 @@ export function resolveLinkedProduct(
 
 export function buildQtyUnitOptions(
   product: InventoryLinkedProduct | Product | null,
+  currentUnit?: ProductQuantityInputUnit | null,
 ): QtyUnitOption[] {
-  const options: QtyUnitOption[] = [];
-  const seen = new Set<ProductQuantityInputUnit>();
-
-  const pushOption = (
-    value: ProductQuantityInputUnit | null,
-    label: string,
-  ): void => {
-    if (value === null || seen.has(value)) {
-      return;
-    }
-
-    seen.add(value);
-    options.push({ value, label });
-  };
-
-  const unitType = product?.unitType?.trim();
-  pushOption('unit', unitType ? `Product unit (${unitType})` : 'Product unit');
-
-  const portionUnit = normalizeQtyUnit(product?.portionUnit);
-  if (portionUnit) {
-    pushOption(portionUnit, toTitleCase(portionUnit));
-  }
-
-  pushOption('g', 'G (Gram)');
-
-  return options;
+  return buildProductQtyUnitOptions(product, currentUnit);
 }
 
-export function normalizeQtyUnit(
-  value: string | null | undefined,
-): ProductQuantityInputUnit | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  const candidate = value.trim().toLowerCase();
-  return ALLOWED_QTY_UNITS.has(candidate as ProductQuantityInputUnit)
-    ? (candidate as ProductQuantityInputUnit)
-    : null;
-}
-
-export function normalizeQtyUnitSelection(
-  currentValue: ProductQuantityInputUnit | null,
-  options: QtyUnitOption[],
-): ProductQuantityInputUnit | null {
-  if (currentValue && options.some((option) => option.value === currentValue)) {
-    return currentValue;
-  }
-
-  return options[0]?.value ?? null;
+export function normalizeQtyUnit(value: string | null | undefined): ProductQuantityInputUnit | null {
+  return normalizeQuantityInputUnit(value);
 }
 
 export function upsertShoppingList(
@@ -168,12 +109,4 @@ function upsertById<T extends { id: number }>(items: T[], nextItem: T): T[] {
 
   next.unshift(nextItem);
   return next;
-}
-
-function toTitleCase(value: string): string {
-  if (value.length === 0) {
-    return value;
-  }
-
-  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }

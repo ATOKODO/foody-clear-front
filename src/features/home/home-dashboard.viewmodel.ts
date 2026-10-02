@@ -1,3 +1,4 @@
+import { getTemplateInventoryIds } from '../../utils/template-stock';
 import { DateTime } from 'luxon';
 import type {
   ExternalMealEntrySummary,
@@ -305,7 +306,7 @@ export function canConvertTemplateItem(
   return (
     !isConvertedTemplateItem(item, inputDayResponse) &&
     item.status === 'pending' &&
-    getTemplateInventoryId(item) !== null
+    getTemplateInventoryIds(item).length > 0
   );
 }
 
@@ -319,13 +320,7 @@ export function isConvertedTemplateItem(
 export function getTemplateInventoryId(
   item: InputDayTemplateItemSummary,
 ): number | null {
-  if (!item.stockAvailability.enoughStock) {
-    return null;
-  }
-
-  return (
-    item.stockByInventory.find((stock) => stock.enoughStock)?.inventoryId ?? null
-  );
+  return getTemplateInventoryIds(item)[0] ?? null;
 }
 
 export function getConvertedItemId(

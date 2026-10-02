@@ -12,7 +12,7 @@ test.describe('Input day - day', () => {
   test('creates a single item in the day composer', async ({ page }) => {
     await loadInputDay(page);
 
-    await selectMatOptionByLabel(page, page, 'Inventaire', 'Frigo maison (#1)');
+    await selectMatOptionByLabel(page, page, 'Inventories', 'Frigo maison (#1)');
     const bananaRow = page.getByTestId('product-row-1');
     await expect(bananaRow).toBeVisible();
 
@@ -31,15 +31,14 @@ test.describe('Input day - day', () => {
     await loadInputDay(page);
 
     const itemRow = page.getByTestId('input-day-item-1');
-    await itemRow.getByRole('button', { name: 'Modifier' }).click();
+    await itemRow.getByRole('button', { name: 'Edit' }).click();
 
-    const form = page.getByTestId('input-day-form');
-    await form.getByLabel('Quantite').fill('2');
+    await page.locator('input[formcontrolname="qty"]').fill('2');
     await page.getByTestId('input-day-submit-item').click();
 
     await expect(page.getByTestId('input-day-item-1')).toContainText('2');
 
-    await page.getByTestId('input-day-item-2').getByRole('button', { name: 'Modifier' }).click();
+    await page.getByTestId('input-day-item-2').getByRole('button', { name: 'Edit' }).click();
     await page.getByTestId('input-day-delete-item').click();
 
     await expect(page.locator('[data-testid^="input-day-item-"]')).toHaveCount(1);

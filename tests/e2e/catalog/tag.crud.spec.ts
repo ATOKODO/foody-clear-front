@@ -12,21 +12,21 @@ test('creates, edits and deletes a tag', async ({ page, mockApi }) => {
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
 
-  await dialog.getByLabel('Nom *').fill('E2E Tag');
-  await dialog.getByRole('button', { name: 'Creer' }).click();
+  await dialog.getByLabel('Name *').fill('E2E Tag');
+  await dialog.getByRole('button', { name: 'Create' }).click();
 
   const createdRow = page.locator('tr').filter({ hasText: 'E2E Tag' }).last();
   await expect(createdRow).toBeVisible();
 
-  await createdRow.getByRole('button', { name: 'Modifier' }).click();
+  await createdRow.getByRole('button', { name: 'Edit' }).click();
   const editDialog = page.getByRole('dialog');
   await expect(editDialog).toBeVisible();
-  await editDialog.getByLabel('Nom *').fill('E2E Tag updated');
-  await editDialog.getByRole('button', { name: 'Mettre a jour' }).click();
+  await editDialog.getByLabel('Name *').fill('E2E Tag updated');
+  await editDialog.getByRole('button', { name: 'Update' }).click();
 
   const updatedRow = page.locator('tr').filter({ hasText: 'E2E Tag updated' }).last();
   await expect(updatedRow).toBeVisible();
 
-  await updatedRow.getByRole('button', { name: 'Retirer' }).click();
+  await updatedRow.getByRole('button', { name: 'Remove' }).click();
   await expect(page.locator('tr').filter({ hasText: 'E2E Tag updated' })).toHaveCount(0);
 });

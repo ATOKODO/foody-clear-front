@@ -152,6 +152,45 @@ describe('Inventory', () => {
     expect(component).toBeTruthy();
   });
 
+  it('keeps editor rows tied to the latest request, including reopening the same inventory', () => {
+    const first = new Subject<unknown[]>();
+    const second = new Subject<unknown[]>();
+    const reopened = new Subject<unknown[]>();
+    component.inventories = [
+      { id: 4, name: 'A', inventoryProducts: linkedProducts },
+      { id: 5, name: 'B', inventoryProducts: [] },
+    ];
+    inventoryServiceMock.findProducts.and.returnValues(first, second, reopened);
+    component.onEditRequested(component.inventoryListItems[0]);
+    component.onCancelForm();
+    component.onEditRequested(component.inventoryListItems[1]);
+    component.onEditRequested(component.inventoryListItems[0]);
+    component.saveManagedProducts();
+    expect(inventoryServiceMock.reconcileProducts).not.toHaveBeenCalled();
+    reopened.next(linkedProducts);
+    first.next([{ ...linkedProducts[0], productId: 99 }]);
+    second.error(new Error('Old inventory failed'));
+    expect(component.editingInventoryId).toBe(4);
+    expect(component.editingInventoryProducts).toEqual(linkedProducts);
+    expect(component.manageProductRows.map((row) => row.productId)).toEqual([1]);
+    expect(component.lastError).toBeNull();
+    expect(component.loadingInventoryProducts).toBeFalse();
+  });
+
+  it('creates an inventory once while the form is waiting for its response', () => {
+    const response = new Subject<unknown>();
+    inventoryServiceMock.create.and.returnValue(response);
+    component.onAddRequested();
+    component.onFormSubmitted({ mode: 'add', value: { name: 'Stock' } });
+    component.onFormSubmitted({ mode: 'add', value: { name: 'Stock' } });
+    fixture.detectChanges();
+    expect(inventoryServiceMock.create).toHaveBeenCalledTimes(1);
+    const submit: HTMLButtonElement = fixture.nativeElement.querySelector('app-inventory-form button[type="submit"]');
+    expect(submit.disabled).toBeTrue();
+    response.next({ id: 5, name: 'Stock' });
+    expect(component.saving).toBeFalse();
+  });
+
   it('should render the figma-aligned inventory shell', () => {
     const element = fixture.nativeElement as HTMLElement;
 
@@ -570,6 +609,7 @@ describe('Inventory', () => {
       currentQty: 1,
       currentQtyUnit: 'unit',
       currentNormalizedQty: 1,
+      currentNormalizedUnit: 'unit',
       currentQtyDisplay: '1',
       unitType: 'Paquet',
       quantityPerUnit: 1,

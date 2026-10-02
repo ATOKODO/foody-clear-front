@@ -59,7 +59,7 @@ describe('HTTP services', () => {
     const tag = TestBed.inject(TagService);
     const categoryDto = { name: 'Fresh', warnBeforeDays: 2, recentlyExpiredDays: 1, minQuantity: 1 };
     const genericProductDto = { name: 'Rice', minQuantityUnit: 1, minQuantityMetric: 500 };
-    const nutritionDto = { label: 'Energy', amount: 100, unit: 'kcal', per: 100, productId: 4 };
+    const nutritionDto = { nutritionKey: 'ENERGY_KCAL', amount: 100, unit: 'KCAL', reference: 'PER_100G', productId: 4 };
     const productDto = {
       name: 'Rice bag',
       unitType: 'Paquet',
@@ -262,9 +262,9 @@ describe('HTTP services', () => {
     service.setTemplate('2026-07-11', 4).subscribe();
     expectRequest(httpMock, `${baseUrl}/input-days/2026-07-11/template`, 'PUT', { templateId: 4 });
     service.convertTemplateItem('2026-07-11', 5, [6, 7]).subscribe();
-    expectRequest(httpMock, `${baseUrl}/input-days/2026-07-11/template-items/5/convert`, 'POST', { inventoryId: 6 });
+    expectRequest(httpMock, `${baseUrl}/input-days/2026-07-11/template-items/5/convert`, 'POST', { inventoryIds: [6, 7] });
     service.convertTemplateItem('2026-07-11', 5, []).subscribe();
-    expectRequest(httpMock, `${baseUrl}/input-days/2026-07-11/template-items/5/convert`, 'POST', { inventoryId: null });
+    expectRequest(httpMock, `${baseUrl}/input-days/2026-07-11/template-items/5/convert`, 'POST', { inventoryIds: [] });
     const externalEntry = {} as Parameters<InputDayService['createExternalEntry']>[1];
     service.createExternalEntry('2026-07-11', externalEntry).subscribe();
     expectRequest(httpMock, `${baseUrl}/input-days/2026-07-11/external-entries`, 'POST', externalEntry);

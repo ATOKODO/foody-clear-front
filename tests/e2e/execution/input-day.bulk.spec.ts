@@ -12,7 +12,7 @@ test.describe('Input day - bulk', () => {
   test('creates multiple items in a single bulk request', async ({ page }) => {
     await loadInputDay(page);
 
-    await selectMatOptionByLabel(page, page, 'Inventaire', 'Frigo maison (#1)');
+    await selectMatOptionByLabel(page, page, 'Inventories', 'Frigo maison (#1)');
     await page.getByTestId('product-row-1').getByRole('checkbox').check();
     await page.getByTestId('product-row-2').getByRole('checkbox').check();
 

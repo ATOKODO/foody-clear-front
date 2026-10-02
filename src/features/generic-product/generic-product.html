@@ -72,7 +72,7 @@
       appearance="outlined"
       class="app-modal-card"
       data-testid="generic-product-dialog"
-      role="dialog"
+      appModal [appModalDisableClose]="saving()" (appModalClose)="onCancelForm()"
       aria-modal="true"
       >
       <div class="app-dialog-header">
@@ -90,7 +90,7 @@
         </button>
       </div>
       <div class="app-dialog-content">
-        <app-generic-product-form [mode]="formMode"
+        <app-generic-product-form [saving]="saving()" [mode]="formMode"
           [genericProduct]="formInitialValue"
           [showHeading]="false"
           (submitted)="onFormSubmitted($event)"

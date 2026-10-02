@@ -1073,7 +1073,7 @@ describe('Calendar', () => {
 
     convertButton.click();
     expect(convertEvents).toEqual([
-      { dateLocal: '2026-02-17', templateItemId: 91, inventoryId: 4 },
+      { dateLocal: '2026-02-17', templateItemId: 91, inventoryId: 4, inventoryIds: [4] },
     ]);
 
     fixture.componentRef.setInput('inputDayResponse', {
@@ -1175,7 +1175,7 @@ describe('Calendar', () => {
     expect(block.textContent).toContain('Skyr libre');
     button.click();
     expect(events).toEqual([
-      { dateLocal: '2026-02-17', templateItemId: 92, inventoryId: 4 },
+      { dateLocal: '2026-02-17', templateItemId: 92, inventoryId: 4, inventoryIds: [4] },
     ]);
   });
 

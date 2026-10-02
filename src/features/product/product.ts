@@ -295,12 +295,12 @@ export class Product implements OnInit {
       return;
     }
 
-    this.saving = true;
+    this.setSaving(true);
     this.productSrv.remove(productId).subscribe({
       next: () => {
         this.lastResponse = { deleted: true, id: productId };
         this.lastError = null;
-        this.saving = false;
+        this.setSaving(false);
 
         if (this.editingProductId === productId) {
           this.onCancelForm();
@@ -310,13 +310,14 @@ export class Product implements OnInit {
       },
       error: (error) => {
         this.lastError = error;
-        this.saving = false;
+        this.setSaving(false);
       },
     });
   }
 
   onFormSubmitted(event: { mode: ProductFormMode; value: ProductFormValue }): void {
-    this.saving = true;
+    if (this.saving) return;
+    this.setSaving(true);
 
     if (event.mode === 'edit' && this.editingProductId !== null) {
       const previousProduct =
@@ -326,13 +327,13 @@ export class Product implements OnInit {
         next: (response) => {
           this.lastResponse = response;
           this.lastError = null;
-          this.saving = false;
+          this.setSaving(false);
           this.closeFormDialog();
           this.loadProducts();
         },
         error: (error) => {
           this.lastError = error;
-          this.saving = false;
+          this.setSaving(false);
         },
       });
       return;
@@ -343,13 +344,13 @@ export class Product implements OnInit {
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
-        this.saving = false;
+        this.setSaving(false);
         this.closeFormDialog();
         this.loadProducts();
       },
       error: (error) => {
         this.lastError = error;
-        this.saving = false;
+        this.setSaving(false);
       },
     });
   }
@@ -362,6 +363,7 @@ export class Product implements OnInit {
   }
 
   onCancelForm(): void {
+    if (this.saving) return;
     if (this.dialogRef) {
       this.dialogRef.close();
       return;
@@ -399,7 +401,7 @@ export class Product implements OnInit {
     const dialogRef = this.dialog.open(productFormDialogTemplate, {
       width: 'min(1100px, 96vw)',
       maxWidth: '96vw',
-      autoFocus: false,
+      autoFocus: 'first-tabbable',
     });
 
     this.dialogRef = dialogRef;
@@ -411,6 +413,11 @@ export class Product implements OnInit {
       this.dialogRef = null;
       this.resetFormState();
     });
+  }
+
+  private setSaving(value: boolean): void {
+    this.saving = value;
+    if (this.dialogRef) this.dialogRef.disableClose = value;
   }
 
   private closeFormDialog(): void {
@@ -556,6 +563,12 @@ export class Product implements OnInit {
 
     const previousCategoryId = previousProduct ? this.readEntityId(previousProduct.category) : null;
     const shouldClearCategory = value.categoryId == null && previousCategoryId != null;
+    const retainedNutritionIds = new Set(value.nutritionValues.map((nutrition) => nutrition.id));
+    const nutritionValueIdsToRemove = previousProduct
+      ? this.extractNutritionValues(previousProduct)
+          .map((nutrition) => nutrition.id)
+          .filter((id): id is number => id !== undefined && !retainedNutritionIds.has(id))
+      : [];
 
     const dto: UpdateProductDto = {
       name: value.name,
@@ -573,6 +586,7 @@ export class Product implements OnInit {
       url: value.url,
       memo: value.memo,
       nutritionValuesUpdated: this.toNutritionValuesUpdated(value.nutritionValues),
+      ...(nutritionValueIdsToRemove.length ? { nutritionValueIdsToRemove } : {}),
     };
 
     if (value.categoryId != null) {

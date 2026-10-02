@@ -9,7 +9,7 @@ export async function loadStandaloneInputDay(
   dateLocal = inputDayDateLocal,
 ): Promise<void> {
   await gotoRoute(page, '/input-day');
-  await expectShellTitle(page, 'Saisie du jour');
+  await expectShellTitle(page, 'Day input');
 
   const dateInput = page.locator('input[formcontrolname="dateLocal"]').first();
   await expect(dateInput).toBeVisible();

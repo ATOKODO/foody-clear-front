@@ -1,3 +1,4 @@
+import { UiModal } from '../../app/ui/modal/modal';
 import { DOCUMENT } from '@angular/common';
 import {
   Component,
@@ -32,7 +33,7 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 @Component({
   selector: 'app-day-set-feature',
-  imports: [
+  imports: [UiModal,
     MatButtonModule,
     MatCardModule,
     UiErrorPanel,
@@ -153,6 +154,7 @@ export class DaySetFeature implements OnInit {
   }
 
   onAddRequested(): void {
+    if (this.saving) return;
     this.formMode = 'add';
     this.editingDaySetId = null;
     this.formInitialValue = null;
@@ -164,6 +166,7 @@ export class DaySetFeature implements OnInit {
   }
 
   onEditRequested(item: DaySetListItem): void {
+    if (this.saving) return;
     const daySetId = Number(item.id);
     if (!Number.isFinite(daySetId)) {
       return;
@@ -186,6 +189,7 @@ export class DaySetFeature implements OnInit {
   }
 
   onDeleteRequested(item: DaySetListItem): void {
+    if (this.saving) return;
     const daySetId = Number(item.id);
     if (!Number.isFinite(daySetId)) {
       return;
@@ -216,6 +220,7 @@ export class DaySetFeature implements OnInit {
     mode: DaySetFormMode;
     value: DaySetFormValue;
   }): void {
+    if (this.saving) return;
     const payload = this.toCreateDto(event.value);
     this.saving = true;
 
@@ -261,6 +266,7 @@ export class DaySetFeature implements OnInit {
   }
 
   onCancelForm(): void {
+    if (this.saving) return;
     this.closeForm();
   }
 

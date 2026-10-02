@@ -40,6 +40,7 @@ export interface GenericProductFormValue {
 export class GenericProductForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
+  readonly saving = input(false);
   readonly mode = input<GenericProductFormMode>('add');
   readonly genericProduct = input<Partial<GenericProductFormValue> | null>(null);
   readonly showHeading = input(true);
@@ -94,6 +95,7 @@ export class GenericProductForm implements OnInit, OnChanges {
   }
 
   onSubmit(): void {
+    if (this.saving()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

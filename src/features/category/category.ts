@@ -1,3 +1,4 @@
+import { UiModal } from '../../app/ui/modal/modal';
 
 import { Component, effect, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +10,7 @@ import { CategoryStore } from './category.store';
 
 @Component({
   selector: 'app-category',
-  imports: [
+  imports: [UiModal,
     MatButtonModule,
     MatCardModule,
     UiErrorPanel,

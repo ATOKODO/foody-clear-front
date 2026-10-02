@@ -100,7 +100,7 @@
       appearance="outlined"
       class="app-modal-card slot-feature__dialog-card"
       [class.slot-feature__dialog-card--embedded]="embedded()"
-      role="dialog"
+      appModal [appModalDisableClose]="store.saving" (appModalClose)="onCancelForm()"
       aria-modal="true"
       >
       <div class="app-dialog-header slot-feature__dialog-header">
@@ -118,7 +118,7 @@
         </button>
       </div>
       <div class="app-dialog-content slot-feature__dialog-content">
-        <app-slot-form [mode]="store.formMode"
+        <app-slot-form [saving]="store.saving" [mode]="store.formMode"
           [slot]="store.formInitialValue"
           [showHeading]="false"
           [nutritionKeys]="store.nutritionKeys"

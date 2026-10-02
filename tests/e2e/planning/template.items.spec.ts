@@ -4,7 +4,7 @@ import { clickTestId, fillLabeledInput, selectLabeledOption } from './utils';
 
 test('adds, updates and deletes template items', async ({ page, mockApi }) => {
   await gotoRoute(page, '/template');
-  await expectShellTitle(page, 'Modeles');
+  await expectShellTitle(page, 'Templates');
 
   await clickTestId(page, 'template-select-1');
   await clickTestId(page, 'template-edit');
@@ -12,10 +12,10 @@ test('adds, updates and deletes template items', async ({ page, mockApi }) => {
   const dialog = page.getByTestId('template-dialog');
   await expect(dialog).toBeVisible();
 
-  await selectLabeledOption(page, dialog, 'Produit', 'Riz basmati (#3)');
-  await fillLabeledInput(dialog, 'Quantite', '2');
-  await selectLabeledOption(page, dialog, 'Unite', 'g');
-  await selectLabeledOption(page, dialog, 'Slot explicite', '2. Dejeuner (lunch)');
+  await selectLabeledOption(page, dialog, 'Product', 'Riz basmati');
+  await fillLabeledInput(dialog, 'Quantity', '2');
+  await selectLabeledOption(page, dialog, 'Unit', 'G (Gram)');
+  await selectLabeledOption(page, dialog, 'Explicit slot', '2. Dejeuner (lunch)');
   await dialog.getByTestId('template-item-save').click();
 
   await expect.poll(() =>
@@ -34,9 +34,9 @@ test('adds, updates and deletes template items', async ({ page, mockApi }) => {
   await expect(dialog.getByTestId(`template-item-edit-row-${itemId}`)).toContainText('Riz basmati');
 
   await clickTestId(dialog, `template-item-edit-${itemId}`);
-  await selectLabeledOption(page, dialog, 'Produit', 'Riz basmati (#3)');
-  await fillLabeledInput(dialog, 'Quantite', '3');
-  await selectLabeledOption(page, dialog, 'Slot explicite', '1. Petit dejeuner (breakfast)');
+  await selectLabeledOption(page, dialog, 'Product', 'Riz basmati');
+  await fillLabeledInput(dialog, 'Quantity', '3');
+  await selectLabeledOption(page, dialog, 'Explicit slot', '1. Petit dejeuner (breakfast)');
   await dialog.getByTestId('template-item-save').click();
 
   await expect.poll(() =>

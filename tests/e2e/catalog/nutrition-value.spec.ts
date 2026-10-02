@@ -13,16 +13,19 @@ test('creates, reads, updates and deletes a nutrition value', async ({ page, moc
   expect(mockApi).toBeDefined();
 
   await gotoRoute(page, '/nutrition-value');
-  await expectShellTitle(page, 'Valeurs nutritionnelles');
+  await expectShellTitle(page, 'Nutrition values');
   await expect(page.getByTestId('nutrition-value-page')).toBeVisible();
 
   await page.getByRole('button', { name: 'Exemple' }).click();
-  await page.getByRole('button', { name: 'Creer' }).click();
+  await page.getByRole('button', { name: 'Create' }).click();
   await expect(page.locator('pre')).toContainText(`"productId": 1`);
 
   const responseAfterCreate = readLastResponseJson(await page.locator('pre').textContent());
   expect(responseAfterCreate).toMatchObject({
     productId: 1,
+    nutritionKey: 'PROTEIN',
+    unit: 'G',
+    reference: 'PER_100G',
   });
 
   const createdId = Number((responseAfterCreate as Record<string, unknown>).id);
@@ -38,24 +41,27 @@ test('creates, reads, updates and deletes a nutrition value', async ({ page, moc
     productId: 1,
   });
 
-  await page.getByLabel('label *').fill('Lipides');
+  await page.getByLabel('nutritionKey *').click();
+  await page.getByRole('option', { name: 'FAT', exact: true }).click();
   await page.getByLabel('amount *').fill('18.2');
-  await page.getByLabel('unit *').fill('g');
-  await page.getByLabel('per *').fill('100');
-  await page.getByRole('button', { name: 'Mettre a jour' }).click();
-  await expect(page.locator('pre')).toContainText(`"label": "Lipides"`);
+  await page.getByLabel('unit *').click();
+  await page.getByRole('option', { name: 'G', exact: true }).click();
+  await page.getByLabel('reference *').click();
+  await page.getByRole('option', { name: 'PER_100ML', exact: true }).click();
+  await page.getByRole('button', { name: 'Update' }).click();
+  await expect(page.locator('pre')).toContainText(`"nutritionKey": "FAT"`);
   await expect(page.locator('pre')).toContainText(`"amount": 18.2`);
 
   const responseAfterUpdate = readLastResponseJson(await page.locator('pre').textContent());
   expect(responseAfterUpdate).toMatchObject({
     id: createdId,
-    label: 'Lipides',
+    nutritionKey: 'FAT',
     amount: 18.2,
-    unit: 'g',
-    per: 100,
+    unit: 'G',
+    reference: 'PER_100ML',
   });
 
-  await page.getByRole('button', { name: 'Supprimer' }).click();
+  await page.getByRole('button', { name: 'Remove' }).click();
   await expect(page.locator('pre')).toContainText(`"deleted": true`);
   const responseAfterDelete = readLastResponseJson(await page.locator('pre').textContent());
   expect(responseAfterDelete).toMatchObject({

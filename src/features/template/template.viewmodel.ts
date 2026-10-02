@@ -1,4 +1,4 @@
-import type { ProductQuantityInputUnit } from '../../interfaces/input-day.interface';
+import { PRODUCT_QUANTITY_INPUT_UNITS } from '../../interfaces/quantity.interface';
 import type { PreparedDish, PreparedMeal } from '../../interfaces/meal-prep.interface';
 import type { DaySet } from '../../interfaces/day-set.interface';
 import type { Slot } from '../../interfaces/slot.interface';
@@ -9,20 +9,7 @@ import type {
 import type { Product as ProductApiModel } from '../../services/product-service';
 import type { TemplateItemDraft } from '../../components/template/template-form/template-form';
 
-export const TEMPLATE_QTY_UNIT_OPTIONS: readonly ProductQuantityInputUnit[] = [
-  'mg',
-  'g',
-  'kg',
-  'ml',
-  'l',
-  'unit',
-  'pack',
-  'tranche',
-  'piece',
-  'part',
-  'bouteille',
-  'portion',
-];
+export const TEMPLATE_QTY_UNIT_OPTIONS = PRODUCT_QUANTITY_INPUT_UNITS;
 
 export interface TemplateSelectionState {
   selectedTemplateId: number | null;

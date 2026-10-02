@@ -511,7 +511,7 @@ export class ShoppingListStore {
   getDraftQtyUnitOptions(): QtyUnitOption[] {
     const product =
       this.products.find((item) => item.id === this.draftItemProductId) ?? null;
-    return buildQtyUnitOptions(product);
+    return buildQtyUnitOptions(product, this.draftItemQtyUnit);
   }
 
   getItemQtyUnitOptions(item: ShoppingListItem): QtyUnitOption[] {
@@ -520,7 +520,7 @@ export class ShoppingListStore {
       item.productId,
       item.product ?? null,
     );
-    return buildQtyUnitOptions(product);
+    return buildQtyUnitOptions(product, item.qtyUnit);
   }
 
   onDraftProductChange(productId: number | null): void {

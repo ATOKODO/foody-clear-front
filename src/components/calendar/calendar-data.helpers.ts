@@ -1,3 +1,4 @@
+import { getTemplateInventoryIds } from '../../utils/template-stock';
 import { DateTime } from 'luxon';
 import {
   CalendarDaySlot,
@@ -237,8 +238,9 @@ export function isCalendarSlotOverlappingHour(
 
   const startMinutes = start ?? 0;
   const endMinutes = end ?? 24 * 60;
-  if (endMinutes <= startMinutes) {
-    return false;
+  if (endMinutes === startMinutes) return true;
+  if (endMinutes < startMinutes) {
+    return startMinutes < hourEnd || endMinutes > hourStart;
   }
 
   return startMinutes < hourEnd && endMinutes > hourStart;
@@ -357,7 +359,7 @@ export function buildCalendarWeekTimelineBlocks(
   );
 
   slots.forEach((slot, index) => {
-    const block = buildCalendarWeekTimelineSlotBlock(
+    const slotBlocks = buildCalendarWeekTimelineSlotBlocks(
       dateLocal,
       slot,
       productsBySlotKey.get(slot.slotKey) ?? [],
@@ -367,9 +369,7 @@ export function buildCalendarWeekTimelineBlocks(
       timezone,
     );
 
-    if (block) {
-      blocks.push(block);
-    }
+    blocks.push(...slotBlocks);
   });
 
   return blocks
@@ -415,8 +415,8 @@ export function resolvePendingCalendarTemplateItems(
       item.preferredTime,
     );
     const unitLabel = item.qtyUnit ? ' ' + item.qtyUnit : '';
-    const availableStock =
-      item.stockByInventory.find((stock) => stock.enoughStock) ?? null;
+    const inventoryIds = getTemplateInventoryIds(item);
+    const availableStock = item.stockByInventory.filter((stock) => inventoryIds.includes(stock.inventoryId));
 
     return [
       {
@@ -425,11 +425,12 @@ export function resolvePendingCalendarTemplateItems(
         qtyLabel: formatCalendarCompactNumber(item.qty, 2) + unitLabel,
         slotKey: slot?.slotKey ?? '',
         preferredMinute,
-        stockAvailable: availableStock !== null,
-        stockLabel: availableStock
-          ? `Disponible dans ${availableStock.inventoryName}`
+        stockAvailable: inventoryIds.length > 0,
+        stockLabel: inventoryIds.length > 0
+          ? `Disponible dans ${availableStock.map((stock) => stock.inventoryName).join(', ')}`
           : 'Low stock',
-        inventoryId: availableStock?.inventoryId ?? null,
+        inventoryId: inventoryIds[0] ?? null,
+        inventoryIds,
       },
     ];
   });
@@ -643,7 +644,7 @@ function groupCalendarItemsBySlotKey<T extends { slotKey: string }>(
   return itemsBySlotKey;
 }
 
-function buildCalendarWeekTimelineSlotBlock(
+function buildCalendarWeekTimelineSlotBlocks(
   dateLocal: string,
   slot: CalendarDaySlot,
   items: CalendarInsertedProduct[],
@@ -651,75 +652,66 @@ function buildCalendarWeekTimelineSlotBlock(
   index: number,
   slotCount: number,
   timezone: string,
-): CalendarWeekTimelineBlock | null {
-  const {
-    startMinute: slotStart,
-    endMinute: slotEnd,
-    estimated,
-  } = resolveCalendarTimelineSlotWindow(slot, index, slotCount);
-  const firstItemMinute =
-    items.length > 0
-      ? resolveCalendarInsertedProductMinute(items[0], timezone)
-      : null;
-  const lastItemMinute =
-    items.length > 0
-      ? resolveCalendarInsertedProductMinute(items.at(-1) as CalendarInsertedProduct, timezone)
-      : null;
-
-  const startMinute = slotStart ?? firstItemMinute;
-  if (startMinute === null) {
-    return null;
-  }
-
-  const endMinute = normalizeCalendarTimelineEndMinute(
-    startMinute,
-    slotEnd ?? (lastItemMinute === null ? startMinute + 60 : lastItemMinute + 30),
-  );
-
-  return {
-    id: `slot:${dateLocal}:${slot.slotId ?? slot.slotKey}`,
+): CalendarWeekTimelineBlock[] {
+  const windows = resolveCalendarTimelineSlotWindows(slot, index, slotCount);
+  // An overnight slot has two visible parts. Each entry belongs to one part only.
+  const windowIndex = (minute: number | null): number => {
+    const match = windows.findIndex((window) => minute !== null &&
+      minute >= window.startMinute && minute < window.endMinute);
+    return match < 0 ? windows.length - 1 : match;
+  };
+  return windows.map(({ startMinute, endMinute, estimated }, part) => ({
+    id: `slot:${dateLocal}:${slot.slotId ?? slot.slotKey}:${part}`,
     kind: 'slot',
     title: slot.title,
     slotKey: slot.slotKey,
-    rangeLabel: formatCalendarTimelineSlotRange(slotStart, slotEnd, estimated),
+    rangeLabel: formatCalendarTimelineSlotRange(startMinute, endMinute, estimated),
     startMinute,
     endMinute,
-    items,
-    plannedItems,
+    items: items.filter((item) => windowIndex(resolveCalendarInsertedProductMinute(item, timezone)) === part),
+    plannedItems: plannedItems.filter((item) => windowIndex(item.preferredMinute) === part),
     tone: index % 4,
-  };
+  }));
 }
 
-function resolveCalendarTimelineSlotWindow(
+function resolveCalendarTimelineSlotWindows(
   slot: CalendarDaySlot,
   index: number,
   slotCount: number,
-): CalendarSlotWindow {
+): CalendarSlotWindow[] {
   const configuredStart = toCalendarMinutes(slot.startTime);
   const configuredEnd = toCalendarMinutes(slot.endTime);
 
   if (
     configuredStart !== null &&
-    configuredEnd !== null &&
-    configuredEnd > configuredStart
+    configuredEnd !== null
   ) {
-    return { startMinute: configuredStart, endMinute: configuredEnd, estimated: false };
+    if (configuredEnd === configuredStart) {
+      return [{ startMinute: 0, endMinute: 24 * 60, estimated: false }];
+    }
+    if (configuredEnd < configuredStart) {
+      return [
+        { startMinute: 0, endMinute: configuredEnd, estimated: false },
+        { startMinute: configuredStart, endMinute: 24 * 60, estimated: false },
+      ].filter((window) => window.endMinute > window.startMinute);
+    }
+    return [{ startMinute: configuredStart, endMinute: configuredEnd, estimated: false }];
   }
 
   if (configuredStart !== null) {
-    return {
+    return [{
       startMinute: configuredStart,
       endMinute: Math.min(24 * 60, configuredStart + 60),
       estimated: true,
-    };
+    }];
   }
 
   if (configuredEnd !== null) {
-    return {
+    return [{
       startMinute: Math.max(0, configuredEnd - 120),
       endMinute: configuredEnd,
       estimated: true,
-    };
+    }];
   }
 
   const firstFallbackMinute = 8 * 60;
@@ -731,11 +723,11 @@ function resolveCalendarTimelineSlotWindow(
         (index * (lastFallbackMinute - firstFallbackMinute)) / (slotCount - 1);
   const fallbackStart = Math.round(rawFallbackStart / 30) * 30;
 
-  return {
+  return [{
     startMinute: fallbackStart,
     endMinute: Math.min(24 * 60, fallbackStart + 60),
     estimated: true,
-  };
+  }];
 }
 
 function formatCalendarTimelineSlotRange(

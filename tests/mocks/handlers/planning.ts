@@ -321,7 +321,7 @@ async function handleTemplateCollectionRequest(context: MockApiRequestContext): 
 }
 
 async function handleTemplateRequest(context: MockApiRequestContext): Promise<boolean> {
-  const { path } = context;
+  const { path, url } = context;
   const { state } = context;
   const method = context.request.method();
   if (path.startsWith('/template/') && path.split('/').length === 3) {
@@ -433,7 +433,7 @@ async function handleTemplateItemRequest(context: MockApiRequestContext): Promis
 }
 
 async function handleCycleAssignmentCollectionRequest(context: MockApiRequestContext): Promise<boolean> {
-  const { path } = context;
+  const { path, url } = context;
   const { state } = context;
   const method = context.request.method();
   if (path === '/cycle-assignment') {

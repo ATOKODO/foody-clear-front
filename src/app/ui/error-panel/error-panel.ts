@@ -48,11 +48,6 @@ function summarizeError(error: unknown): string {
     return trimmed || defaultErrorMessage;
   }
 
-  if (error instanceof Error) {
-    const message = error.message.trim();
-    return message || defaultErrorMessage;
-  }
-
   const record = toRecord(error);
   if (!record) {
     return defaultErrorMessage;
@@ -62,6 +57,8 @@ function summarizeError(error: unknown): string {
 }
 
 function findRecordMessage(record: Record<string, unknown>): string | null {
+  const responseMessage = readTextCandidate(record['error']);
+  if (responseMessage) return responseMessage;
   const direct = ['message', 'detail', 'error', 'title']
     .map((key) => readTextCandidate(record[key]))
     .find((candidate): candidate is string => !!candidate);
@@ -79,17 +76,18 @@ function formatStatusMessage(record: Record<string, unknown>): string | null {
   return statusText ? `La requete a echoue (${status} ${statusText}).` : `La requete a echoue (${status}).`;
 }
 
-function readTextCandidate(value: unknown): string | null {
+function readTextCandidate(value: unknown, depth = 0): string | null {
+  if (depth > 5) return null;
   if (typeof value === 'string') {
     const trimmed = value.trim();
     return trimmed === '' ? null : trimmed;
   }
 
   if (Array.isArray(value)) {
-    const firstText = value
-      .map((entry) => readTextCandidate(entry))
-      .find((entry): entry is string => !!entry);
-    return firstText ?? null;
+    const messages = value
+      .map((entry) => readTextCandidate(entry, depth + 1))
+      .filter((entry): entry is string => !!entry);
+    return messages.length ? messages.join('\n') : null;
   }
 
   if (value && typeof value === 'object') {
@@ -98,7 +96,7 @@ function readTextCandidate(value: unknown): string | null {
       return null;
     }
 
-    return readTextCandidate(nested['message'] ?? nested['detail'] ?? null);
+    return readTextCandidate(nested['message'] ?? nested['detail'] ?? nested['error'] ?? null, depth + 1);
   }
 
   return null;

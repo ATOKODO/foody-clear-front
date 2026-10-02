@@ -47,7 +47,7 @@ export interface InputDayItemEditorRequestInput {
 
 interface NormalizedInputDayItemEditorValue {
   dateLocal: string;
-  inventoryId: number;
+  inventoryIds: number[];
   productId: number;
   qty: number;
   qtyUnit: ProductQuantityInputUnit | null;
@@ -269,7 +269,7 @@ function normalizeInputDayItemEditorValue(
     };
   }
 
-  const inventoryId = selectedInventoryIds[0];
+  const inventoryIds = [...new Set(selectedInventoryIds)];
   const productId = normalizePositiveInteger(value.productId);
   if (productId === null) {
     return { value: null, error: 'Select a product.' };
@@ -314,7 +314,7 @@ function normalizeInputDayItemEditorValue(
   return {
     value: {
       dateLocal,
-      inventoryId,
+      inventoryIds,
       productId,
       qty,
       qtyUnit,
@@ -329,7 +329,7 @@ function normalizeInputDayItemEditorValue(
 
 function buildCreateInputDayItemRequest({
   dateLocal,
-  inventoryId,
+  inventoryIds,
   productId,
   qty,
   qtyUnit,
@@ -343,7 +343,7 @@ function buildCreateInputDayItemRequest({
       requestDateLocal: dateLocal,
       payload: {
         productId,
-        inventoryId,
+        inventoryIds,
         qty,
         ...(occurredAt ? { occurredAt } : {}),
         ...(qtyUnit ? { qtyUnit } : {}),
@@ -358,7 +358,7 @@ function buildCreateInputDayItemRequest({
 function buildUpdateInputDayItemRequest(
   {
     dateLocal,
-    inventoryId,
+    inventoryIds,
     productId,
     qty,
     qtyUnit,
@@ -376,7 +376,7 @@ function buildUpdateInputDayItemRequest(
       payload: {
         dateLocal,
         productId,
-        inventoryId,
+        inventoryIds,
         qty,
         ...(occurredAt ? { occurredAt } : {}),
         ...(qtyUnit ? { qtyUnit } : {}),
@@ -397,7 +397,7 @@ export function buildInputDaySelectedItemsRequest(
   }
 
   const requestDateLocal = readString(input.value.dateLocal);
-  const inventoryId = input.selectedInventoryIds[0];
+  const inventoryIds = [...new Set(input.selectedInventoryIds)];
   const occurredAtRaw = readString(input.value.occurredAt);
   const occurredAt =
     occurredAtRaw === ''
@@ -418,7 +418,7 @@ export function buildInputDaySelectedItemsRequest(
             );
             return {
               productId: row.productId,
-              inventoryId,
+              inventoryIds,
               qty: row.qty as number,
               ...(occurredAt ? { occurredAt } : {}),
               ...(qtyUnit ? { qtyUnit } : {}),

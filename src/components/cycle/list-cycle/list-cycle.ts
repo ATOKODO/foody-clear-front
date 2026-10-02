@@ -304,9 +304,8 @@ export class ListCycle implements OnInit, OnChanges {
     this.selectedMany.emit(this.getSelectedItems());
   }
 
-  onCheckboxClick(event: MouseEvent, cycle: CycleListItem): void {
+  onCheckboxClick(event: MouseEvent): void {
     event.stopPropagation();
-    this.onCheckboxChange(cycle, !this.isSelected(cycle.id));
   }
 
   onToggleExpanded(event: MouseEvent, cycleId: number): void {

@@ -265,6 +265,19 @@ describe('input-day commands', () => {
     });
   });
 
+  it('preserves every selected inventory for create, update and bulk requests', () => {
+    for (const itemId of [null, 9]) {
+      const result = buildInputDayItemEditorRequest(editorRequest({
+        selectedInventoryIds: [4, 5, 4], value: { ...validValue, itemId },
+      }));
+      expect(result.error).toBeNull();
+      expect(result.request?.payload.inventoryIds).toEqual([4, 5]);
+      expect(result.request?.payload.inventoryId).toBeUndefined();
+    }
+    const bulk = buildInputDaySelectedItemsRequest(selectedItemsRequest({ selectedInventoryIds: [4, 5] }));
+    expect(bulk.request?.payload.items.every((item) => item.inventoryIds?.join(',') === '4,5')).toBeTrue();
+  });
+
   it('builds create and update requests with optional fields', () => {
     const createWithoutOptionalFields = buildInputDayItemEditorRequest(
       editorRequest({
@@ -277,7 +290,7 @@ describe('input-day commands', () => {
         requestDateLocal: '2026-02-16',
         payload: {
           productId: 7,
-          inventoryId: 4,
+          inventoryIds: [4],
           qty: 2,
           slotKey: 'breakfast',
         },
@@ -366,7 +379,7 @@ describe('input-day commands', () => {
           items: [
             {
               productId: 7,
-              inventoryId: 4,
+              inventoryIds: [4],
               qty: 2,
               slotKey: 'breakfast',
             },

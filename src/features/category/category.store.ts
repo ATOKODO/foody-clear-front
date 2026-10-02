@@ -154,12 +154,14 @@ export const CategoryStore = signalStore(
         loadCategories();
       },
       openCreateForm(): void {
+        if (store.saving()) return;
         patchState(store, {
           ...resetFormState(),
           formVisible: true,
         });
       },
       openEditForm(item: CategoryListItem): void {
+        if (store.saving()) return;
         const categoryId = toCategoryId(item);
         if (categoryId === null) {
           return;
@@ -177,9 +179,12 @@ export const CategoryStore = signalStore(
           formInitialValue: toFormValue(category),
         });
       },
-      submitForm: submitCategoryForm,
+      submitForm(event: CategoryFormSubmission): void {
+        if (!store.saving()) submitCategoryForm(event);
+      },
       deleteCategory,
       cancelForm(): void {
+        if (store.saving()) return;
         patchState(store, resetFormState());
       },
     };

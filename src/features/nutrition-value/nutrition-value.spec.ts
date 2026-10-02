@@ -31,20 +31,20 @@ describe('NutritionValues', () => {
 
   it('should execute create, read, update, delete and form helper flows', () => {
     component.form.patchValue({
-      label: ' Protein ',
+      nutritionKey: ' PROTEIN ',
       amount: 12.5,
-      unit: ' g ',
-      per: 100,
+      unit: ' G ',
+      reference: 'PER_100G',
       productId: 4,
     });
     component.create();
     let request = httpMock.expectOne('http://localhost:3000/nutrition-value');
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({
-      label: 'Protein',
+      nutritionKey: 'PROTEIN',
       amount: 12.5,
-      unit: 'g',
-      per: 100,
+      unit: 'G',
+      reference: 'PER_100G',
       productId: 4,
     });
     request.flush({ id: 1 });
@@ -60,11 +60,11 @@ describe('NutritionValues', () => {
     expect(request.request.method).toBe('GET');
     request.flush({ id: 2 });
 
-    component.form.patchValue({ id: 2, label: ' Protein ', amount: 20, unit: 'g', per: null, productId: null });
+    component.form.patchValue({ id: 2, nutritionKey: ' PROTEIN ', amount: 20, unit: 'G', reference: '', productId: null });
     component.update();
     request = httpMock.expectOne('http://localhost:3000/nutrition-value/2');
     expect(request.request.method).toBe('PATCH');
-    expect(request.request.body).toEqual({ label: 'Protein', amount: 20, unit: 'g' });
+    expect(request.request.body).toEqual({ nutritionKey: 'PROTEIN', amount: 20, unit: 'G' });
     request.flush({ id: 2, amount: 20 });
 
     component.delete();
@@ -74,9 +74,9 @@ describe('NutritionValues', () => {
     expect(component.lastResponse).toEqual({ deleted: true, id: 2 });
 
     component.fillDemoCreate();
-    expect(component.form.value).toEqual(jasmine.objectContaining({ label: 'Proteines', productId: 1 }));
+    expect(component.form.value).toEqual(jasmine.objectContaining({ nutritionKey: 'PROTEIN', productId: 1 }));
     component.clear();
-    expect(component.form.value.label).toBe('');
+    expect(component.form.value.nutritionKey).toBe('');
     expect(component.lastResponse).toBeNull();
   });
 
@@ -100,10 +100,10 @@ describe('NutritionValues', () => {
     expect(component.baseUrl).toBe('http://api.example.test');
 
     component.form.patchValue({
-      label: 'Protein',
+      nutritionKey: 'PROTEIN',
       amount: 10,
-      unit: 'g',
-      per: 100,
+      unit: 'G',
+      reference: 'PER_100G',
       productId: 4,
       id: 2,
     });

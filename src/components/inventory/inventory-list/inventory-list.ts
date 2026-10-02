@@ -139,9 +139,8 @@ export class InventoryList implements OnInit, OnChanges {
     this.selectedMany.emit(this.getSelectedItems());
   }
 
-  onCheckboxClick(event: MouseEvent, item: InventoryListItem): void {
+  onCheckboxClick(event: MouseEvent): void {
     event.stopPropagation();
-    this.onCheckboxChange(item, !this.isSelected(item.id));
   }
 
   onAddClick(): void {

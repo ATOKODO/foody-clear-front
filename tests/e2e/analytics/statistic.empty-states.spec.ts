@@ -10,7 +10,8 @@ test.describe('Statistics empty states', () => {
     });
 
     await gotoRoute(page, '/statistic');
-    await expectShellTitle(page, 'Statistiques');
+    await expectShellTitle(page, 'Statistics');
+    await page.getByTestId('stat-view-expenses').click();
 
     await page.getByTestId('stat-expense-day-2026-03-25').click();
     await expect(page.getByTestId('stat-empty-expenses')).toBeVisible();

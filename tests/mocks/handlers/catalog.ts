@@ -332,6 +332,11 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
         product.priceUnit = nextPriceUnit;
       }
 
+      if (Array.isArray(body.nutritionValueIdsToRemove)) {
+        const removedIds = new Set<unknown>(body.nutritionValueIdsToRemove);
+        product.nutritionValues = product.nutritionValues.filter((value) => !removedIds.has(value.id));
+      }
+
       if (Array.isArray(body.nutritionValuesUpdated)) {
         body.nutritionValuesUpdated.forEach((value) => {
           const payload = value as Record<string, unknown>;
@@ -433,18 +438,15 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
 
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      located.value.nutritionKey = (readNullableString(body.label) ?? readNullableString(body.nutritionKey) ?? located.value.nutritionKey)
+      located.value.nutritionKey = (readNullableString(body.nutritionKey) ?? located.value.nutritionKey)
         .trim().toUpperCase();
       located.value.amount = Number(body.amount ?? located.value.amount);
       located.value.unit = readNullableString(body.unit) ?? located.value.unit;
-      located.value.reference = Number(body.per ?? 100) === 100 ? 'PER_100G' : 'PER_100ML';
+      located.value.reference = body.reference === 'PER_100G' || body.reference === 'PER_100ML' ? body.reference : located.value.reference;
       await context.json({
-        id: located.value.id,
-        label: readNullableString(body.label) ?? located.value.nutritionKey,
-        amount: located.value.amount,
-        unit: located.value.unit,
-        per: Number(body.per ?? 100),
+        ...hydrateNutritionValue(located.value),
         productId: located.product.id,
+        product: { id: located.product.id, name: located.product.name },
       });
       return true;
     }
@@ -493,7 +495,7 @@ function createNutritionValue(
   context: MockApiRequestContext,
   payload: Record<string, unknown>,
 ): MockNutritionValue | null {
-  const nutritionKey = (readNullableString(payload.nutritionKey) ?? readNullableString(payload.label) ?? '').toUpperCase();
+  const nutritionKey = (readNullableString(payload.nutritionKey) ?? '').toUpperCase();
   if (!nutritionKey) {
     return null;
   }
@@ -503,7 +505,7 @@ function createNutritionValue(
     nutritionKey,
     amount: Number(payload.amount ?? 0),
     unit: (readNullableString(payload.unit) ?? 'G').toUpperCase(),
-    reference: Number(payload.per ?? 100) === 100 ? 'PER_100G' : 'PER_100ML',
+    reference: payload.reference === 'PER_100ML' ? 'PER_100ML' : 'PER_100G',
   };
 }
 

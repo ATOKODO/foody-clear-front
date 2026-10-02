@@ -1,3 +1,4 @@
+import { UiModal } from '../../app/ui/modal/modal';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +17,7 @@ import { ShoppingListStore } from './shopping-list.store';
 @Component({
   selector: 'app-shopping-list',
   standalone: true,
-  imports: [
+  imports: [UiModal,
     CommonModule,
     FormsModule,
     MatButtonModule,
@@ -34,7 +35,6 @@ import { ShoppingListStore } from './shopping-list.store';
   templateUrl: './shopping-list.html',
   styleUrl: './shopping-list.scss',
   host: {
-    '(document:keydown.escape)': 'onEscapeKey()',
   },
 })
 export class ShoppingList implements OnInit {

@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { LatestRequest } from '../../utils/latest-request';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -70,6 +71,8 @@ export class StatisticFeature implements OnInit {
   private readonly statisticService = inject(StatisticService);
   private readonly productService = inject(ProductService);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
+  private readonly timelineRequest = new LatestRequest(inject(DestroyRef));
+  private readonly priceHistoryRequest = new LatestRequest(inject(DestroyRef));
 
   private readonly initialDateRange = resolveStatisticDateRange(30);
 
@@ -117,6 +120,9 @@ export class StatisticFeature implements OnInit {
   }
 
   onBaseUrlChange(): void {
+    this.timelineRequest.cancel();
+    this.priceHistoryRequest.cancel();
+    this.activeTimelineRequestKey = null;
     this.statisticService.setBaseUrl(this.baseUrl);
     this.productService.setBaseUrl(this.baseUrl);
     this.loadProducts();
@@ -155,6 +161,7 @@ export class StatisticFeature implements OnInit {
   }
 
   submitPriceCorrection(): void {
+    if (this.correctingPrice) return;
     const dto = buildStatisticPriceCorrectionDto({
       selectedProductId: this.selectedPriceProductId,
       price: this.priceCorrectionPrice,
@@ -171,14 +178,15 @@ export class StatisticFeature implements OnInit {
 
     this.correctingPrice = true;
     this.priceCorrectionError = null;
+    const recalculatePurchases = this.priceCorrectionRecalculatePurchases;
     this.statisticService
       .correctProductPrice(dto, this.timezone)
       .subscribe({
-        next: (response) => {
-          this.priceHistoryResponse = response.priceHistory;
+        next: () => {
+          this.loadPriceHistory();
           this.correctingPrice = false;
-          if (this.priceCorrectionRecalculatePurchases) {
-            this.loadTimeline();
+          if (recalculatePurchases) {
+            this.loadTimeline(true);
           }
           this.changeDetectorRef.detectChanges();
         },
@@ -308,14 +316,9 @@ export class StatisticFeature implements OnInit {
         this.timezone,
       )
       .subscribe({
-        next: (response) => {
-          this.timelineResponse = response;
+        next: () => {
           this.savingPurchaseEventId = null;
-          this.selectedTimelineDateLocal =
-            resolveSelectedStatisticTimelineDate(
-              response,
-              this.selectedTimelineDateLocal,
-            );
+          this.loadTimeline(true);
           this.changeDetectorRef.detectChanges();
         },
         error: (error) => {
@@ -339,8 +342,12 @@ export class StatisticFeature implements OnInit {
     this.priceCorrectionPriceUnit = defaults.priceUnit;
   }
 
-  private loadTimeline(): void {
+  private loadTimeline(force = false): void {
     if (!this.isCurrentDateRangeValid()) {
+      this.timelineRequest.cancel();
+      this.timelineResponse = null;
+      this.loadingTimeline = false;
+      this.activeTimelineRequestKey = null;
       return;
     }
 
@@ -349,16 +356,15 @@ export class StatisticFeature implements OnInit {
       this.toDateLocal,
       this.timezone,
     );
-    if (this.loadingTimeline && this.activeTimelineRequestKey === requestKey) {
+    if (!force && this.loadingTimeline && this.activeTimelineRequestKey === requestKey) {
       return;
     }
 
     this.activeTimelineRequestKey = requestKey;
     this.loadingTimeline = true;
     this.timelineError = null;
-    this.statisticService
-      .getTimeline(this.fromDateLocal, this.toDateLocal, this.timezone)
-      .subscribe({
+    this.timelineRequest.subscribe(
+      this.statisticService.getTimeline(this.fromDateLocal, this.toDateLocal, this.timezone), {
         next: (response) => {
           this.timelineResponse = response;
           this.loadingTimeline = false;
@@ -404,21 +410,22 @@ export class StatisticFeature implements OnInit {
   }
 
   private loadPriceHistory(): void {
+    this.priceHistoryRequest.cancel();
     if (!this.isCurrentDateRangeValid() || this.selectedPriceProductId == null) {
       this.priceHistoryResponse = null;
+      this.loadingPriceHistory = false;
       return;
     }
 
     this.loadingPriceHistory = true;
     this.priceHistoryError = null;
-    this.statisticService
-      .getProductPriceHistory(
+    this.priceHistoryRequest.subscribe(
+      this.statisticService.getProductPriceHistory(
         this.selectedPriceProductId,
         this.fromDateLocal,
         this.toDateLocal,
         this.timezone,
-      )
-      .subscribe({
+      ), {
         next: (response) => {
           this.priceHistoryResponse = response;
           this.loadingPriceHistory = false;

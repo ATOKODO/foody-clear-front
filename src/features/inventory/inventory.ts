@@ -1,4 +1,6 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { UiModal } from '../../app/ui/modal/modal';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { LatestRequest } from '../../utils/latest-request';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -49,7 +51,7 @@ import {
 
 @Component({
   selector: 'app-inventory',
-  imports: [
+  imports: [UiModal,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -64,12 +66,13 @@ import {
   templateUrl: './inventory.html',
   styleUrl: './inventory.scss',
   host: {
-    '(document:keydown.escape)': 'onEscapeKey()',
   },
 })
 export class Inventory implements OnInit {
   private readonly inventorySrv = inject(InventoryService);
   private readonly productSrv = inject(ProductService);
+  private readonly editorProductsRequest = new LatestRequest(inject(DestroyRef));
+  private readonly selectedProductsRequest = new LatestRequest(inject(DestroyRef));
 
   baseUrl = '';
   private readonly loadingState = signal(false);
@@ -312,6 +315,9 @@ export class Inventory implements OnInit {
   }
 
   onAddRequested(): void {
+    if (this.saving) return;
+    this.editorProductsRequest.cancel();
+    this.loadingInventoryProducts = false;
     this.formMode = 'add';
     this.editingInventoryId = null;
     this.activeModal = null;
@@ -322,6 +328,7 @@ export class Inventory implements OnInit {
   }
 
   onEditRequested(item: InventoryListItem): void {
+    if (this.saving) return;
     const inventoryId = Number(item.id);
     if (!Number.isInteger(inventoryId) || inventoryId < 1) {
       return;
@@ -334,6 +341,7 @@ export class Inventory implements OnInit {
 
     this.formMode = 'edit';
     this.editingInventoryId = inventory.id;
+    this.editingInventoryProducts = [];
     this.activeModal = null;
     this.formInitialValue = toInventoryFormValue(inventory);
     this.clearProductSelections();
@@ -396,6 +404,7 @@ export class Inventory implements OnInit {
   }
 
   onFormSubmitted(event: { mode: InventoryFormMode; value: InventoryFormValue }): void {
+    if (this.saving) return;
     if (event.mode === 'edit' && this.editingInventoryId !== null) {
       this.updateInventoryName(this.editingInventoryId, event.value);
       return;
@@ -465,17 +474,18 @@ export class Inventory implements OnInit {
   }
 
   onEscapeKey(): void {
-    if (this.formVisible) {
-      this.closeFormModal();
+    if (this.activeModal) {
+      this.closeActiveModal();
       return;
     }
 
-    if (this.activeModal) {
-      this.closeActiveModal();
+    if (this.formVisible) {
+      this.closeFormModal();
     }
   }
 
   onAddSelectedProducts(): void {
+    if (this.saving || this.loadingInventoryProducts) return;
     const inventoryId = this.editingInventoryId;
     if (inventoryId == null || this.addSelectedProductRows.length === 0) {
       return;
@@ -511,6 +521,7 @@ export class Inventory implements OnInit {
   }
 
   saveManagedProducts(): void {
+    if (this.saving || this.loadingInventoryProducts) return;
     const inventoryId = this.editingInventoryId;
     if (inventoryId == null) {
       return;
@@ -543,6 +554,7 @@ export class Inventory implements OnInit {
   }
 
   emptyInventory(): void {
+    if (this.saving || this.loadingInventoryProducts) return;
     const inventoryId = this.editingInventoryId;
     if (inventoryId == null) {
       return;
@@ -580,6 +592,8 @@ export class Inventory implements OnInit {
   }
 
   onCancelForm(): void {
+    if (this.saving) return;
+    this.editorProductsRequest.cancel();
     this.formVisible = false;
     this.formMode = 'add';
     this.editingInventoryId = null;
@@ -691,8 +705,9 @@ export class Inventory implements OnInit {
   }
 
   private loadInventoryProducts(inventoryId: number): void {
+    if (this.editingInventoryId !== inventoryId) return;
     this.loadingInventoryProducts = true;
-    this.inventorySrv.findProducts(inventoryId).subscribe({
+    this.editorProductsRequest.subscribe(this.inventorySrv.findProducts(inventoryId), {
       next: (response) => {
         this.editingInventoryProducts = extractInventoryProductsFromResponse(response);
         this.syncManagedProductRows();
@@ -712,7 +727,7 @@ export class Inventory implements OnInit {
 
   private loadSelectedInventoryProducts(inventoryId: number): void {
     this.loadingSelectedInventoryProducts = true;
-    this.inventorySrv.findProducts(inventoryId).subscribe({
+    this.selectedProductsRequest.subscribe(this.inventorySrv.findProducts(inventoryId), {
       next: (response) => {
         if (this.selectedInventoryId !== inventoryId) {
           return;

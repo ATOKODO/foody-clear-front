@@ -131,12 +131,19 @@ describe('ListCycle', () => {
     fixture.componentRef.setInput('mode', 'select-multi');
     fixture.detectChanges();
 
-    const checkbox = fixture.nativeElement.querySelector('mat-checkbox');
+    const checkbox = fixture.nativeElement.querySelector('mat-checkbox input[type="checkbox"]');
     checkbox.click();
     fixture.detectChanges();
 
     expect((emitted.at(-1) as unknown[]).length).toBe(1);
     expect(component.isSelected(cycles[0].id)).toBeTrue();
+    expect(checkbox.getAttribute('aria-label')).toBe('Select ' + cycles[0].title);
+    expect(emitted.length).toBe(1);
+    checkbox.click();
+    fixture.detectChanges();
+    expect(emitted.length).toBe(2);
+    expect(emitted.at(-1)).toEqual([]);
+    expect(component.isSelected(cycles[0].id)).toBeFalse();
   });
 
   it('should render the day set summary and overflow badges', () => {
@@ -292,7 +299,7 @@ describe('ListCycle', () => {
     component.onCheckboxChange(cycles[0], true);
     const event = new MouseEvent('click');
     spyOn(event, 'stopPropagation');
-    component.onCheckboxClick(event, cycles[0]);
+    component.onCheckboxClick(event);
     component.onToggleExpanded(event, 1);
     component.onToggleExpanded(event, 1);
     component.stopPropagation(event);

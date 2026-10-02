@@ -203,6 +203,7 @@ describe('PlanningFeature', () => {
   };
 
   beforeEach(async () => {
+    cycleAssignmentServiceMock.findInRange.and.returnValue(of([]));
     await TestBed.configureTestingModule({
       imports: [PlanningFeature],
       providers: [
@@ -233,6 +234,20 @@ describe('PlanningFeature', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('keeps assignments from the current calendar period after older replies arrive', () => {
+    const old = new Subject<CycleAssignment[]>();
+    const current = new Subject<CycleAssignment[]>();
+    cycleAssignmentServiceMock.findInRange.and.returnValues(old, current);
+    component.onCalendarViewChanged({ view: 'day', anchorDateLocal: '2026-02-17', fromDateLocal: '2026-02-17', toDateLocal: '2026-02-17' });
+    component.onCalendarViewChanged({ view: 'day', anchorDateLocal: '2026-02-18', fromDateLocal: '2026-02-18', toDateLocal: '2026-02-18' });
+    const response = [{ id: 18, startDateLocal: '2026-02-18' } as CycleAssignment];
+    current.next(response);
+    old.error(new Error('Old period failed'));
+    expect(component.cycleAssignments).toBe(response);
+    expect(component.lastError).toBeNull();
+    expect(component.loadingAssignments).toBeFalse();
   });
 
   it('should keep only planning controls in the local header', () => {

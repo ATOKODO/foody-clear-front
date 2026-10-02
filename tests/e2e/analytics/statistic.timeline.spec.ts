@@ -4,7 +4,8 @@ import { expectShellTitle, gotoRoute } from '../../helpers/navigation';
 test.describe('Statistics timeline', () => {
   test('shows expense and target timelines for the selected day', async ({ page }) => {
     await gotoRoute(page, '/statistic');
-    await expectShellTitle(page, 'Statistiques');
+    await expectShellTitle(page, 'Statistics');
+    await page.getByTestId('stat-view-expenses').click();
 
     await expect(page.getByTestId('stat-expense-timeline')).toBeVisible();
     await page.getByTestId('stat-expense-day-2026-03-25').click();

@@ -116,9 +116,11 @@
           <mat-form-field appearance="fill" class="w-full">
             <mat-label>Unit</mat-label>
             <mat-select
+              [canSelectNullableOptions]="true"
               [ngModel]="itemDraft.qtyUnit"
               (ngModelChange)="updateItemDraft({ qtyUnit: $event })"
             >
+              <mat-option [value]="null">Default unit</mat-option>
               @for (unit of getAvailableQtyUnitOptions(); track unit.value) {
                 <mat-option [value]="unit.value">
                   {{ unit.label }}

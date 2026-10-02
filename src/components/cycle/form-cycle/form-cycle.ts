@@ -88,6 +88,7 @@ export class FormCycle implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
   private readonly defaultDaySetId = 0;
 
+  readonly saving = input(false);
   readonly mode = input<CycleFormMode>('add');
   readonly cycle = input<Partial<CycleFormValue> | null>(null);
   readonly nutritionKeys = input<NutritionKeyMeta[]>([]);
@@ -203,6 +204,7 @@ export class FormCycle implements OnInit, OnChanges {
   }
 
   onSubmit(): void {
+    if (this.saving()) return;
     if (this.form.invalid || this.hasSelectedDaySetOverflow) {
       this.form.markAllAsTouched();
       this.showSelectionError = true;

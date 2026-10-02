@@ -180,9 +180,8 @@ export class GenericProductList implements OnInit, OnChanges {
     this.selectedMany.emit(this.getSelectedItems());
   }
 
-  onCheckboxClick(event: MouseEvent, item: GenericProductListItem): void {
+  onCheckboxClick(event: MouseEvent): void {
     event.stopPropagation();
-    this.onCheckboxChange(item, !this.isSelected(item.id));
   }
 
   onAddClick(): void {

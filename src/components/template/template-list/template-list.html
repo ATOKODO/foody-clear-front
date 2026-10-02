@@ -23,7 +23,7 @@
                 <span class="template-master__card-meta">{{ template.items.length }} template line(s)</span>
                 <span class="template-master__card-status">Template</span>
               </button>
-              <div class="template-master__card-actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+              <div class="template-master__card-actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                 <button
                   mat-stroked-button
                   type="button"

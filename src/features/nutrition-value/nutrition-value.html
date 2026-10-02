@@ -3,7 +3,7 @@
     <div class="bg-app-hero px-6 py-5 text-app-on-color">
       <h2 class="text-xl font-semibold">Testeur valeurs nutritionnelles</h2>
       <p class="mt-1 text-sm text-app-on-color-muted">
-        Interface unifiee pour verifier rapidement les endpoints `nutrition-values`.
+        Interface unifiee pour verifier rapidement les endpoints `nutrition-value`.
       </p>
     </div>
 
@@ -40,8 +40,12 @@
             </mat-form-field>
 
             <mat-form-field appearance="fill" class="w-full sm:col-span-2 lg:col-span-1">
-              <mat-label>label *</mat-label>
-              <input matInput type="text" formControlName="label" />
+              <mat-label>nutritionKey *</mat-label>
+              <mat-select formControlName="nutritionKey">
+                @for (option of nutritionKeys; track option) {
+                  <mat-option [value]="option">{{ option }}</mat-option>
+                }
+              </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="fill" class="w-full">
@@ -51,12 +55,20 @@
 
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>unit *</mat-label>
-              <input matInput type="text" formControlName="unit" />
+              <mat-select formControlName="unit">
+                @for (option of units; track option) {
+                  <mat-option [value]="option">{{ option }}</mat-option>
+                }
+              </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="fill" class="w-full">
-              <mat-label>per *</mat-label>
-              <input matInput type="number" formControlName="per" />
+              <mat-label>reference *</mat-label>
+              <mat-select formControlName="reference">
+                @for (option of references; track option) {
+                  <mat-option [value]="option">{{ option }}</mat-option>
+                }
+              </mat-select>
             </mat-form-field>
           </div>
         </mat-card-content>
@@ -65,13 +77,13 @@
       <mat-divider />
 
       <div class="flex flex-wrap gap-2">
-        <button mat-stroked-button type="button" (click)="fillDemoCreate()">Exemple</button>
-        <button mat-raised-button color="primary" type="button" (click)="create()">Create</button>
-        <button mat-raised-button color="primary" type="button" (click)="getOne()">Recuperer</button>
-        <button mat-raised-button color="primary" type="button" (click)="getAll()">Lister</button>
-        <button mat-raised-button color="accent" type="button" (click)="update()">Update</button>
-        <button mat-raised-button color="warn" type="button" (click)="delete()">Remove</button>
-        <button mat-button type="button" (click)="clear()">Effacer</button>
+        <button mat-stroked-button type="button" [disabled]="loading" (click)="fillDemoCreate()">Exemple</button>
+        <button mat-raised-button color="primary" type="button" [disabled]="loading" (click)="create()">Create</button>
+        <button mat-raised-button color="primary" type="button" [disabled]="loading" (click)="getOne()">Recuperer</button>
+        <button mat-raised-button color="primary" type="button" [disabled]="loading" (click)="getAll()">Lister</button>
+        <button mat-raised-button color="accent" type="button" [disabled]="loading" (click)="update()">Update</button>
+        <button mat-raised-button color="warn" type="button" [disabled]="loading" (click)="delete()">Remove</button>
+        <button mat-button type="button" [disabled]="loading" (click)="clear()">Effacer</button>
       </div>
     </form>
 

@@ -4,9 +4,9 @@ import { expectShellTitle, gotoRoute } from '../../helpers/navigation';
 
 async function openInventoryEdit(page: Page, inventoryId: number): Promise<void> {
   await gotoRoute(page, '/inventory');
-  await expectShellTitle(page, 'Inventaires');
-  await expect(page.getByTestId('inventory-list')).toContainText('Frigo maison');
-  await page.getByTestId(`inventory-edit-${inventoryId}`).click();
+  await expectShellTitle(page, 'Inventories');
+  await expect(page.getByTestId('inventory-panel')).toContainText('Frigo maison');
+  await page.getByTestId(`inventory-select-${inventoryId}`).getByRole('button', { name: 'Edit', exact: true }).click();
   await expect(page.getByTestId('inventory-dialog')).toBeVisible();
 }
 
@@ -17,7 +17,7 @@ test.describe('Inventory products', () => {
     await openInventoryEdit(page, 1);
 
     const dialog = page.getByTestId('inventory-dialog');
-    await dialog.getByRole('button', { name: "Ouvrir l'ajout" }).click();
+    await dialog.getByRole('button', { name: 'Open add products' }).click();
 
     const addDialog = page.getByTestId('inventory-add-products-dialog');
     await expect(addDialog).toBeVisible();
@@ -29,10 +29,10 @@ test.describe('Inventory products', () => {
     await expect(selectedRow).toBeVisible();
     await selectedRow.locator('input[type="number"]').fill('2');
 
-    await addDialog.getByRole('button', { name: 'Ajouter' }).click();
+    await addDialog.getByRole('button', { name: 'Add', exact: true }).click();
 
     await expect(dialog).toContainText('Riz basmati');
-    await expect(page.getByTestId('inventory-row-1').locator('td').nth(1)).toHaveText('3');
+    await expect(page.getByTestId('inventory-select-1')).toContainText('3 linked product(s)');
   });
 
   test('empties the managed inventory stock', async ({ page, mockApi }) => {
@@ -43,9 +43,9 @@ test.describe('Inventory products', () => {
     const dialog = page.getByTestId('inventory-dialog');
     await expect(dialog).toContainText('Banane');
 
-    await dialog.getByRole('button', { name: "Vider l'inventory" }).click();
+    await dialog.getByRole('button', { name: 'Empty inventory' }).click();
 
-    await expect(dialog).toContainText("Aucun produit lie a cet inventory.");
-    await expect(page.getByTestId('inventory-row-1').locator('td').nth(1)).toHaveText('0');
+    await expect(dialog).toContainText('No product is linked to this inventory.');
+    await expect(page.getByTestId('inventory-select-1')).toContainText('0 linked product(s)');
   });
 });

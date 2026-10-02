@@ -100,7 +100,7 @@
       appearance="outlined"
       class="app-modal-card day-set-feature__dialog-card"
       [class.day-set-feature__dialog-card--embedded]="embedded()"
-      role="dialog"
+      appModal [appModalDisableClose]="saving" (appModalClose)="onCancelForm()"
       aria-modal="true"
       >
       <div class="app-dialog-header day-set-feature__dialog-header">
@@ -118,7 +118,7 @@
         </button>
       </div>
       <div class="app-dialog-content day-set-feature__dialog-content">
-        <app-day-set-form [mode]="formMode"
+        <app-day-set-form [saving]="saving" [mode]="formMode"
           [daySet]="formInitialValue"
           [showHeading]="false"
           [inDialog]="true"

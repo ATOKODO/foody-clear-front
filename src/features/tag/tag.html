@@ -72,7 +72,7 @@
       appearance="outlined"
       class="app-modal-card"
       data-testid="tag-dialog"
-      role="dialog"
+      appModal [appModalDisableClose]="saving()" (appModalClose)="onCancelForm()"
       aria-modal="true"
       >
       <div class="app-dialog-header">
@@ -90,7 +90,7 @@
         </button>
       </div>
       <div class="app-dialog-content">
-        <app-tag-form [mode]="formMode"
+        <app-tag-form [saving]="saving()" [mode]="formMode"
           [tag]="formInitialValue"
           [showHeading]="false"
           (submitted)="onFormSubmitted($event)"

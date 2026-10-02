@@ -46,6 +46,16 @@ import type {
 } from '../../interfaces/input-day.interface';
 
 describe('input-day helpers', () => {
+  it('shows normalized inventory availability in grams and millilitres', () => {
+    for (const [quantityUnit, availableQuantityUnit] of [['kg', 'g'], ['l', 'ml']] as const) {
+      const items = buildInputDaySelectableProductListItems({
+        productListItems: [{ id: '1', name: 'Product', quantityUnit }],
+        selectedInventoryProducts: [{ id: 1, inventoryId: 4, productId: 1, qtyOnHandInUnits: 1, qtyOnHandNormalized: 1000 }],
+      });
+      expect(items[0].availableQuantity).toBe(1000);
+      expect(items[0].availableQuantityUnit).toBe(availableQuantityUnit);
+    }
+  });
   const slot = {
     slotId: 2,
     title: 'Breakfast',

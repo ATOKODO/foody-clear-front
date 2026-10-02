@@ -1,3 +1,4 @@
+import { PRODUCT_QUANTITY_INPUT_UNITS } from '../../interfaces/quantity.interface';
 import type { ProductListItem } from '../../components/product/product-list/product-list';
 import type { InventoryProduct } from '../../interfaces/inventory.interface';
 import type {
@@ -48,20 +49,7 @@ export interface InputDaySelectedInventoryTemplateStock {
   qtyAvailableNormalized: number;
 }
 
-export const INPUT_DAY_QTY_UNIT_OPTIONS: readonly ProductQuantityInputUnit[] = [
-  'mg',
-  'g',
-  'kg',
-  'ml',
-  'l',
-  'unit',
-  'pack',
-  'tranche',
-  'piece',
-  'part',
-  'bouteille',
-  'portion',
-];
+export const INPUT_DAY_QTY_UNIT_OPTIONS = PRODUCT_QUANTITY_INPUT_UNITS;
 
 export const INPUT_DAY_EMBEDDED_SECTION_OPTIONS: readonly SegmentedToggleOption<InputDayEmbeddedSection>[] =
   [

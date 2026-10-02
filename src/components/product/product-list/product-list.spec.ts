@@ -69,12 +69,19 @@ describe('ProductList', () => {
     fixture.componentRef.setInput('mode', 'multi-edit');
     fixture.detectChanges();
 
-    const checkbox = fixture.nativeElement.querySelector('mat-checkbox');
+    const checkbox = fixture.nativeElement.querySelector('mat-checkbox input[type="checkbox"]');
     checkbox.click();
     fixture.detectChanges();
 
     expect((emitted.at(-1) as unknown[]).length).toBe(1);
     expect(component.isSelected(component.resolvedProducts[0].id)).toBeTrue();
+    expect(checkbox.getAttribute('aria-label')).toBe('Select ' + component.resolvedProducts[0].name);
+    expect(emitted.length).toBe(1);
+    checkbox.click();
+    fixture.detectChanges();
+    expect(emitted.length).toBe(2);
+    expect(emitted.at(-1)).toEqual([]);
+    expect(component.isSelected(component.resolvedProducts[0].id)).toBeFalse();
   });
 
   it('should filter products from the shared search field', () => {
@@ -282,9 +289,9 @@ describe('ProductList', () => {
     component.onCheckboxChange(products[0], false);
     const click = new MouseEvent('click');
     spyOn(click, 'stopPropagation');
-    component.onCheckboxClick(click, products[1]);
+    component.onCheckboxClick(click);
     expect(click.stopPropagation).toHaveBeenCalled();
-    expect(selectedMany.length).toBe(3);
+    expect(selectedMany.length).toBe(2);
 
     fixture.componentRef.setInput('mode', 'manage');
     fixture.detectChanges();

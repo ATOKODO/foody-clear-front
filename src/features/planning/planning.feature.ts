@@ -1,3 +1,4 @@
+import { UiModal } from '../../app/ui/modal/modal';
 import { DatePipe } from '@angular/common';
 import {
   AfterViewInit,
@@ -10,6 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { LatestRequest } from '../../utils/latest-request';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -77,7 +79,7 @@ import {
 
 @Component({
   selector: 'app-planning',
-  imports: [
+  imports: [UiModal,
     FormsModule,
     Calendar,
     InputDayFeature,
@@ -97,7 +99,6 @@ import {
   host: {
     '(window:focus)': 'onWindowFocus()',
     '(document:visibilitychange)': 'onVisibilityChange()',
-    '(document:keydown.escape)': 'onEscapeKey()',
   },
 })
 export class PlanningFeature implements OnInit, AfterViewInit {
@@ -165,6 +166,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   private slotsRequestInFlight = false;
   private lastSlotsLoadedAt = 0;
   private assignmentsRequestKey: string | null = null;
+  private readonly assignmentsRequest = new LatestRequest(inject(DestroyRef));
   private lastAssignmentsLoadedKey: string | null = null;
   private lastAssignmentsLoadedAt = 0;
   private inputDataRequestKey: string | null = null;
@@ -365,7 +367,7 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.dayItemsError = null;
 
     this.inputDayService
-      .convertTemplateItem(event.dateLocal, event.templateItemId, [event.inventoryId])
+      .convertTemplateItem(event.dateLocal, event.templateItemId, event.inventoryIds ?? [event.inventoryId])
       .subscribe({
         next: (response) => {
           this.setLastResponse(response);
@@ -619,6 +621,10 @@ export class PlanningFeature implements OnInit, AfterViewInit {
       return;
     }
 
+    this.assignmentsRequest.cancel();
+    this.assignmentsRequestKey = null;
+    this.loadingAssignments = false;
+
     if (
       !force &&
       this.lastAssignmentsLoadedKey === requestKey &&
@@ -630,9 +636,8 @@ export class PlanningFeature implements OnInit, AfterViewInit {
     this.loadingAssignments = true;
     this.assignmentsRequestKey = requestKey;
 
-    this.cycleAssignmentService
-      .findInRange(fromDateLocal, toDateLocal)
-      .subscribe({
+    this.assignmentsRequest.subscribe(
+      this.cycleAssignmentService.findInRange(fromDateLocal, toDateLocal), {
         next: (response) => {
           this.cycleAssignments = response;
           this.lastAssignmentsLoadedKey = requestKey;
@@ -1003,6 +1008,9 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   }
 
   private invalidatePlanningDataCache(): void {
+    this.assignmentsRequest.cancel();
+    this.assignmentsRequestKey = null;
+    this.loadingAssignments = false;
     this.lastCyclesLoadedAt = 0;
     this.lastSlotsLoadedAt = 0;
     this.lastAssignmentsLoadedAt = 0;

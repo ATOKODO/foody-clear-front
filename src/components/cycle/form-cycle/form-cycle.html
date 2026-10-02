@@ -315,7 +315,7 @@
         color="primary"
         type="submit"
         class="rounded-full px-8"
-        [disabled]="!canSubmit"
+        [disabled]="saving() || !canSubmit"
       >
         Save
       </button>

@@ -1,4 +1,5 @@
 import { OverlayContainer } from '@angular/cdk/overlay';
+import { MatDialog } from '@angular/material/dialog';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, Subject } from 'rxjs';
 
@@ -164,6 +165,28 @@ describe('TemplateFeature', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('keeps the editor open and blocks duplicate writes until saving finishes', () => {
+    const pending = new Subject<Template>();
+    templateServiceMock.create.and.returnValue(pending);
+    component.startCreateTemplate();
+    fixture.detectChanges();
+    const dialog = TestBed.inject(MatDialog).openDialogs[0];
+    const event = { mode: 'add' as const, title: 'Pending template' };
+    component.onTemplateSubmitted(event);
+    component.onTemplateSubmitted(event);
+    fixture.detectChanges();
+    expect(templateServiceMock.create).toHaveBeenCalledTimes(1);
+    expect(dialog.disableClose).toBeTrue();
+    component.closeEditorDialog();
+    expect(TestBed.inject(MatDialog).openDialogs).toContain(dialog);
+    pending.next({ id: 3, title: 'Pending template', items: [], totalsMacros: null });
+    pending.complete();
+    fixture.detectChanges();
+    expect(dialog.disableClose).toBeFalse();
+    component.closeEditorDialog();
+    templateServiceMock.create.and.returnValue(of(templates[0]));
   });
 
   it('should render the simplified template header actions', () => {
@@ -405,6 +428,8 @@ describe('TemplateFeature', () => {
     expect(component.formDialogTitle).toBe('Edit template');
     expect(component.formDialogSubtitle).toContain('Update');
 
+    component.savingTemplate = false;
+    component.savingItem = false;
     spyOn(store, 'onBaseUrlChange');
     spyOn(store, 'onRefreshRequested');
     spyOn(store, 'selectTemplate');

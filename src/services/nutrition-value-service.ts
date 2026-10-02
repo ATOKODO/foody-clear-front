@@ -2,22 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { defaultApiBaseUrl, normalizeApiBaseUrl } from '../utils/api-base-url';
+import type { NutritionValueCreated } from './product-service';
 
-export interface NutritionValue {
+export interface NutritionValue extends NutritionValueCreated {
   id: number;
-  label: string;
-  amount: number;
-  unit: string;  // ex: "g", "kcal"
-  per: number;   // ex: 100
   product?: unknown;
   productId?: number;
 }
 
-export interface CreateNutritionValueDto {
-  label: string;
-  amount: number;
-  unit: string;
-  per: number;
+export interface CreateNutritionValueDto extends Omit<NutritionValueCreated, 'id'> {
   productId: number;
 }
 

@@ -46,6 +46,7 @@ export interface SlotFormValue {
 export class SlotForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
+  readonly saving = input(false);
   readonly mode = input<SlotFormMode>('add');
   readonly slot = input<Partial<SlotFormValue> | null>(null);
   readonly showHeading = input(true);
@@ -91,6 +92,7 @@ export class SlotForm implements OnInit, OnChanges {
   }
 
   onSubmit(): void {
+    if (this.saving()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

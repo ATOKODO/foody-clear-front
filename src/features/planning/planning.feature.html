@@ -137,7 +137,7 @@
       [class.planning-modal--actions]="activeModal === 'actions'"
       [class.planning-modal--assignment]="activeModal === 'assignment'"
       [class.app-modal-card--wide]="activeModal === 'items'"
-      role="dialog"
+      appModal [appModalDisableClose]="savingAssignment" (appModalClose)="closeActiveModal()"
       aria-modal="true"
       aria-label="Planning dialog"
       >

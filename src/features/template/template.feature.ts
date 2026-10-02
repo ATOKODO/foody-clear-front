@@ -3,6 +3,7 @@ import {
   OnInit,
   TemplateRef,
   inject,
+  effect,
   viewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -55,6 +56,13 @@ export class TemplateFeature implements OnInit {
   formMode: TemplateFormMode = 'add';
   editingTemplateId: number | null = null;
   private dialogRef: MatDialogRef<unknown> | null = null;
+
+  constructor() {
+    effect(() => {
+      const saving = this.store.savingTemplate || this.store.savingItem;
+      if (this.dialogRef) this.dialogRef.disableClose = saving;
+    });
+  }
 
   ngOnInit(): void {
     this.store.init();
@@ -275,6 +283,7 @@ export class TemplateFeature implements OnInit {
   }
 
   startCreateTemplate(): void {
+    if (this.savingTemplate || this.savingItem) return;
     this.formMode = 'add';
     this.editingTemplateId = null;
     this.itemError = null;
@@ -290,6 +299,7 @@ export class TemplateFeature implements OnInit {
   }
 
   onTemplateEditRequested(templateId: number): void {
+    if (this.savingTemplate || this.savingItem) return;
     this.store.loadTemplateForEdit(templateId, (readyTemplateId) => {
       this.openTemplateEditor(readyTemplateId);
     });
@@ -331,6 +341,7 @@ export class TemplateFeature implements OnInit {
   }
 
   closeEditorDialog(): void {
+    if (this.savingTemplate || this.savingItem) return;
     if (this.dialogRef !== null) {
       this.dialogRef.close();
       return;
@@ -348,7 +359,7 @@ export class TemplateFeature implements OnInit {
     const dialogRef = this.dialog.open(templateEditorDialog, {
       width: 'min(1120px, 96vw)',
       maxWidth: '96vw',
-      autoFocus: false,
+      autoFocus: 'first-tabbable',
     });
 
     this.dialogRef = dialogRef;

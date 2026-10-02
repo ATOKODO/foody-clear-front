@@ -170,10 +170,10 @@
                   <mat-checkbox
                     class="pt-0.5"
                     [checked]="isSelected(cycle.id)"
-                    [attr.aria-label]="'Select ' + cycle.title"
+                    [aria-label]="'Select ' + cycle.title"
                     (change)="onCheckboxChange(cycle, $event.checked)"
-                    (click)="onCheckboxClick($event, cycle)"
-                    (keydown)="$event.stopPropagation()"
+                    (click)="onCheckboxClick($event)"
+                    (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()"
                   />
                 }
                 <div

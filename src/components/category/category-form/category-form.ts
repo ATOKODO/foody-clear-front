@@ -36,6 +36,7 @@ export interface CategoryFormValue {
 export class CategoryForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
+  readonly saving = input(false);
   readonly mode = input<CategoryFormMode>('add');
   readonly category = input<Partial<CategoryFormValue> | null>(null);
   readonly showHeading = input(true);
@@ -81,6 +82,7 @@ export class CategoryForm implements OnInit, OnChanges {
   }
 
   onSubmit(): void {
+    if (this.saving()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

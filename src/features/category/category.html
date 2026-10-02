@@ -91,7 +91,7 @@
     <mat-card
       appearance="outlined"
       class="app-modal-card"
-      role="dialog"
+      appModal [appModalDisableClose]="store.saving()" (appModalClose)="store.cancelForm()"
       aria-modal="true"
       >
       <div class="app-dialog-header">
@@ -105,7 +105,7 @@
         </button>
       </div>
       <div class="app-dialog-content">
-        <app-category-form [mode]="store.formMode()"
+        <app-category-form [saving]="store.saving()" [mode]="store.formMode()"
           [category]="store.formInitialValue()"
           [showHeading]="false"
           (submitted)="store.submitForm($event)"

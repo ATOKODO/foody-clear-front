@@ -294,12 +294,18 @@ async function handleInputDayBulkCreateRequest(context: MockApiRequestContext): 
     const dateLocal = path.split('/')[2];
     const body = await context.readJson<Record<string, unknown>>();
     const items = Array.isArray(body.items) ? body.items : [];
-    items.forEach((entry) => {
+    const previousStocks = structuredClone(state.inventoryProducts);
+    const previousItems = [...state.inputDayItems];
+    for (const entry of items) {
       const created = createInputDayItem(context, dateLocal, entry as Record<string, unknown>);
-      if (created) {
-        state.inputDayItems.push(created);
+      if (!created) {
+        state.inventoryProducts = previousStocks;
+        state.inputDayItems = previousItems;
+        await context.json({ message: 'Not enough stock in selected inventories' }, 400);
+        return true;
       }
-    });
+      state.inputDayItems.push(created);
+    }
     await context.json({ created: items.length }, 201);
     return true;
   }
@@ -320,22 +326,24 @@ async function handleInputDayItemRequest(context: MockApiRequestContext): Promis
     }
     if (method === 'PATCH') {
       const body = await context.readJson<Record<string, unknown>>();
-      const product = getProduct(state, Number(body.productId ?? item.productId));
-      if (product) {
-        item.productId = product.id;
-        item.qty = Number(body.qty ?? item.qty);
-        item.qtyUnit = readFallbackString(body.qtyUnit, item.qtyUnit) as typeof item.qtyUnit;
-        item.qtyNormalized = normalizeProductQuantity(product, item.qty, item.qtyUnit);
+      const previousStocks = structuredClone(state.inventoryProducts);
+      restoreInputDayStock(context, item);
+      const updated = createInputDayItem(context, readNullableString(body.dateLocal) ?? item.dateLocal, {
+        ...item,
+        ...body,
+        inventoryIds: body.inventoryIds ?? (body.inventoryId ? [body.inventoryId] : item.inventoryAllocations?.map((allocation) => allocation.inventoryId) ?? [item.inventoryId]),
+      });
+      if (!updated) {
+        state.inventoryProducts = previousStocks;
+        await context.json({ message: 'Not enough stock in selected inventories' }, 400);
+        return true;
       }
-      item.dateLocal = readNullableString(body.dateLocal) ?? item.dateLocal;
-      item.inventoryId = readFallbackNumber(body.inventoryId, item.inventoryId);
-      item.occurredAt = readFallbackString(body.occurredAt, item.occurredAt);
-      item.slotId = readFallbackNumber(body.slotId, item.slotId);
-      item.slotKey = readFallbackString(body.slotKey, item.slotKey);
+      Object.assign(item, updated, { templateItemId: item.templateItemId });
       await context.json(item);
       return true;
     }
     if (method === 'DELETE') {
+      restoreInputDayStock(context, item);
       state.inputDayItems = removeArrayItem(state.inputDayItems, itemId);
       state.templateConversions = state.templateConversions.filter((entry) => entry.itemId !== itemId);
       await context.noContent();
@@ -375,7 +383,7 @@ async function handleInputDayTemplateConversionRequest(context: MockApiRequestCo
     const body = await context.readJson<Record<string, unknown>>();
     const created = createInputDayItem(context, dateLocal, {
       productId: templateItem.productId,
-      inventoryId: Number(body.inventoryId ?? 0),
+      inventoryIds: body.inventoryIds ?? [body.inventoryId],
       qty: templateItem.qty,
       qtyUnit: templateItem.qtyUnit,
       slotId: templateItem.slotId,
@@ -410,14 +418,32 @@ function createInputDayItem(
   const qty = Number(payload.qty ?? 0);
   const qtyUnit = readNullableString(payload.qtyUnit) as MockInputDayItem['qtyUnit'];
   const occurredAt = readNullableString(payload.occurredAt) ?? `${dateLocal}T12:00:00+01:00`;
+  const inputUnit = qtyUnit ?? (product.quantityUnit === 'ml' || product.quantityUnit === 'l' ? 'ml' : ['mg', 'g', 'kg'].includes(product.quantityUnit ?? '') ? 'g' : 'unit');
+  const qtyNormalized = normalizeProductQuantity(product, qty, inputUnit);
+  const inventoryIds = [...new Set((Array.isArray(payload.inventoryIds) ? payload.inventoryIds : [payload.inventoryId]).map(Number).filter((id) => Number.isInteger(id) && id > 0))];
+  const rows = context.state.inventoryProducts.filter((row) => row.productId === product.id && inventoryIds.includes(row.inventoryId))
+    .sort((left, right) => right.qtyOnHandNormalized - left.qtyOnHandNormalized || left.inventoryId - right.inventoryId);
+  if (qtyNormalized <= 0 || rows.reduce((sum, row) => sum + row.qtyOnHandNormalized, 0) + 1e-6 < qtyNormalized) return null;
+  let remaining = qtyNormalized;
+  const inventoryAllocations: { inventoryId: number; qtyNormalized: number }[] = [];
+  for (const row of rows) {
+    const amount = Math.min(remaining, row.qtyOnHandNormalized);
+    if (amount <= 0) continue;
+    row.qtyOnHandNormalized -= amount;
+    row.qtyOnHandInUnits -= amount / (normalizeProductQuantity(product, 1, 'unit') || 1);
+    inventoryAllocations.push({ inventoryId: row.inventoryId, qtyNormalized: amount });
+    remaining -= amount;
+    if (remaining <= 1e-6) break;
+  }
   return {
-    id: context.nextId('inputDayItem'),
+    id: Number(payload.id ?? context.nextId('inputDayItem')),
     dateLocal,
     productId: product.id,
-    inventoryId: readNullableNumber(payload.inventoryId),
+    inventoryId: inventoryAllocations[0]?.inventoryId ?? null,
+    inventoryAllocations,
     qty,
     qtyUnit,
-    qtyNormalized: normalizeProductQuantity(product, qty, qtyUnit),
+    qtyNormalized,
     occurredAt,
     insertedAt: occurredAt,
     slotId: readNullableNumber(payload.slotId),
@@ -438,6 +464,18 @@ function readFallbackNumber(value: unknown, fallback: number | null): number | n
   }
   return readNullableNumber(value);
 }
+function restoreInputDayStock(context: MockApiRequestContext, item: MockInputDayItem): void {
+  const product = getProduct(context.state, item.productId);
+  const allocations = item.inventoryAllocations ?? (item.inventoryId === null ? [] : [{ inventoryId: item.inventoryId, qtyNormalized: item.qtyNormalized }]);
+  for (const allocation of allocations) {
+    const row = context.state.inventoryProducts.find((stock) => stock.inventoryId === allocation.inventoryId && stock.productId === item.productId);
+    if (row) {
+      row.qtyOnHandNormalized += allocation.qtyNormalized;
+      row.qtyOnHandInUnits += allocation.qtyNormalized / (product ? normalizeProductQuantity(product, 1, 'unit') || 1 : 1);
+    }
+  }
+}
+
 function readNullableString(value: unknown): string | null {
   if (typeof value !== 'string') {
     return null;

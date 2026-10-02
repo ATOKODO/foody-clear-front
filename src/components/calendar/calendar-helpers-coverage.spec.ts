@@ -221,8 +221,34 @@ describe('calendar helper branches', () => {
     expect(toCalendarMinutes('08:30')).toBe(510);
     expect(isCalendarSlotOverlappingHour(slot({ startTime: null, endTime: null }), 8 * 60, 9 * 60)).toBeFalse();
     expect(isCalendarSlotOverlappingHour(slot({ startTime: null, endTime: '09:00' }), 8 * 60, 9 * 60)).toBeTrue();
-    expect(isCalendarSlotOverlappingHour(slot({ startTime: '10:00', endTime: '09:00' }), 8 * 60, 9 * 60)).toBeFalse();
+    expect(isCalendarSlotOverlappingHour(slot({ startTime: '10:00', endTime: '09:00' }), 8 * 60, 9 * 60)).toBeTrue();
     expect(isCalendarSlotOverlappingHour(slot(), 8 * 60, 9 * 60)).toBeTrue();
+  });
+
+  it('splits overnight slots and keeps each entered or planned item in one part', () => {
+    const night = slot({ startTime: '22:30', endTime: '02:00' });
+    const products = buildCalendarInsertedProducts([], [
+      item({ id: 1, occurredAt: '2026-02-17T23:00:00Z' }),
+      item({ id: 2, occurredAt: '2026-02-17T01:00:00Z' }),
+    ], '2026-02-17', [night], 'UTC');
+    const planned = resolvePendingCalendarTemplateItems(response({ templateItems: [
+      templateItem({ id: 10, preferredTime: '23:30' }),
+      templateItem({ id: 11, preferredTime: '01:30' }),
+    ] }), [night]);
+    const blocks = buildCalendarWeekTimelineBlocks('2026-02-17', [night], products, planned, 'UTC');
+    expect(blocks.map((block) => [block.startMinute, block.endMinute])).toEqual([[0, 120], [1350, 1440]]);
+    expect(blocks.map((block) => block.rangeLabel)).toEqual(['00:00-02:00', '22:30-24:00']);
+    expect(new Set(blocks.map((block) => block.id)).size).toBe(2);
+    expect(blocks[0].items.map((entry) => entry.id)).toEqual([2]);
+    expect(blocks[1].items.map((entry) => entry.id)).toEqual([1]);
+    expect(blocks[0].plannedItems.map((entry) => entry.id)).toEqual([11]);
+    expect(blocks[1].plannedItems.map((entry) => entry.id)).toEqual([10]);
+    expect(isCalendarSlotOverlappingHour(night, 23 * 60, 24 * 60)).toBeTrue();
+    expect(isCalendarSlotOverlappingHour(night, 60, 120)).toBeTrue();
+    expect(isCalendarSlotOverlappingHour(night, 12 * 60, 13 * 60)).toBeFalse();
+    const allDay = slot({ startTime: '08:00', endTime: '08:00' });
+    expect(buildCalendarWeekTimelineBlocks('2026-02-17', [allDay], [], [], 'UTC').map((block) => [block.startMinute, block.endMinute])).toEqual([[0, 1440]]);
+    expect(isCalendarSlotOverlappingHour(allDay, 0, 60)).toBeTrue();
   });
 
   it('covers inserted products, pending templates and timeline blocks', () => {
@@ -256,7 +282,7 @@ describe('calendar helper branches', () => {
         templateItem({ id: 9 }),
         templateItem({ id: 10, status: 'converted' }),
         templateItem({ id: 11, convertedItemId: 20 }),
-        templateItem({ id: 12, stockByInventory: [{ inventoryId: 7, inventoryName: 'Pantry', qtyAvailableNormalized: 500, enoughStock: true }] }),
+        templateItem({ id: 12, stockAvailability: { enoughStock: true, totalAvailableNormalized: 500, requestedQtyNormalized: 150 }, stockByInventory: [{ inventoryId: 7, inventoryName: 'Pantry', qtyAvailableNormalized: 500, enoughStock: true }] }),
         templateItem({ id: 13, slotId: null, slotKey: ' missing ', preferredTime: 'bad', qtyUnit: null }),
       ],
     });

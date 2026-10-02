@@ -1,5 +1,5 @@
 import { JsonPipe } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -13,6 +13,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSelectModule } from '@angular/material/select';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 import {
   CreateNutritionValueDto,
@@ -32,6 +33,7 @@ import {
     MatFormFieldModule,
     MatInputModule,
     MatProgressBarModule,
+    MatSelectModule,
     UiErrorPanel
   ],
   templateUrl: './nutrition-value.html',
@@ -50,14 +52,23 @@ export class NutritionValues implements OnInit {
   }
 
   form: FormGroup = new FormGroup({});
-  lastResponse: unknown = null;
-  lastError: unknown = null;
-  loading = false;
+  private readonly responseState = signal<unknown>(null);
+  private readonly errorState = signal<unknown>(null);
+  private readonly loadingState = signal(false);
+  get lastResponse(): unknown { return this.responseState(); }
+  set lastResponse(value: unknown) { this.responseState.set(value); }
+  get lastError(): unknown { return this.errorState(); }
+  set lastError(value: unknown) { this.errorState.set(value); }
+  get loading(): boolean { return this.loadingState(); }
+  set loading(value: boolean) { this.loadingState.set(value); }
+  readonly nutritionKeys = ['ENERGY_KCAL', 'ENERGY_KJ', 'FAT', 'SATURATED_FAT', 'CARBOHYDRATE', 'SUGARS', 'PROTEIN', 'FIBER', 'SALT'];
+  readonly units = ['G', 'MG', 'KCAL', 'KJ'];
+  readonly references = ['PER_100G', 'PER_100ML'];
 
   ngOnInit(): void {
     this.form = this.fb.group({
       id: this.fb.control<number | null>(null),
-      label: this.fb.control<string>('', {
+      nutritionKey: this.fb.control<string>('', {
         nonNullable: true,
         validators: [Validators.required],
       }),
@@ -68,9 +79,7 @@ export class NutritionValues implements OnInit {
         nonNullable: true,
         validators: [Validators.required],
       }),
-      per: this.fb.control<number | null>(null, {
-        validators: [Validators.required],
-      }),
+      reference: this.fb.control<string>('', { nonNullable: true, validators: [Validators.required] }),
       productId: this.fb.control<number | null>(null),
     });
   }
@@ -78,20 +87,23 @@ export class NutritionValues implements OnInit {
   private pickCreatePayload(): CreateNutritionValueDto {
     const value = this.form.getRawValue();
     if (
-      !value.label ||
+      !value.nutritionKey ||
       value.amount == null ||
       !value.unit ||
-      value.per == null ||
-      value.productId == null
+      !this.references.includes(value.reference) ||
+      !this.nutritionKeys.includes(value.nutritionKey.trim()) ||
+      !this.units.includes(value.unit.trim()) ||
+      !Number.isFinite(value.amount) ||
+      !Number.isInteger(value.productId) || value.productId < 1
     ) {
-      throw new Error('Pour CREATE : label, amount, unit, per, productId sont requis.');
+      throw new Error('Pour CREATE : nutritionKey, amount, unit, reference, productId sont requis.');
     }
 
     return {
-      label: value.label.trim(),
+      nutritionKey: value.nutritionKey.trim(),
       amount: value.amount,
       unit: value.unit.trim(),
-      per: value.per,
+      reference: value.reference,
       productId: value.productId,
     };
   }
@@ -100,10 +112,10 @@ export class NutritionValues implements OnInit {
     const value = this.form.getRawValue();
     const dto: UpdateNutritionValueDto = {};
 
-    if (value.label && value.label.trim() !== '') dto.label = value.label.trim();
+    if (value.nutritionKey && value.nutritionKey.trim() !== '') dto.nutritionKey = value.nutritionKey.trim();
     if (value.amount != null) dto.amount = value.amount;
     if (value.unit && value.unit.trim() !== '') dto.unit = value.unit.trim();
-    if (value.per != null) dto.per = value.per;
+    if (value.reference) dto.reference = value.reference;
     if (value.productId != null) dto.productId = value.productId;
 
     return dto;
@@ -121,6 +133,7 @@ export class NutritionValues implements OnInit {
   }
 
   create(): void {
+    if (this.loading) return;
     this.loading = true;
 
     try {
@@ -135,6 +148,7 @@ export class NutritionValues implements OnInit {
   }
 
   getAll(): void {
+    if (this.loading) return;
     this.loading = true;
     this.nvSrv.findAll().subscribe({
       next: (response) => this.setResult(response),
@@ -143,9 +157,10 @@ export class NutritionValues implements OnInit {
   }
 
   getOne(): void {
+    if (this.loading) return;
     const id = this.form.value.id ?? null;
     if (id == null) {
-      this.setError('Veuillez renseigner un id pour GET /nutrition-values/:id');
+      this.setError('Veuillez renseigner un id pour GET /nutrition-value/:id');
       return;
     }
 
@@ -157,9 +172,10 @@ export class NutritionValues implements OnInit {
   }
 
   update(): void {
+    if (this.loading) return;
     const id = this.form.value.id ?? null;
     if (id == null) {
-      this.setError('Veuillez renseigner un id pour PATCH /nutrition-values/:id');
+      this.setError('Veuillez renseigner un id pour PATCH /nutrition-value/:id');
       return;
     }
 
@@ -177,9 +193,10 @@ export class NutritionValues implements OnInit {
   }
 
   delete(): void {
+    if (this.loading) return;
     const id = this.form.value.id ?? null;
     if (id == null) {
-      this.setError('Veuillez renseigner un id pour DELETE /nutrition-values/:id');
+      this.setError('Veuillez renseigner un id pour DELETE /nutrition-value/:id');
       return;
     }
 
@@ -193,10 +210,10 @@ export class NutritionValues implements OnInit {
   fillDemoCreate(): void {
     this.form.patchValue({
       id: null,
-      label: 'Proteines',
+      nutritionKey: 'PROTEIN',
       amount: 12.5,
-      unit: 'g',
-      per: 100,
+      unit: 'G',
+      reference: 'PER_100G',
       productId: 1,
     });
   }
@@ -204,10 +221,10 @@ export class NutritionValues implements OnInit {
   clear(): void {
     this.form.reset({
       id: null,
-      label: '',
+      nutritionKey: '',
       amount: null,
       unit: '',
-      per: null,
+      reference: '',
       productId: null,
     });
     this.lastResponse = null;

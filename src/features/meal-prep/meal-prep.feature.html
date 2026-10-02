@@ -101,7 +101,7 @@
                     {{ dish.availability?.isInStock ? 'In stock' : 'Incomplete stock' }}
                   </span>
                 </button>
-                <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                   <button
                     mat-stroked-button
                     type="button"
@@ -189,7 +189,7 @@
                     {{ meal.availability?.isInStock ? 'In stock' : 'Incomplete stock' }}
                   </span>
                 </button>
-                <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                   <button
                     mat-stroked-button
                     type="button"
@@ -272,7 +272,7 @@
 }
 @if (isEditorOpen) {
   <div class="app-modal-shell" data-testid="meal-prep-editor-dialog">
-    <mat-card class="app-modal-card app-modal-card--wide" role="dialog" aria-modal="true" aria-label="Meal prep editor" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <mat-card class="app-modal-card app-modal-card--wide" appModal [appModalDisableClose]="saving" (appModalClose)="closeEditor()" aria-modal="true" aria-label="Meal prep editor" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
       <mat-card-header>
         <mat-card-title>
           @if (activeView === 'dish') {
@@ -319,7 +319,8 @@
                   </mat-form-field>
                   <mat-form-field appearance="fill">
                     <mat-label>Unit</mat-label>
-                    <mat-select [(ngModel)]="line.qtyUnit">
+                    <mat-select [(ngModel)]="line.qtyUnit" [canSelectNullableOptions]="true">
+                      <mat-option [value]="null">Default unit</mat-option>
                       @for (unit of getDishQtyUnitOptions(line); track unit.value) {
                         <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
                       }
@@ -381,7 +382,8 @@
                   </mat-form-field>
                   <mat-form-field appearance="fill">
                     <mat-label>Unit</mat-label>
-                    <mat-select [(ngModel)]="line.qtyUnit">
+                    <mat-select [(ngModel)]="line.qtyUnit" [canSelectNullableOptions]="true">
+                      <mat-option [value]="null">Default unit</mat-option>
                       @for (unit of getMealQtyUnitOptions(line); track unit.value) {
                         <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
                       }
@@ -431,7 +433,7 @@
 }
 @if (isProductPickerOpen) {
   <div class="app-modal-shell" data-testid="meal-prep-product-picker-dialog">
-    <mat-card class="app-modal-card app-modal-card--wide" role="dialog" aria-modal="true" aria-label="Choose a product" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <mat-card class="app-modal-card app-modal-card--wide" appModal [appModalDisableClose]="saving" (appModalClose)="closeProductPicker()" aria-modal="true" aria-label="Choose a product" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
       <mat-card-header>
         <mat-card-title>Choose a product</mat-card-title>
         <mat-card-subtitle>

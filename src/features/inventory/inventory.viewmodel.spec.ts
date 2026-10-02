@@ -158,6 +158,14 @@ describe('inventory viewmodel', () => {
     expect(managed[1].currentNormalizedQty).toBeNull();
   });
 
+  it('pairs normalized stock with its base unit when the product uses kilograms or litres', () => {
+    for (const [quantityUnit, normalizedUnit] of [['kg', 'g'], ['l', 'ml']] as const) {
+      const rows = toManagedInventoryProductRows([{ id: 1, inventoryId: 4, productId: 1, qtyOnHandInUnits: 1, qtyOnHandNormalized: 1000, product: { ...product, quantityUnit } }]);
+      expect(rows[0].currentNormalizedQty).toBe(1000);
+      expect(rows[0].currentNormalizedUnit).toBe(normalizedUnit);
+    }
+  });
+
   it('resolves quantity options and explanatory text', () => {
     expect(getInventoryQtyUnitOptions({
       unitType: 'Paquet',
@@ -169,8 +177,10 @@ describe('inventory viewmodel', () => {
       price: 2,
     })).toEqual([
       { value: 'unit', label: 'Product unit (Paquet)' },
-      { value: 'g', label: 'G' },
       { value: 'portion', label: 'Portion' },
+      { value: 'g', label: 'G (Gram)' },
+      { value: 'mg', label: 'MG (Milligram)' },
+      { value: 'kg', label: 'KG (Kilogram)' },
     ]);
     expect(getInventoryQtyUnitOptions({
       unitType: null,

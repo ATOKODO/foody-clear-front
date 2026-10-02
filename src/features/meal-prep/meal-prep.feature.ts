@@ -1,3 +1,4 @@
+import { UiModal } from '../../app/ui/modal/modal';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -64,7 +65,7 @@ import {
 @Component({
   selector: 'app-meal-prep',
   standalone: true,
-  imports: [
+  imports: [UiModal,
     CommonModule,
     FormsModule,
     MatButtonModule,
@@ -80,7 +81,6 @@ import {
   templateUrl: './meal-prep.feature.html',
   styleUrl: './meal-prep.feature.scss',
   host: {
-    '(document:keydown.escape)': 'onEscapeKey()',
   },
 })
 export class MealPrepFeature implements OnInit {

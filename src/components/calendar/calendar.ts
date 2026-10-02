@@ -145,6 +145,7 @@ export interface CalendarConvertTemplateItemEvent {
   dateLocal: string;
   templateItemId: number;
   inventoryId: number;
+  inventoryIds?: number[];
 }
 
 export interface CalendarRevertTemplateItemEvent {
@@ -540,6 +541,7 @@ export class Calendar implements OnInit, OnChanges {
       dateLocal,
       templateItemId: item.id,
       inventoryId: item.inventoryId,
+      inventoryIds: item.inventoryIds ?? [item.inventoryId],
     });
   }
 
@@ -1217,13 +1219,15 @@ export class Calendar implements OnInit, OnChanges {
     event.stopPropagation();
 
     const hour = Math.max(0, Math.min(23, Math.floor(block.startMinute / 60)));
+    const minute = block.startMinute % 60;
     this.onHourClick(
       {
         hour,
-        label: `${hour.toString().padStart(2, '0')}:00`,
+        label: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
         assignment: day.assignment,
       },
       day.date,
+      minute,
     );
   }
 
@@ -1240,12 +1244,14 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     const hour = Math.max(0, Math.min(23, Math.floor(block.startMinute / 60)));
+    const minute = block.startMinute % 60;
     this.onHourClick(
       {
         hour,
-        label: `${hour.toString().padStart(2, '0')}:00`,
+        label: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
       },
       dateLocal,
+      minute,
     );
   }
 

@@ -1,16 +1,5 @@
-export type ProductQuantityInputUnit =
-  | 'mg'
-  | 'g'
-  | 'kg'
-  | 'ml'
-  | 'l'
-  | 'unit'
-  | 'pack'
-  | 'tranche'
-  | 'piece'
-  | 'part'
-  | 'bouteille'
-  | 'portion';
+import type { ProductQuantityInputUnit } from './quantity.interface';
+export type { ProductQuantityInputUnit } from './quantity.interface';
 
 export type PurchaseAccountingMode = 'paid' | 'free' | 'excluded';
 

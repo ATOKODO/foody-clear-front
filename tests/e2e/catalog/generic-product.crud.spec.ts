@@ -6,7 +6,7 @@ test('creates, edits and deletes a generic product', async ({ page, mockApi }) =
   expect(mockApi).toBeDefined();
 
   await gotoRoute(page, '/generic-product');
-  await expectShellTitle(page, 'Produits generiques');
+  await expectShellTitle(page, 'Generic products');
   await expect(page.getByTestId('generic-product-list')).toBeVisible();
 
   await page.getByTestId('generic-product-add').click();
@@ -18,12 +18,12 @@ test('creates, edits and deletes a generic product', async ({ page, mockApi }) =
   await selectMatOptionByLabel(page, dialog, 'Type unite', 'piece');
   await dialog.getByLabel('Quantite metrique minimum *').fill('900');
   await selectMatOptionByLabel(page, dialog, 'Type metrique', 'g');
-  await dialog.getByRole('button', { name: 'Creer' }).click();
+  await dialog.getByRole('button', { name: 'Create' }).click();
 
   const createdRow = page.locator('tr').filter({ hasText: 'E2E Generic Product' }).last();
   await expect(createdRow).toBeVisible();
 
-  await createdRow.getByRole('button', { name: 'Modifier' }).click();
+  await createdRow.getByRole('button', { name: 'Edit' }).click();
   const editDialog = page.getByRole('dialog');
   await expect(editDialog).toBeVisible();
   await editDialog.getByLabel('Nom *').fill('E2E Generic Product updated');
@@ -31,11 +31,11 @@ test('creates, edits and deletes a generic product', async ({ page, mockApi }) =
   await selectMatOptionByLabel(page, editDialog, 'Type unite', 'portion');
   await editDialog.getByLabel('Quantite metrique minimum *').fill('1200');
   await selectMatOptionByLabel(page, editDialog, 'Type metrique', 'kg');
-  await editDialog.getByRole('button', { name: 'Mettre a jour' }).click();
+  await editDialog.getByRole('button', { name: 'Update' }).click();
 
   const updatedRow = page.locator('tr').filter({ hasText: 'E2E Generic Product updated' }).last();
   await expect(updatedRow).toBeVisible();
 
-  await updatedRow.getByRole('button', { name: 'Retirer' }).click();
+  await updatedRow.getByRole('button', { name: 'Remove' }).click();
   await expect(page.locator('tr').filter({ hasText: 'E2E Generic Product updated' })).toHaveCount(0);
 });

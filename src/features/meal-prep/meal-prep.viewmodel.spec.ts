@@ -88,6 +88,34 @@ describe('meal-prep viewmodel', () => {
     ],
   };
 
+  it('preserves metric quantities when opening and resubmitting dishes and meals', () => {
+    for (const qtyUnit of ['mg', 'kg', 'ml', 'l', 'pack'] as const) {
+      const draft = toDishDraftForm({ ...dish, items: [{ ...dish.items[0], qty: 150, qtyUnit }] }, []);
+      expect(draft.dishDraftLines[0]).toEqual({ productId: 1, qty: 150, qtyUnit });
+      expect(getDishQtyUnitOptions(draft.dishDraftLines[0], []).some((option) => option.value === qtyUnit)).toBeTrue();
+      expect(toCreatePreparedDishDto(draft.dishDraftName, draft.dishDraftLines).items[0].qtyUnit).toBe(qtyUnit);
+      const mealDraft = toMealDraftForm({ ...meal, items: [{ ...meal.items[1], qty: 150, qtyUnit }] }, []);
+      expect(toCreatePreparedMealDto(mealDraft.mealDraftName, mealDraft.mealDraftLines).items[0]).toEqual(jasmine.objectContaining({ qty: 150, qtyUnit }));
+    }
+  });
+
+  it('blocks the entire save if any selected ingredient has an invalid quantity', () => {
+    for (const qty of [0, -1, NaN, Infinity, null]) {
+      const dishLines = [{ productId: 1, qty: 2, qtyUnit: 'g' as const }, { productId: 2, qty: qty as number, qtyUnit: 'unit' as const }];
+      expect(canSaveDishDraft('Dish', dishLines)).toBeFalse();
+      expect(() => toCreatePreparedDishDto('Dish', dishLines)).toThrowError();
+      const mealLines = dishLines.map((line) => ({ ...line, itemType: 'product' as const, dishId: null }));
+      expect(canSaveMealDraft('Meal', mealLines)).toBeFalse();
+      expect(() => toCreatePreparedMealDto('Meal', mealLines)).toThrowError();
+    }
+  });
+
+  it('preserves the API default for existing rows with a null unit', () => {
+    const draft = toDishDraftForm({ ...dish, items: [{ ...dish.items[0], qtyUnit: null }] }, []);
+    expect(draft.dishDraftLines[0].qtyUnit).toBeNull();
+    expect(toCreatePreparedDishDto(draft.dishDraftName, draft.dishDraftLines).items[0].qtyUnit).toBeNull();
+  });
+
   it('maps and sorts meal-prep collections', () => {
     expect(buildMealPrepProductListItems(products).map((item) => item.id)).toEqual([
       '1',
@@ -224,17 +252,18 @@ describe('meal-prep viewmodel', () => {
   it('resolves labels, options, picker selections and ids', () => {
     expect(getDishQtyUnitOptions(createEmptyDishLine([]), [])).toEqual([
       { value: 'unit', label: 'Product unit' },
-      { value: 'g', label: 'G (Gramme)' },
     ]);
     expect(getDishQtyUnitOptions({ productId: 1, qty: 1, qtyUnit: null }, products)).toEqual([
       { value: 'unit', label: 'Product unit (Paquet)' },
       { value: 'portion', label: 'Portion' },
-      { value: 'g', label: 'G (Gramme)' },
+      { value: 'g', label: 'G (Gram)' },
+      { value: 'mg', label: 'MG (Milligram)' },
+      { value: 'kg', label: 'KG (Kilogram)' },
     ]);
     expect(getMealQtyUnitOptions({ itemType: 'dish', productId: null, dishId: 2, qty: 1, qtyUnit: null }, products)).toEqual([
       { value: 'unit', label: 'Unit' },
     ]);
-    expect(getMealQtyUnitOptions({ itemType: 'product', productId: 1, dishId: null, qty: 1, qtyUnit: null }, products)).toHaveSize(3);
+    expect(getMealQtyUnitOptions({ itemType: 'product', productId: 1, dishId: null, qty: 1, qtyUnit: null }, products)).toHaveSize(5);
 
     expect(resolveMealLineLabel(meal.items[0])).toBe('Zesty dish');
     expect(resolveMealLineLabel({ ...meal.items[0], dish: null, dishId: 99 })).toBe('Dish #99');

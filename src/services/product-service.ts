@@ -13,9 +13,8 @@ export type ProductUnitType =
   | 'Unite'
   | 'Autre';
 
-export type QuantityUnit = 'mg' | 'g' | 'kg' | 'ml' | 'l' | 'unit' | 'pack';
-
-export type PortionUnit = 'tranche' | 'piece' | 'part' | 'bouteille' | 'portion';
+import type { QuantityUnit, PortionUnit } from '../interfaces/quantity.interface';
+export type { QuantityUnit, PortionUnit } from '../interfaces/quantity.interface';
 export type ProductPriceUnit =
   | 'kg'
   | 'g'
@@ -63,6 +62,7 @@ export interface CreateProductDto {
 
 export interface UpdateProductDto extends Partial<Omit<CreateProductDto, 'nutritionValuesCreated'>> {
   nutritionValuesUpdated?: NutritionValueUpdated[];
+  nutritionValueIdsToRemove?: number[];
   clearCategory?: boolean;
   tagIdsToAdd?: number[];
   tagIdsToRemove?: number[];

@@ -1,3 +1,5 @@
+import { getSelectedTemplateStock } from '../../utils/template-stock';
+import { getNormalizedQuantityUnit } from '../../utils/product-quantity';
 import { DateTime } from 'luxon';
 import type { ProductListItem } from '../../components/product/product-list/product-list';
 import type {
@@ -145,26 +147,7 @@ export function getInputDaySelectedInventoriesTemplateStock(
   item: InputDayTemplateItemSummary,
   selectedInventoryIds: readonly number[],
 ): InputDaySelectedInventoryTemplateStock | null {
-  if (selectedInventoryIds.length === 0) {
-    return null;
-  }
-
-  const selectedStocks = item.stockByInventory.filter((entry) =>
-    selectedInventoryIds.includes(entry.inventoryId),
-  );
-  if (selectedStocks.length === 0) {
-    return null;
-  }
-
-  return {
-    enoughStock: selectedStocks.some((entry) => entry.enoughStock),
-    qtyAvailableNormalized: roundInputDayQuantity(
-      selectedStocks.reduce(
-        (sum, entry) => sum + entry.qtyAvailableNormalized,
-        0,
-      ),
-    ),
-  };
+  return getSelectedTemplateStock(item, selectedInventoryIds);
 }
 
 export function canConvertInputDayTemplateItem(
@@ -182,10 +165,7 @@ export function canConvertInputDayTemplateItem(
     return false;
   }
 
-  return item.stockByInventory.some(
-    (entry) =>
-      selectedInventoryIds.includes(entry.inventoryId) && entry.enoughStock,
-  );
+  return getSelectedTemplateStock(item, selectedInventoryIds)?.enoughStock ?? false;
 }
 
 export function getInputDayTemplateTargetSourceText(
@@ -634,7 +614,7 @@ function withInputDayAvailableQuantity(
       Number.isFinite(inventoryProduct.qtyOnHandNormalized)
         ? inventoryProduct.qtyOnHandNormalized
         : null,
-    availableQuantityUnit: item.quantityUnit ?? null,
+    availableQuantityUnit: getNormalizedQuantityUnit(item.quantityUnit),
   };
 }
 

@@ -1,3 +1,6 @@
+import type { QtyUnitOption } from '../../interfaces/quantity.interface';
+export type { QtyUnitOption } from '../../interfaces/quantity.interface';
+import { buildProductQtyUnitOptions, normalizeQtyUnitSelection } from '../../utils/product-quantity';
 import type { SegmentedToggleOption } from '../../app/ui/segmented-toggle/segmented-toggle';
 import type { ProductListItem } from '../../components/product/product-list/product-list';
 import { mapProductToProductListItem } from '../../components/product/product-list/product-list-item.mapper';
@@ -30,11 +33,6 @@ export interface MealDraftLine {
   dishId: number | null;
   qty: number;
   qtyUnit: ProductQuantityInputUnit | null;
-}
-
-export interface QtyUnitOption {
-  value: ProductQuantityInputUnit;
-  label: string;
 }
 
 export interface DishDraftForm {
@@ -116,51 +114,26 @@ export function createEmptyMealLine(products: Product[]): MealDraftLine {
   );
 }
 
-export function toDishDraftForm(
-  dish: PreparedDish,
-  products: Product[],
-): DishDraftForm {
+export function toDishDraftForm(dish: PreparedDish, products: Product[]): DishDraftForm {
   return {
     editingDishId: dish.id,
     dishDraftName: dish.name,
-    dishDraftLines:
-      dish.items.length > 0
-        ? dish.items.map((item) =>
-            hydrateDishLineQtyUnit(
-              {
-                productId: item.productId,
-                qty: item.qty,
-                qtyUnit: item.qtyUnit ?? null,
-              },
-              products,
-            ),
-          )
-        : [createEmptyDishLine(products)],
+    dishDraftLines: dish.items.length
+      ? dish.items.map((item) => ({ productId: item.productId, qty: item.qty, qtyUnit: item.qtyUnit }))
+      : [createEmptyDishLine(products)],
   };
 }
 
-export function toMealDraftForm(
-  meal: PreparedMeal,
-  products: Product[],
-): MealDraftForm {
+export function toMealDraftForm(meal: PreparedMeal, products: Product[]): MealDraftForm {
   return {
     editingMealId: meal.id,
     mealDraftName: meal.name,
-    mealDraftLines:
-      meal.items.length > 0
-        ? meal.items.map((item) =>
-            hydrateMealLineQtyUnit(
-              {
-                itemType: item.itemType,
-                productId: item.productId ?? null,
-                dishId: item.dishId ?? null,
-                qty: item.qty,
-                qtyUnit: item.qtyUnit ?? null,
-              },
-              products,
-            ),
-          )
-        : [createEmptyMealLine(products)],
+    mealDraftLines: meal.items.length
+      ? meal.items.map((item) => ({
+          itemType: item.itemType, productId: item.productId ?? null,
+          dishId: item.dishId ?? null, qty: item.qty, qtyUnit: item.qtyUnit,
+        }))
+      : [createEmptyMealLine(products)],
   };
 }
 
@@ -229,20 +202,22 @@ export function removeMealDraftLine(
 }
 
 export function canSaveDishDraft(name: string, lines: DishDraftLine[]): boolean {
+  const selected = lines.filter((line) => line.productId !== null);
   return (
     name.trim() !== '' &&
-    lines.some((line) => line.productId !== null && line.qty > 0)
+    selected.length > 0 &&
+    selected.every((line) => isValidSourceId(line.productId) && isValidQty(line.qty))
   );
 }
 
 export function canSaveMealDraft(name: string, lines: MealDraftLine[]): boolean {
+  const selected = lines.filter(hasSelectedMealSource);
   return (
     name.trim() !== '' &&
-    lines.some(
+    selected.length > 0 && selected.every(
       (line) =>
-        line.qty > 0 &&
-        ((line.itemType === 'product' && line.productId !== null) ||
-          (line.itemType === 'dish' && line.dishId !== null)),
+        isValidQty(line.qty) &&
+        isValidSourceId(line.itemType === 'product' ? line.productId : line.dishId),
     )
   );
 }
@@ -251,10 +226,11 @@ export function toCreatePreparedDishDto(
   name: string,
   lines: DishDraftLine[],
 ): CreatePreparedDishDto {
+  if (!canSaveDishDraft(name, lines)) throw new Error('Enter a name and a positive quantity for every selected ingredient.');
   return {
     name: name.trim(),
     items: lines
-      .filter((line) => line.productId !== null && line.qty > 0)
+      .filter((line) => line.productId !== null)
       .map((line) => ({
         productId: line.productId as number,
         qty: line.qty,
@@ -267,15 +243,11 @@ export function toCreatePreparedMealDto(
   name: string,
   lines: MealDraftLine[],
 ): CreatePreparedMealDto {
+  if (!canSaveMealDraft(name, lines)) throw new Error('Enter a name and a positive quantity for every selected ingredient.');
   return {
     name: name.trim(),
     items: lines
-      .filter(
-        (line) =>
-          line.qty > 0 &&
-          ((line.itemType === 'product' && line.productId !== null) ||
-            (line.itemType === 'dish' && line.dishId !== null)),
-      )
+      .filter(hasSelectedMealSource)
       .map((line) => ({
         itemType: line.itemType,
         productId: line.itemType === 'product' ? line.productId : null,
@@ -290,7 +262,7 @@ export function getDishQtyUnitOptions(
   line: DishDraftLine,
   products: Product[],
 ): QtyUnitOption[] {
-  return buildProductQtyUnitOptions(resolveProduct(line.productId, products));
+  return buildProductQtyUnitOptions(resolveProduct(line.productId, products), line.qtyUnit);
 }
 
 export function getMealQtyUnitOptions(
@@ -298,7 +270,7 @@ export function getMealQtyUnitOptions(
   products: Product[],
 ): QtyUnitOption[] {
   if (line.itemType === 'product') {
-    return buildProductQtyUnitOptions(resolveProduct(line.productId, products));
+    return buildProductQtyUnitOptions(resolveProduct(line.productId, products), line.qtyUnit);
   }
 
   return [...DISH_QTY_UNIT_OPTIONS];
@@ -395,43 +367,24 @@ function hydrateMealLineQtyUnit(
   };
 }
 
-function buildProductQtyUnitOptions(product: Product | null): QtyUnitOption[] {
-  const options: QtyUnitOption[] = [
-    {
-      value: 'unit',
-      label: product ? `Product unit (${product.unitType})` : 'Product unit',
-    },
-  ];
-
-  if (product?.portionUnit) {
-    options.push({
-      value: product.portionUnit,
-      label: toTitleCase(product.portionUnit),
-    });
-  }
-
-  options.push({ value: 'g', label: 'G (Gramme)' });
-
-  return options;
-}
-
-function normalizeQtyUnitSelection(
-  qtyUnit: ProductQuantityInputUnit | null,
-  options: QtyUnitOption[],
-): ProductQuantityInputUnit {
-  if (qtyUnit && options.some((option) => option.value === qtyUnit)) {
-    return qtyUnit;
-  }
-
-  return options[0]?.value ?? 'unit';
-}
-
 function resolveProduct(productId: number | null, products: Product[]): Product | null {
   if (productId === null) {
     return null;
   }
 
   return products.find((product) => product.id === productId) ?? null;
+}
+
+function hasSelectedMealSource(line: MealDraftLine): boolean {
+  return (line.itemType === 'product' ? line.productId : line.dishId) !== null;
+}
+
+function isValidSourceId(id: number | null): boolean {
+  return id !== null && Number.isInteger(id) && id > 0;
+}
+
+function isValidQty(qty: number): boolean {
+  return Number.isFinite(qty) && qty > 0;
 }
 
 function removeDraftLine<T>(
@@ -448,8 +401,4 @@ function sortByName<T extends { name: string }>(entries: T[]): T[] {
   return [...entries].sort((left, right) =>
     left.name.localeCompare(right.name, 'fr', { sensitivity: 'base' }),
   );
-}
-
-function toTitleCase(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
 }

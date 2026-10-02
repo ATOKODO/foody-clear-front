@@ -20,7 +20,7 @@
       </div>
 
       <div class="mt-6 w-50 flex items-start md:col-span-4 md:items-end">
-        <button mat-raised-button color="primary" type="submit" class="w-full">
+        <button mat-raised-button color="primary" type="submit" class="w-full" [disabled]="saving()">
           {{ mode() === 'edit' ? 'Update' : 'Create' }}
         </button>
       </div>

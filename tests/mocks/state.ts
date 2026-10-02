@@ -127,6 +127,7 @@ export type MockInventoryProduct = {
 };
 
 export type MockInputDayItem = {
+  inventoryAllocations?: { inventoryId: number; qtyNormalized: number }[];
   id: number;
   dateLocal: string;
   productId: number;

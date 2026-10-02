@@ -21,6 +21,28 @@ describe('ProductForm', () => {
     expect(component).toBeTruthy();
   });
 
+  it('blocks a whitespace-only name on actual form submission', () => {
+    const submitted = jasmine.createSpy('submitted');
+    component.submitted.subscribe(submitted);
+    component.form.patchValue({ name: '   ', quantityPerUnit: 100 });
+    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+    expect(submitted).not.toHaveBeenCalled();
+    expect(component.form.controls.name.hasError('required')).toBeTrue();
+    expect(component.form.controls.name.touched).toBeTrue();
+  });
+
+  it('preserves unknown nutrition when editing and saving a product', () => {
+    const submitted = jasmine.createSpy('submitted');
+    component.submitted.subscribe(submitted);
+    fixture.componentRef.setInput('mode', 'edit');
+    fixture.componentRef.setInput('product', { name: 'Unknown nutrition', quantityPerUnit: 100, nutritionValues: [] });
+    fixture.detectChanges();
+    expect(component.nutritionValues).toEqual([]);
+    component.onSubmit();
+    expect(submitted).toHaveBeenCalledWith(jasmine.objectContaining({ value: jasmine.objectContaining({ nutritionValues: [] }) }));
+  });
+
   it('imports scanned product facts for review without saving or adding invented nutrition', () => {
     const submitted = jasmine.createSpy('submitted');
     component.submitted.subscribe(submitted);

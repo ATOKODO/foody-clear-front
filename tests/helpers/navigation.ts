@@ -12,7 +12,7 @@ export async function expectShellTitle(page: Page, title: string): Promise<void>
 
 export async function openSidebarRoute(page: Page, routeLabel: string): Promise<void> {
   await page
-    .getByLabel('Navigation principale')
+    .getByLabel('Main navigation')
     .getByRole('link', { name: new RegExp(routeLabel, 'i') })
     .first()
     .click();

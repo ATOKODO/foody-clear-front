@@ -4,7 +4,7 @@ import { expectShellTitle } from '../../helpers/navigation';
 test('@smoke calendar navigation stays stable across views', async ({ page }) => {
   await page.goto('/calendar');
   await expect(page.getByTestId('calendar-root')).toBeVisible();
-  await expectShellTitle(page, 'Calendrier');
+  await expectShellTitle(page, 'Calendar');
 
   await page.getByTestId('calendar-view-year').click();
   await expect(page.getByTestId('calendar-year-day-2026-03-25')).toBeVisible();
@@ -24,6 +24,6 @@ test('@smoke calendar navigation stays stable across views', async ({ page }) =>
   await expect(page.getByTestId('calendar-week-day-2026-03-25')).toBeVisible();
 
   await page.getByTestId('calendar-view-day').click();
-  await expect(page.getByTestId('calendar-day-add')).toBeVisible();
-  await expect(page.getByTestId('calendar-day-hour-08:00')).toBeVisible();
+  await expect(page.getByTestId('calendar-day-manage-items')).toBeVisible();
+  await expect(page.getByTestId('calendar-day-half-hour-08-00')).toBeVisible();
 });

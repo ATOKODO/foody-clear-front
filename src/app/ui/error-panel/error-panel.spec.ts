@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { UiErrorPanel } from './error-panel';
 
@@ -22,6 +23,19 @@ describe('UiErrorPanel', () => {
     fixture.componentRef.setInput('message', ' Custom message ');
     fixture.detectChanges();
     expect(component.resolvedMessage).toBe('Custom message');
+  });
+
+  it('shows the business response and all validation messages before the HTTP wrapper', () => {
+    fixture.componentRef.setInput('error', new HttpErrorResponse({
+      status: 400, url: '/inventory/4/products',
+      error: { message: ['Insufficient stock', 'Quantity must be positive'] },
+    }));
+    fixture.detectChanges();
+    expect(component.resolvedMessage).toBe('Insufficient stock\nQuantity must be positive');
+
+    fixture.componentRef.setInput('error', new HttpErrorResponse({ status: 0, error: new ProgressEvent('error') }));
+    fixture.detectChanges();
+    expect(component.resolvedMessage).toContain('Http failure response');
   });
 
   it('should summarize error objects, nested details, status and fallback values', () => {

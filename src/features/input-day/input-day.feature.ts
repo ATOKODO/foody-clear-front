@@ -1,6 +1,7 @@
 import { JsonPipe, NgTemplateOutlet, KeyValuePipe } from '@angular/common';
 import {
   Component,
+  DestroyRef,
   OnChanges,
   OnInit,
   SimpleChanges,
@@ -17,6 +18,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { LatestRequest } from '../../utils/latest-request';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -145,6 +147,9 @@ export class InputDayFeature implements OnInit, OnChanges {
   private readonly productSrv = inject(ProductService);
   private readonly inventorySrv = inject(InventoryService);
   private readonly templateSrv = inject(TemplateService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly dayRequest = new LatestRequest(this.destroyRef);
+  private readonly stockRequest = new LatestRequest(this.destroyRef);
 
   readonly displayMode = input<InputDayDisplayMode>('standalone');
   readonly apiBaseUrl = input<string | null>(null);
@@ -162,10 +167,14 @@ export class InputDayFeature implements OnInit, OnChanges {
   baseUrl = '';
   form: FormGroup;
   itemEditorForm: FormGroup;
-  loading = false;
+  private readonly loadingState = signal(false);
+  get loading(): boolean { return this.loadingState(); }
+  set loading(value: boolean) { this.loadingState.set(value); }
   loadingProducts = false;
   loadingInventories = false;
-  loadingInventoryProducts = false;
+  private readonly loadingInventoryProductsState = signal(false);
+  get loadingInventoryProducts(): boolean { return this.loadingInventoryProductsState(); }
+  set loadingInventoryProducts(value: boolean) { this.loadingInventoryProductsState.set(value); }
   loadingTemplates = false;
 
   products: ProductApiModel[] = [];
@@ -197,10 +206,12 @@ export class InputDayFeature implements OnInit, OnChanges {
   templateError: string | null = null;
   templateActionError: string | null = null;
   manualTemplateSelectionId: number | null = null;
-  convertingTemplateItemIds = new Set<number>();
+  private readonly convertingTemplateItemIdsState = signal(new Set<number>());
+  get convertingTemplateItemIds(): Set<number> { return this.convertingTemplateItemIdsState(); }
+  set convertingTemplateItemIds(value: Set<number>) { this.convertingTemplateItemIdsState.set(value); }
 
   private initialized = false;
-  private _inputDayResponse: InputDayResponse | null = null;
+  private readonly inputDayResponseState = signal<InputDayResponse | null>(null);
   private pendingInitialOccurredAt: string | null = null;
   private pendingInitialEditingItemId: number | null = null;
   private readonly emptyProductListItems: ProductListItem[] = [];
@@ -347,11 +358,11 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   get inputDayResponse(): InputDayResponse | null {
-    return this._inputDayResponse;
+    return this.inputDayResponseState();
   }
 
   set inputDayResponse(value: InputDayResponse | null) {
-    this._inputDayResponse = value;
+    this.inputDayResponseState.set(value);
     this.refreshAvailableSlots();
     this.syncManualTemplateSelectionFromResponse();
   }
@@ -502,8 +513,10 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   loadDay(): void {
+    this.dayRequest.cancel();
     const dateLocal = this.requireDate();
     if (!dateLocal) {
+      this.loading = false;
       return;
     }
 
@@ -512,7 +525,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.itemsFormError = null;
     this.itemEditorError = null;
 
-    this.inputDaySrv.getInputDay(dateLocal, timezone).subscribe({
+    this.dayRequest.subscribe(this.inputDaySrv.getInputDay(dateLocal, timezone), {
       next: (response) => {
         this.lastResponse = response;
         this.lastError = null;
@@ -626,7 +639,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.editingSourceDateLocal = sourceDateLocal;
 
     if (!this.hasSelectedInventories && item.inventoryId !== null) {
-      this.onSelectedInventoryChange([item.inventoryId]);
+      this.onSelectedInventoryChange(item.inventoryAllocations?.map((allocation) => allocation.inventoryId) ?? [item.inventoryId]);
     }
 
     this.clearSelectedProducts();
@@ -1104,6 +1117,8 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private handleInitialDateContextChange(): void {
+    this.dayRequest.cancel();
+    this.loading = false;
     this.loadProductsForCurrentContext();
     this.applyInitialDateInput();
     this.syncPendingEditorContextFromInputs();
@@ -1288,6 +1303,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   private refreshSelectedInventoryProducts(): void {
+    this.stockRequest.cancel();
     if (!this.hasSelectedInventories) {
       this.clearSelectedInventoryProducts();
       this.syncSelectionToAvailableProducts();
@@ -1323,11 +1339,11 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.loadingInventoryProducts = true;
     this.inventoryProductsError = null;
 
-    forkJoin(
+    this.stockRequest.subscribe(forkJoin(
       missingInventoryIds.map((inventoryId) =>
         this.inventorySrv.findProducts(inventoryId),
       ),
-    ).subscribe({
+    ), {
       next: (responses) => {
         if (
           !areNumberArraysEqual(

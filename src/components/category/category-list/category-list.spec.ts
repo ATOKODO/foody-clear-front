@@ -17,6 +17,25 @@ describe('CategoryList', () => {
     fixture.detectChanges();
   });
 
+  it('selects and deselects exactly once through the native checkbox', () => {
+    const emitted: unknown[] = [];
+    component.selectedMany.subscribe((items) => emitted.push(items));
+    fixture.componentRef.setInput('categories', [{ id: '1', name: 'Test', warnBeforeDays: null, recentlyExpiredDays: null, minQuantity: null }]);
+    fixture.componentRef.setInput('mode', 'select-multi');
+    fixture.detectChanges();
+    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('mat-checkbox input[type="checkbox"]');
+    expect(checkbox.getAttribute('aria-label')).toBe('Select Test');
+    checkbox.click();
+    fixture.detectChanges();
+    expect(emitted.length).toBe(1);
+    expect(component.isSelected('1')).toBeTrue();
+    checkbox.click();
+    fixture.detectChanges();
+    expect(emitted.length).toBe(2);
+    expect(emitted.at(-1)).toEqual([]);
+    expect(component.isSelected('1')).toBeFalse();
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });

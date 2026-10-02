@@ -177,6 +177,19 @@ export function findNavigationContextByUrl(
 ): { group: AppNavigationGroup; entry: AppNavigationEntry } | null {
   const normalizedUrl = normalizeUrl(url);
 
+  const auxiliaryTitles: Record<string, string> = {
+    '/nutrition-value': 'Nutrition values',
+    '/input-day': 'Day input',
+    '/calendar': 'Calendar',
+  };
+  const auxiliaryTitle = auxiliaryTitles[normalizedUrl];
+  if (auxiliaryTitle) {
+    return {
+      group: { id: 'tools', label: 'Tools', description: 'API tools', entries: [] },
+      entry: { id: normalizedUrl.slice(1), path: normalizedUrl, label: auxiliaryTitle, shortLabel: auxiliaryTitle, description: '' },
+    };
+  }
+
   return APP_NAVIGATION_ENTRIES.find(({ entry }) => entry.path === normalizedUrl) ?? null;
 }
 

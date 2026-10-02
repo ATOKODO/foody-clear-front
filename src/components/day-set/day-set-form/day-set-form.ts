@@ -47,6 +47,7 @@ export interface DaySetFormValue {
 export class DaySetForm implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
+  readonly saving = input(false);
   readonly mode = input<DaySetFormMode>('add');
   readonly daySet = input<Partial<DaySetFormValue> | null>(null);
   readonly showHeading = input(true);
@@ -93,6 +94,7 @@ export class DaySetForm implements OnInit, OnChanges {
   }
 
   onSubmit(): void {
+    if (this.saving()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

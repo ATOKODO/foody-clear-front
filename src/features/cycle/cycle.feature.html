@@ -129,7 +129,7 @@
     </div>
 
     <mat-dialog-content class="app-dialog-content">
-      <app-form-cycle
+      <app-form-cycle [saving]="saving"
         [mode]="formMode"
         [cycle]="formInitialValue"
         [daySets]="daySetListItems"

@@ -9,14 +9,14 @@ test('creates, updates and deletes a cycle', async ({ page, mockApi }) => {
   await gotoRoute(page, '/cycle');
   await expectShellTitle(page, 'Cycles');
 
-  await clickTestId(page, 'cycle-add');
+  await clickTestId(page, 'cycle-add-action');
   const dialog = page.getByTestId('cycle-dialog');
   await expect(dialog).toBeVisible();
 
-  await fillLabeledInput(dialog, 'Titre', createdTitle);
-  await selectLabeledOption(page, dialog, 'Couleur', 'Bleu');
-  await fillLabeledInput(dialog, 'Nombre de jours', '7');
-  await dialog.getByRole('button', { name: 'Valider' }).click();
+  await fillLabeledInput(dialog, 'Title', createdTitle);
+  await selectLabeledOption(page, dialog, 'Color', 'Blue');
+  await fillLabeledInput(dialog, 'Number of days', '7');
+  await dialog.getByRole('button', { name: 'Save' }).click();
 
   await expect.poll(() => mockApi.state.cycles.some((cycle) => cycle.title === createdTitle)).toBe(true);
   const cycleId = mockApi.state.cycles.find((cycle) => cycle.title === createdTitle)?.id;
@@ -27,9 +27,9 @@ test('creates, updates and deletes a cycle', async ({ page, mockApi }) => {
   await clickTestId(page, `cycle-edit-${cycleId}`);
   const editDialog = page.getByTestId('cycle-dialog');
   await expect(editDialog).toBeVisible();
-  await fillLabeledInput(editDialog, 'Titre', updatedTitle);
-  await selectLabeledOption(page, editDialog, 'Couleur', 'Vert');
-  await editDialog.getByRole('button', { name: 'Valider' }).click();
+  await fillLabeledInput(editDialog, 'Title', updatedTitle);
+  await selectLabeledOption(page, editDialog, 'Color', 'Green');
+  await editDialog.getByRole('button', { name: 'Save' }).click();
 
   await expect.poll(() => mockApi.state.cycles.find((cycle) => cycle.id === cycleId)?.title).toBe(updatedTitle);
   await expect(page.getByTestId(`cycle-card-${cycleId}`)).toContainText(updatedTitle);

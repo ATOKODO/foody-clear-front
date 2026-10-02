@@ -216,7 +216,7 @@ describe('Calendar component branches', () => {
     expect(monthEvents).toHaveSize(1);
     expect(itemEvents).toHaveSize(1);
     expect(openDayEvents).toHaveSize(2);
-    expect(convertEvents).toEqual([{ dateLocal: '2026-02-17', templateItemId: 9, inventoryId: 2 }]);
+    expect(convertEvents).toEqual([{ dateLocal: '2026-02-17', templateItemId: 9, inventoryId: 2, inventoryIds: [2] }]);
     expect(revertEvents).toEqual([{ dateLocal: '2026-02-17', itemId: 44 }]);
 
     component.onWeekTimelineBlockClick(
@@ -251,6 +251,18 @@ describe('Calendar component branches', () => {
     component.switchView('day');
     component.loadView();
     expect(component.getViewLabel('year')).toBe('Year');
+  });
+
+  it('preserves the start minute when opening an entry from day or week blocks', () => {
+    component.currentDate = DateTime.fromISO('2026-02-17') as typeof component.currentDate;
+    component.switchView('week');
+    const onHourClick = spyOn(component, 'onHourClick');
+    const block = { ...component.getWeekTimelineBlocks('2026-02-17')[0], startMinute: 8 * 60 + 30 };
+    const event = new Event('click');
+    component.onWeekTimelineBlockClick(component.weekDays.find((day) => day.date === '2026-02-17')!, block, event);
+    expect(onHourClick).toHaveBeenCalledWith(jasmine.objectContaining({ hour: 8, label: '08:30' }), '2026-02-17', 30);
+    component.onDayTimelineBlockClick({ ...block, startMinute: 8 * 60 + 45 }, event);
+    expect(onHourClick).toHaveBeenCalledWith(jasmine.objectContaining({ hour: 8, label: '08:45' }), '2026-02-17', 45);
   });
 
   it('covers calendar input fallback, empty state and private normalization branches', () => {

@@ -70,6 +70,20 @@ describe('TemplateForm', () => {
     expect(component).toBeTruthy();
   });
 
+  it('preserves stored metric and default units through edit and quantity changes', () => {
+    fixture.componentRef.setInput('template', template);
+    fixture.detectChanges();
+    const submitted = jasmine.createSpy('itemSubmitted');
+    component.itemSubmitted.subscribe(submitted);
+    for (const qtyUnit of ['ml', 'l', 'kg', 'mg', null] as const) {
+      component.editItem({ ...template.items[0], productId: 7, qty: 150, qtyUnit });
+      component.updateItemDraft({ qty: 160 });
+      component.onItemSave();
+      expect(component.itemDraft.qtyUnit).toBe(qtyUnit);
+      expect(submitted).toHaveBeenCalledWith(jasmine.objectContaining({ qty: 160, qtyUnit }));
+    }
+  });
+
   it('should render the item editor when a template is editable', () => {
     fixture.componentRef.setInput('products', products);
     fixture.componentRef.setInput('template', template);
@@ -101,7 +115,9 @@ describe('TemplateForm', () => {
     expect(component.getAvailableQtyUnitOptions()).toEqual([
       { value: 'unit', label: 'Product unit (Paquet)' },
       { value: 'portion', label: 'Portion' },
-      { value: 'g', label: 'G (Gramme)' },
+      { value: 'g', label: 'G (Gram)' },
+      { value: 'mg', label: 'MG (Milligram)' },
+      { value: 'kg', label: 'KG (Kilogram)' },
     ]);
   });
 

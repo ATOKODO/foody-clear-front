@@ -314,6 +314,7 @@ export class TemplateFeatureStore {
     editingTemplateId: number | null,
     onSaved: (template: Template) => void,
   ): void {
+    if (this.savingTemplate || this.savingItem) return;
     const title = event.title.trim();
     if (title === '') {
       return;
@@ -342,6 +343,7 @@ export class TemplateFeatureStore {
     editingTemplateId: number | null,
     onDeletedEditedTemplate: () => void,
   ): void {
+    if (this.savingTemplate || this.savingItem) return;
     if (!Number.isInteger(templateId) || templateId < 1) {
       return;
     }
@@ -382,6 +384,7 @@ export class TemplateFeatureStore {
     itemDraft: TemplateItemDraft,
     onSaved: (template: Template) => void,
   ): void {
+    if (this.savingTemplate || this.savingItem) return;
     if (editingTemplateId === null) {
       return;
     }
@@ -414,6 +417,7 @@ export class TemplateFeatureStore {
   }
 
   deleteItem(editingTemplateId: number | null, itemId: number): void {
+    if (this.savingTemplate || this.savingItem) return;
     if (editingTemplateId === null) {
       return;
     }

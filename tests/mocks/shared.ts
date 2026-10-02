@@ -1,5 +1,5 @@
 import type { Request, Route } from '@playwright/test';
-import type { InputDayResponse } from '../src/interfaces/input-day.interface';
+import type { InputDayResponse, InputDayItemSummary, InputDayTemplateItemSummary, InputWeekResponse, InputMonthResponse } from '../../src/interfaces/input-day.interface';
 import { DateTime } from 'luxon';
 import type {
   MockApiState,
@@ -586,7 +586,7 @@ export function buildTemplateResponse(
   };
 }
 
-export function hydrateInputDayItem(state: MockApiState, item: MockInputDayItem): Record<string, unknown> {
+export function hydrateInputDayItem(state: MockApiState, item: MockInputDayItem): InputDayItemSummary {
   const product = getProduct(state, item.productId);
   const slot = getSlot(state, item.slotId);
 
@@ -595,6 +595,7 @@ export function hydrateInputDayItem(state: MockApiState, item: MockInputDayItem)
     productId: item.productId,
     productName: product?.name ?? `Produit #${item.productId}`,
     inventoryId: item.inventoryId,
+    inventoryAllocations: item.inventoryAllocations,
     qty: item.qty,
     qtyUnit: item.qtyUnit,
     qtyNormalized: item.qtyNormalized,
@@ -612,7 +613,7 @@ export function hydrateInputDayTemplateItem(
   state: MockApiState,
   item: MockTemplateItem,
   dateLocal: string,
-): Record<string, unknown> {
+): InputDayTemplateItemSummary {
   const product = getProduct(state, item.productId);
   const qtyNormalized = product ? normalizeProductQuantity(product, item.qty, item.qtyUnit) : 0;
   const conversion =
@@ -638,7 +639,7 @@ export function hydrateInputDayTemplateItem(
 
 function resolveNutritionTargets(
   daySet: MockDaySet | null,
-  activeAssignment: MockCycleAssignment | null,
+  activeAssignment: ReturnType<typeof getActiveAssignmentForDate>,
 ): Record<string, number> | null {
   if (daySet) {
     return buildDaySetNutritionRecord(daySet);
@@ -651,7 +652,7 @@ function resolveNutritionTargets(
 
 function resolveTargetSource(
   daySet: MockDaySet | null,
-  activeAssignment: MockCycleAssignment | null,
+  activeAssignment: ReturnType<typeof getActiveAssignmentForDate>,
 ): 'daySet' | 'cycle' | 'none' {
   if (daySet) return 'daySet';
   if (activeAssignment) return 'cycle';
@@ -672,7 +673,7 @@ function resolveExpenseAmount(
   return round(quantity * product.price);
 }
 
-export function buildInputDayResponse(state: MockApiState, dateLocal: string): Record<string, unknown> {
+export function buildInputDayResponse(state: MockApiState, dateLocal: string): InputDayResponse {
   const activeAssignment = getActiveAssignmentForDate(state, dateLocal);
   const daySet = getDaySetForDate(state, dateLocal);
   const templateResolution = getTemplateForDate(state, dateLocal);
@@ -799,7 +800,7 @@ export function buildInputDayResponse(state: MockApiState, dateLocal: string): R
   };
 }
 
-export function buildWeekResponse(state: MockApiState, startDateLocal: string): Record<string, unknown> {
+export function buildWeekResponse(state: MockApiState, startDateLocal: string): InputWeekResponse {
   const days = rangeDays(startDateLocal, 7).map((dateLocal) => buildInputDayResponse(state, dateLocal));
   return {
     startDateLocal,
@@ -809,7 +810,7 @@ export function buildWeekResponse(state: MockApiState, startDateLocal: string): 
   };
 }
 
-export function buildMonthResponse(state: MockApiState, startDateLocal: string): Record<string, unknown> {
+export function buildMonthResponse(state: MockApiState, startDateLocal: string): InputMonthResponse {
   const days = rangeDays(startDateLocal, 42).map((dateLocal) => buildInputDayResponse(state, dateLocal));
   return {
     startDateLocal,
@@ -826,7 +827,7 @@ export function buildStatisticsTimeline(
   timezone: string,
 ): Record<string, unknown> {
   const days = listBetweenDates(fromDateLocal, toDateLocal).map((dateLocal) => {
-    const response = buildInputDayResponse(state, dateLocal) as InputDayResponse;
+    const response = buildInputDayResponse(state, dateLocal);
     const dayItems = state.inputDayItems.filter((item) => item.dateLocal === dateLocal);
     const events = dayItems.map((item) => {
       const product = getProduct(state, item.productId);
@@ -1052,7 +1053,7 @@ export function removeArrayItem<T extends { id: number }>(values: T[], id: numbe
 }
 
 function macrosForSlotItems(
-  items: Array<Record<string, unknown>>,
+  items: Pick<InputDayItemSummary, 'slotId' | 'slotKey' | 'nutritionValue'>[],
   slotId: number | null,
   slotKey: string | null = null,
 ): Record<string, number> {
@@ -1072,7 +1073,7 @@ function macrosForSlotItems(
 }
 
 function macrosForTemplateItems(
-  items: Array<Record<string, unknown>>,
+  items: Pick<InputDayTemplateItemSummary, 'slotId' | 'status' | 'nutritionValue'>[],
   slotId: number | null,
 ): Record<string, number> {
   return sumNutrition(

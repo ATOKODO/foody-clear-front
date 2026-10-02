@@ -89,6 +89,7 @@ export interface CalendarPlannedTemplateItem {
   stockAvailable: boolean;
   stockLabel: string;
   inventoryId: number | null;
+  inventoryIds?: number[];
 }
 
 export interface CalendarMonthAlertBadge {

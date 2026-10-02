@@ -1,3 +1,4 @@
+import { UiModal } from '../../app/ui/modal/modal';
 
 import { Component, OnChanges, OnInit, SimpleChanges, input, output, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -25,7 +26,7 @@ import type { PortionUnit, QuantityUnit } from '../../services/product-service';
 
 @Component({
   selector: 'app-generic-product',
-  imports: [
+  imports: [UiModal,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -105,6 +106,7 @@ export class GenericProduct implements OnInit, OnChanges {
   }
 
   onAddRequested(): void {
+    if (this.saving()) return;
     this.formMode = 'add';
     this.editingGenericProductId = null;
     this.formInitialValue = null;
@@ -116,6 +118,7 @@ export class GenericProduct implements OnInit, OnChanges {
   }
 
   onEditRequested(item: GenericProductListItem): void {
+    if (this.saving()) return;
     const genericProductId = Number(item.id);
     if (!Number.isInteger(genericProductId) || genericProductId < 1) {
       return;
@@ -135,6 +138,7 @@ export class GenericProduct implements OnInit, OnChanges {
   }
 
   onDeleteRequested(item: GenericProductListItem): void {
+    if (this.saving()) return;
     const genericProductId = Number(item.id);
     if (!Number.isInteger(genericProductId) || genericProductId < 1) {
       return;
@@ -165,6 +169,7 @@ export class GenericProduct implements OnInit, OnChanges {
     mode: GenericProductFormMode;
     value: GenericProductFormValue;
   }): void {
+    if (this.saving()) return;
     this.saving.set(true);
 
     if (event.mode === 'edit' && this.editingGenericProductId !== null) {
@@ -211,6 +216,7 @@ export class GenericProduct implements OnInit, OnChanges {
   }
 
   onCancelForm(): void {
+    if (this.saving()) return;
     this.formVisible = false;
     this.formMode = 'add';
     this.editingGenericProductId = null;

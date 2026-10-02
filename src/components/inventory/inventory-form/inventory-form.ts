@@ -35,6 +35,7 @@ export class InventoryForm implements OnInit, OnChanges {
 
   readonly mode = input<InventoryFormMode>('add');
   readonly inventory = input<Partial<InventoryFormValue> | null>(null);
+  readonly saving = input(false);
 
   readonly submitted = output<{
     mode: InventoryFormMode;
@@ -65,6 +66,7 @@ export class InventoryForm implements OnInit, OnChanges {
   }
 
   onSubmit(): void {
+    if (this.saving()) return;
     if (this.form.controls.name.invalid) {
       this.form.controls.name.markAsTouched();
       return;

@@ -1,3 +1,5 @@
+import type { QtyUnitOption } from '../../interfaces/quantity.interface';
+import { buildProductQtyUnitOptions, getNormalizedQuantityUnit, normalizeQuantityInputUnit } from '../../utils/product-quantity';
 import type { InventoryFormValue } from '../../components/inventory/inventory-form/inventory-form';
 import type { InventoryListItem } from '../../components/inventory/inventory-list/inventory-list';
 import type { ProductListItem } from '../../components/product/product-list/product-list';
@@ -12,24 +14,6 @@ import type {
 } from '../../interfaces/inventory.interface';
 import type { Product as ProductApiModel } from '../../services/product-service';
 
-const INVENTORY_QTY_UNITS: readonly ProductQuantityInputUnit[] = [
-  'mg',
-  'g',
-  'kg',
-  'ml',
-  'l',
-  'unit',
-  'pack',
-  'tranche',
-  'piece',
-  'part',
-  'bouteille',
-  'portion',
-];
-
-const INVENTORY_QTY_UNIT_SET = new Set<ProductQuantityInputUnit>(
-  INVENTORY_QTY_UNITS,
-);
 
 export const INVENTORY_PURCHASE_ACCOUNTING_MODE_OPTIONS: readonly {
   value: PurchaseAccountingMode;
@@ -64,6 +48,7 @@ export type InventoryManagedProductRow = {
   currentQty: number;
   currentQtyUnit: ProductQuantityInputUnit;
   currentNormalizedQty: number | null;
+  currentNormalizedUnit: string | null;
   currentQtyDisplay: string;
 } & InventorySelectedProductRow;
 
@@ -77,10 +62,7 @@ interface InventoryProductMetaSource {
   price?: number | null;
 }
 
-export interface InventoryQtyUnitOption {
-  value: ProductQuantityInputUnit;
-  label: string;
-}
+export type InventoryQtyUnitOption = QtyUnitOption;
 
 export function buildInventoryListItems(
   inventories: InventoryApiModel[],
@@ -134,7 +116,7 @@ export function syncInventorySelectedProductRows(
     const productId = Number(item.id);
     const existingRow = rowsByProductId.get(productId);
     const meta = buildInventoryProductMeta(item);
-    const qtyUnit = ensureInventoryRowQtyUnit(existingRow?.qtyUnit, meta);
+    const qtyUnit = ensureInventoryRowQtyUnit(existingRow?.qtyUnit);
 
     if (existingRow) {
       return hydrateSelectedProductRow({
@@ -154,7 +136,7 @@ export function syncInventorySelectedProductRows(
       productName: item.name,
       qty: null,
       qtyUnit,
-      qtyUnitOptions: getInventoryQtyUnitOptions(meta),
+      qtyUnitOptions: buildProductQtyUnitOptions(meta, qtyUnit),
       qtyUnitHelpText: getInventoryQtyUnitHelpText(meta),
       purchaseAccountingMode: resolveDefaultPurchaseAccountingMode(meta),
       ...meta,
@@ -178,7 +160,7 @@ export function filterInventorySelectionRows(
       }
 
       const meta = buildInventoryProductMeta(item);
-      const qtyUnit = ensureInventoryRowQtyUnit(row.qtyUnit, meta);
+      const qtyUnit = ensureInventoryRowQtyUnit(row.qtyUnit);
       return hydrateSelectedProductRow({
         row,
         item,
@@ -294,7 +276,7 @@ export function toManagedInventoryProductRows(
       productName: resolveInventoryProductName(item),
       qty: currentQty,
       qtyUnit: 'unit',
-      qtyUnitOptions: getInventoryQtyUnitOptions(meta),
+      qtyUnitOptions: buildProductQtyUnitOptions(meta, 'unit'),
       qtyUnitHelpText: getInventoryQtyUnitHelpText(meta),
       purchaseAccountingMode: 'excluded',
       currentQty,
@@ -303,6 +285,7 @@ export function toManagedInventoryProductRows(
         ? item.qtyOnHandNormalized
         : null,
       currentQtyDisplay,
+      currentNormalizedUnit: getNormalizedQuantityUnit(meta.quantityUnit),
       ...meta,
     };
   });
@@ -317,33 +300,7 @@ export function removeInventoryProductRow<
 export function getInventoryQtyUnitOptions(
   row: InventoryRowProductMeta,
 ): InventoryQtyUnitOption[] {
-  const options: InventoryQtyUnitOption[] = [];
-  const seen = new Set<ProductQuantityInputUnit>();
-
-  const pushOption = (
-    value: ProductQuantityInputUnit | null,
-    label: string,
-  ): void => {
-    if (value === null || seen.has(value)) {
-      return;
-    }
-
-    seen.add(value);
-    options.push({ value, label });
-  };
-
-  const unitType = row.unitType?.trim();
-  pushOption('unit', unitType ? `Product unit (${unitType})` : 'Product unit');
-
-  if (row.quantityUnit) {
-    pushOption(row.quantityUnit, row.quantityUnit.toUpperCase());
-  }
-
-  if (row.portionUnit) {
-    pushOption(row.portionUnit, toTitleCase(row.portionUnit));
-  }
-
-  return options;
+  return buildProductQtyUnitOptions(row);
 }
 
 export function getInventoryQtyUnitHelpText(
@@ -396,7 +353,7 @@ function hydrateSelectedProductRow(params: {
     portionQuantityNormalized: params.meta.portionQuantityNormalized,
     price: params.meta.price,
     qtyUnit: params.qtyUnit,
-    qtyUnitOptions: getInventoryQtyUnitOptions(params.meta),
+    qtyUnitOptions: buildProductQtyUnitOptions(params.meta, params.qtyUnit),
     qtyUnitHelpText: getInventoryQtyUnitHelpText(params.meta),
     purchaseAccountingMode: params.purchaseAccountingMode,
   };
@@ -442,39 +399,14 @@ function resolveDefaultPurchaseAccountingMode(
 
 function ensureInventoryRowQtyUnit(
   value: ProductQuantityInputUnit | null | undefined,
-  meta: InventoryRowProductMeta,
 ): ProductQuantityInputUnit {
-  const normalized = normalizeInventoryQtyUnit(value);
-  if (normalized === 'unit') {
-    return normalized;
-  }
-
-  if (
-    normalized &&
-    getInventoryQtyUnitOptions(meta).some((option) => option.value === normalized)
-  ) {
-    return normalized;
-  }
-
-  return 'unit';
+  return normalizeQuantityInputUnit(value) ?? 'unit';
 }
 
 function normalizeInventoryQtyUnit(
   value: unknown,
 ): ProductQuantityInputUnit | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  const candidate = value.trim().toLowerCase();
-  if (
-    candidate === '' ||
-    !INVENTORY_QTY_UNIT_SET.has(candidate as ProductQuantityInputUnit)
-  ) {
-    return null;
-  }
-
-  return candidate as ProductQuantityInputUnit;
+  return normalizeQuantityInputUnit(value);
 }
 
 function resolveInventoryProductCount(inventory: InventoryApiModel): number {
@@ -583,9 +515,6 @@ function isFiniteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
-function toTitleCase(value: string): string {
-  return value.length > 0 ? value[0].toUpperCase() + value.slice(1) : value;
-}
 
 function formatDecimal(value: number): string {
   if (!Number.isFinite(value)) {

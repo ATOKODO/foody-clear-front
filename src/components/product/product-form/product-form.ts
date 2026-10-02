@@ -215,6 +215,9 @@ export class ProductForm implements OnInit, OnChanges {
 
   onSubmit(): void {
     if (this.saving()) return;
+    if (this.form.controls.name.value.trim() === '') {
+      this.form.controls.name.setErrors({ required: true });
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -370,7 +373,7 @@ export class ProductForm implements OnInit, OnChanges {
         memo: product.memo ?? defaults.memo ?? '',
       });
       this.nutritionValues =
-        product.nutritionValues && product.nutritionValues.length > 0
+        product.nutritionValues
           ? this.cloneNutritionValues(product.nutritionValues)
           : this.getDefaultNutritionValues();
       return;

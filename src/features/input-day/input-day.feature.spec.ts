@@ -244,6 +244,48 @@ describe('InputDayFeature', () => {
     expect(component).toBeTruthy();
   });
 
+  it('cancels earlier day reads when navigating A to B to A', () => {
+    const first = new Subject<InputDayResponse>();
+    const second = new Subject<InputDayResponse>();
+    const latest = new Subject<InputDayResponse>();
+    inputDayServiceMock.getInputDay.and.returnValues(first, second, latest);
+    component.form.patchValue({ dateLocal: '2026-02-16', timezone: 'UTC' });
+    component.loadDay();
+    component.form.patchValue({ dateLocal: '2026-02-17' });
+    component.loadDay();
+    component.form.patchValue({ dateLocal: '2026-02-16' });
+    component.loadDay();
+    expect(first.observed).toBeFalse();
+    expect(second.observed).toBeFalse();
+    latest.next(dayResponse);
+    first.error(new Error('Old request'));
+    second.next({ ...dayResponse, dateLocal: '2026-02-17' });
+    expect(component.inputDayResponse).toBe(dayResponse);
+    expect(component.lastError).toBeNull();
+    expect(component.loading).toBeFalse();
+    fixture.destroy();
+    expect(latest.observed).toBeFalse();
+  });
+
+  it('cancels stock reads even when the same inventory is selected again', () => {
+    const first = new Subject<unknown[]>();
+    const second = new Subject<unknown[]>();
+    const latest = new Subject<unknown[]>();
+    inventoryServiceMock.findProducts.and.returnValues(first, second, latest);
+    component.onSelectedInventoryChange([4]);
+    component.onSelectedInventoryChange([5]);
+    component.onSelectedInventoryChange([4]);
+    expect(first.observed).toBeFalse();
+    expect(second.observed).toBeFalse();
+    latest.next([{ id: 41, inventoryId: 4, productId: 1, qtyOnHandInUnits: 7, qtyOnHandNormalized: 7 }]);
+    latest.complete();
+    first.next([{ id: 41, inventoryId: 4, productId: 1, qtyOnHandInUnits: 1, qtyOnHandNormalized: 1 }]);
+    second.error(new Error('Old inventory'));
+    expect(component.selectedInventoryProducts[0].qtyOnHandNormalized).toBe(7);
+    expect(component.inventoryProductsError).toBeNull();
+    expect(component.loadingInventoryProducts).toBeFalse();
+  });
+
   it('should auto-load day in embedded mode when initialDateLocal is provided', () => {
     fixture.componentRef.setInput('displayMode', 'embedded');
     fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
@@ -494,7 +536,7 @@ describe('InputDayFeature', () => {
       items: [
         {
           productId: 1,
-          inventoryId: 4,
+          inventoryIds: [4],
           qty: 120,
           occurredAt: '2026-02-17T08:00:00Z',
           qtyUnit: 'g',
@@ -502,7 +544,7 @@ describe('InputDayFeature', () => {
         },
         {
           productId: 2,
-          inventoryId: 4,
+          inventoryIds: [4],
           qty: 80,
           occurredAt: '2026-02-17T08:00:00Z',
           slotId: 11,
@@ -538,7 +580,7 @@ describe('InputDayFeature', () => {
       items: [
         {
           productId: 1,
-          inventoryId: 4,
+          inventoryIds: [4],
           qty: 120,
           qtyUnit: 'g',
           slotKey: 'snack',
@@ -568,7 +610,7 @@ describe('InputDayFeature', () => {
 
     expect(inputDayServiceMock.createItem).toHaveBeenCalledWith('2026-02-16', {
       productId: 1,
-      inventoryId: 4,
+      inventoryIds: [4],
       qty: 150,
       occurredAt: '2026-02-16T08:00:00Z',
       qtyUnit: 'g',
@@ -631,7 +673,7 @@ describe('InputDayFeature', () => {
       {
         dateLocal: '2026-02-17',
         productId: 2,
-        inventoryId: 4,
+        inventoryIds: [4],
         qty: 200,
         occurredAt: '2026-02-17T09:30:00Z',
         qtyUnit: 'g',

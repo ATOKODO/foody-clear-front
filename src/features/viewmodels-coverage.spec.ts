@@ -58,19 +58,20 @@ describe('shopping and template viewmodels', () => {
     expect(resolveLinkedProduct([], 8, null)).toBeNull();
     expect(buildQtyUnitOptions(null)).toEqual([
       { value: 'unit', label: 'Product unit' },
-      { value: 'g', label: 'G (Gram)' },
     ]);
     expect(buildQtyUnitOptions(product)).toEqual([
       { value: 'unit', label: 'Product unit (Paquet)' },
       { value: 'portion', label: 'Portion' },
       { value: 'g', label: 'G (Gram)' },
+      { value: 'mg', label: 'MG (Milligram)' },
+      { value: 'kg', label: 'KG (Kilogram)' },
     ]);
     expect(normalizeQtyUnit(' G ')).toBe('g');
     expect(normalizeQtyUnit(null)).toBeNull();
     expect(normalizeQtyUnit('invalid')).toBeNull();
     expect(normalizeQtyUnitSelection('g', [{ value: 'g', label: 'G' }])).toBe('g');
-    expect(normalizeQtyUnitSelection('kg', [{ value: 'g', label: 'G' }])).toBe('g');
-    expect(normalizeQtyUnitSelection(null, [])).toBeNull();
+    expect(normalizeQtyUnitSelection('kg', [{ value: 'g', label: 'G' }])).toBe('kg');
+    expect(normalizeQtyUnitSelection(null, [])).toBe('unit');
 
     const listA = { id: 1, name: 'A', items: [] } as ShoppingList;
     const listB = { id: 2, name: 'B', items: [] } as ShoppingList;

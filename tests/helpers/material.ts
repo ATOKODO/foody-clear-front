@@ -1,12 +1,16 @@
-import type { Locator, Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 export async function selectMatOption(
   page: Page,
   trigger: Locator,
   optionText: string,
 ): Promise<void> {
+  const multiple = await trigger.getAttribute('multiple') !== null;
   await trigger.click();
   await page.getByRole('option', { name: optionText, exact: true }).click();
+  if (multiple) await page.keyboard.press('Escape');
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByRole('listbox')).toBeHidden();
 }
 
 export async function selectMatOptionByLabel(
@@ -15,7 +19,7 @@ export async function selectMatOptionByLabel(
   label: string,
   optionText: string,
 ): Promise<void> {
-  const field = scope.getByLabel(label, { exact: true });
+  const field = scope.getByRole('combobox', { name: label, exact: true });
   await selectMatOption(page, field, optionText);
 }
 

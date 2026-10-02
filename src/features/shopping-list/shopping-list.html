@@ -89,7 +89,7 @@
                     {{ list.items.length === 0 ? 'Empty' : 'In progress' }}
                   </span>
                 </button>
-                <div class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                <div class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                   <button
                     mat-stroked-button
                     type="button"
@@ -164,7 +164,7 @@
                   <span class="shopping-list-list-card__meta">{{ template.items.length }} produit(s)</span>
                   <span class="shopping-list-list-card__status shopping-list-list-card__status--template">Template</span>
                 </button>
-                <div class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                <div class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                   <button
                     mat-stroked-button
                     type="button"
@@ -236,7 +236,7 @@
 
   @if (store.isListEditorOpen) {
     <div class="app-modal-shell shopping-list-modal-shell">
-      <mat-card class="app-modal-card shopping-list-modal-card" role="dialog" aria-modal="true" aria-label="Editer une liste de course">
+      <mat-card class="app-modal-card shopping-list-modal-card" appModal [appModalDisableClose]="store.saving" (appModalClose)="store.closeListEditor()" aria-modal="true" aria-label="Editer une liste de course">
         <div class="shopping-list-modal-card__header">
           <div>
             <p class="shopping-list-panel__eyebrow">Courses</p>
@@ -477,7 +477,7 @@
 
   @if (store.isTemplateEditorOpen) {
     <div class="app-modal-shell shopping-list-modal-shell">
-      <mat-card class="app-modal-card shopping-list-modal-card" role="dialog" aria-modal="true" aria-label="Edit shopping template">
+      <mat-card class="app-modal-card shopping-list-modal-card" appModal [appModalDisableClose]="store.saving" (appModalClose)="store.closeTemplateEditor()" aria-modal="true" aria-label="Edit shopping template">
         <div class="shopping-list-modal-card__header">
           <div>
             <p class="shopping-list-panel__eyebrow">Template</p>
@@ -546,7 +546,7 @@
 
   @if (store.isProductPickerOpen) {
     <div class="app-modal-shell shopping-list-modal-shell shopping-list-modal-shell--picker">
-      <mat-card class="app-modal-card shopping-list-modal-card shopping-list-modal-card--picker" role="dialog" aria-modal="true" aria-label="Select a product">
+      <mat-card class="app-modal-card shopping-list-modal-card shopping-list-modal-card--picker" appModal [appModalDisableClose]="store.saving" (appModalClose)="store.closeProductPicker()" aria-modal="true" aria-label="Select a product">
         <div class="shopping-list-modal-card__header">
           <div>
             <p class="shopping-list-panel__eyebrow">Product selection</p>

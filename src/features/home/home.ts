@@ -1,5 +1,7 @@
+import { getTemplateInventoryIds } from '../../utils/template-stock';
 import { NgClass } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, NgZone, OnInit, inject, signal } from '@angular/core';
+import { LatestRequest } from '../../utils/latest-request';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
 import { DateTime } from 'luxon';
@@ -42,7 +44,6 @@ import {
   getPurchaseEventLabel as getPurchaseEventLabelView,
   getRecentPurchaseEvents,
   getTargetSourceLabel,
-  getTemplateInventoryId,
   getTemplateSlotLabel as getTemplateSlotLabelView,
   getTemplateStockLabel as getTemplateStockLabelView,
   getTodayTimelineDay,
@@ -61,6 +62,10 @@ import {
   ],
   templateUrl: './home.html',
   styleUrl: './home.scss',
+  host: {
+    '(window:focus)': 'refreshDashboard()',
+    '(document:visibilitychange)': 'onVisibilityChange()',
+  },
 })
 export class Home implements OnInit {
   private readonly externalMealEntryDialog = inject(ExternalMealEntryDialogService);
@@ -68,15 +73,20 @@ export class Home implements OnInit {
   private readonly statisticService = inject(StatisticService);
   private readonly slotService = inject(SlotService);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
-  private readonly now = DateTime.local();
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly zone = inject(NgZone);
+  private readonly dayRequest = new LatestRequest(this.destroyRef);
+  private readonly timelineRequest = new LatestRequest(this.destroyRef);
+  private readonly localDay = signal(DateTime.local());
+  private midnightTimer: ReturnType<typeof setTimeout> | null = null;
+  private deferredTimer: ReturnType<typeof setTimeout> | null = null;
 
-  readonly todayDateLocal = this.now.toFormat('yyyy-LL-dd');
-  readonly todayLabel = this.now.setLocale('en').toFormat('cccc d LLLL');
-  readonly timezone = this.now.zoneName || 'UTC';
-  readonly planningTodayQueryParams = {
-    view: 'day',
-    date: this.todayDateLocal,
-  };
+  get todayDateLocal(): string { return this.localDay().toFormat('yyyy-LL-dd'); }
+  get todayLabel(): string { return this.localDay().setLocale('en').toFormat('cccc d LLLL'); }
+  get timezone(): string { return this.localDay().zoneName || 'UTC'; }
+  get planningTodayQueryParams(): { view: string; date: string } {
+    return { view: 'day', date: this.todayDateLocal };
+  }
 
   baseUrl = '';
   loadingDay = false;
@@ -90,15 +100,43 @@ export class Home implements OnInit {
   private slotCatalog: Slot[] = [];
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => {
+      if (this.midnightTimer !== null) clearTimeout(this.midnightTimer);
+      if (this.deferredTimer !== null) clearTimeout(this.deferredTimer);
+    });
     this.configureApiBaseUrl();
+    this.refreshLocalDay();
     this.loadTodayPlanning();
     this.scheduleDeferredDashboardData();
   }
 
   refreshDashboard(): void {
+    this.refreshLocalDay();
     this.loadTodayPlanning();
     this.loadTodayStats();
     this.ensureSlotCatalogLoaded();
+  }
+
+  onVisibilityChange(): void {
+    if (document.visibilityState === 'visible') this.refreshDashboard();
+  }
+
+  private refreshLocalDay(): void {
+    const now = DateTime.local();
+    if (now.toISODate() !== this.localDay().toISODate() || now.zoneName !== this.timezone) {
+      this.dayRequest.cancel();
+      this.timelineRequest.cancel();
+      this.localDay.set(now);
+      this.inputDayResponse = null;
+      this.timelineResponse = null;
+      this.loadingDay = false;
+      this.loadingTimeline = false;
+    }
+    if (this.midnightTimer !== null) clearTimeout(this.midnightTimer);
+    const delay = Math.max(1, now.plus({ days: 1 }).startOf('day').diff(now).as('milliseconds'));
+    this.zone.runOutsideAngular(() => {
+      this.midnightTimer = setTimeout(() => this.zone.run(() => this.refreshDashboard()), delay);
+    });
   }
 
   onInputDayItemsChanged(): void {
@@ -106,6 +144,7 @@ export class Home implements OnInit {
   }
 
   openExternalMealEntry(): void {
+    this.refreshLocalDay();
     this.externalMealEntryDialog
       .openCreate({
         apiBaseUrl: this.baseUrl,
@@ -228,23 +267,26 @@ export class Home implements OnInit {
   }
 
   convertTemplateItem(item: InputDayTemplateItemSummary): void {
-    const inventoryId = getTemplateInventoryId(item);
-    if (inventoryId === null || this.loadingDay) {
+    const inventoryIds = getTemplateInventoryIds(item);
+    if (inventoryIds.length === 0 || this.loadingDay) {
       return;
     }
 
     this.loadingDay = true;
     this.dayError = null;
+    const dateLocal = this.todayDateLocal;
     this.inputDayService
-      .convertTemplateItem(this.todayDateLocal, item.id, [inventoryId])
+      .convertTemplateItem(this.todayDateLocal, item.id, inventoryIds)
       .subscribe({
         next: (response) => {
+          if (dateLocal !== this.todayDateLocal) return;
           this.inputDayResponse = response;
           this.loadingDay = false;
           this.loadTodayStats();
           this.detectChanges();
         },
         error: (error) => {
+          if (dateLocal !== this.todayDateLocal) return;
           this.dayError = error;
           this.loadingDay = false;
           this.detectChanges();
@@ -260,12 +302,14 @@ export class Home implements OnInit {
 
     this.loadingDay = true;
     this.dayError = null;
+    const dateLocal = this.todayDateLocal;
     this.inputDayService.removeItem(this.todayDateLocal, itemId).subscribe({
       next: () => {
         this.loadTodayPlanning();
         this.loadTodayStats();
       },
       error: (error) => {
+        if (dateLocal !== this.todayDateLocal) return;
         this.dayError = error;
         this.loadingDay = false;
         this.detectChanges();
@@ -297,7 +341,7 @@ export class Home implements OnInit {
   private loadTodayPlanning(): void {
     this.loadingDay = true;
     this.dayError = null;
-    this.inputDayService.getInputDay(this.todayDateLocal, this.timezone).subscribe({
+    this.dayRequest.subscribe(this.inputDayService.getInputDay(this.todayDateLocal, this.timezone), {
       next: (response) => {
         this.inputDayResponse = response;
         this.loadingDay = false;
@@ -315,9 +359,8 @@ export class Home implements OnInit {
   private loadTodayStats(): void {
     this.loadingTimeline = true;
     this.timelineError = null;
-    this.statisticService
-      .getTimeline(this.todayDateLocal, this.todayDateLocal, this.timezone)
-      .subscribe({
+    this.timelineRequest.subscribe(
+      this.statisticService.getTimeline(this.todayDateLocal, this.todayDateLocal, this.timezone), {
         next: (response) => {
           this.timelineResponse = response;
           this.loadingTimeline = false;
@@ -346,10 +389,12 @@ export class Home implements OnInit {
   }
 
   private runAfterFirstPaint(task: () => void): void {
-    globalThis.setTimeout(task, 0);
+    this.deferredTimer = globalThis.setTimeout(() => {
+      if (!this.destroyRef.destroyed) task();
+    }, 0);
   }
 
   private detectChanges(): void {
-    this.changeDetectorRef.detectChanges();
+    if (!this.destroyRef.destroyed) this.changeDetectorRef.detectChanges();
   }
 }

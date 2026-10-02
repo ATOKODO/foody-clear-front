@@ -153,10 +153,9 @@ describe('template component branches', () => {
     expect(component.sortedSlots).toEqual(slots);
     expect(component.getAvailableQtyUnitOptions()).toEqual([
       { value: 'unit', label: 'Product unit' },
-      { value: 'g', label: 'G (Gramme)' },
     ]);
     component.updateItemDraft({ productId: 1 });
-    expect(component.getAvailableQtyUnitOptions()).toHaveSize(3);
+    expect(component.getAvailableQtyUnitOptions()).toHaveSize(5);
     component.updateItemDraft({ itemType: 'dish' });
     expect(component.getAvailableQtyUnitOptions()).toEqual([
       { value: 'kg', label: 'kg' },
@@ -214,22 +213,9 @@ describe('template component branches', () => {
     expect(component.formatNutritionAmount(2.345)).toBe('2,35');
 
     const internals = component as unknown as {
-      normalizePortionQtyUnit(value: unknown): unknown;
-      normalizeQtyUnitSelection(
-        value: unknown,
-        options: { value: string; label: string }[],
-      ): unknown;
-      toTitleCase(value: string): string;
       hasSelectedSource(): boolean;
       resolveItemType(item: Partial<TemplateItem>): 'product' | 'dish' | 'meal';
     };
-    expect(internals.normalizePortionQtyUnit(null)).toBeNull();
-    expect(internals.normalizePortionQtyUnit('portion')).toBe('portion');
-    expect(internals.normalizePortionQtyUnit('invalid')).toBeNull();
-    expect(internals.normalizeQtyUnitSelection('g', [{ value: 'g', label: 'g' }])).toBe('g');
-    expect(internals.normalizeQtyUnitSelection(null, [])).toBeNull();
-    expect(internals.toTitleCase('')).toBe('');
-    expect(internals.toTitleCase('pOrTiOn')).toBe('Portion');
     expect(internals.hasSelectedSource()).toBeFalse();
     component.itemDraft = { ...component.itemDraft, itemType: 'dish', dishId: 3 };
     expect(internals.hasSelectedSource()).toBeTrue();

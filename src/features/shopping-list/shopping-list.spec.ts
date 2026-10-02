@@ -119,7 +119,7 @@ describe('ShoppingList', () => {
     const options = component.store.getItemQtyUnitOptions({
       id: 101,
       productId: 1,
-      product: { id: 1, name: 'Poulet', unitType: 'Paquet', portionUnit: 'portion' },
+      product: { id: 1, name: 'Poulet', unitType: 'Paquet', quantityUnit: 'g', portionUnit: 'portion' },
       qty: 2,
       qtyUnit: 'unit',
       checked: false,
@@ -129,6 +129,8 @@ describe('ShoppingList', () => {
       { value: 'unit', label: 'Product unit (Paquet)' },
       { value: 'portion', label: 'Portion' },
       { value: 'g', label: 'G (Gram)' },
+      { value: 'mg', label: 'MG (Milligram)' },
+      { value: 'kg', label: 'KG (Kilogram)' },
     ]);
   });
 

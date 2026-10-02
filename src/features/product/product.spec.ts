@@ -80,6 +80,16 @@ describe('Product', () => {
     expect(component).toBeTruthy();
   });
 
+  it('sends explicit nutrition deletions when the last rows are removed from a product', () => {
+    component.products = [buildProduct({ nutritionValues: [
+      { id: 5, nutritionKey: 'PROTEIN', amount: 10, unit: 'G', reference: 'PER_100G' },
+      { id: 6, nutritionKey: 'SALT', amount: 1, unit: 'G', reference: 'PER_100G' },
+    ] })];
+    component.onEditRequested(component.productListItems()[0]);
+    component.onFormSubmitted({ mode: 'edit', value: { ...component.formInitialValue as ProductFormValue, nutritionValues: [] } });
+    expect(productServiceMock.update).toHaveBeenCalledWith(1, jasmine.objectContaining({ nutritionValuesUpdated: [], nutritionValueIdsToRemove: [5, 6] }));
+  });
+
   it('should render the toggle hub and show product by default', () => {
     const toggleElements = fixture.nativeElement.querySelectorAll(
       'mat-button-toggle',
