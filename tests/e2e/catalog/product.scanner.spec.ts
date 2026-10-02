@@ -2,17 +2,27 @@ import { expect, test } from '../../fixtures/test';
 import { gotoRoute } from '../../helpers/navigation';
 import { selectMatOptionByLabel } from '../../helpers/material';
 
+const foodFactsResponse = {
+  status: 1,
+  product: {
+    product_name: 'Nutella', brands: 'Ferrero', quantity: '400 g',
+    product_quantity: 400, product_quantity_unit: 'g', ingredients_text_fr: 'Sucre, noisettes, lait',
+    allergens_tags: ['en:milk', 'en:nuts'], nutrition_grades: 'e',
+    nutriments: { proteins_100g: 6.3 },
+  },
+};
+
 const product = {
   barcode: '3017624010701', name: 'Nutella', brands: 'Ferrero', quantity: '400 g',
   quantityPerUnit: 400, quantityUnit: 'g', ingredients: 'Sucre, noisettes, lait',
   allergens: ['Lait', 'Fruits à coque'], nutriScore: 'E', imageUrl: null,
-  sourceUrl: 'https://world.openfoodfacts.org/product/3017624010701',
+  sourceUrl: 'https://world.openfoodfacts.net/product/3017624010701',
   nutritionValues: [{ nutritionKey: 'PROTEIN', amount: 6.3, unit: 'G', reference: 'PER_100G' }],
 };
 
 test('reads a barcode on mobile, previews the facts, then imports for review before saving', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.route('**/open-food-facts/products/*', (route) => route.fulfill({ json: product }));
+  await page.route('https://world.openfoodfacts.net/api/v2/product/*', (route) => route.fulfill({ json: foodFactsResponse }));
   let writes = 0;
   page.on('request', (request) => { if (request.method() === 'POST' && new URL(request.url()).pathname === '/product') writes++; });
   await gotoRoute(page, '/product');
@@ -20,7 +30,7 @@ test('reads a barcode on mobile, previews the facts, then imports for review bef
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('tab', { name: 'Scanner', exact: true }).click();
   await dialog.getByLabel('Code-barres du produit', { exact: true }).fill(product.barcode);
-  const lookup = page.waitForRequest((request) => request.url().includes('/open-food-facts/products/3017624010701'));
+  const lookup = page.waitForRequest((request) => request.url().startsWith('https://world.openfoodfacts.net/api/v2/product/3017624010701.json?'));
   await dialog.getByRole('button', { name: 'Rechercher le produit', exact: true }).click();
   expect((await lookup).method()).toBe('GET');
   const result = dialog.getByTestId('food-facts-product');
@@ -48,7 +58,7 @@ test('keeps manual lookup available after camera permission is denied and handle
   await page.addInitScript(() => {
     navigator.mediaDevices.getUserMedia = () => Promise.reject(new DOMException('Denied', 'NotAllowedError'));
   });
-  await page.route('**/open-food-facts/products/*', (route) => route.fulfill({ status: 404, json: { message: 'Not found' } }));
+  await page.route('https://world.openfoodfacts.net/api/v2/product/*', (route) => route.fulfill({ json: { status: 0, status_verbose: 'product not found' } }));
   await gotoRoute(page, '/product');
   await page.getByTestId('catalogue-add-action').click();
   const dialog = page.getByRole('dialog');
@@ -77,7 +87,7 @@ test('decodes a real barcode video frame and stops the camera before reading pro
       return Promise.resolve(stream);
     };
   });
-  await page.route('**/open-food-facts/products/*', (route) => route.fulfill({ json: product }));
+  await page.route('https://world.openfoodfacts.net/api/v2/product/*', (route) => route.fulfill({ json: foodFactsResponse }));
   await gotoRoute(page, '/product');
   await page.getByTestId('catalogue-add-action').click();
   const dialog = page.getByRole('dialog');

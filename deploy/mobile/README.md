@@ -1,12 +1,12 @@
 # Foody Clear on a phone
 
-Build and serve the production frontend to enable the Angular service worker. The app has a web manifest, home-screen icons, standalone display, an installation button, and an offline application shell. Product data, barcode lookups and saves still require the backend; there is no offline write queue.
+Build and serve the production frontend to enable the Angular service worker. The app has a web manifest, home-screen icons, standalone display, an installation button, and an offline application shell. Product data and saves still require the backend; barcode lookups require an internet connection to Open Food Facts; there is no offline write queue.
 
 ## Install and scan
 
 Open the app's **trusted HTTPS address** on your phone. On Android use **Installer l’app** or the browser's install menu. On iPhone/iPad use Safari's share menu → **Sur l’écran d’accueil**. HTTPS is required for installability and camera access; a plain HTTP LAN address such as `http://192.168.1.20` is insufficient. [PWA requirements](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable), [camera requirements](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia#privacy_and_security).
 
-In **Catalog → Add product → Scanner**, choose **Scanner avec la caméra**, or enter the barcode digits and search. The scanner prefers the rear camera and supports EAN-8, EAN-13, UPC-A, UPC-E, ITF and numeric Code 128 product codes. Camera frames stay in the browser; only the decoded barcode is sent to the backend. The camera stops after a match, on tab changes, when the app is hidden, or when the dialog closes.
+In **Catalog → Add product → Scanner**, choose **Scanner avec la caméra**, or enter the barcode digits and search. The scanner prefers the rear camera and supports EAN-8, EAN-13, UPC-A, UPC-E, ITF and numeric Code 128 product codes. Camera frames stay in the browser; only the decoded barcode is sent directly to `https://world.openfoodfacts.net/api/v2/product/{barcode}.json`, independently of the application API URL. This staging server uses the documented public `off/off` HTTP Basic authentication; the browser supplies it automatically. The camera stops after a match, on tab changes, when the app is hidden, or when the dialog closes.
 
 The result displays product name, brand, quantity, ingredients, declared allergens, Nutri-Score, nutrition and the Open Food Facts source. **Utiliser ces informations** fills the regular product form for review; it does not save automatically. Missing names or package quantities must be completed, and the container type remains a user choice. Categories, tags and prices are not guessed from the external record. Missing nutrition values remain missing; `_100g` values are mapped in their standard units, with a per-100ml reference for packages measured in ml.
 
@@ -32,7 +32,7 @@ This optional overlay adds a Caddy HTTPS gateway to the existing Compose stack. 
    docker compose -f docker/docker-compose.yml -f foody-clear-front/deploy/mobile/compose.yml up -d
    ```
 
-   The existing `docker/.env` database configuration is still required. If you use a separate database, use `docker/docker-compose-no-db.yml` as the first file. Port 443 must be available on the server. The frontend's existing `/api` proxy keeps API calls on the same HTTPS origin, so the phone never calls its own `localhost:3000`.
+   The existing `docker/.env` database configuration is still required. If you use a separate database, use `docker/docker-compose-no-db.yml` as the first file. Port 443 must be available on the server. The frontend's existing `/api` proxy keeps application API calls on the same HTTPS origin, so the phone never calls its own `localhost:3000`.
 
 4. Caddy creates a local certificate authority. Export its **public root certificate**, then install and trust it on the phone:
 

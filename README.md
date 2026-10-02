@@ -36,7 +36,7 @@ This repository contains **only the Angular frontend** for Foody Clear. It consu
 - **Statistics**: expense history, nutrition-goal tracking, and product price trends.
 - **Light and dark themes** with a responsive interface built using Angular Material, Tailwind CSS, and SCSS.
 - **Mobile webapp**: installable PWA, home-screen icons, an offline application shell and an installation guide. See [mobile HTTPS setup](deploy/mobile/README.md).
-- **Barcode scanner**: camera scan or manual code entry, read-only Open Food Facts product preview, and import into the product form for review.
+- **Barcode scanner**: camera scan or manual code entry, direct read-only lookup on `https://world.openfoodfacts.net` (independent of the app API URL), Open Food Facts product preview, and import into the product form for review.
 
 ## Roadmap and Deployment Scope
 
