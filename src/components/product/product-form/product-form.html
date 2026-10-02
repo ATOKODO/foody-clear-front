@@ -275,7 +275,7 @@
   </ng-template>
 
   @if (mode() === 'add') {
-    <mat-tab-group [preserveContent]="true" [(selectedIndex)]="selectedTab" animationDuration="0ms">
+    <mat-tab-group [dynamicHeight]="true" [preserveContent]="true" [(selectedIndex)]="selectedTab" animationDuration="0ms">
       <mat-tab label="Formulaire">
         <ng-container *ngTemplateOutlet="manualForm" />
       </mat-tab>
