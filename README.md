@@ -4,7 +4,7 @@
 
 Foody Clear is an open-source food management application that brings product catalogs, inventory, shopping, meal preparation, planning, and nutrition tracking together in one place.
 
-This repository contains **only the Angular frontend** for Foody Clear. It consumes a separate backend API to read and store data.
+This repository contains **the Angular frontend and its documentation** for Foody Clear. The application consumes a separate backend API to read and store data.
 
 > The project is currently in **alpha** (`1.0.0-alpha.1`): it is under active development, and breaking changes may still occur.
 
@@ -12,6 +12,7 @@ This repository contains **only the Angular frontend** for Foody Clear. It consu
 
 ## Table of Contents
 
+- [Documentation](#documentation)
 - [Features](#features)
 - [Roadmap and Deployment Scope](#roadmap-and-deployment-scope)
 - [An Entirely Vibe-Coded Project](#an-entirely-vibe-coded-project)
@@ -23,6 +24,21 @@ This repository contains **only the Angular frontend** for Foody Clear. It consu
 - [Forks and Contributions](#forks-and-contributions)
 - [License](#license)
 
+## Documentation
+
+The [English documentation](docs/index.md) includes installation, a first-use walkthrough, guides for every feature, the HTTP API, configuration, Docker/HTTPS deployment, backups and troubleshooting.
+
+Run its VitePress site independently of the application:
+
+```sh
+npm run docs:install
+npm run docs:dev
+```
+
+Open **http://localhost:5173**. Use `npm run docs:build` to generate and validate the static site, then `npm run docs:preview` to inspect it on **http://localhost:4173**. Generated files are in `docs/.vitepress/dist`.
+
+See [documentation maintenance](docs/development/documentation.md) for navigation, local search and hosting under a subpath.
+
 ## Features
 
 - **Daily dashboard**: planned and logged meals, nutrition progress, daily expenses, and quick entry.
@@ -30,7 +46,7 @@ This repository contains **only the Angular frontend** for Foody Clear. It consu
 - **Reference data**: categories, generic products, and tags for organizing and enriching the catalog.
 - **Stock and inventory**: track available and normalized quantities across multiple storage locations.
 - **Shopping lists**: reusable lists, templates, collected-item tracking, and conversion of purchases into inventory.
-- **Meal prep**: compose dishes and meals, check their availability against current stock, and generate missing purchases.
+- **Meal prep**: compose dishes and meals, check their availability against current stock, and generate recipe shopping lists.
 - **Planning**: time slots, day sets, templates, food cycles, assignments, and a calendar.
 - **Daily tracking**: log consumed products and external meals, and convert planned items into actual consumption entries.
 - **Statistics**: expense history, nutrition-goal tracking, and product price trends.

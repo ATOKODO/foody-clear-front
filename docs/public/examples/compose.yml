@@ -1,0 +1,36 @@
+services:
+  front:
+    build: ./foody-clear-front
+    ports:
+      - "8080:80"
+    depends_on:
+      - back
+    restart: unless-stopped
+
+  back:
+    build: ./foody-clear-back
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: db
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17.5
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

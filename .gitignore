@@ -72,3 +72,8 @@ Thumbs.db
 
 # SonarQube
 .scannerwork/
+
+# VitePress documentation
+/docs/node_modules/
+/docs/.vitepress/cache/
+/docs/.vitepress/dist/

@@ -32,7 +32,11 @@
     "e2e:report": "playwright show-report",
     "lint": "ng lint",
     "style:check": "node scripts/check-styles.mjs",
-    "e2e:pwa": "npm run build && playwright test --config=playwright.pwa.config.ts"
+    "e2e:pwa": "npm run build && playwright test --config=playwright.pwa.config.ts",
+    "docs:install": "npm --prefix docs ci",
+    "docs:dev": "npm --prefix docs run dev --",
+    "docs:build": "npm --prefix docs run build",
+    "docs:preview": "npm --prefix docs run preview --"
   },
   "prettier": {
     "overrides": [

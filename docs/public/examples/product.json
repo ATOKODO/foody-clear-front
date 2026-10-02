@@ -1,0 +1,14 @@
+{
+  "name": "Rolled oats",
+  "unitType": "Paquet",
+  "quantityPerUnit": 500,
+  "quantityUnit": "g",
+  "nutritionValues": [
+    {
+      "nutritionKey": "PROTEIN",
+      "amount": 13,
+      "unit": "G",
+      "reference": "PER_100G"
+    }
+  ]
+}
