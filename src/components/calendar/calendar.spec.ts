@@ -403,6 +403,38 @@ describe('Calendar', () => {
     ]);
   });
 
+  it('should keep month icon actions accessible and emit their original actions', async () => {
+    const date = component.currentDate.toISODate()!;
+    await fixture.whenStable();
+
+    const opened: { dateLocal: string }[] = [];
+    const cycles: unknown[] = [];
+    const entries: unknown[] = [];
+    component.openDayView.subscribe((event) => opened.push(event));
+    component.manageAssignment.subscribe((event) => cycles.push(event));
+    component.manageItems.subscribe((event) => entries.push(event));
+    const actions = [
+      ['open-day', 'Open day view', 'today', 'Day'],
+      ['manage-cycle', 'Manage cycle', 'autorenew', 'Cycle'],
+      ['manage-items', 'Manage entries', 'edit_note', 'Entry'],
+    ] as const;
+    for (const [action, label, icon, desktopText] of actions) {
+      const button = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+        `[data-testid="calendar-month-${action}-${date}"]`,
+      )!;
+      expect(button).toBeTruthy();
+      expect(button.getAttribute('aria-label')).toBe(`${label} for ${date}`);
+      expect(button.title).toBe(label);
+      expect(button.querySelector(`svg[data-icon="${icon}"]`)?.getAttribute('aria-hidden')).toBe('true');
+      expect(button.querySelector('.calendar-month-day__quick-action-label')?.textContent).toBe(desktopText);
+      button.click();
+    }
+
+    expect(opened).toEqual([{ dateLocal: date }]);
+    expect(cycles).toEqual([jasmine.objectContaining({ dateLocal: date, view: 'month' })]);
+    expect(entries).toEqual([jasmine.objectContaining({ dateLocal: date, view: 'month' })]);
+  });
+
   it('should emit manageAssignment with the source assignment from the month cycle button', () => {
     const currentDateLocal = component.currentDate.toISODate() ?? '2026-03-13';
     const emitted: unknown[] = [];

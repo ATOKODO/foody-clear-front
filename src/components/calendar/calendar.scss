@@ -545,6 +545,10 @@
   box-shadow: var(--app-shadow-sm);
 }
 
+.calendar-month-day__quick-action-icon {
+  display: none;
+}
+
 .calendar-month-day__assignment {
   display: flex;
   flex: 0 0 auto;
@@ -2050,6 +2054,29 @@
   .calendar-month-day {
     min-height: 11.5rem;
     padding: 0.55rem;
+  }
+
+  .calendar-month-day__quick-actions {
+    gap: 0.25rem;
+  }
+
+  .calendar-month-day__quick-action {
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .calendar-month-day__quick-action-icon {
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .calendar-month-day__quick-action-label {
+    display: none;
   }
 
   .calendar-month-day__assignment {

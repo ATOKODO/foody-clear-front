@@ -251,30 +251,46 @@
                   </button>
                   <div class="calendar-month-day__body" [attr.data-testid]="'calendar-month-body-' + day.date">
                     @if (day.isCurrentMonth) {
+                      <!-- Material Icons (Apache-2.0); attribution/license: /icons/material-icons-LICENSE.txt. -->
                       <div class="calendar-month-day__quick-actions">
                         <button
                           type="button"
                           [attr.data-testid]="'calendar-month-open-day-' + day.date"
                           class="calendar-month-day__quick-action"
                           data-kind="day"
+                          [attr.aria-label]="'Open day view for ' + day.date"
+                          title="Open day view"
                           (click)="$event.stopPropagation(); requestOpenDayView(day.date)">
-                          Day
+                          <svg class="calendar-month-day__quick-action-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false" data-icon="today">
+                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                          </svg>
+                          <span class="calendar-month-day__quick-action-label">Day</span>
                         </button>
                         <button
                           type="button"
                           [attr.data-testid]="'calendar-month-manage-cycle-' + day.date"
                           class="calendar-month-day__quick-action"
                           data-kind="cycle"
+                          [attr.aria-label]="'Manage cycle for ' + day.date"
+                          title="Manage cycle"
                           (click)="$event.stopPropagation(); onManageAssignment(day.date)">
-                          Cycle
+                          <svg class="calendar-month-day__quick-action-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false" data-icon="autorenew">
+                            <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
+                          </svg>
+                          <span class="calendar-month-day__quick-action-label">Cycle</span>
                         </button>
                         <button
                           type="button"
                           [attr.data-testid]="'calendar-month-manage-items-' + day.date"
                           class="calendar-month-day__quick-action"
                           data-kind="items"
+                          [attr.aria-label]="'Manage entries for ' + day.date"
+                          title="Manage entries"
                           (click)="$event.stopPropagation(); onManageItems(day.date)">
-                          Entry
+                          <svg class="calendar-month-day__quick-action-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false" data-icon="edit_note">
+                            <path d="M3,10h11v2H3V10z M3,8h11V6H3V8z M3,16h7v-2H3V16z M18.01,12.87l0.71-0.71c0.39-0.39,1.02-0.39,1.41,0l0.71,0.71 c0.39,0.39,0.39,1.02,0,1.41l-0.71,0.71L18.01,12.87z M17.3,13.58l-5.3,5.3V21h2.12l5.3-5.3L17.3,13.58z" />
+                          </svg>
+                          <span class="calendar-month-day__quick-action-label">Entry</span>
                         </button>
                       </div>
                     }

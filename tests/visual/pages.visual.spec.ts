@@ -24,6 +24,32 @@ for (const [path, landmark] of pages) {
   test(`${path} — populated page`, async ({ page, visual, isMobile }) => {
     await visual.open(`/${path}`, landmark);
     await expect(page.locator('app-ui-error-panel')).toHaveCount(0);
+    if (path === 'calendar' || path === 'planning') {
+      const actions = [
+        ['open-day', 'Open day view', 'today'],
+        ['manage-cycle', 'Manage cycle', 'autorenew'],
+        ['manage-items', 'Manage entries', 'edit_note'],
+      ] as const;
+      for (const [action, label, icon] of actions) {
+        const button = page.getByTestId(`calendar-month-${action}-2026-03-25`);
+        await expect(button).toHaveAccessibleName(`${label} for 2026-03-25`);
+        const glyph = button.locator(`svg[data-icon="${icon}"]`);
+        const text = button.locator('.calendar-month-day__quick-action-label');
+        if (isMobile) {
+          await expect(glyph).toBeVisible();
+          await expect(text).toBeHidden();
+          const buttonBox = (await button.boundingBox())!;
+          const iconBox = (await glyph.boundingBox())!;
+          expect(iconBox.x).toBeGreaterThanOrEqual(buttonBox.x);
+          expect(iconBox.x + iconBox.width).toBeLessThanOrEqual(buttonBox.x + buttonBox.width);
+          expect(iconBox.y).toBeGreaterThanOrEqual(buttonBox.y);
+          expect(iconBox.y + iconBox.height).toBeLessThanOrEqual(buttonBox.y + buttonBox.height);
+        } else {
+          await expect(glyph).toBeHidden();
+          await expect(text).toBeVisible();
+        }
+      }
+    }
     const mobilePlanning = path === 'planning' && isMobile;
     await visual.capture(`${path}.png`, !mobilePlanning);
     if (mobilePlanning) {
