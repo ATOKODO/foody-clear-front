@@ -178,7 +178,6 @@ export function findNavigationContextByUrl(
   const normalizedUrl = normalizeUrl(url);
 
   const auxiliaryTitles: Record<string, string> = {
-    '/nutrition-value': 'Nutrition values',
     '/input-day': 'Day input',
     '/calendar': 'Calendar',
   };

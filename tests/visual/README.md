@@ -33,7 +33,7 @@ Service workers are blocked to keep API mocking independent of caches.
 
 ## Coverage and determinism
 
-- All 17 routes, with populated catalog/inventory/planning/execution data.
+- All 16 routes, with populated catalog/inventory/planning/execution data.
 - Calendar month/year/week/day, product creation dialog, nested inventory product picker.
 - Shopping list empty/error states and the mobile navigation drawer.
 - Desktop 1440 × 1000 and mobile 390 × 844, each in light and dark mode (DPR 1).

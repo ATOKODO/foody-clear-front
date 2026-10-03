@@ -2,27 +2,9 @@
 
 The main workflow is available from the application navigation. A few direct routes expose supporting screens or diagnostic tools.
 
-## Nutrition-value tool
-
-At `/nutrition-value`, the **Testeur valeurs nutritionnelles** screen lets you exercise nutrition-value API operations. It provides API configuration, request controls and a last-response area.
-
-Use the backend's actual field names:
-
-```json
-{
-  "productId": 1,
-  "nutritionKey": "PROTEIN",
-  "amount": 13,
-  "unit": "G",
-  "reference": "PER_100G"
-}
-```
-
-Replace `productId` with an existing product ID. Keys, units and references are case-sensitive enums. This tool performs real API requests and can mutate data. Use a development database for experimentation. Manage a product's ordinary nutrition from [Catalog](./catalog.md) instead.
-
 ## Standalone day input
 
-At `/input-day`, the full day editor includes date, timezone, API context and response information. It uses the same recording operations as the embedded editor in Home or Assignments.
+At `/input-day`, the full day editor includes a date picker, inventory selection, entries, templates and daily totals. It uses the same recording operations as the embedded editor in Home or Assignments. API configuration and timezone are handled automatically; there are no diagnostic or demo controls.
 
 Select source inventories and inspect the date before submitting. See [Record your day](./day-input.md).
 

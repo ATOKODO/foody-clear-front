@@ -22,7 +22,6 @@ export const routes: Routes = [
     {path: 'category', loadComponent: () => import('../features/category/category').then(m => m.Category), title: 'Categories'},
     {path: 'generic-product', loadComponent: () => import('../features/generic-product/generic-product').then(m => m.GenericProduct), title: 'Generic products'},
     {path: 'tag', loadComponent: () => import('../features/tag/tag').then(m => m.Tag), title: 'Tags'},
-    {path: 'nutrition-value', loadComponent: () => import('../features/nutrition-value/nutrition-value').then(m => m.NutritionValues), title: 'Nutrition values'},
     {path: 'inventory', loadComponent: () => import('../features/inventory/inventory').then(m => m.Inventory), title: 'Inventories'},
     {path: 'shopping-list', loadComponent: () => import('../features/shopping-list/shopping-list').then(m => m.ShoppingList), title: 'Shopping lists'},
     {path: 'meal-prep', loadComponent: () => import('../features/meal-prep/meal-prep.feature').then(m => m.MealPrepFeature), title: 'Meal prep'},

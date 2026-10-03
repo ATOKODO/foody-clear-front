@@ -9,6 +9,18 @@ async function loadInputDay(page: Page): Promise<void> {
 }
 
 test.describe('Input day - day', () => {
+  test('keeps the standalone editor without diagnostic or demo controls', async ({ page }) => {
+    await loadInputDay(page);
+
+    await expect(page.getByTestId('input-day-load')).toBeVisible();
+    await expect(page.getByTestId('input-day-inventory-select')).toBeVisible();
+    await expect(page.getByTestId('input-day-base-url')).toHaveCount(0);
+    await expect(page.locator('input[formcontrolname="timezone"]')).toHaveCount(0);
+    await expect(page.locator('.input-day-response')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Exemple', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Effacer', exact: true })).toHaveCount(0);
+  });
+
   test('creates a single item in the day composer', async ({ page }) => {
     await loadInputDay(page);
 

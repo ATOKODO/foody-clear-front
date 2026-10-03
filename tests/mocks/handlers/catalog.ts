@@ -3,7 +3,6 @@ import {
   getProduct,
   hydrateCategory,
   hydrateGenericProduct,
-  hydrateNutritionValue,
   hydrateProduct,
   hydrateTag,
   removeArrayItem,
@@ -377,90 +376,6 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
   return false;
   };
 
-  const handleNutritionCollectionRequest = async (): Promise<boolean> => {
-  if (path === '/nutrition-value') {
-    if (method === 'GET') {
-      await context.json(
-        state.products.flatMap((product) =>
-          product.nutritionValues.map((value) => ({
-            ...hydrateNutritionValue(value),
-            productId: product.id,
-            product: { id: product.id, name: product.name },
-          })),
-        ),
-      );
-      return true;
-    }
-
-    if (method === 'POST') {
-      const body = await context.readJson<Record<string, unknown>>();
-      const product = getProduct(state, readNullableNumber(body.productId));
-      if (!product) {
-        await context.notFound('Product not found');
-        return true;
-      }
-
-      const nutritionValue = createNutritionValue(context, body);
-      if (!nutritionValue) {
-        await context.json({ message: 'Invalid payload' }, 400);
-        return true;
-      }
-
-      product.nutritionValues.push(nutritionValue);
-      await context.json({
-        ...hydrateNutritionValue(nutritionValue),
-        productId: product.id,
-        product: { id: product.id, name: product.name },
-      }, 201);
-      return true;
-    }
-  }
-  return false;
-  };
-
-  const handleNutritionItemRequest = async (): Promise<boolean> => {
-  if (path.startsWith('/nutrition-value/')) {
-    const nutritionValueId = Number(path.split('/')[2]);
-    const located = findNutritionValue(state, nutritionValueId);
-    if (!located) {
-      await context.notFound('Nutrition value not found');
-      return true;
-    }
-
-    if (method === 'GET') {
-      await context.json({
-        ...hydrateNutritionValue(located.value),
-        productId: located.product.id,
-        product: { id: located.product.id, name: located.product.name },
-      });
-      return true;
-    }
-
-    if (method === 'PATCH') {
-      const body = await context.readJson<Record<string, unknown>>();
-      located.value.nutritionKey = (readNullableString(body.nutritionKey) ?? located.value.nutritionKey)
-        .trim().toUpperCase();
-      located.value.amount = Number(body.amount ?? located.value.amount);
-      located.value.unit = readNullableString(body.unit) ?? located.value.unit;
-      located.value.reference = body.reference === 'PER_100G' || body.reference === 'PER_100ML' ? body.reference : located.value.reference;
-      await context.json({
-        ...hydrateNutritionValue(located.value),
-        productId: located.product.id,
-        product: { id: located.product.id, name: located.product.name },
-      });
-      return true;
-    }
-
-    if (method === 'DELETE') {
-      located.product.nutritionValues = removeArrayItem(located.product.nutritionValues, nutritionValueId);
-      await context.noContent();
-      return true;
-    }
-  }
-
-    return false;
-  };
-
   const handlers = [
     handleMetaRequest,
     handleCategoryRequest,
@@ -468,27 +383,11 @@ export async function handleCatalogRequest(context: MockApiRequestContext): Prom
     handleGenericProductRequest,
     handleProductCollectionRequest,
     handleProductItemRequest,
-    handleNutritionCollectionRequest,
-    handleNutritionItemRequest,
   ];
   for (const handler of handlers) {
     if (await handler()) return true;
   }
   return false;
-}
-
-function findNutritionValue(
-  state: MockApiRequestContext['state'],
-  nutritionValueId: number,
-): { product: MockProduct; value: MockNutritionValue } | null {
-  for (const product of state.products) {
-    const value = product.nutritionValues.find((candidate) => candidate.id === nutritionValueId);
-    if (value) {
-      return { product, value };
-    }
-  }
-
-  return null;
 }
 
 function createNutritionValue(

@@ -14,7 +14,6 @@ Each resource below supports `GET /resource`, `GET /resource/:id`, `POST /resour
 | `/category` | `name` | [Catalog](../user-guide/catalog.md) |
 | `/generic-product` | `name` | [Catalog](../user-guide/catalog.md) |
 | `/tag` | `name` | [Catalog](../user-guide/catalog.md) |
-| `/nutrition-value` | `productId`, `nutritionKey`, `amount`, `unit`, `reference` | [Nutrition](./units-nutrition.md) |
 | `/inventory` | `name`, optional products | [Inventories](../user-guide/inventories.md) |
 | `/shopping-list` | `name`, optional items | [Shopping](../user-guide/shopping-lists.md) |
 | `/template` | `title` | [Templates](../user-guide/templates.md) |
@@ -36,6 +35,8 @@ curl --fail http://localhost:3000/product \
 ```
 
 Backend creation uses `categoryId`, `genericProductId`, `tagIds` and `nutritionValuesCreated`. It does not accept the JSON tab's name-based `category`, `tags` or `nutritionValues` fields as that user-facing format. See [Product JSON format](./product-json.md).
+
+Nutrition values are managed through their owning resources; there is no standalone `/nutrition-value` CRUD endpoint.
 
 Product updates can create nutrition rows, update existing owned rows and remove rows using `nutritionValueIdsToRemove`. An empty list of newly created rows alone does not instruct the API to delete existing rows. Do not update and remove the same nutrition ID in one request.
 

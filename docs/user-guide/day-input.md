@@ -4,11 +4,11 @@ Day input records actual food consumption and connects it to inventory and nutri
 
 ## Set the context
 
-Choose the date and timezone when using the standalone editor. Embedded editors inherit the selected day from their parent screen.
+Choose the date when using the standalone editor. Embedded editors inherit the selected day from their parent screen. The timezone is determined automatically from the browser and the day's API response.
 
 Select one or more inventories to load available products and calculate whether planned food can be consumed. A batch slot can apply the same slot to all products in a batch. Individual entries can also have an explicit slot, a free slot key and an occurrence time.
 
-Keep the date and timezone aligned with when you ate the food. Local dates use `YYYY-MM-DD`; occurrence timestamps represent a specific moment.
+Check that the selected date and occurrence time match when you ate the food. Local dates use `YYYY-MM-DD`; occurrence timestamps represent a specific moment.
 
 ## Add a manual product entry
 

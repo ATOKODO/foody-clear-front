@@ -14,7 +14,6 @@ import { GenericProductService } from './generic-product-service';
 import { InputDayService } from './input-day-service';
 import { InventoryService } from './inventory-service';
 import { MealPrepService } from './meal-prep-service';
-import { NutritionValueService } from './nutrition-value-service';
 import { ProductService } from './product-service';
 import { ShoppingListService } from './shopping-list-service';
 import { SlotService } from './slot-service';
@@ -51,15 +50,13 @@ describe('HTTP services', () => {
 
   afterEach(() => httpMock.verify());
 
-  it('covers category, generic product, nutrition, product and tag CRUD endpoints', () => {
+  it('covers category, generic product, product and tag CRUD endpoints', () => {
     const category = TestBed.inject(CategoryService);
     const genericProduct = TestBed.inject(GenericProductService);
-    const nutritionValue = TestBed.inject(NutritionValueService);
     const product = TestBed.inject(ProductService);
     const tag = TestBed.inject(TagService);
     const categoryDto = { name: 'Fresh', warnBeforeDays: 2, recentlyExpiredDays: 1, minQuantity: 1 };
     const genericProductDto = { name: 'Rice', minQuantityUnit: 1, minQuantityMetric: 500 };
-    const nutritionDto = { nutritionKey: 'ENERGY_KCAL', amount: 100, unit: 'KCAL', reference: 'PER_100G', productId: 4 };
     const productDto = {
       name: 'Rice bag',
       unitType: 'Paquet',
@@ -68,7 +65,7 @@ describe('HTTP services', () => {
     } as Parameters<ProductService['create']>[0];
     const tagDto = { name: 'Staple' };
 
-    [category, genericProduct, nutritionValue, product, tag].forEach((service) =>
+    [category, genericProduct, product, tag].forEach((service) =>
       service.setBaseUrl(`${baseUrl}/`),
     );
 
@@ -93,17 +90,6 @@ describe('HTTP services', () => {
     expectRequest(httpMock, `${baseUrl}/generic-product/4`, 'PATCH', { name: 'Brown rice' });
     genericProduct.remove(4).subscribe();
     expectRequest(httpMock, `${baseUrl}/generic-product/4`, 'DELETE');
-
-    nutritionValue.create(nutritionDto).subscribe();
-    expectRequest(httpMock, `${baseUrl}/nutrition-value`, 'POST', nutritionDto);
-    nutritionValue.findAll().subscribe();
-    expectRequest(httpMock, `${baseUrl}/nutrition-value`, 'GET');
-    nutritionValue.findOne(5).subscribe();
-    expectRequest(httpMock, `${baseUrl}/nutrition-value/5`, 'GET');
-    nutritionValue.update(5, { amount: 120 }).subscribe();
-    expectRequest(httpMock, `${baseUrl}/nutrition-value/5`, 'PATCH', { amount: 120 });
-    nutritionValue.remove(5).subscribe();
-    expectRequest(httpMock, `${baseUrl}/nutrition-value/5`, 'DELETE');
 
     product.create(productDto).subscribe();
     expectRequest(httpMock, `${baseUrl}/product`, 'POST', productDto);

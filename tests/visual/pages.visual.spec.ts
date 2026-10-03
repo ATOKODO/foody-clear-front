@@ -6,7 +6,6 @@ const pages = [
   ['category', 'category-page'],
   ['generic-product', 'generic-product-page'],
   ['tag', 'tag-page'],
-  ['nutrition-value', 'nutrition-value-page'],
   ['inventory', 'inventory-page'],
   ['shopping-list', 'shopping-list-page'],
   ['meal-prep', 'meal-prep-page'],

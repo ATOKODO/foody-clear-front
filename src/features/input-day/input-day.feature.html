@@ -52,32 +52,13 @@
     class="space-y-5"
     data-testid="input-day-form"
   >
-    @if (isStandaloneMode) {
-      <mat-card appearance="outlined" class="rounded-xl">
-        <mat-card-content class="pt-4">
-          <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Base URL</mat-label>
-            <input
-              data-testid="input-day-base-url"
-              matInput
-              type="text"
-              [(ngModel)]="baseUrl"
-              [ngModelOptions]="{ standalone: true }"
-              (change)="onBaseUrlChange()"
-              placeholder="http://localhost:3000"
-            />
-          </mat-form-field>
-        </mat-card-content>
-      </mat-card>
-    }
-
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
         <mat-card-title>Day context</mat-card-title>
         <mat-card-subtitle>
           {{
             isStandaloneMode
-              ? "Date, timezone, inventories, and batch slot"
+              ? "Date, inventories, and batch slot"
               : "Inventories and batch slot"
           }}
         </mat-card-subtitle>
@@ -100,27 +81,15 @@
 
           @if (isStandaloneMode && !lockDate()) {
             <mat-form-field appearance="fill" class="w-full">
-              <mat-label>dateLocal (YYYY-MM-DD)</mat-label>
+              <mat-label>Date</mat-label>
               <input
                 matInput
                 [matDatepicker]="dateLocalPicker"
                 formControlName="dateLocal"
-                placeholder="2026-02-08"
+                placeholder="YYYY-MM-DD"
               />
               <mat-datepicker-toggle matIconSuffix [for]="dateLocalPicker" />
               <mat-datepicker #dateLocalPicker />
-            </mat-form-field>
-          }
-
-          @if (isStandaloneMode) {
-            <mat-form-field appearance="fill" class="w-full">
-              <mat-label>timezone</mat-label>
-              <input
-                matInput
-                type="text"
-                formControlName="timezone"
-                placeholder="UTC"
-              />
             </mat-form-field>
           }
 
@@ -182,16 +151,6 @@
             >
               Refresh
             </button>
-            @if (isStandaloneMode) {
-              <button mat-stroked-button type="button" (click)="fillDemo()">
-                Exemple
-              </button>
-            }
-            @if (isStandaloneMode) {
-              <button mat-button type="button" (click)="clear()">
-                Effacer
-              </button>
-            }
           </div>
         }
       </mat-card-content>
@@ -1381,17 +1340,6 @@
             }
           </div>
         }
-      </div>
-    }
-    @if (isStandaloneMode) {
-      <div class="space-y-3">
-        <mat-divider />
-        <h3 class="text-base font-semibold text-app-text-strong">Derniere reponse</h3>
-        <pre
-          class="app-code-panel input-day-response max-h-[65vh] p-3 text-[11px] sm:p-4 sm:text-xs"
-        >
-          {{ lastResponse | json }}
-        </pre>
       </div>
     }
   }

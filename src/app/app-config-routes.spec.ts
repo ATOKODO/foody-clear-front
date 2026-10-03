@@ -9,6 +9,8 @@ describe('application configuration', () => {
     expect(routes[0]).toEqual({ path: '', pathMatch: 'full', redirectTo: 'home' });
     expect(routes.map((route) => route.path)).toContain('meal-prep');
     expect(routes.map((route) => route.path)).toContain('calendar');
+    expect(routes.map((route) => route.path)).toContain('input-day');
+    expect(routes.map((route) => route.path)).not.toContain('nutrition-value');
   });
 
   it('contains the production environment values', () => {

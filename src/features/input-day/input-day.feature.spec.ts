@@ -328,14 +328,22 @@ describe('InputDayFeature', () => {
     expect(component.itemEditorForm.value.occurredAt).toBe('2026-02-16T08:00');
   });
 
-  it('should hide standalone response block in embedded mode', () => {
-    fixture.componentRef.setInput('displayMode', 'embedded');
-    fixture.componentRef.setInput('initialDateLocal', '2026-02-16');
-    fixture.detectChanges();
+  it('keeps the standalone day editor without diagnostic or demo controls', async () => {
+    component.form.patchValue({ dateLocal: '2026-02-16' });
+    component.loadDay();
+    await fixture.whenStable();
 
-    expect(
-      fixture.nativeElement.querySelector('.input-day-response'),
-    ).toBeNull();
+    const root: HTMLElement = fixture.nativeElement;
+    expect(root.querySelector('[data-testid="input-day-form"]')).not.toBeNull();
+    expect(root.querySelector('input[formcontrolname="dateLocal"]')).not.toBeNull();
+    expect(root.querySelector('[data-testid="input-day-load"]')).not.toBeNull();
+    expect(root.querySelector('[data-testid="input-day-base-url"]')).toBeNull();
+    expect(root.querySelector('input[formcontrolname="timezone"]')).toBeNull();
+    expect(root.querySelector('.input-day-response')).toBeNull();
+    expect(root.textContent).not.toContain('Derniere reponse');
+    expect(root.textContent).not.toContain('Exemple');
+    expect(root.textContent).not.toContain('Effacer');
+    expect(component.form.value.timezone).toBe(dayResponse.timezone);
   });
 
   it('should keep a single refresh button and hide timezone input in embedded mode', () => {
@@ -394,7 +402,7 @@ describe('InputDayFeature', () => {
     expect(component.selectedProductRows[0].productId).toBe(1);
   });
 
-  it('should expose formatting, tracking, and reset helpers for the active day', () => {
+  it('should expose formatting and tracking helpers for the active day', () => {
     component.form.patchValue({ dateLocal: '2026-02-16' });
     component.inputDayResponse = dayResponse;
     component.onSelectedInventoryChange([4]);
@@ -421,13 +429,6 @@ describe('InputDayFeature', () => {
     expect(component.trackBySelectedProductRow(0, component.selectedProductRows[0])).toBe(1);
     expect(component.trackByInputDayItem(0, item)).toBe(item.id);
     expect(component.trackByTemplateItem(0, templateItem)).toBe(templateItem.id);
-
-    component.clear();
-
-    expect(component.inputDayResponse).toBeNull();
-    expect(component.selectedInventoryIds).toEqual([]);
-    expect(component.selectedProductRows).toEqual([]);
-    expect(component.activeEmbeddedSection).toBe('stock');
   });
 
   it('should render cycle-level targets when no day set is active', () => {
@@ -456,7 +457,6 @@ describe('InputDayFeature', () => {
       },
     };
 
-    component.lastResponse = cycleTargetResponse;
     component.inputDayResponse = cycleTargetResponse;
     fixture.detectChanges();
 
@@ -1056,13 +1056,10 @@ describe('InputDayFeature', () => {
     productServiceMock.findAll.and.returnValue(throwError(() => new Error('products')));
     inventoryServiceMock.findAll.and.returnValue(throwError(() => new Error('inventories')));
     templateServiceMock.findAll.and.returnValue(throwError(() => new Error('templates')));
-    component.onBaseUrlChange();
+    privateMethod(component)('handleApiBaseUrlChange');
     expect(component.productsError).toEqual(jasmine.any(Error));
     expect(component.inventoriesError).toEqual(jasmine.any(Error));
     expect(component.templateError).toBe('Unable to load templates.');
-    component.fillDemo();
-    component.clear();
-    expect(component.activeEmbeddedSection).toBe('stock');
   });
 
   it('should cover successful editor actions, input changes and inventory caches', () => {
@@ -1151,7 +1148,7 @@ describe('InputDayFeature', () => {
     expect(call('buildSelectedItemsRequest')).toBeNull();
     call('clearSelectedProducts');
     call('clearSelectedInventoryProducts');
-    component.onBaseUrlChange();
+    call('handleApiBaseUrlChange');
     expect(component.baseUrl).toBe('http://localhost:3000');
   });
 });

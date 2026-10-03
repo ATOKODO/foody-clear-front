@@ -1,4 +1,4 @@
-import { JsonPipe, NgTemplateOutlet, KeyValuePipe } from '@angular/common';
+import { NgTemplateOutlet, KeyValuePipe } from '@angular/common';
 import {
   Component,
   DestroyRef,
@@ -22,7 +22,6 @@ import { LatestRequest } from '../../utils/latest-request';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -120,13 +119,11 @@ import {
 @Component({
   selector: 'app-input-day',
   imports: [
-    JsonPipe,
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatCardModule,
     MatDatepickerModule,
-    MatDividerModule,
     MatFormFieldModule,
     MatInputModule,
     MatNativeDateModule,
@@ -194,7 +191,6 @@ export class InputDayFeature implements OnInit, OnChanges {
   selectedSlotId: number | null = null;
   readonly embeddedSectionOptions = INPUT_DAY_EMBEDDED_SECTION_OPTIONS;
 
-  lastResponse: unknown = null;
   lastError: unknown = null;
   productsError: unknown = null;
   inventoriesError: unknown = null;
@@ -501,17 +497,6 @@ export class InputDayFeature implements OnInit, OnChanges {
     });
   }
 
-  onBaseUrlChange(): void {
-    this.baseUrl = this.resolveConfiguredBaseUrl();
-    this.applyServicesBaseUrl();
-    this.loadProducts();
-    this.loadInventories();
-    this.loadTemplates();
-    if (this.hasValidSelectedDate) {
-      this.loadDay();
-    }
-  }
-
   loadDay(): void {
     this.dayRequest.cancel();
     const dateLocal = this.requireDate();
@@ -527,7 +512,6 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     this.dayRequest.subscribe(this.inputDaySrv.getInputDay(dateLocal, timezone), {
       next: (response) => {
-        this.lastResponse = response;
         this.lastError = null;
         this.inputDayResponse = response;
         this.form.patchValue({
@@ -557,8 +541,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.inputDaySrv
       .createItems(request.requestDateLocal, request.payload)
       .subscribe({
-        next: (response) => {
-          this.lastResponse = response;
+        next: () => {
           this.lastError = null;
           this.clearSelectedProducts();
           this.prefillItemEditorForCreate(null);
@@ -587,8 +570,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       this.inputDaySrv
         .createItem(request.requestDateLocal, request.payload)
         .subscribe({
-          next: (response) => {
-            this.lastResponse = response;
+          next: () => {
             this.lastError = null;
             this.loading = false;
             this.itemsChanged.emit({
@@ -609,8 +591,7 @@ export class InputDayFeature implements OnInit, OnChanges {
     this.inputDaySrv
       .updateItem(request.requestDateLocal, request.itemId, request.payload)
       .subscribe({
-        next: (response) => {
-          this.lastResponse = response;
+        next: () => {
           this.lastError = null;
           this.loading = false;
           this.itemsChanged.emit({
@@ -696,11 +677,6 @@ export class InputDayFeature implements OnInit, OnChanges {
 
     this.inputDaySrv.removeItem(dateLocal, resolvedItemId).subscribe({
       next: () => {
-        this.lastResponse = {
-          deleted: true,
-          itemId: resolvedItemId,
-          dateLocal,
-        };
         this.lastError = null;
         this.loading = false;
         if (
@@ -808,7 +784,6 @@ export class InputDayFeature implements OnInit, OnChanges {
       .setTemplate(dateLocal, this.manualTemplateSelectionId)
       .subscribe({
         next: (response) => {
-          this.lastResponse = response;
           this.lastError = null;
           this.inputDayResponse = response;
           this.loading = false;
@@ -848,7 +823,6 @@ export class InputDayFeature implements OnInit, OnChanges {
       .convertTemplateItem(dateLocal, item.id, this.selectedInventoryIds)
       .subscribe({
         next: (response) => {
-          this.lastResponse = response;
           this.lastError = null;
           this.inputDayResponse = response;
           this.finishTemplateItemConversion(item.id);
@@ -863,58 +837,6 @@ export class InputDayFeature implements OnInit, OnChanges {
           this.finishTemplateItemConversion(item.id);
         },
       });
-  }
-
-  fillDemo(): void {
-    this.form.patchValue({
-      dateLocal: new Date(2026, 1, 8),
-      timezone: 'Europe/Paris',
-    });
-
-    this.prefillItemEditorForCreate('2026-02-08T08:00:00+01:00');
-    this.itemEditorForm.patchValue({
-      productId: 1,
-      qty: 150,
-      qtyUnit: 'g',
-    });
-
-    this.onSelectedInventoryChange(this.inventories[0]?.id ?? null);
-
-    const demoProducts = this.selectableProductListItems.slice(0, 2);
-    this.selectedProducts = demoProducts;
-    this.selectedProductIds = demoProducts.map((item) => item.id);
-    this.selectedProductRows = demoProducts.map((item, index) => ({
-      productId: Number(item.id),
-      productName: item.name,
-      qty: index === 0 ? 120 : 80,
-      qtyUnit: 'g',
-    }));
-
-    this.itemsFormError = null;
-  }
-
-  clear(): void {
-    this.form.reset({
-      dateLocal: null,
-      timezone: this.fallbackTimezone,
-    });
-
-    this.selectedInventoryIds = [];
-    this.selectedSlotId = null;
-    this.clearSelectedInventoryProducts();
-    this.initialDateError = null;
-    this.itemsFormError = null;
-    this.itemEditorError = null;
-    this.clearSelectedProducts();
-    this.lastResponse = null;
-    this.lastError = null;
-    this.inputDayResponse = null;
-    this.pendingInitialOccurredAt = null;
-    this.pendingInitialEditingItemId = null;
-    this.manualTemplateSelectionId = null;
-    this.templateActionError = null;
-    this.activeEmbeddedSection = 'stock';
-    this.prefillItemEditorForCreate(null);
   }
 
   formatMacroValue(value: InputDayMacroValue): string {

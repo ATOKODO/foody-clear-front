@@ -26,7 +26,6 @@ This index covers every registered application screen, plus cross-screen feature
 | `/day-set` | Daily targets, slots and template; also embedded in Cycles | [Day sets](../user-guide/cycles.md#day-sets) |
 | `/slot` | Slot keys, titles, ordering and nutrition targets; also embedded in Cycles | [Time slots](../user-guide/cycles.md#time-slots) |
 | `/input-day` | Standalone daily recording, batch entries, template override/conversion, stock sources, totals and external entries | [Record your day](../user-guide/day-input.md) |
-| `/nutrition-value` | Diagnostic nutrition API controls and response viewer | [Auxiliary tools](../user-guide/tools.md#nutrition-value-tool) |
 | `/calendar` | Calendar component without the planning hub's backend orchestration | [Auxiliary tools](../user-guide/tools.md#standalone-calendar) |
 
 ## Features used across screens
