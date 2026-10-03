@@ -1,3 +1,5 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
+import { Language } from '../../../app/i18n/language';
 import { buildProductQtyUnitOptions, normalizeQtyUnitSelection } from '../../../utils/product-quantity';
 import {
   Component,
@@ -5,6 +7,7 @@ import {
   OnInit,
   SimpleChanges,
   input,
+  inject,
   output,
   signal,
 } from '@angular/core';
@@ -43,6 +46,7 @@ export interface TemplateFormSubmittedEvent {
 @Component({
   selector: 'app-template-form',
   imports: [
+    TranslatePipe,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -54,6 +58,7 @@ export interface TemplateFormSubmittedEvent {
   host: { style: 'display: block' },
 })
 export class TemplateForm implements OnInit, OnChanges {
+  readonly language = inject(Language);
   readonly mode = input<TemplateFormMode>('add');
   readonly template = input<Template | null>(null);
   readonly products = input<ProductApiModel[]>([]);
@@ -244,7 +249,7 @@ export class TemplateForm implements OnInit, OnChanges {
       }
     }
 
-    return item.slotKey?.trim() || 'No slot';
+    return item.slotKey?.trim() || this.language.translate('No slot');
   }
 
   resolveTemplateItemLabel(item: TemplateItem): string {
@@ -253,7 +258,7 @@ export class TemplateForm implements OnInit, OnChanges {
       item.mealName ??
       item.dishName ??
       item.productName ??
-      'Element sans nom'
+      this.language.translate('Element sans nom')
     );
   }
 
@@ -275,7 +280,7 @@ export class TemplateForm implements OnInit, OnChanges {
 
   formatNutritionAmount(value: number): string {
     const rounded = Math.round(value * 100) / 100;
-    return new Intl.NumberFormat('fr-FR', {
+    return new Intl.NumberFormat(this.language.locale(), {
       minimumFractionDigits: Number.isInteger(rounded) ? 0 : 1,
       maximumFractionDigits: 2,
     }).format(rounded);

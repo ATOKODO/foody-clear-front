@@ -10,8 +10,8 @@ test.describe('Statistics timeline', () => {
     await expect(page.getByTestId('stat-expense-timeline')).toBeVisible();
     await page.getByTestId('stat-expense-day-2026-03-25').click();
 
-    await expect(page.getByText('Detail du 2026-03-25')).toBeVisible();
-    await expect(page.getByText('2 evenement(s)')).toBeVisible();
+    await expect(page.getByText("Details for 2026-03-25")).toBeVisible();
+    await expect(page.getByText('2 events')).toBeVisible();
     await expect(page.getByText('Banane')).toBeVisible();
     await expect(page.getByText('Blanc de poulet')).toBeVisible();
 
@@ -19,8 +19,8 @@ test.describe('Statistics timeline', () => {
     await expect(page.getByTestId('stat-target-timeline')).toBeVisible();
     await page.getByTestId('stat-target-day-2026-03-25').click();
 
-    await expect(page.getByText('Detail du 2026-03-25')).toBeVisible();
+    await expect(page.getByText("Details for 2026-03-25")).toBeVisible();
     await expect(page.getByText('Day set: Rest Day')).toBeVisible();
-    await expect(page.getByText('Items saisis: 2')).toBeVisible();
+    await expect(page.getByText("Recorded items: 2")).toBeVisible();
   });
 });

@@ -3,12 +3,12 @@
     <div class="app-status-row">
       @if (loading()) {
         <span class="app-status-pill app-status-pill--neutral">
-          Loading...
+          {{ "Loading..." | translate }}
         </span>
       }
       @if (saving()) {
         <span class="app-status-pill app-status-pill--saving">
-          Saving...
+          {{ "Saving..." | translate }}
         </span>
       }
     </div>
@@ -27,25 +27,25 @@
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="flex items-center justify-between bg-app-hero px-6 py-5 text-app-on-color">
         <div>
-          <h2 class="text-xl font-semibold">Tags</h2>
+          <h2 class="text-xl font-semibold">{{ "Tags" | translate }}</h2>
           <p class="mt-1 text-sm text-app-on-color-muted">
-            Taxonomie et etiquetage transverse du catalogue.
+            {{ "Taxonomie et etiquetage transverse du catalogue." | translate }}
           </p>
         </div>
         <button mat-raised-button color="primary" type="button" (click)="onRefreshRequested()">
-          Refresh
+          {{ "Refresh" | translate }}
         </button>
       </div>
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
           @if (loading()) {
             <span class="app-status-pill app-status-pill--neutral">
-              Loading...
+              {{ "Loading..." | translate }}
             </span>
           }
           @if (saving()) {
             <span class="app-status-pill app-status-pill--saving">
-              Saving...
+              {{ "Saving..." | translate }}
             </span>
           }
         </div>
@@ -64,7 +64,7 @@
 
 
 @if (formVisible) {
-  <button type="button" class="app-modal-backdrop" aria-label="Close la modale" (click)="onCancelForm()"></button>
+  <button type="button" class="app-modal-backdrop" [attr.aria-label]="&quot;Close la modale&quot; | translate" (click)="onCancelForm()"></button>
 }
 @if (formVisible) {
   <div class="app-modal-shell">
@@ -77,16 +77,16 @@
       >
       <div class="app-dialog-header">
         <div>
-          <p class="app-dialog-eyebrow">Catalog</p>
+          <p class="app-dialog-eyebrow">{{ "Catalog" | translate }}</p>
           <h3 class="app-dialog-title">
-            {{ formMode === 'edit' ? 'Edit un tag' : 'Add un tag' }}
+            {{ formMode === 'edit' ? ("Edit un tag" | translate) : ("Add un tag" | translate) }}
           </h3>
           <p class="app-dialog-subtitle">
-            Utilise des tags pour filtrer rapidement les products et regrouper les usages.
+            {{ "Utilise des tags pour filtrer rapidement les products et regrouper les usages." | translate }}
           </p>
         </div>
         <button mat-stroked-button type="button" (click)="onCancelForm()">
-          Close
+          {{ "Close" | translate }}
         </button>
       </div>
       <div class="app-dialog-content">

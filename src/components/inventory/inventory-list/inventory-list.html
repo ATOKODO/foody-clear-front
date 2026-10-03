@@ -2,10 +2,10 @@
   <div class="inventory-list__table-wrap overflow-x-auto rounded-xl border border-app-border">
     <table mat-table [dataSource]="resolvedInventories" class="inventory-table w-full">
       <ng-container matColumnDef="select">
-        <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
+        <th mat-header-cell *matHeaderCellDef class="w-14" [attr.aria-label]="&quot;Selection&quot; | translate"></th>
         <td mat-cell *matCellDef="let item" class="w-14">
           <mat-checkbox [checked]="isSelected(item.id)"
-            [aria-label]="'Select ' + item.name"
+            [aria-label]="(&quot;&quot; + (&quot;Select&quot; | translate) + &quot; &quot;) + item.name"
             (change)="onCheckboxChange(item, $event.checked)"
             (click)="onCheckboxClick($event)"
             (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()" />
@@ -13,17 +13,17 @@
       </ng-container>
 
       <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Inventory</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Inventory" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ item.name }}</td>
       </ng-container>
 
       <ng-container matColumnDef="productCount">
-        <th mat-header-cell *matHeaderCellDef>Products</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Products" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ item.productCount }}</td>
       </ng-container>
 
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Actions" | translate }}</th>
         <td mat-cell *matCellDef="let item">
           <div class="inventory-list__actions">
             <button
@@ -32,7 +32,7 @@
               class="inventory-list__action inventory-list__action--edit"
               [attr.data-testid]="'inventory-edit-' + item.id"
               (click)="$event.stopPropagation(); onEditClick(item)">
-              Edit
+              {{ "Edit" | translate }}
             </button>
             <button
               mat-stroked-button
@@ -40,7 +40,7 @@
               class="inventory-list__action inventory-list__action--delete"
               [attr.data-testid]="'inventory-delete-' + item.id"
               (click)="$event.stopPropagation(); onDeleteClick(item)">
-              Remove
+              {{ "Remove" | translate }}
             </button>
           </div>
         </td>
@@ -65,11 +65,11 @@
 @if (!embedded()) {
   <section
     class="mx-auto w-full max-w-6xl px-4 py-6"
-    aria-label="Liste des inventories"
+    [attr.aria-label]="&quot;Liste des inventories&quot; | translate"
     data-testid="inventory-list">
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="flex items-center justify-between gap-3 border-b border-app-border bg-app-surface-soft px-4 py-3 sm:px-6">
-        <h2 class="text-base font-semibold text-app-text-strong">Inventories</h2>
+        <h2 class="text-base font-semibold text-app-text-strong">{{ "Inventories" | translate }}</h2>
         @if (isManageMode) {
           <button
             mat-raised-button
@@ -78,7 +78,7 @@
             data-testid="inventory-add"
             class="add-btn"
             (click)="onAddClick()">
-            Add
+            {{ "Add" | translate }}
           </button>
         }
       </div>
@@ -89,7 +89,7 @@
       } @else {
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-content class="p-4 text-sm text-app-text">
-            No inventory available.
+            {{ "No inventory available." | translate }}
           </mat-card-content>
         </mat-card>
       }
@@ -100,7 +100,7 @@
     @if (hasItems) {
       <ng-container [ngTemplateOutlet]="tableContent" />
     } @else {
-      <p class="inventory-list__empty text-sm text-app-text">No inventory available.</p>
+      <p class="inventory-list__empty text-sm text-app-text">{{ "No inventory available." | translate }}</p>
     }
   </div>
 }

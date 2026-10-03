@@ -54,9 +54,9 @@ function resolveTagNames(tags: unknown): string[] {
   return Array.from(new Set(names));
 }
 
-function resolveLinkedEntityName(value: unknown): string {
+function resolveLinkedEntityName(value: unknown): string | null {
   if (!value || typeof value !== 'object') {
-    return 'None';
+    return null;
   }
 
   const raw = value as Record<string, unknown>;
@@ -68,5 +68,5 @@ function resolveLinkedEntityName(value: unknown): string {
     }
   }
 
-  return 'None';
+  return null;
 }

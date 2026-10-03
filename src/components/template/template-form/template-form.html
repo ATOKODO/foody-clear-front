@@ -1,8 +1,8 @@
 <div class="space-y-6" data-testid="template-form">
   <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto_auto]">
     <mat-form-field appearance="fill" class="w-full">
-      <mat-label>Template title</mat-label>
-      <input matInput [(ngModel)]="draftTitle" placeholder="Training day" />
+      <mat-label>{{ "Template title" | translate }}</mat-label>
+      <input matInput [(ngModel)]="draftTitle" [placeholder]="&quot;Training day&quot; | translate" />
     </mat-form-field>
 
     <button
@@ -13,7 +13,7 @@
       (click)="onTemplateSave()"
       [disabled]="!canSaveTemplate"
     >
-      {{ mode() === "edit" ? "Save" : "Create" }}
+      {{ mode() === "edit" ? ("Save" | translate) : ("Create" | translate) }}
     </button>
 
     @if (template()) {
@@ -25,46 +25,45 @@
         (click)="onTemplateDelete()"
         [disabled]="savingTemplate() || savingItem()"
       >
-        Delete
+        {{ "Delete" | translate }}
       </button>
     }
   </div>
 
   <p class="text-sm text-app-text">
-    Le template peut contenir des products simples, des dishs et des meals.
-    La conversion reste previsionnelle tant qu'elle n'est pas appliquee dans le day.
+    {{ "Le template peut contenir des products simples, des dishs et des meals. La conversion reste previsionnelle tant qu'elle n'est pas appliquee dans le day." | translate }}
   </p>
 
   @if (template(); as template) {
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
         <mat-card-title>
-          {{ itemDraft.id !== null ? "Edit line" : "Add line" }}
+          {{ itemDraft.id !== null ? ("Edit line" | translate) : ("Add line" | translate) }}
         </mat-card-title>
         <mat-card-subtitle>{{ template.title }}</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content class="space-y-4 pt-2">
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Type</mat-label>
+            <mat-label>{{ "Type" | translate }}</mat-label>
             <mat-select
               [ngModel]="itemDraft.itemType"
               (ngModelChange)="updateItemDraft({ itemType: $event })"
             >
-              <mat-option value="product">Product</mat-option>
-              <mat-option value="dish">Plat</mat-option>
-              <mat-option value="meal">Meals</mat-option>
+              <mat-option value="product">{{ "Product" | translate }}</mat-option>
+              <mat-option value="dish">{{ "Plat" | translate }}</mat-option>
+              <mat-option value="meal">{{ "Meals" | translate }}</mat-option>
             </mat-select>
           </mat-form-field>
 
           @if (itemDraft.itemType === 'product') {
             <mat-form-field appearance="fill" class="w-full md:col-span-2 xl:col-span-2">
-              <mat-label>Product</mat-label>
+              <mat-label>{{ "Product" | translate }}</mat-label>
               <mat-select
                 [ngModel]="itemDraft.productId"
                 (ngModelChange)="updateItemDraft({ productId: $event })"
               >
-                <mat-option [value]="null">Select</mat-option>
+                <mat-option [value]="null">{{ "Select" | translate }}</mat-option>
                 @for (product of sortedProducts; track product.id) {
                   <mat-option [value]="product.id">{{ product.name }}</mat-option>
                 }
@@ -74,12 +73,12 @@
 
           @if (itemDraft.itemType === 'dish') {
             <mat-form-field appearance="fill" class="w-full md:col-span-2 xl:col-span-2">
-              <mat-label>Plat</mat-label>
+              <mat-label>{{ "Plat" | translate }}</mat-label>
               <mat-select
                 [ngModel]="itemDraft.dishId"
                 (ngModelChange)="updateItemDraft({ dishId: $event })"
               >
-                <mat-option [value]="null">Select</mat-option>
+                <mat-option [value]="null">{{ "Select" | translate }}</mat-option>
                 @for (dish of sortedDishes; track dish.id) {
                   <mat-option [value]="dish.id">{{ dish.name }}</mat-option>
                 }
@@ -89,12 +88,12 @@
 
           @if (itemDraft.itemType === 'meal') {
             <mat-form-field appearance="fill" class="w-full md:col-span-2 xl:col-span-2">
-              <mat-label>Meals</mat-label>
+              <mat-label>{{ "Meals" | translate }}</mat-label>
               <mat-select
                 [ngModel]="itemDraft.mealId"
                 (ngModelChange)="updateItemDraft({ mealId: $event })"
               >
-                <mat-option [value]="null">Select</mat-option>
+                <mat-option [value]="null">{{ "Select" | translate }}</mat-option>
                 @for (meal of sortedMeals; track meal.id) {
                   <mat-option [value]="meal.id">{{ meal.name }}</mat-option>
                 }
@@ -103,7 +102,7 @@
           }
 
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Quantity</mat-label>
+            <mat-label>{{ "Quantity" | translate }}</mat-label>
             <input
               matInput
               type="number"
@@ -114,27 +113,27 @@
             />
           </mat-form-field>
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Unit</mat-label>
+            <mat-label>{{ "Unit" | translate }}</mat-label>
             <mat-select
               [canSelectNullableOptions]="true"
               [ngModel]="itemDraft.qtyUnit"
               (ngModelChange)="updateItemDraft({ qtyUnit: $event })"
             >
-              <mat-option [value]="null">Default unit</mat-option>
+              <mat-option [value]="null">{{ "Default unit" | translate }}</mat-option>
               @for (unit of getAvailableQtyUnitOptions(); track unit.value) {
                 <mat-option [value]="unit.value">
-                  {{ unit.label }}
+                  {{ (unit.label) | translate }}
                 </mat-option>
               }
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>Explicit slot</mat-label>
+            <mat-label>{{ "Explicit slot" | translate }}</mat-label>
             <mat-select
               [ngModel]="itemDraft.slotId"
               (ngModelChange)="updateItemDraft({ slotId: $event })"
             >
-              <mat-option [value]="null">No slot</mat-option>
+              <mat-option [value]="null">{{ "No slot" | translate }}</mat-option>
               @for (slot of sortedSlots; track slot.id) {
                 <mat-option [value]="slot.id">
                   {{ slot.sortOrder }}. {{ slot.title }} ({{ slot.key }})
@@ -143,17 +142,17 @@
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="fill" class="w-full">
-            <mat-label>free slotKey</mat-label>
+            <mat-label>{{ "free slotKey" | translate }}</mat-label>
             <input
               matInput
               [ngModel]="itemDraft.slotKey"
               (ngModelChange)="updateItemDraft({ slotKey: $event })"
-              placeholder="ex: snack"
+              [placeholder]="&quot;ex: snack&quot; | translate"
             />
           </mat-form-field>
           @if (itemDraft.slotId === null) {
             <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Preferred time</mat-label>
+              <mat-label>{{ "Preferred time" | translate }}</mat-label>
               <input
                 matInput
                 type="time"
@@ -165,7 +164,7 @@
         </div>
         @if (itemError(); as itemError) {
           <p class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger">
-            {{ itemError }}
+            {{ (itemError) | translate }}
           </p>
         }
         <div class="flex flex-wrap justify-end gap-2">
@@ -175,7 +174,7 @@
             (click)="resetItemDraft()"
             [disabled]="savingTemplate() || savingItem()"
           >
-            Reset
+            {{ "Reset" | translate }}
           </button>
           <button
             mat-raised-button
@@ -185,15 +184,15 @@
             (click)="onItemSave()"
             [disabled]="!canSaveItem"
           >
-            {{ itemDraft.id !== null ? "Update" : "Add" }}
+            {{ itemDraft.id !== null ? ("Update" | translate) : ("Add" | translate) }}
           </button>
         </div>
       </mat-card-content>
     </mat-card>
     <mat-card appearance="outlined" class="rounded-xl">
       <mat-card-header>
-        <mat-card-title>Template lines</mat-card-title>
-        <mat-card-subtitle>Edit in modal</mat-card-subtitle>
+        <mat-card-title>{{ "Template lines" | translate }}</mat-card-title>
+        <mat-card-subtitle>{{ "Edit in modal" | translate }}</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content class="pt-2">
         @if (template.items.length > 0) {
@@ -201,11 +200,11 @@
             <table class="min-w-full text-sm">
               <thead class="bg-app-surface-soft text-left text-app-text">
                 <tr>
-                  <th class="px-3 py-2">Item</th>
-                  <th class="px-3 py-2">Qty</th>
-                  <th class="px-3 py-2">Slot</th>
-                  <th class="px-3 py-2">Global stock</th>
-                  <th class="px-3 py-2 text-right">Actions</th>
+                  <th class="px-3 py-2">{{ "Item" | translate }}</th>
+                  <th class="px-3 py-2">{{ "Qty" | translate }}</th>
+                  <th class="px-3 py-2">{{ "Slot" | translate }}</th>
+                  <th class="px-3 py-2">{{ "Global stock" | translate }}</th>
+                  <th class="px-3 py-2 text-right">{{ "Actions" | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -219,18 +218,18 @@
                         {{ resolveTemplateItemLabel(item) }}
                       </p>
                       <p class="text-xs text-app-text-muted">
-                        {{ resolveTemplateItemTypeLabel(item) }}
+                        {{ (resolveTemplateItemTypeLabel(item)) | translate }}
                       </p>
                     </td>
                     <td class="px-3 py-2">
                       {{ formatNutritionAmount(item.qty) }}
-                      <span class="text-app-text-muted">{{ item.qtyUnit ?? "-" }}</span>
+                      <span class="text-app-text-muted">{{ (item.qtyUnit ?? "-") | translate }}</span>
                     </td>
                     <td class="px-3 py-2">
                       {{ resolveTemplateItemSlotLabel(item) }}
                       @if (item.slotId === null) {
                         <p class="text-xs text-app-text-muted">
-                          Heure : {{ formatPreferredTime(item.preferredTime) }}
+                          {{ "Heure : {p0}" | translate: { p0: (formatPreferredTime(item.preferredTime)) } }}
                         </p>
                       }
                     </td>
@@ -242,7 +241,7 @@
                         [class.bg-app-danger-surface]="!item.stockAvailability.enoughStock"
                         [class.text-app-danger]="!item.stockAvailability.enoughStock"
                       >
-                        {{ item.stockAvailability.enoughStock ? "Stock OK" : "Low stock" }}
+                        {{ item.stockAvailability.enoughStock ? ("Stock OK" | translate) : ("Low stock" | translate) }}
                       </span>
                     </td>
                     <td class="px-3 py-2">
@@ -254,7 +253,7 @@
                           (click)="editItem(item)"
                           [disabled]="savingTemplate() || savingItem()"
                         >
-                          Edit
+                          {{ "Edit" | translate }}
                         </button>
                         <button
                           mat-stroked-button
@@ -264,7 +263,7 @@
                           (click)="onItemDelete(item.id)"
                           [disabled]="savingTemplate() || savingItem()"
                         >
-                          Remove
+                          {{ "Remove" | translate }}
                         </button>
                       </div>
                     </td>
@@ -275,14 +274,14 @@
           </div>
         } @else {
           <p class="rounded-lg border border-app-border bg-app-surface-soft px-3 py-2 text-sm text-app-text">
-            No ligne dans ce template.
+            {{ "No ligne dans ce template." | translate }}
           </p>
         }
       </mat-card-content>
     </mat-card>
   } @else {
     <div class="rounded-xl border border-dashed border-app-border-strong bg-app-surface-soft px-4 py-6 text-sm text-app-text">
-      Commence par creer le template pour pouvoir ajouter ses lignes.
+      {{ "Commence par creer le template pour pouvoir ajouter ses lignes." | translate }}
     </div>
   }
 </div>

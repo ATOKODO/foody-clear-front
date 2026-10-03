@@ -1,5 +1,7 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
+import { Language } from '../../../app/i18n/language';
 import { KeyValuePipe } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -18,6 +20,7 @@ import { Template, TemplateItem } from '../../../interfaces/template.interface';
 @Component({
   selector: 'app-template-list',
   imports: [
+    TranslatePipe,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -30,6 +33,7 @@ import { Template, TemplateItem } from '../../../interfaces/template.interface';
   styleUrl: './template-list.scss',
 })
 export class TemplateList {
+  readonly language = inject(Language);
   readonly templates = input<Template[]>([]);
   readonly selectedTemplateId = input<number | null>(null);
   readonly selectedTemplate = input<Template | null>(null);
@@ -153,7 +157,7 @@ export class TemplateList {
 
 
   resolveTemplateItemLabel(item: TemplateItem): string {
-    return item.displayName ?? item.mealName ?? item.dishName ?? item.productName ?? 'Unnamed item';
+    return item.displayName ?? item.mealName ?? item.dishName ?? item.productName ?? this.language.translate('Unnamed item');
   }
 
   private resolveTemplateItemType(item: TemplateItem): NonNullable<TemplateItem['itemType']> {
@@ -188,12 +192,12 @@ export class TemplateList {
       }
     }
 
-    return item.slotKey?.trim() || 'No slot';
+    return item.slotKey?.trim() || this.language.translate('No slot');
   }
 
   private formatNumber(value: number): string {
     const rounded = Math.round(value * 100) / 100;
-    return new Intl.NumberFormat('fr-FR', {
+    return new Intl.NumberFormat(this.language.locale(), {
       minimumFractionDigits: Number.isInteger(rounded) ? 0 : 1,
       maximumFractionDigits: 2,
     }).format(rounded);

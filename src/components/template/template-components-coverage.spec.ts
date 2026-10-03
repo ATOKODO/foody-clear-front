@@ -91,10 +91,10 @@ describe('template component branches', () => {
         'missing' as unknown as Parameters<TemplateList['formatMacroValue']>[0],
       ),
     ).toBe('missing');
-    expect(component.formatMacroValue(2.345)).toBe('2,35');
+    expect(component.formatMacroValue(2.345)).toBe('2.35');
     expect(component.formatNutritionAmount(null)).toBe('-');
     expect(component.formatNutritionAmount(Number.NaN)).toBe('-');
-    expect(component.formatNutritionAmount(2.345)).toBe('2,35');
+    expect(component.formatNutritionAmount(2.345)).toBe('2.35');
     expect(component.getStockAvailabilityLabel({ stockAvailability: { enoughStock: true } } as TemplateItem)).toBe('Stock OK');
     expect(component.getStockAvailabilityLabel({ stockAvailability: { enoughStock: false } } as TemplateItem)).toBe('Low stock');
     expect(component.getStockAvailabilityLabel({ stockAvailability: null } as unknown as TemplateItem)).toBe('Unknown stock');
@@ -204,13 +204,13 @@ describe('template component branches', () => {
     expect(component.resolveTemplateItemLabel({ mealName: 'M' } as TemplateItem)).toBe('M');
     expect(component.resolveTemplateItemLabel({ dishName: 'Dish' } as TemplateItem)).toBe('Dish');
     expect(component.resolveTemplateItemLabel({ productName: 'P' } as TemplateItem)).toBe('P');
-    expect(component.resolveTemplateItemLabel({} as TemplateItem)).toBe('Element sans nom');
+    expect(component.resolveTemplateItemLabel({} as TemplateItem)).toBe('Unnamed item');
     expect(component.resolveTemplateItemTypeLabel({ itemType: 'meal' } as TemplateItem)).toBe('Repas');
     expect(component.resolveTemplateItemTypeLabel({ itemType: 'dish' } as TemplateItem)).toBe('Plat');
     expect(component.resolveTemplateItemTypeLabel({ itemType: 'product' } as TemplateItem)).toBe('Produit');
     expect(component.formatPreferredTime(null)).toBe('06:00');
     expect(component.formatPreferredTime(' 08:30:00 ')).toBe('08:30');
-    expect(component.formatNutritionAmount(2.345)).toBe('2,35');
+    expect(component.formatNutritionAmount(2.345)).toBe('2.35');
 
     const internals = component as unknown as {
       hasSelectedSource(): boolean;

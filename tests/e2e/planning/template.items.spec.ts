@@ -14,7 +14,7 @@ test('adds, updates and deletes template items', async ({ page, mockApi }) => {
 
   await selectLabeledOption(page, dialog, 'Product', 'Riz basmati');
   await fillLabeledInput(dialog, 'Quantity', '2');
-  await selectLabeledOption(page, dialog, 'Unit', 'G (Gram)');
+  await selectLabeledOption(page, dialog, 'Unit', "g (Gram)");
   await selectLabeledOption(page, dialog, 'Explicit slot', '2. Dejeuner (lunch)');
   await dialog.getByTestId('template-item-save').click();
 

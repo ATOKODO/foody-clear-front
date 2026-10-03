@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 
 import {
   Component,
@@ -22,6 +23,7 @@ export interface TagFormValue {
 @Component({
   selector: 'app-tag-form',
   imports: [
+    TranslatePipe,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,

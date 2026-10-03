@@ -2,12 +2,12 @@
   @if (showSearch) {
     <div class="product-list__search-row">
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="product-list__search-field">
-        <mat-label>Search for a product</mat-label>
+        <mat-label>{{ "Search for a product" | translate }}</mat-label>
         <input
           #productListSearchInput
           matInput
           type="search"
-          placeholder="Name, barcode, category, generic product or tag"
+          [placeholder]="&quot;Name, barcode, category, generic product or tag&quot; | translate"
           [value]="searchTerm()"
           (input)="onSearchTermChange(productListSearchInput.value)"
           data-testid="product-list-search"
@@ -21,10 +21,10 @@
   <div class="overflow-x-auto rounded-xl border border-app-border">
     <table mat-table [dataSource]="resolvedProducts" class="product-table w-full">
       <ng-container matColumnDef="select">
-        <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
+        <th mat-header-cell *matHeaderCellDef class="w-14" [attr.aria-label]="&quot;Selection&quot; | translate"></th>
         <td mat-cell *matCellDef="let item" class="w-14">
           <mat-checkbox [checked]="isSelected(item.id)"
-            [aria-label]="'Select ' + item.name"
+            [aria-label]="(&quot;&quot; + (&quot;Select&quot; | translate) + &quot; &quot;) + item.name"
             (change)="onCheckboxChange(item, $event.checked)"
             (click)="onCheckboxClick($event)"
             (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()" />
@@ -32,7 +32,7 @@
       </ng-container>
 
       <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Product</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Product" | translate }}</th>
         <td mat-cell *matCellDef="let item">
           <div class="product-table__name">
             <strong>{{ item.name }}</strong>
@@ -42,47 +42,47 @@
 
 
       <ng-container matColumnDef="category">
-        <th mat-header-cell *matHeaderCellDef>Category</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Category" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ getLinkedEntityDisplay(item.category) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="genericProduct">
-        <th mat-header-cell *matHeaderCellDef>Generic product</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Generic product" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ getLinkedEntityDisplay(item.genericProduct) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="barcode">
-        <th mat-header-cell *matHeaderCellDef>Barcode</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Barcode" | translate }}</th>
         <td mat-cell *matCellDef="let item" class="product-table__barcode">{{ item.barcode || '-' }}</td>
       </ng-container>
 
       <ng-container matColumnDef="unit">
-        <th mat-header-cell *matHeaderCellDef>Unit</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Unit" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ getUnitDisplay(item) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="availableQty">
-        <th mat-header-cell *matHeaderCellDef>Available</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Available" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ getAvailableQuantityDisplay(item) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="price">
-        <th mat-header-cell *matHeaderCellDef>Price</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Price" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ getPriceDisplay(item) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="tags">
-        <th mat-header-cell *matHeaderCellDef>Tags</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Tags" | translate }}</th>
         <td mat-cell *matCellDef="let item" class="product-table__tags">{{ getTagNamesDisplay(item) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="nutritionValues">
-        <th mat-header-cell *matHeaderCellDef>NV</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "NV" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ item.nutritionValuesCount ?? 0 }}</td>
       </ng-container>
 
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Actions" | translate }}</th>
         <td
           mat-cell
           *matCellDef="let item"
@@ -95,7 +95,7 @@
               class="product-table__action product-table__action--edit"
               [attr.data-testid]="'product-edit-' + item.id"
               (click)="$event.stopPropagation(); onEditClick(item)">
-              Edit
+              {{ "Edit" | translate }}
             </button>
             <button
               mat-stroked-button
@@ -104,7 +104,7 @@
               class="product-table__action product-table__action--delete"
               [attr.data-testid]="'product-delete-' + item.id"
               (click)="$event.stopPropagation(); onDeleteClick(item)">
-              Remove
+              {{ "Remove" | translate }}
             </button>
           </div>
         </td>
@@ -128,13 +128,13 @@
 
 @if (!embedded()) {
   <section
-    aria-label="Liste des products"
+    [attr.aria-label]="&quot;Liste des products&quot; | translate"
     data-testid="product-list"
     class="w-full"
     [class]="compact() ? '' : 'mx-auto max-w-6xl py-4'">
     <mat-card class="overflow-hidden rounded-2xl" [class.shadow-none]="compact()">
       <div class="flex items-center justify-between gap-3 border-b border-app-border bg-app-surface-soft px-4 py-3 sm:px-6">
-        <h2 class="text-base font-semibold text-app-text-strong">Products</h2>
+        <h2 class="text-base font-semibold text-app-text-strong">{{ "Products" | translate }}</h2>
         @if (isManageMode) {
           <button
             mat-raised-button
@@ -143,7 +143,7 @@
             data-testid="product-add"
             class="add-btn"
             (click)="onAddClick()">
-            Add
+            {{ "Add" | translate }}
           </button>
         }
       </div>
@@ -154,13 +154,13 @@
         } @else if (hasActiveSearch && hasSourceItems) {
           <mat-card appearance="outlined" class="rounded-xl">
             <mat-card-content class="p-4 text-sm text-app-text">
-              No product matches the search.
+              {{ "No product matches the search." | translate }}
             </mat-card-content>
           </mat-card>
         } @else {
           <mat-card appearance="outlined" class="rounded-xl">
             <mat-card-content class="p-4 text-sm text-app-text">
-              No product available.
+              {{ "No product available." | translate }}
             </mat-card-content>
           </mat-card>
         }
@@ -173,9 +173,9 @@
     @if (hasItems) {
       <ng-container [ngTemplateOutlet]="tableContent" />
     } @else if (hasActiveSearch && hasSourceItems) {
-      <p class="product-list__empty text-sm text-app-text">No product matches the search.</p>
+      <p class="product-list__empty text-sm text-app-text">{{ "No product matches the search." | translate }}</p>
     } @else {
-      <p class="product-list__empty text-sm text-app-text">No product available.</p>
+      <p class="product-list__empty text-sm text-app-text">{{ "No product available." | translate }}</p>
     }
   </div>
 }

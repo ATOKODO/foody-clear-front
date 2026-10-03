@@ -8,7 +8,7 @@ This repository contains **the Angular frontend and its documentation** for Food
 
 > The project is currently in **alpha** (`1.0.0-alpha.1`): it is under active development, and breaking changes may still occur.
 
-> **Language note:** English is the target language for the current interface and documentation, but some screens, labels, test data, or older parts of the codebase may still be in French.
+> **Language:** Use **EN / FR** beside the theme control to change the interface language. The browser remembers your choice. Documentation is in English; user-entered names and technical API identifiers are not translated.
 
 ## Table of Contents
 
@@ -60,7 +60,6 @@ The next features currently planned are:
 
 - **Multiple profiles**, so several people or usage contexts can keep separate food data, goals, and planning.
 - **Offline data editing and synchronization**, beyond the currently cached PWA application shell.
-- **Internationalization (i18n)**, adding French as a fully supported interface language and replacing the remaining mixed-language content with translated resources.
 
 For now, Foody Clear is intended to remain a **locally hosted application**. Cloud services, remote accounts, and authentication are not part of the current scope. The project still uses a separated frontend/backend architecture to keep responsibilities and data flows clearly isolated, even though both parts are designed to run locally.
 

@@ -20,7 +20,7 @@ export const INVENTORY_PURCHASE_ACCOUNTING_MODE_OPTIONS: readonly {
   label: string;
 }[] = [
   { value: 'paid', label: 'Paid' },
-  { value: 'free', label: 'Free' },
+  { value: 'free', label: 'payment.free' },
   { value: 'excluded', label: 'Ignorer des stats' },
 ];
 
@@ -305,8 +305,12 @@ export function getInventoryQtyUnitOptions(
 
 export function getInventoryQtyUnitHelpText(
   row: InventoryRowProductMeta,
+  locale?: string,
+  translate: (source: string) => string = (source) => source,
 ): string | null {
   const parts: string[] = [];
+  const format = (value: number): string => locale
+    ? new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value) : formatDecimal(value);
 
   if (
     row.quantityPerUnit != null &&
@@ -316,7 +320,7 @@ export function getInventoryQtyUnitHelpText(
   ) {
     const unitType = row.unitType?.trim() || 'unite produit';
     parts.push(
-      `1 ${unitType} = ${formatDecimal(row.quantityPerUnit)} ${row.quantityUnit}`,
+      `1 ${translate(unitType)} = ${format(row.quantityPerUnit)} ${translate(row.quantityUnit)}`,
     );
   }
 
@@ -328,7 +332,7 @@ export function getInventoryQtyUnitHelpText(
     row.quantityUnit
   ) {
     parts.push(
-      `1 ${row.portionUnit} = ${formatDecimal(row.portionQuantityNormalized)} ${row.quantityUnit}`,
+      `1 ${translate(row.portionUnit)} = ${format(row.portionQuantityNormalized)} ${translate(row.quantityUnit)}`,
     );
   }
 

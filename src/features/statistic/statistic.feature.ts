@@ -1,3 +1,5 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
+import { Language } from '../../app/i18n/language';
 import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { LatestRequest } from '../../utils/latest-request';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +30,6 @@ import {
   formatStatisticDate,
   formatStatisticDateTime,
   formatStatisticMetricValue,
-  formatStatisticPriceChangeUnit,
   getStatisticBarHeight,
   getStatisticExpenseMax,
   getStatisticPurchaseEventStatusLabel,
@@ -53,6 +54,7 @@ import {
 @Component({
   selector: 'app-statistic',
   imports: [
+    TranslatePipe,
     FormsModule,
     MatButtonModule,
     MatButtonToggleModule,
@@ -68,6 +70,7 @@ import {
   styleUrl: './statistic.feature.scss',
 })
 export class StatisticFeature implements OnInit {
+  readonly language = inject(Language);
   private readonly statisticService = inject(StatisticService);
   private readonly productService = inject(ProductService);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
@@ -275,11 +278,11 @@ export class StatisticFeature implements OnInit {
   }
 
   formatCurrency(value: number | null | undefined): string {
-    return formatStatisticCurrency(value);
+    return formatStatisticCurrency(value, this.language.locale());
   }
 
   formatMetricValue(value: unknown): string {
-    return formatStatisticMetricValue(value, this.metricUnit);
+    return formatStatisticMetricValue(value, this.metricUnit, this.language.locale());
   }
 
   formatDateTime(value: string | null | undefined): string {
@@ -291,7 +294,11 @@ export class StatisticFeature implements OnInit {
   }
 
   formatPriceChangeUnit(value: ProductPriceUnit | null | undefined): string {
-    return formatStatisticPriceChangeUnit(value);
+    return value ? `/${this.language.translate(value)}` : '';
+  }
+
+  formatTargetSource(value: string): string {
+    return this.language.translate(value === 'daySet' ? 'Day set' : value === 'cycle' ? 'Cycle' : 'None');
   }
 
   getPurchaseEventStatusLabel(event: InventoryPurchaseEventSummary): string {

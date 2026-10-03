@@ -641,14 +641,14 @@ describe('Calendar', () => {
       root.querySelectorAll('.calendar-month-day__alert-badge').length,
     ).toBe(5);
     expect(textContent).toContain('Training');
-    expect(textContent).toContain('Kcal depasse');
-    expect(textContent).toContain('G depasse');
-    expect(textContent).toContain('P projete depasse');
-    expect(textContent).toContain('L projete depasse');
+    expect(textContent).toContain('Kcal over target');
+    expect(textContent).toContain('C over target');
+    expect(textContent).toContain('P projected over target');
+    expect(textContent).toContain('F projected over target');
     expect(textContent).toContain('2 pending templates');
     expect(textContent).not.toContain('Actual');
     expect(textContent).not.toContain('Actual + template');
-    expect(textContent).not.toContain('Kcal projete depasse');
+    expect(textContent).not.toContain('Kcal projected over target');
   });
 
   it('should render a modernized day view with merged pilot summary and compact entries', () => {
@@ -827,7 +827,7 @@ describe('Calendar', () => {
     expect(slotStats).toBeTruthy();
     expect(slotStats.textContent).toContain('Petit dejeuner');
     expect(slotStats.textContent).toContain('08:00-09:00');
-    expect(slotStats.textContent).toContain('Proteines');
+    expect(slotStats.textContent).toContain('Protein');
     expect(slotStats.textContent).toContain('-5');
   });
 

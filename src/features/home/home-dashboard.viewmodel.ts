@@ -27,6 +27,9 @@ interface SlotLinkedEntity {
   slotKey: string | null;
 }
 
+type TranslateLabel = (source: string) => string;
+const identityLabel: TranslateLabel = (source) => source;
+
 export function getTodayTimelineDay(
   timelineResponse: StatisticsTimelineResponse | null,
   todayDateLocal: string,
@@ -40,17 +43,19 @@ export function getTodayTimelineDay(
 export function getActiveCycleLabel(
   inputDayResponse: InputDayResponse | null,
   timelineDay: StatisticsTimelineDay | null,
+  translate: TranslateLabel = identityLabel,
 ): string {
   const assignment = inputDayResponse?.assignment ?? timelineDay?.inputs.assignment;
-  return assignment?.cycleTitle ?? 'No active cycle';
+  return assignment?.cycleTitle ?? translate('No active cycle');
 }
 
 export function getActiveDaySetLabel(
   inputDayResponse: InputDayResponse | null,
   timelineDay: StatisticsTimelineDay | null,
+  translate: TranslateLabel = identityLabel,
 ): string {
   const daySet = inputDayResponse?.daySet ?? timelineDay?.inputs.daySet;
-  return daySet?.title ?? 'No day set';
+  return daySet?.title ?? translate('No day set');
 }
 
 export function getEnteredItemCount(
@@ -89,6 +94,7 @@ export function getConvertedTemplateItems(
 export function buildHomeMacroCards(
   inputDayResponse: InputDayResponse | null,
   timelineDay: StatisticsTimelineDay | null,
+  locale = 'fr-FR',
 ): HomeMacroCard[] {
   const totals =
     inputDayResponse?.totalsMacros ?? inputDayResponse?.projectedTotalsMacros;
@@ -104,9 +110,9 @@ export function buildHomeMacroCards(
 
     return {
       ...definition,
-      actual: formatMetricValue(actual, definition.unit),
-      target: formatMetricValue(target, definition.unit),
-      delta: formatMetricValue(delta, definition.unit, true),
+      actual: formatMetricValue(actual, definition.unit, false, locale),
+      target: formatMetricValue(target, definition.unit, false, locale),
+      delta: formatMetricValue(delta, definition.unit, true, locale),
       progress: getMacroProgress(actual, target),
       status: getMacroStatus(actual, target),
     };
@@ -148,6 +154,8 @@ export function buildHomeDayEntryRows(
   inputDayResponse: InputDayResponse | null,
   timezone: string,
   slotCatalog: Slot[],
+  locale = 'fr-FR',
+  translate: TranslateLabel = identityLabel,
 ): HomeDayEntryRow[] {
   if (!inputDayResponse) {
     return [];
@@ -160,8 +168,8 @@ export function buildHomeDayEntryRows(
     occurredAt: resolveItemTimestamp(item),
     timeLabel: formatHomeDateTime(item.occurredAt || item.insertedAt, timezone),
     productName: item.productName,
-    slotLabel: getItemSlotLabel(item, slots),
-    qtyLabel: formatHomeItemQty(item),
+    slotLabel: getItemSlotLabel(item, slots, translate),
+    qtyLabel: formatHomeItemQty(item, locale, translate),
     isExternal: false,
     paymentLabel: null,
   }));
@@ -172,10 +180,10 @@ export function buildHomeDayEntryRows(
     occurredAt: entry.occurredAt,
     timeLabel: formatHomeDateTime(entry.occurredAt, timezone),
     productName: entry.name,
-    slotLabel: getExternalEntrySlotLabel(entry, slots),
-    qtyLabel: formatExternalEntryMacros(entry),
+    slotLabel: getExternalEntrySlotLabel(entry, slots, translate),
+    qtyLabel: formatExternalEntryMacros(entry, locale),
     isExternal: true,
-    paymentLabel: getExternalPaymentLabel(entry),
+    paymentLabel: getExternalPaymentLabel(entry, locale),
   }));
 
   return [...stockRows, ...externalRows]
@@ -220,10 +228,10 @@ export function getTargetSourceLabel(
   return 'No target';
 }
 
-export function formatCurrency(value: number | null | undefined): string {
+export function formatCurrency(value: number | null | undefined, locale = 'fr-FR'): string {
   const normalized =
     typeof value === 'number' && Number.isFinite(value) ? value : 0;
-  return new Intl.NumberFormat('fr-FR', {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 2,
@@ -233,9 +241,11 @@ export function formatCurrency(value: number | null | undefined): string {
 
 export function formatHomeItemQty(
   item: InputDayItemSummary | InputDayTemplateItemSummary,
+  locale = 'en-GB',
+  translate: TranslateLabel = identityLabel,
 ): string {
-  const qty = roundNumber(item.qty);
-  return `${qty} ${item.qtyUnit ?? ''}`.trim();
+  const qty = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(item.qty);
+  return `${qty} ${translate(item.qtyUnit ?? '')}`.trim();
 }
 
 export function formatHomeDateTime(
@@ -256,6 +266,7 @@ export function formatHomeDateTime(
 
 export function getPurchaseEventLabel(
   event: InventoryPurchaseEventSummary,
+  locale = 'fr-FR',
 ): string {
   if (event.excludedFromStats || event.pricingStatus === 'excluded') {
     return event.exclusionReason === 'refunded' ? 'Refunded' : 'Excluded';
@@ -269,7 +280,7 @@ export function getPurchaseEventLabel(
     return 'Prix incomplet';
   }
 
-  return formatCurrency(event.expenseAmount ?? 0);
+  return formatCurrency(event.expenseAmount ?? 0, locale);
 }
 
 export function getTemplateStockLabel(
@@ -287,6 +298,7 @@ export function getTemplateSlotLabel(
   item: InputDayTemplateItemSummary,
   inputDayResponse: InputDayResponse | null,
   slotCatalog: Slot[],
+  translate: TranslateLabel = identityLabel,
 ): string {
   const slot = inputDayResponse
     ? findSlotForEntry(item, resolveDaySlots(inputDayResponse, slotCatalog))
@@ -296,7 +308,7 @@ export function getTemplateSlotLabel(
   }
 
   const slotKey = item.slotKey?.trim();
-  return slotKey ? `Slot ${slotKey}` : 'Unassigned to a slot';
+  return translate(slotKey ? `Slot ${slotKey}` : 'Unassigned to a slot');
 }
 
 export function canConvertTemplateItem(
@@ -394,6 +406,7 @@ function findSlotForEntry(
 function getItemSlotLabel(
   item: InputDayItemSummary,
   slots: InputDayDaySetSlotSummary[],
+  translate: TranslateLabel,
 ): string {
   const slot = findSlotForEntry(item, slots);
   if (slot) {
@@ -401,12 +414,13 @@ function getItemSlotLabel(
   }
 
   const slotKey = item.slotKey?.trim();
-  return slotKey ? `Slot ${slotKey}` : 'Unassigned to a slot';
+  return translate(slotKey ? `Slot ${slotKey}` : 'Unassigned to a slot');
 }
 
 function getExternalEntrySlotLabel(
   entry: ExternalMealEntrySummary,
   slots: InputDayDaySetSlotSummary[],
+  translate: TranslateLabel,
 ): string {
   const slot = findSlotForEntry(entry, slots);
   if (slot) {
@@ -414,24 +428,27 @@ function getExternalEntrySlotLabel(
   }
 
   const slotKey = entry.slotKey?.trim();
-  return slotKey ? `Slot ${slotKey}` : 'Unassigned to a slot';
+  return translate(slotKey ? `Slot ${slotKey}` : 'Unassigned to a slot');
 }
 
-function formatExternalEntryMacros(entry: ExternalMealEntrySummary): string {
+function formatExternalEntryMacros(entry: ExternalMealEntrySummary, locale: string): string {
   const macros = entry.nutritionValue;
-  return `${roundNumber(macros.energyKcal)} kcal - P ${roundNumber(macros.proteins)} - G ${roundNumber(macros.carbs)} - L ${roundNumber(macros.lipids)}`;
+  const format = (value: number): string => new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value);
+  const carbs = locale.startsWith('fr') ? 'G' : 'C';
+  const lipids = locale.startsWith('fr') ? 'L' : 'F';
+  return `${format(macros.energyKcal)} kcal - P ${format(macros.proteins)} - ${carbs} ${format(macros.carbs)} - ${lipids} ${format(macros.lipids)}`;
 }
 
-function getExternalPaymentLabel(entry: ExternalMealEntrySummary): string {
+function getExternalPaymentLabel(entry: ExternalMealEntrySummary, locale: string): string {
   if (entry.paymentStatus === 'free') {
-    return 'Free';
+    return 'payment.free';
   }
 
   if (entry.paymentStatus === 'refunded') {
     return 'Refunded';
   }
 
-  return formatCurrency(entry.priceAmount ?? 0);
+  return formatCurrency(entry.priceAmount ?? 0, locale);
 }
 
 function resolveItemTimestamp(item: InputDayItemSummary): string {
@@ -504,9 +521,10 @@ function formatMetricValue(
   value: InputDayMacroValue | number | null | undefined,
   unit: string,
   showSign = false,
+  locale = 'fr-FR',
 ): string {
   if (typeof value === 'number' && Number.isFinite(value)) {
-    const formatted = roundNumber(Math.abs(value));
+    const formatted = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(Math.abs(value));
     let sign = '';
     if (showSign && value > 0) {
       sign = '+';
@@ -556,9 +574,4 @@ function getMacroStatus(
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
-}
-
-function roundNumber(value: number): string {
-  const rounded = Math.round(value * 100) / 100;
-  return String(rounded);
 }

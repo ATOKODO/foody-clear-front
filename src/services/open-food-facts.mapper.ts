@@ -12,7 +12,7 @@ const NUTRIENTS: [string, string, string][] = [
   ['salt', 'SALT', 'G'],
 ];
 
-const ALLERGENS: Record<string, string> = {
+export const FOOD_FACTS_ALLERGEN_LABELS: Readonly<Record<string, string>> = {
   milk: 'Lait',
   eggs: 'Œufs',
   nuts: 'Fruits à coque',
@@ -101,7 +101,7 @@ export function mapFoodFactsProduct(
           .filter((tag): tag is string => typeof tag === 'string')
           .map((tag) => {
             const key = tag.replace(/^[a-z]{2}:/, '');
-            return ALLERGENS[key] ?? key.replaceAll('-', ' ');
+            return FOOD_FACTS_ALLERGEN_LABELS[key] ?? key.replaceAll('-', ' ');
           })
       : [],
     nutriScore: grade && /^[a-e]$/.test(grade) ? grade.toUpperCase() : null,

@@ -2,9 +2,9 @@
   <header class="home-dashboard__hero">
     <div class="home-dashboard__hero-copy">
       <p class="home-dashboard__eyebrow">Foody Clear</p>
-      <h1 class="home-dashboard__title">Dashboard</h1>
+      <h1 class="home-dashboard__title">{{ "Dashboard" | translate }}</h1>
       <p class="home-dashboard__description">
-        {{ todayLabel }} · day view, goals and consolidated spending.
+        {{ "{p0} · day view, goals and consolidated spending." | translate: { p0: (todayLabel) } }}
       </p>
     </div>
 
@@ -16,10 +16,10 @@
         [disabled]="loading"
         (click)="refreshDashboard()"
       >
-        Refresh
+        {{ "Refresh" | translate }}
       </button>
       <a routerLink="/product" class="home-dashboard__hero-link home-dashboard__hero-link--primary">
-        Open catalog
+        {{ "Open catalog" | translate }}
       </a>
       <button
         type="button"
@@ -28,14 +28,14 @@
         [disabled]="loading"
         (click)="openExternalMealEntry()"
       >
-        External entry
+        {{ "External entry" | translate }}
       </button>
       <a
         routerLink="/planning"
         [queryParams]="planningTodayQueryParams"
         class="home-dashboard__hero-link home-dashboard__hero-link--secondary"
       >
-        View planning
+        {{ "View planning" | translate }}
       </a>
     </div>
   </header>
@@ -53,15 +53,15 @@
     <article class="home-panel home-panel--schedule">
       <div class="home-panel__header">
         <div>
-          <p class="home-panel__eyebrow">Day planning</p>
-          <h2>What is planned today</h2>
+          <p class="home-panel__eyebrow">{{ "Day planning" | translate }}</p>
+          <h2>{{ "What is planned today" | translate }}</h2>
         </div>
         <a
           routerLink="/planning"
           [queryParams]="planningTodayQueryParams"
           class="home-panel__link home-panel__link--secondary"
         >
-          Open
+          {{ "Open" | translate }}
         </a>
       </div>
 
@@ -70,13 +70,13 @@
           @for (row of scheduleRows; track row.key) {
             <article class="home-schedule__row">
               <div class="home-schedule__time">
-                <strong>{{ row.rangeLabel }}</strong>
-                <span>{{ row.title }}</span>
+                <strong>{{ (row.rangeLabel) | translate }}</strong>
+                <span>{{ row.key === 'without-slot' ? (row.title | translate) : row.title }}</span>
               </div>
               <div class="home-schedule__content">
                 @if (row.plannedItems.length > 0) {
                   <div class="home-schedule__group">
-                    <span class="home-schedule__group-label">Planned</span>
+                    <span class="home-schedule__group-label">{{ "Planned" | translate }}</span>
                     @for (item of row.plannedItems; track item.id) {
                       <div class="home-schedule__item home-schedule__item--planned">
                         <span class="home-schedule__item-main">
@@ -88,7 +88,7 @@
                             [class.is-ok]="item.stockAvailability.enoughStock || isConvertedTemplateItem(item)"
                             [class.is-warning]="!item.stockAvailability.enoughStock && !isConvertedTemplateItem(item)"
                           >
-                            {{ getTemplateStockLabel(item) }}
+                            {{ (getTemplateStockLabel(item)) | translate }}
                           </small>
                           @if (isConvertedTemplateItem(item)) {
                             <button
@@ -97,7 +97,7 @@
                               [disabled]="loadingDay"
                               (click)="revertTemplateItem(item)"
                             >
-                              Restore to template
+                              {{ "Restore to template" | translate }}
                             </button>
                           } @else {
                             <button
@@ -106,7 +106,7 @@
                               [disabled]="!canConvertTemplateItem(item) || loadingDay"
                               (click)="convertTemplateItem(item)"
                             >
-                              Convert
+                              {{ "Convert" | translate }}
                             </button>
                           }
                         </span>
@@ -116,7 +116,7 @@
                 }
                 @if (row.items.length > 0) {
                   <div class="home-schedule__group">
-                    <span class="home-schedule__group-label">Entered</span>
+                    <span class="home-schedule__group-label">{{ "Entered" | translate }}</span>
                     @for (item of row.items; track item.id) {
                       <div class="home-schedule__item">
                         <span>
@@ -129,14 +129,14 @@
                   </div>
                 }
                 @if (row.plannedItems.length === 0 && row.items.length === 0) {
-                  <p class="home-schedule__empty">Nothing planned for this slot.</p>
+                  <p class="home-schedule__empty">{{ "Nothing planned for this slot." | translate }}</p>
                 }
               </div>
             </article>
           }
         </div>
       } @else {
-        <p class="home-panel__empty">No planning returned for today.</p>
+        <p class="home-panel__empty">{{ "No planning returned for today." | translate }}</p>
       }
     </article>
 
@@ -144,10 +144,10 @@
       <article class="home-panel home-panel--day-entries">
         <div class="home-panel__header">
           <div>
-            <p class="home-panel__eyebrow">Quick summary</p>
-            <h2>Today's entries</h2>
+            <p class="home-panel__eyebrow">{{ "Quick summary" | translate }}</p>
+            <h2>{{ "Today's entries" | translate }}</h2>
           </div>
-          <span class="home-panel__count">{{ dayEntryRows.length }} items</span>
+          <span class="home-panel__count">{{ "{p0} items" | translate: { p0: (dayEntryRows.length) } }}</span>
         </div>
         @if (dayEntryRows.length > 0) {
           <div class="home-day-entries">
@@ -158,7 +158,7 @@
                   <strong>
                     {{ entry.productName }}
                     @if (entry.isExternal) {
-                      <em class="home-day-entry__badge">External</em>
+                      <em class="home-day-entry__badge">{{ "External" | translate }}</em>
                     }
                   </strong>
                   <small>{{ entry.slotLabel }}</small>
@@ -166,43 +166,43 @@
                 <span class="home-day-entry__qty">
                   {{ entry.qtyLabel }}
                   @if (entry.paymentLabel) {
-                    <small>{{ entry.paymentLabel }}</small>
+                    <small>{{ (entry.paymentLabel) | translate }}</small>
                   }
                 </span>
               </article>
             }
           </div>
         } @else {
-          <p class="home-panel__empty">No entries submitted today.</p>
+          <p class="home-panel__empty">{{ "No entries submitted today." | translate }}</p>
         }
       </article>
 
       <article class="home-panel">
         <div class="home-panel__header">
           <div>
-            <p class="home-panel__eyebrow">Goals</p>
-            <h2>Today's progress</h2>
+            <p class="home-panel__eyebrow">{{ "Goals" | translate }}</p>
+            <h2>{{ "Today's progress" | translate }}</h2>
             <p class="home-panel__summary">
-              Source {{ targetSourceLabel }} · {{ todayDateLocal }} · {{ timezone }}
+              {{ "Source {p0} · {p1} · {p2}" | translate: { p0: (targetSourceLabel | translate), p1: (todayDateLocal), p2: (timezone) } }}
             </p>
           </div>
           <span class="home-panel__count">
-            {{ enteredItemCount }} entered · {{ pendingTemplateItems.length }} pending
+            {{ "{p0} entered · {p1} pending" | translate: { p0: (enteredItemCount), p1: (pendingTemplateItems.length) } }}
           </span>
         </div>
         <div class="home-macro-grid">
           @for (macro of macroCards; track macro.key) {
             <article class="home-macro" [ngClass]="'home-macro--' + macro.status">
               <div class="home-macro__top">
-                <span>{{ macro.label }}</span>
+                <span>{{ (macro.label) | translate }}</span>
                 <strong>{{ macro.actual }}</strong>
               </div>
               <div class="home-macro__rail" aria-hidden="true">
                 <span class="home-macro__fill" [style.width.%]="macro.progress"></span>
               </div>
               <div class="home-macro__meta">
-                <span>Target {{ macro.target }}</span>
-                <span>Delta {{ macro.delta }}</span>
+                <span>{{ "Target {p0}" | translate: { p0: (macro.target) } }}</span>
+                <span>{{ "Delta {p0}" | translate: { p0: (macro.delta) } }}</span>
               </div>
             </article>
           }
@@ -212,13 +212,13 @@
       <article class="home-panel">
         <div class="home-panel__header">
           <div>
-            <p class="home-panel__eyebrow">Purchases</p>
-            <h2>Today's spending</h2>
+            <p class="home-panel__eyebrow">{{ "Purchases" | translate }}</p>
+            <h2>{{ "Today's spending" | translate }}</h2>
             <p class="home-panel__summary">
-              {{ todayExpenseTotal }} · {{ purchaseCount }} purchases · {{ incompletePurchaseCount }} incomplete
+              {{ "{p0} · {p1} purchases · {p2} incomplete" | translate: { p0: (todayExpenseTotal), p1: (purchaseCount), p2: (incompletePurchaseCount) } }}
             </p>
           </div>
-          <a routerLink="/statistic" class="home-panel__link">Details</a>
+          <a routerLink="/statistic" class="home-panel__link">{{ "Details" | translate }}</a>
         </div>
         @if (recentPurchaseEvents.length > 0) {
           <div class="home-expense-list">
@@ -227,15 +227,15 @@
                 <div>
                   <strong>{{ event.productName }}</strong>
                   <span>
-                    {{ formatDateTime(event.occurredAt) }} · {{ event.qty }} {{ event.qtyUnit }}
+                    {{ formatDateTime(event.occurredAt) }} · {{ event.qty }} {{ event.qtyUnit | translate }}
                   </span>
                 </div>
-                <small>{{ getPurchaseEventLabel(event) }}</small>
+                <small>{{ (getPurchaseEventLabel(event)) | translate }}</small>
               </article>
             }
           </div>
         } @else {
-          <p class="home-panel__empty">No purchases linked to today.</p>
+          <p class="home-panel__empty">{{ "No purchases linked to today." | translate }}</p>
         }
       </article>
     </aside>
@@ -244,8 +244,8 @@
   <section class="home-panel home-panel--editor">
     <div class="home-panel__header">
       <div>
-        <p class="home-panel__eyebrow">Quick entry</p>
-        <h2>Fill the day</h2>
+        <p class="home-panel__eyebrow">{{ "Quick entry" | translate }}</p>
+        <h2>{{ "Fill the day" | translate }}</h2>
       </div>
     </div>
     @defer (on interaction(quickEntryTrigger)) {
@@ -259,14 +259,14 @@
     } @placeholder {
       <div class="home-editor-launch">
         <p class="home-panel__empty">
-          Load the editor on demand to keep the dashboard responsive.
+          {{ "Load the editor on demand to keep the dashboard responsive." | translate }}
         </p>
         <button
           #quickEntryTrigger
           type="button"
           class="home-editor-launch__button"
         >
-          Open quick entry
+          {{ "Open quick entry" | translate }}
         </button>
       </div>
     }

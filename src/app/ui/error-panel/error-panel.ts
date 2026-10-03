@@ -1,19 +1,21 @@
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { JsonPipe } from '@angular/common';
+import { TranslatePipe } from '../../i18n/translate-pipe';
+import { Language } from '../../i18n/language';
 
 @Component({
   selector: 'app-ui-error-panel',
-  imports: [JsonPipe],
+  imports: [JsonPipe, TranslatePipe],
   template: `
     @if (error()) {
       <section class="app-alert app-alert--error" role="alert">
         <div class="app-alert__copy">
-          <p class="app-alert__title">{{ title() }}</p>
-          <p class="app-alert__message">{{ resolvedMessage }}</p>
+          <p class="app-alert__title">{{ title() | translate }}</p>
+          <p class="app-alert__message">{{ displayMessage | translate }}</p>
         </div>
         @if (showDetails) {
           <details class="app-alert__details">
-            <summary>{{ detailsLabel() }}</summary>
+            <summary>{{ detailsLabel() | translate }}</summary>
             <pre>{{ error() | json }}</pre>
           </details>
         }
@@ -23,6 +25,7 @@ import { JsonPipe } from '@angular/common';
   host: { style: 'display: block' },
 })
 export class UiErrorPanel {
+  private readonly language = inject(Language);
   readonly error = input<unknown>(null);
   readonly title = input('Une erreur est survenue');
   readonly message = input<string | null>(null);
@@ -35,6 +38,18 @@ export class UiErrorPanel {
     }
 
     return summarizeError(this.error());
+  }
+
+  get displayMessage(): string {
+    const message = this.resolvedMessage;
+    if (this.message() || this.language.hasTranslation(message)) return message;
+    // Unrecognized server diagnostics remain available verbatim in technical details.
+    const status = toRecord(this.error())?.['status'];
+    if (status === 0) return 'Unable to reach the server. Check your connection and try again.';
+    if (status === 400 || status === 422) return 'Some values are invalid. Check the form and try again.';
+    if (status === 404) return 'The requested resource was not found.';
+    if (status === 409) return 'This action conflicts with the current data. Refresh and try again.';
+    return defaultErrorMessage;
   }
 
   get showDetails(): boolean {

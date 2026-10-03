@@ -1,4 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { Language } from '../../app/i18n/language';
 import { forkJoin } from 'rxjs';
 import type { ProductListItem } from '../../components/product/product-list/product-list';
 import type { Inventory, ProductQuantityInputUnit } from '../../interfaces/inventory.interface';
@@ -30,6 +31,7 @@ import type { QtyUnitOption } from './shopping-list.viewmodel';
 
 @Injectable()
 export class ShoppingListStore {
+  private readonly language = inject(Language);
   private readonly shoppingListSrv = inject(ShoppingListService);
   private readonly productSrv = inject(ProductService);
   private readonly inventorySrv = inject(InventoryService);
@@ -240,7 +242,7 @@ export class ShoppingListStore {
   }
 
   resolveDraftProductName(): string {
-    return resolveDraftProductName(this.products, this.draftItemProductId);
+    return resolveDraftProductName(this.products, this.draftItemProductId, (message) => this.language.translate(message));
   }
 
   selectList(id: number): void {
@@ -532,7 +534,7 @@ export class ShoppingListStore {
   }
 
   resolveProductName(item: ShoppingListItem | ShoppingListTemplateItem): string {
-    return resolveProductName(item);
+    return resolveProductName(item, (message) => this.language.translate(message));
   }
 
   loadScreen(): void {

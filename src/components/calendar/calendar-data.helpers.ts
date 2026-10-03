@@ -387,6 +387,7 @@ export function buildCalendarWeekTimelineBlocks(
 export function resolvePendingCalendarTemplateItems(
   response: InputDayResponse | null,
   slots: CalendarDaySlot[],
+  locale = 'fr-FR',
 ): CalendarPlannedTemplateItem[] {
   if (!response) {
     return [];
@@ -422,7 +423,7 @@ export function resolvePendingCalendarTemplateItems(
       {
         id: item.id,
         productName: item.productName,
-        qtyLabel: formatCalendarCompactNumber(item.qty, 2) + unitLabel,
+        qtyLabel: formatCalendarCompactNumber(item.qty, 2, locale) + unitLabel,
         slotKey: slot?.slotKey ?? '',
         preferredMinute,
         stockAvailable: inventoryIds.length > 0,

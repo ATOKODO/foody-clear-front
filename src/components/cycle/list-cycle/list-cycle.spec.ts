@@ -46,7 +46,7 @@ describe('ListCycle', () => {
     expect(
       fixture.nativeElement.querySelector('.lc-card__footer'),
     ).not.toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('KCAL');
+    expect(fixture.nativeElement.textContent).toContain('kcal');
     expect(fixture.nativeElement.textContent).toContain('Below target');
     expect(fixture.nativeElement.textContent).toContain('55.56%');
     expect(fixture.nativeElement.textContent).toContain('Edit');
@@ -227,9 +227,9 @@ describe('ListCycle', () => {
     expect(textContent).toContain('Petit dejeuner');
     expect(textContent).toContain('08:00 - 09:00');
     expect(textContent).toContain('50%');
-    expect(textContent).toContain('KCAL');
-    expect(textContent).toContain('1070 / 1740 kcal');
-    expect(textContent).toContain('1070 / 1070 kcal');
+    expect(textContent).toContain('kcal');
+    expect(textContent).toContain('1,070 / 1,740 kcal');
+    expect(textContent).toContain('1,070 / 1,070 kcal');
     expect(textContent).toContain('On target');
   });
 

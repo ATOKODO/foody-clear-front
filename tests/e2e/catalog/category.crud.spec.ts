@@ -12,7 +12,7 @@ test('creates, edits and deletes a category', async ({ page, mockApi }) => {
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
 
-  await dialog.getByLabel('Nom *').fill('E2E Category');
+  await dialog.getByLabel("Name *").fill('E2E Category');
   await dialog.getByLabel('Warn before days *').fill('4');
   await dialog.getByLabel('Recently expired days *').fill('7');
   await dialog.getByLabel('Min quantity *').fill('2');
@@ -24,7 +24,7 @@ test('creates, edits and deletes a category', async ({ page, mockApi }) => {
   await createdRow.getByRole('button', { name: 'Edit' }).click();
   const editDialog = page.getByRole('dialog');
   await expect(editDialog).toBeVisible();
-  await editDialog.getByLabel('Nom *').fill('E2E Category updated');
+  await editDialog.getByLabel("Name *").fill('E2E Category updated');
   await editDialog.getByLabel('Warn before days *').fill('5');
   await editDialog.getByLabel('Recently expired days *').fill('8');
   await editDialog.getByLabel('Min quantity *').fill('3');

@@ -4,7 +4,7 @@
       [value]="activeView"
       [options]="viewOptions"
       (valueChange)="onViewChange($event)"
-      ariaLabel="Select dishes or meals view"
+      [ariaLabel]="&quot;Select dishes or meals view&quot; | translate"
       data-testid="meal-prep-view-toggle"
       name="meal-prep-view"
       maxWidth="18rem"
@@ -14,10 +14,10 @@
   <mat-card class="meal-prep-panel" data-testid="meal-prep-panel">
     <div class="meal-prep-panel__header">
       <div>
-        <p class="meal-prep-panel__eyebrow">Meal prep</p>
-        <h2 class="meal-prep-panel__title">Meal prep</h2>
+        <p class="meal-prep-panel__eyebrow">{{ "Meal prep" | translate }}</p>
+        <h2 class="meal-prep-panel__title">{{ "Meal prep" | translate }}</h2>
         <p class="meal-prep-panel__subtitle">
-          Compose dishes, assemble meals, and generate missing shopping from one place.
+          {{ "Compose dishes, assemble meals, and generate missing shopping from one place." | translate }}
         </p>
       </div>
       <div class="meal-prep-panel__actions">
@@ -27,7 +27,7 @@
           class="meal-prep-action meal-prep-action--secondary"
           (click)="loadScreen()"
           [disabled]="loading || saving">
-          Refresh
+          {{ "Refresh" | translate }}
         </button>
         @if (activeView === 'dish') {
           <button
@@ -36,7 +36,7 @@
             class="meal-prep-action meal-prep-action--primary"
             (click)="openCreateDishEditor()"
             [disabled]="saving">
-            New dish
+            {{ "New dish" | translate }}
           </button>
         } @else {
           <button
@@ -45,7 +45,7 @@
             class="meal-prep-action meal-prep-action--primary"
             (click)="openCreateMealEditor()"
             [disabled]="saving">
-            New meal
+            {{ "New meal" | translate }}
           </button>
         }
       </div>
@@ -55,10 +55,10 @@
       @if (loading || saving) {
         <div class="app-status-row">
           @if (loading) {
-            <span class="app-status-pill app-status-pill--neutral">Loading...</span>
+            <span class="app-status-pill app-status-pill--neutral">{{ "Loading..." | translate }}</span>
           }
           @if (saving) {
-            <span class="app-status-pill app-status-pill--saving">Saving...</span>
+            <span class="app-status-pill app-status-pill--saving">{{ "Saving..." | translate }}</span>
           }
         </div>
       }
@@ -69,23 +69,23 @@
 
       @if (shoppingListFeedback) {
         <p class="meal-prep-feedback">
-          {{ shoppingListFeedback }}
+          {{ (shoppingListFeedback) | translate }}
         </p>
       }
 
       <div class="meal-prep-toolbar">
         <div class="meal-prep-summary">
-          <span>{{ dishes.length }} dish(es)</span>
-          <span>{{ meals.length }} meals</span>
-          <span>{{ products.length }} product(s)</span>
+          <span>{{ "{p0} dish(es)" | translate: { p0: (dishes.length) } }}</span>
+          <span>{{ "{p0} meals" | translate: { p0: (meals.length) } }}</span>
+          <span>{{ "{p0} product(s)" | translate: { p0: (products.length) } }}</span>
         </div>
       </div>
 
       @if (activeView === 'dish') {
         <app-master-detail-layout
-          sideTitle="Dishes"
-          sideSubtitle="Reusable base for your meals."
-          sideAriaLabel="Dishes prepares">
+          [sideTitle]="&quot;Dishes&quot; | translate"
+          [sideSubtitle]="&quot;Reusable base for your meals.&quot; | translate"
+          [sideAriaLabel]="&quot;Dishes prepares&quot; | translate">
           <div side-content class="meal-prep-stack">
             @for (dish of sortedDishes; track dish.id) {
               <div
@@ -94,11 +94,11 @@
                 >
                 <button type="button" class="meal-prep-list-card__select" (click)="selectDish(dish.id)">
                   <span class="meal-prep-list-card__title">{{ dish.name }}</span>
-                  <span class="meal-prep-list-card__meta">{{ dish.items.length }} line(s)</span>
+                  <span class="meal-prep-list-card__meta">{{ "{p0} line(s)" | translate: { p0: (dish.items.length) } }}</span>
                   <span
                     class="meal-prep-list-card__status"
                     [class.is-ready]="dish.availability?.isInStock">
-                    {{ dish.availability?.isInStock ? 'In stock' : 'Incomplete stock' }}
+                    {{ dish.availability?.isInStock ? ("In stock" | translate) : ("Incomplete stock" | translate) }}
                   </span>
                 </button>
                 <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
@@ -108,7 +108,7 @@
                     class="meal-prep-action meal-prep-action--secondary"
                     (click)="openSelectedDishEditor(dish.id)"
                     [disabled]="saving">
-                    Edit
+                    {{ "Edit" | translate }}
                   </button>
                   <button
                     mat-stroked-button
@@ -116,12 +116,12 @@
                     class="meal-prep-action meal-prep-action--danger"
                     (click)="selectDish(dish.id); deleteSelectedDish()"
                     [disabled]="saving">
-                    Remove
+                    {{ "Remove" | translate }}
                   </button>
                 </div>
               </div>
             } @empty {
-              <p class="meal-prep-empty">No dish yet.</p>
+              <p class="meal-prep-empty">{{ "No dish yet." | translate }}</p>
             }
           </div>
 
@@ -130,7 +130,7 @@
               <div class="meal-prep-workspace__header">
                 <div>
                   <h3>{{ dish.name }}</h3>
-                  <p>{{ dish.items.length }} line(s) in this dish.</p>
+                  <p>{{ "{p0} line(s) in this dish." | translate: { p0: (dish.items.length) } }}</p>
                 </div>
                 <button
                   mat-stroked-button
@@ -138,42 +138,42 @@
                   class="meal-prep-action meal-prep-action--secondary"
                   (click)="createShoppingListFromSelectedDish()"
                   [disabled]="saving">
-                  Shopping list
+                  {{ "Shopping list" | translate }}
                 </button>
               </div>
 
               <div class="meal-prep-detail-card">
                 <div class="meal-prep-detail-card__header">
                   <div>
-                    <h4>Dish contents</h4>
-                    <p>{{ dish.availability?.isInStock ? 'Ready with current stock' : 'Shopping needed' }}</p>
+                    <h4>{{ "Dish contents" | translate }}</h4>
+                    <p>{{ dish.availability?.isInStock ? ("Ready with current stock" | translate) : ("Shopping needed" | translate) }}</p>
                   </div>
                   <span class="meal-prep-badge">
-                    {{ resolveAvailabilityLabel(dish.availability?.maxPreparations) }} possible
+                    {{ "{p0} possible" | translate: { p0: (resolveAvailabilityLabel(dish.availability?.maxPreparations)) } }}
                   </span>
                 </div>
 
                 <div class="meal-prep-detail-card__body">
                   @for (item of dish.items; track item.id) {
                     <div class="meal-prep-detail-row">
-                      <span>{{ item.product?.name ?? ('Product #' + item.productId) }}</span>
-                      <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }}</span>
+                      <span>{{ item.product?.name ?? (("Product #" | translate) + item.productId) }}</span>
+                      <span>{{ item.qty }} {{ (item.qtyUnit ?? '-') | translate }}</span>
                     </div>
                   } @empty {
-                    <p class="meal-prep-empty">No lines in this dish.</p>
+                    <p class="meal-prep-empty">{{ "No lines in this dish." | translate }}</p>
                   }
                 </div>
               </div>
             } @else {
-              <p class="meal-prep-empty meal-prep-empty--large">Select or create a dish.</p>
+              <p class="meal-prep-empty meal-prep-empty--large">{{ "Select or create a dish." | translate }}</p>
             }
           </div>
         </app-master-detail-layout>
       } @else {
         <app-master-detail-layout
-          sideTitle="Meals"
-          sideSubtitle="Final assembly of dishes and products."
-          sideAriaLabel="Meals prepares">
+          [sideTitle]="&quot;Meals&quot; | translate"
+          [sideSubtitle]="&quot;Final assembly of dishes and products.&quot; | translate"
+          [sideAriaLabel]="&quot;Meals prepares&quot; | translate">
           <div side-content class="meal-prep-stack">
             @for (meal of sortedMeals; track meal.id) {
               <div
@@ -182,11 +182,11 @@
                 >
                 <button type="button" class="meal-prep-list-card__select" (click)="selectMeal(meal.id)">
                   <span class="meal-prep-list-card__title">{{ meal.name }}</span>
-                  <span class="meal-prep-list-card__meta">{{ meal.items.length }} line(s)</span>
+                  <span class="meal-prep-list-card__meta">{{ "{p0} line(s)" | translate: { p0: (meal.items.length) } }}</span>
                   <span
                     class="meal-prep-list-card__status"
                     [class.is-ready]="meal.availability?.isInStock">
-                    {{ meal.availability?.isInStock ? 'In stock' : 'Incomplete stock' }}
+                    {{ meal.availability?.isInStock ? ("In stock" | translate) : ("Incomplete stock" | translate) }}
                   </span>
                 </button>
                 <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
@@ -196,7 +196,7 @@
                     class="meal-prep-action meal-prep-action--secondary"
                     (click)="openSelectedMealEditor(meal.id)"
                     [disabled]="saving">
-                    Edit
+                    {{ "Edit" | translate }}
                   </button>
                   <button
                     mat-stroked-button
@@ -204,12 +204,12 @@
                     class="meal-prep-action meal-prep-action--danger"
                     (click)="selectMeal(meal.id); deleteSelectedMeal()"
                     [disabled]="saving">
-                    Remove
+                    {{ "Remove" | translate }}
                   </button>
                 </div>
               </div>
             } @empty {
-              <p class="meal-prep-empty">No meal yet.</p>
+              <p class="meal-prep-empty">{{ "No meal yet." | translate }}</p>
             }
           </div>
 
@@ -218,7 +218,7 @@
               <div class="meal-prep-workspace__header">
                 <div>
                   <h3>{{ meal.name }}</h3>
-                  <p>{{ meal.items.length }} line(s) in this meal.</p>
+                  <p>{{ "{p0} line(s) in this meal." | translate: { p0: (meal.items.length) } }}</p>
                 </div>
                 <button
                   mat-stroked-button
@@ -226,34 +226,34 @@
                   class="meal-prep-action meal-prep-action--secondary"
                   (click)="createShoppingListFromSelectedMeal()"
                   [disabled]="saving">
-                  Shopping list
+                  {{ "Shopping list" | translate }}
                 </button>
               </div>
 
               <div class="meal-prep-detail-card">
                 <div class="meal-prep-detail-card__header">
                   <div>
-                    <h4>Meal contents</h4>
-                    <p>{{ meal.availability?.isInStock ? 'Ready with current stock' : 'Shopping needed' }}</p>
+                    <h4>{{ "Meal contents" | translate }}</h4>
+                    <p>{{ meal.availability?.isInStock ? ("Ready with current stock" | translate) : ("Shopping needed" | translate) }}</p>
                   </div>
                   <span class="meal-prep-badge">
-                    {{ resolveAvailabilityLabel(meal.availability?.maxPreparations) }} possible
+                    {{ "{p0} possible" | translate: { p0: (resolveAvailabilityLabel(meal.availability?.maxPreparations)) } }}
                   </span>
                 </div>
 
                 <div class="meal-prep-detail-card__body">
                   @for (item of meal.items; track item.id) {
                     <div class="meal-prep-detail-row">
-                      <span>{{ resolveTypeLabel(item.itemType) }} - {{ resolveLineLabel(item) }}</span>
-                      <span>{{ item.qty }} {{ item.qtyUnit ?? '-' }}</span>
+                      <span>{{ (resolveTypeLabel(item.itemType)) | translate }} - {{ resolveLineLabel(item) }}</span>
+                      <span>{{ item.qty }} {{ (item.qtyUnit ?? '-') | translate }}</span>
                     </div>
                   } @empty {
-                    <p class="meal-prep-empty">No lines in this meal.</p>
+                    <p class="meal-prep-empty">{{ "No lines in this meal." | translate }}</p>
                   }
                 </div>
               </div>
             } @else {
-              <p class="meal-prep-empty meal-prep-empty--large">Select or create a meal.</p>
+              <p class="meal-prep-empty meal-prep-empty--large">{{ "Select or create a meal." | translate }}</p>
             }
           </div>
         </app-master-detail-layout>
@@ -266,26 +266,26 @@
   <button
     type="button"
     class="app-modal-backdrop"
-    aria-label="Close editor"
+    [attr.aria-label]="&quot;Close editor&quot; | translate"
     (click)="closeEditor()"
     ></button>
 }
 @if (isEditorOpen) {
   <div class="app-modal-shell" data-testid="meal-prep-editor-dialog">
-    <mat-card class="app-modal-card app-modal-card--wide" appModal [appModalDisableClose]="saving" (appModalClose)="closeEditor()" aria-modal="true" aria-label="Meal prep editor" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
+    <mat-card class="app-modal-card app-modal-card--wide" appModal [appModalDisableClose]="saving" (appModalClose)="closeEditor()" aria-modal="true" [attr.aria-label]="&quot;Meal prep editor&quot; | translate" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
       <mat-card-header>
         <mat-card-title>
           @if (activeView === 'dish') {
-            {{ editingDishId === null ? 'Create dish' : 'Edit dish' }}
+            {{ editingDishId === null ? ("Create dish" | translate) : ("Edit dish" | translate) }}
           } @else {
-            {{ editingMealId === null ? 'Create meal' : 'Edit meal' }}
+            {{ editingMealId === null ? ("Create meal" | translate) : ("Edit meal" | translate) }}
           }
         </mat-card-title>
         <mat-card-subtitle>
           @if (activeView === 'dish') {
-            Choose products with the same search list used in inventory.
+            {{ "Choose products with the same search list used in inventory." | translate }}
           } @else {
-            Add an existing dish or choose a product from the modal.
+            {{ "Add an existing dish or choose a product from the modal." | translate }}
           }
         </mat-card-subtitle>
       </mat-card-header>
@@ -294,15 +294,15 @@
         @if (activeView === 'dish') {
           <div class="meal-prep-editor-card meal-prep-editor-card--modal">
             <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Dish name</mat-label>
-              <input matInput [(ngModel)]="dishDraftName" placeholder="Spaghetti bolognese" />
+              <mat-label>{{ "Dish name" | translate }}</mat-label>
+              <input matInput [(ngModel)]="dishDraftName" [placeholder]="&quot;Spaghetti bolognese&quot; | translate" />
             </mat-form-field>
 
             <div class="meal-prep-lines">
               @for (line of dishDraftLines; track $index) {
                 <div class="meal-prep-line-card">
                   <div class="meal-prep-line-card__source">
-                    <span class="meal-prep-line-card__label">Product</span>
+                    <span class="meal-prep-line-card__label">{{ "Product" | translate }}</span>
                     <strong>{{ resolveProductName(line.productId) }}</strong>
                     <button
                       mat-stroked-button
@@ -310,24 +310,24 @@
                       class="meal-prep-action meal-prep-action--secondary"
                       (click)="openDishProductPicker($index)"
                       [disabled]="saving || loading">
-                      Choose
+                      {{ "Choose" | translate }}
                     </button>
                   </div>
                   <mat-form-field appearance="fill">
-                    <mat-label>Quantity</mat-label>
+                    <mat-label>{{ "Quantity" | translate }}</mat-label>
                     <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="line.qty" />
                   </mat-form-field>
                   <mat-form-field appearance="fill">
-                    <mat-label>Unit</mat-label>
+                    <mat-label>{{ "Unit" | translate }}</mat-label>
                     <mat-select [(ngModel)]="line.qtyUnit" [canSelectNullableOptions]="true">
-                      <mat-option [value]="null">Default unit</mat-option>
+                      <mat-option [value]="null">{{ "Default unit" | translate }}</mat-option>
                       @for (unit of getDishQtyUnitOptions(line); track unit.value) {
-                        <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
+                        <mat-option [value]="unit.value">{{ (unit.label) | translate }}</mat-option>
                       }
                     </mat-select>
                   </mat-form-field>
                   <button mat-stroked-button color="warn" type="button" (click)="removeDishLine($index)" [disabled]="saving">
-                    Remove
+                    {{ "Remove" | translate }}
                   </button>
                 </div>
               }
@@ -336,26 +336,26 @@
         } @else {
           <div class="meal-prep-editor-card meal-prep-editor-card--modal">
             <mat-form-field appearance="fill" class="w-full">
-              <mat-label>Meal name</mat-label>
-              <input matInput [(ngModel)]="mealDraftName" placeholder="Movie night meal" />
+              <mat-label>{{ "Meal name" | translate }}</mat-label>
+              <input matInput [(ngModel)]="mealDraftName" [placeholder]="&quot;Movie night meal&quot; | translate" />
             </mat-form-field>
 
             <div class="meal-prep-lines">
               @for (line of mealDraftLines; track $index) {
                 <div class="meal-prep-line-card meal-prep-line-card--meal">
                   <mat-form-field appearance="fill">
-                    <mat-label>Type</mat-label>
+                    <mat-label>{{ "Type" | translate }}</mat-label>
                     <mat-select [ngModel]="line.itemType" (ngModelChange)="onMealItemTypeChange(line, $event)">
-                      <mat-option value="dish">Dish</mat-option>
-                      <mat-option value="product">Product</mat-option>
+                      <mat-option value="dish">{{ "Dish" | translate }}</mat-option>
+                      <mat-option value="product">{{ "Product" | translate }}</mat-option>
                     </mat-select>
                   </mat-form-field>
 
                   @if (line.itemType === 'dish') {
                     <mat-form-field appearance="fill" class="meal-prep-line-card__dish-select">
-                      <mat-label>Dish</mat-label>
+                      <mat-label>{{ "Dish" | translate }}</mat-label>
                       <mat-select [ngModel]="line.dishId" (ngModelChange)="onMealDishChange(line, $event)">
-                        <mat-option [value]="null">Select</mat-option>
+                        <mat-option [value]="null">{{ "Select" | translate }}</mat-option>
                         @for (dish of sortedDishes; track dish.id) {
                           <mat-option [value]="dish.id">{{ dish.name }}</mat-option>
                         }
@@ -363,7 +363,7 @@
                     </mat-form-field>
                   } @else {
                     <div class="meal-prep-line-card__source">
-                      <span class="meal-prep-line-card__label">Product</span>
+                      <span class="meal-prep-line-card__label">{{ "Product" | translate }}</span>
                       <strong>{{ resolveProductName(line.productId) }}</strong>
                       <button
                         mat-stroked-button
@@ -371,26 +371,26 @@
                         class="meal-prep-action meal-prep-action--secondary"
                         (click)="openMealProductPicker($index)"
                         [disabled]="saving || loading">
-                        Choose
+                        {{ "Choose" | translate }}
                       </button>
                     </div>
                   }
 
                   <mat-form-field appearance="fill">
-                    <mat-label>Quantity</mat-label>
+                    <mat-label>{{ "Quantity" | translate }}</mat-label>
                     <input matInput type="number" min="0.01" step="0.01" [(ngModel)]="line.qty" />
                   </mat-form-field>
                   <mat-form-field appearance="fill">
-                    <mat-label>Unit</mat-label>
+                    <mat-label>{{ "Unit" | translate }}</mat-label>
                     <mat-select [(ngModel)]="line.qtyUnit" [canSelectNullableOptions]="true">
-                      <mat-option [value]="null">Default unit</mat-option>
+                      <mat-option [value]="null">{{ "Default unit" | translate }}</mat-option>
                       @for (unit of getMealQtyUnitOptions(line); track unit.value) {
-                        <mat-option [value]="unit.value">{{ unit.label }}</mat-option>
+                        <mat-option [value]="unit.value">{{ (unit.label) | translate }}</mat-option>
                       }
                     </mat-select>
                   </mat-form-field>
                   <button mat-stroked-button color="warn" type="button" (click)="removeMealLine($index)" [disabled]="saving">
-                    Remove
+                    {{ "Remove" | translate }}
                   </button>
                 </div>
               }
@@ -401,21 +401,21 @@
 
       <mat-card-actions align="end" class="gap-2 px-4 pb-4">
         <button mat-stroked-button type="button" (click)="closeEditor()" [disabled]="saving">
-          Cancel
+          {{ "Cancel" | translate }}
         </button>
         @if (activeView === 'dish') {
           <button mat-stroked-button type="button" (click)="addDishLine()" [disabled]="saving">
-            Add line
+            {{ "Add line" | translate }}
           </button>
           <button mat-raised-button color="primary" type="button" (click)="saveDish()" [disabled]="!canSaveDish() || saving">
-            {{ editingDishId === null ? 'Create dish' : 'Save dish' }}
+            {{ editingDishId === null ? ("Create dish" | translate) : ("Save dish" | translate) }}
           </button>
         } @else {
           <button mat-stroked-button type="button" (click)="addMealLine()" [disabled]="saving">
-            Add line
+            {{ "Add line" | translate }}
           </button>
           <button mat-raised-button color="primary" type="button" (click)="saveMeal()" [disabled]="!canSaveMeal() || saving">
-            {{ editingMealId === null ? 'Create meal' : 'Save meal' }}
+            {{ editingMealId === null ? ("Create meal" | translate) : ("Save meal" | translate) }}
           </button>
         }
       </mat-card-actions>
@@ -427,22 +427,22 @@
   <button
     type="button"
     class="app-modal-backdrop"
-    aria-label="Close product picker"
+    [attr.aria-label]="&quot;Close product picker&quot; | translate"
     (click)="closeProductPicker()"
     ></button>
 }
 @if (isProductPickerOpen) {
   <div class="app-modal-shell" data-testid="meal-prep-product-picker-dialog">
-    <mat-card class="app-modal-card app-modal-card--wide" appModal [appModalDisableClose]="saving" (appModalClose)="closeProductPicker()" aria-modal="true" aria-label="Choose a product" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
+    <mat-card class="app-modal-card app-modal-card--wide" appModal [appModalDisableClose]="saving" (appModalClose)="closeProductPicker()" aria-modal="true" [attr.aria-label]="&quot;Choose a product&quot; | translate" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
       <mat-card-header>
-        <mat-card-title>Choose a product</mat-card-title>
+        <mat-card-title>{{ "Choose a product" | translate }}</mat-card-title>
         <mat-card-subtitle>
-          Search by name, category, generic product, barcode, or tag.
+          {{ "Search by name, category, generic product, barcode, or tag." | translate }}
         </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content class="space-y-4 pt-2">
         @if (loading) {
-          <p class="text-sm text-app-text-muted">Loading products...</p>
+          <p class="text-sm text-app-text-muted">{{ "Loading products..." | translate }}</p>
         }
         <app-product-list
           [mode]="'select-single'"
@@ -454,7 +454,7 @@
       </mat-card-content>
       <mat-card-actions align="end" class="gap-2 px-4 pb-4">
         <button mat-stroked-button type="button" (click)="closeProductPicker()">
-          Cancel
+          {{ "Cancel" | translate }}
         </button>
       </mat-card-actions>
     </mat-card>

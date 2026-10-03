@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { Component, computed, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -37,6 +38,7 @@ interface ExternalMealEntrySlotOption {
 @Component({
   selector: 'app-external-meal-entry-dialog',
   imports: [
+    TranslatePipe,
     ReactiveFormsModule,
     MatButtonModule,
     MatDialogModule,
@@ -59,7 +61,7 @@ export class ExternalMealEntryDialog {
 
   readonly paymentStatuses: { value: ExternalMealEntryPaymentStatus; label: string }[] = [
     { value: 'paid', label: 'Paid' },
-    { value: 'free', label: 'Free' },
+    { value: 'free', label: 'payment.free' },
     { value: 'refunded', label: 'Refunded' },
   ];
 

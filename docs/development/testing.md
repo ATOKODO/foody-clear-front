@@ -69,6 +69,16 @@ For changes to the theme or navigation, preview the site and check desktop/mobil
 
 ## Useful regression scenarios
 
+### Language changes
+
+Run `npm run test:i18n` for static-template coverage, including nested Angular control-flow branches and component text inputs. Use `node scripts/i18n-code-inventory.mjs` to review generated labels and validation messages; its candidates include technical constants and user-owned data, so this inventory requires manual classification. A clean static inventory does not prove that every dynamic screen is translated.
+
+`tests/e2e/smoke/language.spec.ts` checks all registered pages in EN and FR, persistence, mobile positioning beside the theme, and draft preservation. The functional fixtures seed English only when no language has been saved. Cover both languages when changing forms, dialogs, empty states, error summaries or date controls; run the functional and visual suites as well.
+
+Add application-owned copy to `src/app/i18n/messages.ts`. A string maps an English source to French; a pair normalizes an older source into `[English, French]`. Use named parameters for names, counts and dates. Keep product names, inventory names, recipe titles, API enum values and technical JSON unchanged. Translate only display labels, never values sent to the backend. Use `Language.locale()` for formatted output and preserve ISO/date-local values in requests.
+
+### Stock, nutrition and time
+
 For stock and quantity changes, test two inventories jointly satisfying one entry, insufficient stock for a specific recipe ingredient, editing/deleting recorded consumption, stored unit preservation and exact source restoration.
 
 For nutrition changes, test clearing all values and distinguishing absent values from zero. For time changes, test local midnight, timezone changes, daylight-saving transitions and overnight calendar entries.

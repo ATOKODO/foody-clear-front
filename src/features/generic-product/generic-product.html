@@ -3,12 +3,12 @@
     <div class="app-status-row">
       @if (loading()) {
         <span class="app-status-pill app-status-pill--neutral">
-          Loading...
+          {{ "Loading..." | translate }}
         </span>
       }
       @if (saving()) {
         <span class="app-status-pill app-status-pill--saving">
-          Saving...
+          {{ "Saving..." | translate }}
         </span>
       }
     </div>
@@ -27,25 +27,25 @@
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="flex items-center justify-between bg-app-hero px-6 py-5 text-app-on-color">
         <div>
-          <h2 class="text-xl font-semibold">Produits generics</h2>
+          <h2 class="text-xl font-semibold">{{ "Produits generics" | translate }}</h2>
           <p class="mt-1 text-sm text-app-on-color-muted">
-            Referentiel minimal pour les equivalences de stock.
+            {{ "Referentiel minimal pour les equivalences de stock." | translate }}
           </p>
         </div>
         <button mat-raised-button color="primary" type="button" (click)="onRefreshRequested()">
-          Refresh
+          {{ "Refresh" | translate }}
         </button>
       </div>
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
           @if (loading()) {
             <span class="app-status-pill app-status-pill--neutral">
-              Loading...
+              {{ "Loading..." | translate }}
             </span>
           }
           @if (saving()) {
             <span class="app-status-pill app-status-pill--saving">
-              Saving...
+              {{ "Saving..." | translate }}
             </span>
           }
         </div>
@@ -64,7 +64,7 @@
 
 
 @if (formVisible) {
-  <button type="button" class="app-modal-backdrop" aria-label="Close la modale" (click)="onCancelForm()"></button>
+  <button type="button" class="app-modal-backdrop" [attr.aria-label]="&quot;Close la modale&quot; | translate" (click)="onCancelForm()"></button>
 }
 @if (formVisible) {
   <div class="app-modal-shell">
@@ -77,16 +77,16 @@
       >
       <div class="app-dialog-header">
         <div>
-          <p class="app-dialog-eyebrow">Catalog</p>
+          <p class="app-dialog-eyebrow">{{ "Catalog" | translate }}</p>
           <h3 class="app-dialog-title">
-            {{ formMode === 'edit' ? 'Edit un generic product' : 'Add un generic product' }}
+            {{ formMode === 'edit' ? ("Edit un generic product" | translate) : ("Add un generic product" | translate) }}
           </h3>
           <p class="app-dialog-subtitle">
-            Definis les seuils minimums utiles pour les equivalences unite / metrique.
+            {{ "Definis les seuils minimums utiles pour les equivalences unite / metrique." | translate }}
           </p>
         </div>
         <button mat-stroked-button type="button" (click)="onCancelForm()">
-          Close
+          {{ "Close" | translate }}
         </button>
       </div>
       <div class="app-dialog-content">

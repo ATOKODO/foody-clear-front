@@ -5,14 +5,14 @@
         <span
           class="app-status-pill app-status-pill--neutral"
           >
-          Loading...
+          {{ "Loading..." | translate }}
         </span>
       }
       @if (store.saving()) {
         <span
           class="app-status-pill app-status-pill--saving"
           >
-          Saving...
+          {{ "Saving..." | translate }}
         </span>
       }
     </div>
@@ -33,8 +33,8 @@
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="flex items-center justify-between bg-app-hero px-6 py-5 text-app-on-color">
         <div>
-          <h2 class="text-xl font-semibold">Categories</h2>
-          <p class="mt-1 text-sm text-app-on-color-muted">Structure, alertes et seuils par category.</p>
+          <h2 class="text-xl font-semibold">{{ "Categories" | translate }}</h2>
+          <p class="mt-1 text-sm text-app-on-color-muted">{{ "Structure, alertes et seuils par category." | translate }}</p>
         </div>
         <button
           mat-raised-button
@@ -42,7 +42,7 @@
           type="button"
           (click)="store.refresh()"
           >
-          Refresh
+          {{ "Refresh" | translate }}
         </button>
       </div>
       <div class="space-y-4 p-4 sm:p-6">
@@ -51,14 +51,14 @@
             <span
               class="app-status-pill app-status-pill--neutral"
               >
-              Loading...
+              {{ "Loading..." | translate }}
             </span>
           }
           @if (store.saving()) {
             <span
               class="app-status-pill app-status-pill--saving"
               >
-              Saving...
+              {{ "Saving..." | translate }}
             </span>
           }
         </div>
@@ -82,7 +82,7 @@
   <button
     type="button"
     class="app-modal-backdrop"
-    aria-label="Close la modale"
+    [attr.aria-label]="&quot;Close la modale&quot; | translate"
     (click)="store.cancelForm()"
   ></button>
 }
@@ -96,12 +96,12 @@
       >
       <div class="app-dialog-header">
         <div>
-          <p class="app-dialog-eyebrow">Catalog</p>
-          <h3 class="app-dialog-title">{{ store.dialogTitle() }}</h3>
-          <p class="app-dialog-subtitle">{{ store.dialogSubtitle() }}</p>
+          <p class="app-dialog-eyebrow">{{ "Catalog" | translate }}</p>
+          <h3 class="app-dialog-title">{{ (store.dialogTitle()) | translate }}</h3>
+          <p class="app-dialog-subtitle">{{ (store.dialogSubtitle()) | translate }}</p>
         </div>
         <button mat-stroked-button type="button" (click)="store.cancelForm()">
-          Close
+          {{ "Close" | translate }}
         </button>
       </div>
       <div class="app-dialog-content">

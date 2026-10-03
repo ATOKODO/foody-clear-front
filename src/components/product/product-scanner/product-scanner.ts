@@ -1,3 +1,6 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
+import { Language } from '../../../app/i18n/language';
+import { FOOD_FACTS_ALLERGEN_LABELS } from '../../../services/open-food-facts.mapper';
 import { Component, DestroyRef, ElementRef, OnChanges, OnDestroy, inject, input, output, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -11,13 +14,17 @@ import { FoodFactsProduct, OpenFoodFactsService, isProductBarcode } from '../../
 
 @Component({
   selector: 'app-product-scanner',
-  imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [TranslatePipe, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule],
   providers: [BarcodeScannerService],
   templateUrl: './product-scanner.html',
   styleUrl: './product-scanner.scss',
   host: { '(document:visibilitychange)': 'onVisibilityChange()' },
 })
 export class ProductScanner implements OnChanges, OnDestroy {
+  readonly language = inject(Language);
+  private readonly allergenKeys = new Map(
+    Object.entries(FOOD_FACTS_ALLERGEN_LABELS).map(([key, label]) => [label, `allergen.${key}`]),
+  );
   private readonly camera = inject(BarcodeScannerService);
   private readonly foodFacts = inject(OpenFoodFactsService);
   private readonly destroyRef = inject(DestroyRef);
@@ -42,6 +49,13 @@ export class ProductScanner implements OnChanges, OnDestroy {
 
   ngOnChanges(): void {
     if (!this.active() || this.disabled()) this.stopCamera();
+  }
+
+  formatAllergens(allergens: readonly string[]): string {
+    return allergens.map((allergen) => {
+      const key = this.allergenKeys.get(allergen);
+      return key ? this.language.translate(key) : allergen;
+    }).join(', ');
   }
 
   ngOnDestroy(): void {

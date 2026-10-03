@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
@@ -17,7 +18,7 @@ import { ShoppingListStore } from './shopping-list.store';
 @Component({
   selector: 'app-shopping-list',
   standalone: true,
-  imports: [UiModal,
+  imports: [TranslatePipe, UiModal,
     CommonModule,
     FormsModule,
     MatButtonModule,

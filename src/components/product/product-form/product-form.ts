@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 
 import {
   Component,
@@ -69,6 +70,7 @@ export interface ProductFormValue {
 @Component({
   selector: 'app-product-form',
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,

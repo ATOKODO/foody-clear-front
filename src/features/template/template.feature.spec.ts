@@ -199,7 +199,7 @@ describe('TemplateFeature', () => {
     expect(
       nativeElement.querySelector('[data-testid="template-refresh-action"]')
         ?.textContent,
-    ).toContain('Rafraichir');
+    ).toContain('Refresh');
     expect(
       nativeElement.querySelector('[data-testid="template-add"]')?.textContent,
     ).toContain('New template');
@@ -234,7 +234,7 @@ describe('TemplateFeature', () => {
     expect(
       overlay.querySelector('[data-testid="template-dialog"]'),
     ).not.toBeNull();
-    expect(overlay.textContent).toContain('Nouveau template');
+    expect(overlay.textContent).toContain('New template');
   });
 
   it('should render refreshed templates after an async response', async () => {

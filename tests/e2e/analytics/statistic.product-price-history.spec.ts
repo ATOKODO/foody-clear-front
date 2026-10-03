@@ -10,11 +10,11 @@ test.describe('Statistics price history', () => {
     await page.getByTestId('stat-view-prices').click();
     await expect(page.getByTestId('stat-price-timeline')).toBeVisible();
     await expect(page.getByTestId('stat-price-timeline').locator('.price-timeline__item')).toHaveCount(1);
-    await expect(page.getByTestId('stat-price-timeline')).toContainText('0,49');
+    await expect(page.getByTestId('stat-price-timeline')).toContainText('0.49');
 
     await selectMatOption(page, page.getByTestId('stat-price-product-select'), 'Blanc de poulet (#2)');
 
     await expect(page.getByTestId('stat-price-timeline').locator('.price-timeline__item')).toHaveCount(1);
-    await expect(page.getByTestId('stat-price-timeline')).toContainText('8,40');
+    await expect(page.getByTestId('stat-price-timeline')).toContainText('8.40');
   });
 });

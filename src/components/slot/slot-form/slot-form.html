@@ -1,77 +1,77 @@
-<section class="mx-auto max-w-4xl px-4 py-8 text-app-text-strong" aria-label="Add or edit a slot">
+<section class="mx-auto max-w-4xl px-4 py-8 text-app-text-strong" [attr.aria-label]="&quot;Add or edit a slot&quot; | translate">
   @if (showHeading()) {
     <div class="mb-6 flex items-center justify-between border-b border-app-border pb-3">
-      <h2 class="text-xl font-medium">{{ heading }}</h2>
-      <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
+      <h2 class="text-xl font-medium">{{ (heading) | translate }}</h2>
+      <button mat-stroked-button type="button" (click)="onMenuClick()">{{ "Options" | translate }}</button>
     </div>
   }
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
     <div class="grid gap-4 md:grid-cols-12">
       <mat-form-field appearance="fill" class="ssf-field md:col-span-4">
-        <mat-label>Key</mat-label>
-        <input matInput type="text" formControlName="key" placeholder="morning" />
+        <mat-label>{{ "Key" | translate }}</mat-label>
+        <input matInput type="text" formControlName="key" [placeholder]="&quot;morning&quot; | translate" />
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="ssf-field md:col-span-6">
-        <mat-label>Title</mat-label>
-        <input matInput type="text" formControlName="title" placeholder="Breakfast" />
+        <mat-label>{{ "Title" | translate }}</mat-label>
+        <input matInput type="text" formControlName="title" [placeholder]="&quot;Breakfast&quot; | translate" />
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="ssf-field md:col-span-2">
-        <mat-label>Order</mat-label>
+        <mat-label>{{ "Order" | translate }}</mat-label>
         <input matInput type="number" min="0" formControlName="sortOrder" />
       </mat-form-field>
     </div>
 
     <div class="grid gap-4 md:grid-cols-12">
       <mat-form-field appearance="fill" class="ssf-field md:col-span-6">
-        <mat-label>Start time</mat-label>
+        <mat-label>{{ "Start time" | translate }}</mat-label>
         <input matInput type="time" formControlName="startTime" />
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="ssf-field md:col-span-6">
-        <mat-label>End time</mat-label>
+        <mat-label>{{ "End time" | translate }}</mat-label>
         <input matInput type="time" formControlName="endTime" />
       </mat-form-field>
     </div>
 
     <div class="space-y-3">
       <div class="flex items-center justify-between gap-3">
-        <h3 class="text-base font-semibold text-app-text-strong">Nutrition values</h3>
+        <h3 class="text-base font-semibold text-app-text-strong">{{ "Nutrition values" | translate }}</h3>
         <button mat-stroked-button type="button" (click)="addNutritionValue()">
-          Add value
+          {{ "Add value" | translate }}
         </button>
       </div>
 
       @if (nutritionKeys().length === 0) {
         <p class="text-sm text-app-text">
-          Nutrition meta keys are not loaded, free entry mode is enabled.
+          {{ "Nutrition meta keys are not loaded, free entry mode is enabled." | translate }}
         </p>
       }
 
       @for (value of nutritionValues; track value; let i = $index) {
         <div class="grid gap-3 md:grid-cols-12 md:items-start">
           <mat-form-field appearance="fill" class="ssf-field md:col-span-4">
-            <mat-label>Key</mat-label>
+            <mat-label>{{ "Key" | translate }}</mat-label>
             <mat-select
               [(ngModel)]="value.nutritionKey"
               [ngModelOptions]="{ standalone: true }"
               (selectionChange)="onNutritionKeyChange(i)">
               @for (item of nutritionKeys(); track item) {
                 <mat-option [value]="item.value">
-                  {{ item.label }}
+                  {{ item.label | translate }}
                 </mat-option>
               }
             </mat-select>
             @if (nutritionKeys().length === 0) {
               <mat-hint>
-                No meta key available
+                {{ "No meta key available" | translate }}
               </mat-hint>
             }
           </mat-form-field>
           <mat-form-field appearance="fill" class="ssf-field md:col-span-2">
-            <mat-label>Amount</mat-label>
+            <mat-label>{{ "Amount" | translate }}</mat-label>
             <input
               matInput
               type="number"
@@ -80,32 +80,32 @@
               [ngModelOptions]="{ standalone: true }" />
           </mat-form-field>
           <mat-form-field appearance="fill" class="ssf-field md:col-span-2">
-            <mat-label>Unit</mat-label>
+            <mat-label>{{ "Unit" | translate }}</mat-label>
             <mat-select
               [(ngModel)]="value.unit"
               [ngModelOptions]="{ standalone: true }">
               @for (unit of getUnitsForKey(value.nutritionKey); track unit) {
                 <mat-option [value]="unit">
-                  {{ unit }}
+                  {{ (unit) | translate }}
                 </mat-option>
               }
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="fill" class="ssf-field md:col-span-3">
-            <mat-label>Reference</mat-label>
+            <mat-label>{{ "Reference" | translate }}</mat-label>
             <mat-select
               [(ngModel)]="value.reference"
               [ngModelOptions]="{ standalone: true }">
               @for (reference of referenceOptions; track reference) {
                 <mat-option [value]="reference.value">
-                  {{ reference.label }}
+                  {{ (reference.label) | translate }}
                 </mat-option>
               }
             </mat-select>
           </mat-form-field>
           <div class="md:col-span-1 md:pt-2">
             <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
-              Remove
+              {{ "Remove" | translate }}
             </button>
           </div>
         </div>
@@ -114,7 +114,7 @@
 
     <div class="flex justify-center pt-2">
       <button mat-raised-button color="primary" type="submit" [disabled]="saving()" class="rounded-full px-8">
-        Save
+        {{ "Save" | translate }}
       </button>
     </div>
   </form>

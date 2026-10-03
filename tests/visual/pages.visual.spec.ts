@@ -92,6 +92,25 @@ test('product — create dialog', async ({ page, visual }) => {
   await expect(page).toHaveScreenshot('product-dialog.png', { fullPage: false });
 });
 
+for (const [path, landmark] of [['home', 'home-dashboard'], ['calendar', 'calendar-root']] as const) {
+  test(`${path} — French language`, async ({ page, visual }) => {
+    await visual.open(`/${path}`, landmark);
+    await page.getByTestId('language-fr').click();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+    await visual.ready();
+    await visual.capture(`${path}-fr.png`);
+  });
+}
+
+test('product — French create dialog', async ({ page, visual }) => {
+  await visual.open('/product', 'product-page');
+  await page.getByTestId('language-fr').click();
+  await page.getByTestId('catalogue-add-action').click();
+  await expect(page.locator('.app-dialog-title')).toHaveText('Ajouter un produit');
+  await visual.ready();
+  await expect(page).toHaveScreenshot('product-dialog-fr.png', { fullPage: false });
+});
+
 test('inventory — nested product picker', async ({ page, visual }) => {
   await visual.open('/inventory', 'inventory-page');
   await page.getByTestId('inventory-select-1').getByRole('button', { name: 'Edit', exact: true }).click();
@@ -125,5 +144,16 @@ test.describe('intentional API failure', () => {
     await visual.open('/shopping-list', 'shopping-list-page');
     await expect(page.locator('app-ui-error-panel')).toBeVisible();
     await visual.capture('shopping-list-error.png');
+  });
+
+  test('shopping list — French error state', async ({ page, visual }) => {
+    await page.route('http://localhost:3000/shopping-list', (route) => route.fulfill({
+      status: 503, json: { message: 'Service temporarily unavailable' },
+    }));
+    await visual.open('/shopping-list', 'shopping-list-page');
+    await page.getByTestId('language-fr').click();
+    await expect(page.locator('app-ui-error-panel')).toBeVisible();
+    await visual.ready();
+    await visual.capture('shopping-list-error-fr.png');
   });
 });

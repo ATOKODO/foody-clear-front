@@ -3,7 +3,7 @@
   [class.lc-shell--select-single]="isSingleSelectMode"
   [class.lc-shell--embedded]="isEmbeddedManageMode"
   data-testid="cycle-list"
-  aria-label="Liste des cycles"
+  [attr.aria-label]="&quot;Liste des cycles&quot; | translate"
 >
   @if (!isEmbeddedManageMode) {
     <div
@@ -11,7 +11,7 @@
       [class.lc-shell__header--select-single]="isSingleSelectMode"
     >
       <h3 class="lc-shell__title text-lg font-semibold text-app-text-strong">
-        Cycles
+        {{ "Cycles" | translate }}
       </h3>
       @if (isManageMode && showAddButton()) {
         <button
@@ -22,7 +22,7 @@
           type="button"
           (click)="onAddCycle()"
         >
-          Add cycle
+          {{ "Add cycle" | translate }}
         </button>
       }
     </div>
@@ -69,38 +69,36 @@
                       </p>
                       @if (cycle.missingDayCount > 0) {
                         <span class="lc-meta-chip">
-                          {{ cycle.missingDayCount }} day(s) without a day set
+                          {{ "{p0} day(s) without a day set" | translate: { p0: (cycle.missingDayCount) } }}
                         </span>
                       }
                       @if (cycle.hasDaySetOverflow) {
-                        <span class="lc-meta-chip"> Day sets &gt; cycle </span>
+                        <span class="lc-meta-chip"> {{ "Day sets > cycle" | translate }} </span>
                       }
                       <span class="lc-meta-chip"
-                        >{{ cycle.durationDays }} day(s)</span
+                        >{{ "{p0} day(s)" | translate: { p0: (cycle.durationDays) } }}</span
                       >
                       <span class="lc-meta-chip">
-                        {{
-                          formatDuration(
+                        {{ (formatDuration(
                             cycle.durationCount,
                             cycle.durationType
-                          )
-                        }}
+                          )) | translate }}
                       </span>
                       <span class="lc-meta-chip"
-                        >{{ cycle.daySets.length }} linked day set(s)</span
+                        >{{ "{p0} linked day set(s)" | translate: { p0: (cycle.daySets.length) } }}</span
                       >
                     </div>
                     <div class="lc-card__alerts mt-2 flex flex-wrap gap-2">
                       @if (cycle.hasSlotOverflow) {
                         <span class="lc-overview-badge lc-overview-badge-over">
-                          Slots &gt; day set
+                          {{ "Slots > day set" | translate }}
                         </span>
                       }
                       @if (cycle.hasMissingSlotBreakdown) {
                         <span
                           class="lc-overview-badge lc-overview-badge-missing"
                         >
-                          Partial slot breakdown
+                          {{ "Partial slot breakdown" | translate }}
                         </span>
                       }
                     </div>
@@ -108,11 +106,11 @@
                 </div>
                 <section class="lc-embedded-summary rounded-2xl p-4">
                   <div class="lc-embedded-summary__copy">
-                    <p class="lc-section-label">Cycle target</p>
+                    <p class="lc-section-label">{{ "Cycle target" | translate }}</p>
                     <p
                       class="lc-summary-panel__subtitle text-xs text-app-text-muted"
                     >
-                      Summary view of the target and the effective daily average.
+                      {{ "Summary view of the target and the effective daily average." | translate }}
                     </p>
                   </div>
                   <div
@@ -130,13 +128,13 @@
                           <p
                             class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
                           >
-                            {{ card.label }}
+                            {{ (card.label) | translate }}
                           </p>
                           <span
                             class="lc-status-badge"
                             [class]="getStatusClass(card.status)"
                           >
-                            {{ getStatusLabel(card.status) }}
+                            {{ (getStatusLabel(card.status)) | translate }}
                           </span>
                         </div>
                         <p
@@ -154,7 +152,7 @@
                         <p
                           class="lc-breakdown-card__caption mt-2 text-xs text-app-text-muted"
                         >
-                          {{ card.caption }}
+                          {{ (card.caption) | translate }}
                         </p>
                       </article>
                     }
@@ -170,7 +168,7 @@
                   <mat-checkbox
                     class="pt-0.5"
                     [checked]="isSelected(cycle.id)"
-                    [aria-label]="'Select ' + cycle.title"
+                    [aria-label]="(&quot;&quot; + (&quot;Select&quot; | translate) + &quot; &quot;) + cycle.title"
                     (change)="onCheckboxChange(cycle, $event.checked)"
                     (click)="onCheckboxClick($event)"
                     (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()"
@@ -202,18 +200,16 @@
                               {{ cycle.title }}
                             </p>
                             <span class="lc-meta-chip"
-                              >{{ cycle.durationDays }} day(s)</span
+                              >{{ "{p0} day(s)" | translate: { p0: (cycle.durationDays) } }}</span
                             >
                             <span class="lc-meta-chip">
-                              {{
-                                formatDuration(
+                              {{ (formatDuration(
                                   cycle.durationCount,
                                   cycle.durationType
-                                )
-                              }}
+                                )) | translate }}
                             </span>
                             <span class="lc-meta-chip"
-                              >{{ cycle.daySets.length }} linked day set(s)</span
+                              >{{ "{p0} linked day set(s)" | translate: { p0: (cycle.daySets.length) } }}</span
                             >
                           </div>
                           <div
@@ -223,28 +219,28 @@
                               <span
                                 class="lc-overview-badge lc-overview-badge-missing"
                               >
-                                {{ cycle.missingDayCount }} day(s) without a day set
+                                {{ "{p0} day(s) without a day set" | translate: { p0: (cycle.missingDayCount) } }}
                               </span>
                             }
                             @if (cycle.hasDaySetOverflow) {
                               <span
                                 class="lc-overview-badge lc-overview-badge-over"
                               >
-                                Day sets &gt; cycle
+                                {{ "Day sets > cycle" | translate }}
                               </span>
                             }
                             @if (cycle.hasSlotOverflow) {
                               <span
                                 class="lc-overview-badge lc-overview-badge-over"
                               >
-                                Slots &gt; day set
+                                {{ "Slots > day set" | translate }}
                               </span>
                             }
                             @if (cycle.hasMissingSlotBreakdown) {
                               <span
                                 class="lc-overview-badge lc-overview-badge-missing"
                               >
-                                Partial slot breakdown
+                                {{ "Partial slot breakdown" | translate }}
                               </span>
                             }
                           </div>
@@ -263,11 +259,11 @@
                           "
                         >
                           <div class="lc-summary-panel__copy">
-                            <p class="lc-section-label">Cycle target</p>
+                            <p class="lc-section-label">{{ "Cycle target" | translate }}</p>
                             <p
                               class="lc-summary-panel__subtitle text-xs text-app-text-muted"
                             >
-                              Target macros for a typical cycle day.
+                              {{ "Target macros for a typical cycle day." | translate }}
                             </p>
                           </div>
                           <div
@@ -282,7 +278,7 @@
                               <p
                                 class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
                               >
-                                KCAL
+                                {{ "KCAL" | translate }}
                               </p>
                               <p
                                 class="lc-macro-card__value mt-1 text-base font-semibold text-app-text-strong"
@@ -296,7 +292,7 @@
                               <p
                                 class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
                               >
-                                Proteins
+                                {{ "Proteins" | translate }}
                               </p>
                               <p
                                 class="lc-macro-card__value mt-1 text-base font-semibold text-app-text-strong"
@@ -310,7 +306,7 @@
                               <p
                                 class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
                               >
-                                Carbs
+                                {{ "Carbs" | translate }}
                               </p>
                               <p
                                 class="lc-macro-card__value mt-1 text-base font-semibold text-app-text-strong"
@@ -324,7 +320,7 @@
                               <p
                                 class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
                               >
-                                Fats
+                                {{ "Fats" | translate }}
                               </p>
                               <p
                                 class="lc-macro-card__value mt-1 text-base font-semibold text-app-text-strong"
@@ -348,12 +344,12 @@
                           >
                             <div class="lc-summary-panel__copy">
                               <p class="lc-section-label">
-                                Effective daily average / cycle target
+                                {{ "Effective daily average / cycle target" | translate }}
                               </p>
                               <p
                                 class="lc-summary-panel__subtitle text-xs text-app-text-muted"
                               >
-                                {{ cycle.daySets.length }} linked day set(s)
+                                {{ "{p0} linked day set(s)" | translate: { p0: (cycle.daySets.length) } }}
                               </p>
                             </div>
                             <button
@@ -363,13 +359,12 @@
                               [attr.aria-expanded]="isExpanded(cycle.id)"
                               (click)="onToggleExpanded($event, cycle.id)"
                             >
-                              {{ getToggleLabel(cycle.id) }}
+                              {{ (getToggleLabel(cycle.id)) | translate }}
                             </button>
                           </div>
                           @if (cycle.missingDayCount > 0) {
                             <p class="mt-2 text-xs text-app-warning">
-                              {{ cycle.missingDayCount }} day(s) without a day set
-                              use the cycle target directly.
+                              {{ "{p0} day(s) without a day set use the cycle target directly." | translate: { p0: (cycle.missingDayCount) } }}
                             </p>
                           }
                           <div
@@ -393,13 +388,13 @@
                                   <p
                                     class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
                                   >
-                                    {{ metric.label }}
+                                    {{ (metric.label) | translate }}
                                   </p>
                                   <span
                                     class="lc-status-badge"
                                     [class]="getStatusClass(metric.status)"
                                   >
-                                    {{ getStatusLabel(metric.status) }}
+                                    {{ (getStatusLabel(metric.status)) | translate }}
                                   </span>
                                 </div>
                                 <div
@@ -435,7 +430,7 @@
                           [attr.data-testid]="'cycle-edit-' + cycle.id"
                           (click)="stopPropagation($event); onEdit(cycle)"
                         >
-                          Edit
+                          {{ "Edit" | translate }}
                         </button>
                         <button
                           mat-stroked-button
@@ -444,7 +439,7 @@
                           [attr.data-testid]="'cycle-delete-' + cycle.id"
                           (click)="stopPropagation($event); onDelete(cycle)"
                         >
-                          Supprimer
+                          {{ "Supprimer" | translate }}
                         </button>
                       }
                     </div>
@@ -474,11 +469,11 @@
                                 {{ daySet.title }}
                               </p>
                               <span class="lc-meta-chip"
-                                >{{ daySet.slots.length }} slot(s)</span
+                                >{{ "{p0} slot(s)" | translate: { p0: (daySet.slots.length) } }}</span
                               >
                             </div>
                             <p class="text-xs text-app-text-muted">
-                              Day set share in cycle
+                              {{ "Day set share in cycle" | translate }}
                             </p>
                           </div>
                           <div class="flex flex-wrap gap-2">
@@ -486,7 +481,7 @@
                               <span
                                 class="lc-overview-badge lc-overview-badge-over"
                               >
-                                Slots &gt; day set
+                                {{ "Slots > day set" | translate }}
                               </span>
                             }
                             @if (daySet.hasMissingSlotBreakdown) {
@@ -495,8 +490,8 @@
                               >
                                 {{
                                   daySet.slots.length > 0
-                                    ? "Partial slots"
-                                    : "Slots unavailable"
+                                    ? ("Partial slots" | translate)
+                                    : ("Slots unavailable" | translate)
                                 }}
                               </span>
                             }
@@ -505,7 +500,7 @@
                         <div class="mt-3 grid gap-3 lg:grid-cols-2">
                           <section class="lc-subsection rounded-xl p-3">
                             <p class="lc-section-label">
-                              Day set share in cycle
+                              {{ "Day set share in cycle" | translate }}
                             </p>
                             <div class="mt-2 grid gap-2 sm:grid-cols-2">
                               @for (
@@ -520,13 +515,13 @@
                                     <p
                                       class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
                                     >
-                                      {{ metric.label }}
+                                      {{ (metric.label) | translate }}
                                     </p>
                                     <span
                                       class="lc-status-badge"
                                       [class]="getStatusClass(metric.status)"
                                     >
-                                      {{ getStatusLabel(metric.status) }}
+                                      {{ (getStatusLabel(metric.status)) | translate }}
                                     </span>
                                   </div>
                                   <div class="mt-3 grid gap-2">
@@ -552,10 +547,10 @@
                             <div class="flex items-start justify-between gap-3">
                               <div>
                                 <p class="lc-section-label">
-                                  Slot totals / day set
+                                  {{ "Slot totals / day set" | translate }}
                                 </p>
                                 <p class="text-xs text-app-text-muted">
-                                  {{ daySet.slots.length }} resolved slot(s)
+                                  {{ "{p0} resolved slot(s)" | translate: { p0: (daySet.slots.length) } }}
                                 </p>
                               </div>
                             </div>
@@ -573,13 +568,13 @@
                                       <p
                                         class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
                                       >
-                                        {{ metric.label }}
+                                        {{ (metric.label) | translate }}
                                       </p>
                                       <span
                                         class="lc-status-badge"
                                         [class]="getStatusClass(metric.status)"
                                       >
-                                        {{ getStatusLabel(metric.status) }}
+                                        {{ (getStatusLabel(metric.status)) | translate }}
                                       </span>
                                     </div>
                                     <div class="mt-3 grid gap-2">
@@ -604,7 +599,7 @@
                               <p
                                 class="lc-slot-missing mt-2 text-sm text-app-warning"
                               >
-                                Slot breakdown is unavailable for this day set.
+                                {{ "Slot breakdown is unavailable for this day set." | translate }}
                               </p>
                             }
                           </section>
@@ -658,7 +653,7 @@
                                         <p
                                           class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
                                         >
-                                          {{ metric.label }}
+                                          {{ (metric.label) | translate }}
                                         </p>
                                         <span
                                           class="lc-status-badge"
@@ -666,7 +661,7 @@
                                             getStatusClass(metric.status)
                                           "
                                         >
-                                          {{ getStatusLabel(metric.status) }}
+                                          {{ (getStatusLabel(metric.status)) | translate }}
                                         </span>
                                       </div>
                                       <div class="mt-3 grid gap-2">
@@ -695,7 +690,7 @@
                         } @else {
                           @if (!daySet.hasMissingSlotBreakdown) {
                             <p class="mt-3 text-sm text-app-text-muted">
-                              No slot linked to this day set.
+                              {{ "No slot linked to this day set." | translate }}
                             </p>
                           }
                         }
@@ -704,7 +699,7 @@
                   </div>
                 } @else {
                   <p class="text-sm text-app-text-muted">
-                    No day set linked to this cycle.
+                    {{ "No day set linked to this cycle." | translate }}
                   </p>
                 }
               </div>
@@ -720,7 +715,7 @@
                   [attr.aria-expanded]="isExpanded(cycle.id)"
                   (click)="onToggleExpanded($event, cycle.id)"
                 >
-                  {{ getToggleLabel(cycle.id) }}
+                  {{ (getToggleLabel(cycle.id)) | translate }}
                 </button>
                 <button
                   mat-stroked-button
@@ -729,7 +724,7 @@
                   [attr.data-testid]="'cycle-edit-' + cycle.id"
                   (click)="stopPropagation($event); onEdit(cycle)"
                 >
-                  Edit
+                  {{ "Edit" | translate }}
                 </button>
                 <button
                   mat-stroked-button
@@ -739,7 +734,7 @@
                   [attr.data-testid]="'cycle-delete-' + cycle.id"
                   (click)="stopPropagation($event); onDelete(cycle)"
                 >
-                  Remove
+                  {{ "Remove" | translate }}
                 </button>
               </div>
             }
@@ -749,11 +744,11 @@
     </div>
   } @else {
     @if (isEmbeddedManageMode) {
-      <p class="lc-empty text-sm text-app-text">No cycle available.</p>
+      <p class="lc-empty text-sm text-app-text">{{ "No cycle available." | translate }}</p>
     } @else {
       <mat-card appearance="outlined" class="rounded-xl">
         <mat-card-content class="p-4 text-sm text-app-text">
-          No cycle available.
+          {{ "No cycle available." | translate }}
         </mat-card-content>
       </mat-card>
     }

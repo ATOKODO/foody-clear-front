@@ -1,3 +1,5 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
+import { Language } from '../../../app/i18n/language';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
@@ -5,6 +7,7 @@ import {
   OnInit,
   SimpleChanges,
   input,
+  inject,
   output
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -28,6 +31,7 @@ export interface GenericProductListItem {
 @Component({
   selector: 'app-generic-product-list',
   imports: [
+    TranslatePipe,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
@@ -38,6 +42,7 @@ export interface GenericProductListItem {
   styleUrl: './generic-product-list.scss',
 })
 export class GenericProductList implements OnInit, OnChanges {
+  readonly language = inject(Language);
   readonly mode = input<GenericProductListMode>('manage');
   readonly genericProducts = input<GenericProductListItem[] | null>(null);
   readonly selectedIds = input<string[] | null>(null);
@@ -130,7 +135,7 @@ export class GenericProductList implements OnInit, OnChanges {
       return '-';
     }
 
-    return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
+    return this.language.formatNumber(value);
   }
 
   getQuantityDisplay(
@@ -143,7 +148,7 @@ export class GenericProductList implements OnInit, OnChanges {
     }
 
     return typeof unitType === 'string' && unitType.trim() !== ''
-      ? `${numberDisplay} ${unitType}`
+      ? `${numberDisplay} ${this.language.translate(unitType)}`
       : numberDisplay;
   }
 

@@ -4,7 +4,7 @@
       [value]="activeView"
       [options]="viewOptions"
       (valueChange)="onActiveViewChange($event)"
-      ariaLabel="Select active cycle view"
+      [ariaLabel]="&quot;Select active cycle view&quot; | translate"
       data-testid="cycle-view-toggle"
       name="cycle-view"
       maxWidth="41rem"
@@ -14,7 +14,7 @@
   <mat-card class="cycle-panel" data-testid="cycle-panel">
     <div class="cycle-panel__header">
       <h2 class="cycle-panel__title" data-testid="cycle-panel-title">
-        {{ activeViewConfig.title }}
+        {{ (activeViewConfig.title) | translate }}
       </h2>
 
       <div class="cycle-panel__actions">
@@ -26,7 +26,7 @@
           (click)="onRefreshActiveView()"
           [disabled]="activeViewBusy"
         >
-          Refresh
+          {{ "Refresh" | translate }}
         </button>
 
         <button
@@ -37,7 +37,7 @@
           [disabled]="activeViewBusy"
           data-testid="cycle-add-action"
         >
-          {{ activeViewConfig.addLabel }}
+          {{ (activeViewConfig.addLabel) | translate }}
         </button>
       </div>
     </div>
@@ -49,32 +49,32 @@
             <div class="app-status-row">
               @if (loading) {
                 <span class="app-status-pill app-status-pill--neutral">
-                  Loading...
+                  {{ "Loading..." | translate }}
                 </span>
               }
               @if (saving) {
                 <span class="app-status-pill app-status-pill--saving">
-                  Saving...
+                  {{ "Saving..." | translate }}
                 </span>
               }
               @if (loadingMeta) {
                 <span class="app-status-pill app-status-pill--info">
-                  Meta nutrition...
+                  {{ "Meta nutrition..." | translate }}
                 </span>
               }
               @if (loadingDaySets) {
                 <span class="app-status-pill app-status-pill--info">
-                  Targets...
+                  {{ "Targets..." | translate }}
                 </span>
               }
               @if (loadingSlots) {
                 <span class="app-status-pill app-status-pill--info">
-                  Slots...
+                  {{ "Slots..." | translate }}
                 </span>
               }
               @if (loadingTemplates) {
                 <span class="app-status-pill app-status-pill--info">
-                  Templates...
+                  {{ "Templates..." | translate }}
                 </span>
               }
             </div>
@@ -83,7 +83,7 @@
             }
             @if (lastMetaError) {
               <p class="app-alert">
-                Unable to load nutrition meta keys, fallback mode is active.
+                {{ "Unable to load nutrition meta keys, fallback mode is active." | translate }}
               </p>
             }
             <app-list-cycle
@@ -118,13 +118,13 @@
   <div class="app-dialog" data-testid="cycle-dialog">
     <div class="app-dialog-header">
       <div>
-        <p class="app-dialog-eyebrow">Cycle</p>
-        <h3 class="app-dialog-title">{{ formDialogTitle }}</h3>
-        <p class="app-dialog-subtitle">{{ formDialogSubtitle }}</p>
+        <p class="app-dialog-eyebrow">{{ "Cycle" | translate }}</p>
+        <h3 class="app-dialog-title">{{ (formDialogTitle) | translate }}</h3>
+        <p class="app-dialog-subtitle">{{ (formDialogSubtitle) | translate }}</p>
       </div>
 
       <button mat-stroked-button type="button" (click)="onCancelForm()">
-        Close
+        {{ "Close" | translate }}
       </button>
     </div>
 
@@ -148,10 +148,10 @@
   <div class="app-dialog" data-testid="cycle-impact-dialog">
     <div class="app-dialog-header">
       <div>
-        <p class="app-dialog-eyebrow">Planning</p>
-        <h3 class="app-dialog-title">Assignment impact</h3>
+        <p class="app-dialog-eyebrow">{{ "Planning" | translate }}</p>
+        <h3 class="app-dialog-title">{{ "Assignment impact" | translate }}</h3>
         <p class="app-dialog-subtitle">
-          The cycle duration changes. Choose how to recalculate the timeline.
+          {{ "The cycle duration changes. Choose how to recalculate the timeline." | translate }}
         </p>
       </div>
     </div>
@@ -159,11 +159,9 @@
     <mat-dialog-content class="app-dialog-content space-y-5">
       <section class="space-y-3">
         <div>
-          <p class="text-sm font-semibold text-app-text-strong">Recalculation scope</p>
+          <p class="text-sm font-semibold text-app-text-strong">{{ "Recalculation scope" | translate }}</p>
           <p class="mt-1 text-sm text-app-text">
-            `Future` applies the change from today ({{
-              impactEffectiveDateLocal
-            }}). `All` recalculates the entire timeline.
+            {{ "`Future` applies the change from today ({p0}). `All` recalculates the entire timeline." | translate: { p0: (impactEffectiveDateLocal) } }}
           </p>
         </div>
 
@@ -173,16 +171,16 @@
           class="cycle-impact-toggle"
           name="impactScope"
         >
-          <mat-button-toggle value="future">Futures</mat-button-toggle>
-          <mat-button-toggle value="all">Toutes</mat-button-toggle>
+          <mat-button-toggle value="future">{{ "Futures" | translate }}</mat-button-toggle>
+          <mat-button-toggle value="all">{{ "Toutes" | translate }}</mat-button-toggle>
         </mat-button-toggle-group>
       </section>
 
       <section class="space-y-3">
         <div>
-          <p class="text-sm font-semibold text-app-text-strong">Gap handling</p>
+          <p class="text-sm font-semibold text-app-text-strong">{{ "Gap handling" | translate }}</p>
           <p class="mt-1 text-sm text-app-text">
-            `Preserve` keeps existing gaps. `Compact` closes the sequence with no empty gaps.
+            {{ "`Preserve` keeps existing gaps. `Compact` closes the sequence with no empty gaps." | translate }}
           </p>
         </div>
 
@@ -192,8 +190,8 @@
           class="cycle-impact-toggle"
           name="impactGapMode"
         >
-          <mat-button-toggle value="preserve">Preserve</mat-button-toggle>
-          <mat-button-toggle value="compact">Compact</mat-button-toggle>
+          <mat-button-toggle value="preserve">{{ "Preserve" | translate }}</mat-button-toggle>
+          <mat-button-toggle value="compact">{{ "Compact" | translate }}</mat-button-toggle>
         </mat-button-toggle-group>
       </section>
     </mat-dialog-content>
@@ -205,7 +203,7 @@
         (click)="cancelImpactUpdate()"
         [disabled]="saving"
       >
-        Cancel
+        {{ "Cancel" | translate }}
       </button>
       <button
         mat-raised-button
@@ -214,7 +212,7 @@
         (click)="confirmImpactUpdate()"
         [disabled]="saving"
       >
-        Apply
+        {{ "Apply" | translate }}
       </button>
     </mat-dialog-actions>
   </div>

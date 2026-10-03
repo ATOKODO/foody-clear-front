@@ -42,20 +42,22 @@ export function toProductListItems(products: Product[]): ProductListItem[] {
 
 export function resolveProductName(
   item: Pick<ShoppingListProductItem, 'product' | 'productId'>,
+  translate: (message: string) => string = (message) => message,
 ): string {
-  return item.product?.name?.trim() || `Product #${item.productId}`;
+  return item.product?.name?.trim() || translate(`Product #${item.productId}`);
 }
 
 export function resolveDraftProductName(
   products: Product[],
   productId: number | null,
+  translate: (message: string) => string = (message) => message,
 ): string {
   if (productId == null) {
-    return 'No product selected';
+    return translate('No product selected');
   }
 
   return (
-    products.find((item) => item.id === productId)?.name ?? `Product #${productId}`
+    products.find((item) => item.id === productId)?.name ?? translate(`Product #${productId}`)
   );
 }
 

@@ -1,3 +1,5 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
+import { Language } from '../../app/i18n/language';
 import { UiModal } from '../../app/ui/modal/modal';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { LatestRequest } from '../../utils/latest-request';
@@ -32,6 +34,7 @@ import {
 import {
   INVENTORY_PURCHASE_ACCOUNTING_MODE_OPTIONS,
   InventoryManagedProductRow,
+  InventoryRowProductMeta,
   InventorySelectedProductRow,
   buildInventoryListItems,
   buildProductListItems,
@@ -39,6 +42,7 @@ import {
   extractInventoryProductsFromResponse,
   extractProductsFromResponse,
   filterInventorySelectionRows,
+  getInventoryQtyUnitHelpText,
   removeInventoryProductRow,
   syncInventorySelectedProductRows,
   toCreateInventoryDto,
@@ -51,7 +55,7 @@ import {
 
 @Component({
   selector: 'app-inventory',
-  imports: [UiModal,
+  imports: [TranslatePipe, UiModal,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -69,12 +73,16 @@ import {
   },
 })
 export class Inventory implements OnInit {
+  readonly language = inject(Language);
   private readonly inventorySrv = inject(InventoryService);
   private readonly productSrv = inject(ProductService);
   private readonly editorProductsRequest = new LatestRequest(inject(DestroyRef));
   private readonly selectedProductsRequest = new LatestRequest(inject(DestroyRef));
 
   baseUrl = '';
+  formatQtyUnitHelpText(row: InventoryRowProductMeta): string | null {
+    return getInventoryQtyUnitHelpText(row, this.language.locale(), (source) => this.language.translate(source));
+  }
   private readonly loadingState = signal(false);
   private readonly savingState = signal(false);
   private readonly loadingInventoryProductsState = signal(false);

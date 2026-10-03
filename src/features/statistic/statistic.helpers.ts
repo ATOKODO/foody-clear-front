@@ -143,10 +143,11 @@ export function getStatisticTargetGoalHeight(
 
 export function formatStatisticCurrency(
   value: number | null | undefined,
+  locale = 'fr-FR',
 ): string {
   const normalized =
     typeof value === 'number' && Number.isFinite(value) ? value : 0;
-  return new Intl.NumberFormat('fr-FR', {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 2,
@@ -157,9 +158,10 @@ export function formatStatisticCurrency(
 export function formatStatisticMetricValue(
   value: unknown,
   unit: string,
+  locale = 'en-GB',
 ): string {
   if (typeof value === 'number' && Number.isFinite(value)) {
-    return `${roundStatisticValue(value)} ${unit}`.trim();
+    return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value)} ${unit}`.trim();
   }
 
   if (typeof value === 'string' && value.trim() !== '') {
@@ -258,9 +260,4 @@ function isStatisticPriceCorrectionValid(
     state.fromDateLocal.length === 10 &&
     (state.toDateLocal === '' || state.toDateLocal >= state.fromDateLocal)
   );
-}
-
-function roundStatisticValue(value: number): string {
-  const rounded = Math.round(value * 100) / 100;
-  return String(rounded);
 }

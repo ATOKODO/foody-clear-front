@@ -53,7 +53,7 @@ describe('mapProductToProductListItem', () => {
     });
     expect(result.tagNames).toEqual([]);
     expect(result.nutritionValuesCount).toBe(0);
-    expect(result.category).toBe('None');
-    expect(result.genericProduct).toBe('None');
+    expect(result.category).toBeNull();
+    expect(result.genericProduct).toBeNull();
   });
 });

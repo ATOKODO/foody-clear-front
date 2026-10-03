@@ -198,7 +198,7 @@ describe('home dashboard viewmodel', () => {
     expect(buildHomeDayEntryRows(null, 'UTC', slots)).toEqual([]);
     const entries = buildHomeDayEntryRows(response, 'Europe/Paris', slots);
     expect(entries.map((entry) => entry.id)).toEqual([20, 30, 21, 22, 31]);
-    expect(entries[1].paymentLabel).toBe('Free');
+    expect(entries[1].paymentLabel).toBe('payment.free');
     expect(entries[4].paymentLabel).toBe('Refunded');
     expect(entries[3].slotLabel).toBe('Unassigned to a slot');
 

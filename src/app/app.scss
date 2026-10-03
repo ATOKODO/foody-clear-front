@@ -266,6 +266,13 @@
   gap: var(--app-space-3);
 }
 
+.app-shell__appearance-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-3);
+  flex-shrink: 0;
+}
+
 .app-shell__menu-button {
   display: none;
   width: 2.9rem;
@@ -353,6 +360,37 @@
 .app-theme-toggle__subtitle {
   color: var(--app-text-muted);
   font-size: 0.78rem;
+}
+
+.app-language-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 0.25rem;
+  border: 1px solid var(--app-border);
+  border-radius: 1rem;
+  padding: 0.25rem;
+  background: var(--app-surface-raised);
+  box-shadow: var(--app-shadow-sm);
+
+  button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: transparent;
+    color: var(--app-text-muted);
+    font-weight: 700;
+    cursor: pointer;
+
+    &[aria-pressed="true"] {
+      background: var(--mat-sys-primary);
+      color: var(--mat-sys-on-primary);
+    }
+
+    &:focus-visible {
+      @include mixins.focus-ring;
+    }
+  }
 }
 
 .app-shell__content {

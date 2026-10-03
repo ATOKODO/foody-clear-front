@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 
 import {
   Component,
@@ -33,6 +34,7 @@ export interface DaySetFormValue {
 @Component({
   selector: 'app-day-set-form',
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,

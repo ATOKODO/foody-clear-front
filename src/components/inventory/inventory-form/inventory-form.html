@@ -1,9 +1,9 @@
-<section class="mx-auto max-w-5xl px-4 py-8 text-app-text-strong" aria-label="Add or edit an inventory">
+<section class="mx-auto max-w-5xl px-4 py-8 text-app-text-strong" [attr.aria-label]="&quot;Add or edit an inventory&quot; | translate">
   <div class="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-app-border pb-3">
-    <h2 class="text-xl font-medium">{{ heading }}</h2>
+    <h2 class="text-xl font-medium">{{ (heading) | translate }}</h2>
     <div class="inventory-form__header-actions flex flex-wrap items-center gap-2">
       <ng-content select="[inventory-form-header-actions]"></ng-content>
-      <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
+      <button mat-stroked-button type="button" (click)="onMenuClick()">{{ "Options" | translate }}</button>
     </div>
   </div>
 
@@ -11,8 +11,8 @@
     <div class="flex flex-col items-center">
       <div class="">
         <mat-form-field appearance="fill" class="w-full">
-          <mat-label>Name *</mat-label>
-          <input matInput type="text" formControlName="name" placeholder="Stock principal" />
+          <mat-label>{{ "Name *" | translate }}</mat-label>
+          <input matInput type="text" formControlName="name" [placeholder]="&quot;Stock principal&quot; | translate" />
         </mat-form-field>
         <div class="inventory-form__under-name">
           <ng-content select="[inventory-form-under-name]"></ng-content>
@@ -21,7 +21,7 @@
 
       <div class="mt-6 w-50 flex items-start md:col-span-4 md:items-end">
         <button mat-raised-button color="primary" type="submit" class="w-full" [disabled]="saving()">
-          {{ mode() === 'edit' ? 'Update' : 'Create' }}
+          {{ mode() === 'edit' ? ("Update" | translate) : ("Create" | translate) }}
         </button>
       </div>
     </div>

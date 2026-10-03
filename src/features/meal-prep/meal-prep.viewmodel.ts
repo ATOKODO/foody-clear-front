@@ -293,12 +293,15 @@ export function resolveProductPickerSelectedIds(
   return productId === null || productId === undefined ? [] : [String(productId)];
 }
 
-export function resolveMealLineLabel(line: PreparedMealItem): string {
+export function resolveMealLineLabel(
+  line: PreparedMealItem,
+  translate: (message: string) => string = (message) => message,
+): string {
   if (line.itemType === 'dish') {
-    return line.dish?.name ?? `Dish #${line.dishId ?? '-'}`;
+    return line.dish?.name ?? translate(`Dish #${line.dishId ?? '-'}`);
   }
 
-  return line.product?.name ?? `Product #${line.productId ?? '-'}`;
+  return line.product?.name ?? translate(`Product #${line.productId ?? '-'}`);
 }
 
 export function resolveMealPrepTypeLabel(type: MealPrepEntryType): string {
@@ -324,8 +327,9 @@ export function resolveMealPrepAvailabilityLabel(
 export function resolveMealPrepProductName(
   productId: number | null,
   products: Product[],
+  fallback = 'No product selected',
 ): string {
-  return resolveProduct(productId, products)?.name ?? 'No product selected';
+  return resolveProduct(productId, products)?.name ?? fallback;
 }
 
 export function resolveNextSelectionId<T extends { id: number }>(

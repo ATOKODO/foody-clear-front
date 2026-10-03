@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 
 import { Component, OnChanges, OnInit, SimpleChanges, input, output, inject, signal } from '@angular/core';
@@ -22,7 +23,7 @@ import {
 
 @Component({
   selector: 'app-tag',
-  imports: [UiModal,
+  imports: [TranslatePipe, UiModal,
     FormsModule,
     MatButtonModule,
     MatCardModule,

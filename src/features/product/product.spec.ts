@@ -401,9 +401,9 @@ describe('Product', () => {
       'Organic',
       'Seasonal',
     ]);
-    expect(callPrivate('resolveLinkedEntityName', null)).toBe('None');
+    expect(callPrivate('resolveLinkedEntityName', null)).toBeNull();
     expect(callPrivate('resolveLinkedEntityName', { label: 'Organic' })).toBe('Organic');
-    expect(callPrivate('resolveLinkedEntityName', {})).toBe('None');
+    expect(callPrivate('resolveLinkedEntityName', {})).toBeNull();
     expect(callPrivate('readPositiveInteger', '4')).toBe(4);
     expect(callPrivate('readPositiveInteger', 0)).toBeUndefined();
     expect(callPrivate('readFiniteNumber', '12.5')).toBe(12.5);

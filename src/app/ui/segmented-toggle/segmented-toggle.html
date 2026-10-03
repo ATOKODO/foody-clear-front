@@ -3,7 +3,7 @@
     [value]="value()"
     [hideSingleSelectionIndicator]="true"
     (change)="onSelectionChange($event)"
-    [attr.aria-label]="ariaLabel()"
+    [attr.aria-label]="(ariaLabel()) | translate"
     [attr.data-testid]="testId() ?? null"
     [name]="name()"
     class="segmented-toggle"
@@ -14,7 +14,7 @@
         [value]="option.value"
         [attr.data-testid]="option.testId ?? null"
         >
-        {{ option.label }}
+        {{ (option.label) | translate }}
       </mat-button-toggle>
     }
   </mat-button-toggle-group>

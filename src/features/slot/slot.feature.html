@@ -3,17 +3,17 @@
     <div class="app-status-row">
       @if (store.loading) {
         <span class="app-status-pill app-status-pill--neutral">
-          Loading...
+          {{ "Loading..." | translate }}
         </span>
       }
       @if (store.saving) {
         <span class="app-status-pill app-status-pill--saving">
-          Saving...
+          {{ "Saving..." | translate }}
         </span>
       }
       @if (store.loadingMeta) {
         <span class="app-status-pill app-status-pill--info">
-          Meta nutrition...
+          {{ "Meta nutrition..." | translate }}
         </span>
       }
     </div>
@@ -22,7 +22,7 @@
     }
     @if (store.lastMetaError) {
       <p class="app-alert">
-        Unable to load nutrition metadata; fallback is active.
+        {{ "Unable to load nutrition metadata; fallback is active." | translate }}
       </p>
     }
     <app-slot-list mode="manage"
@@ -37,26 +37,26 @@
   <section class="app-page" data-testid="slot-page">
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="bg-app-hero px-6 py-5 text-app-on-color">
-        <h2 class="text-xl font-semibold">Slots</h2>
+        <h2 class="text-xl font-semibold">{{ "Slots" | translate }}</h2>
         <p class="mt-1 text-sm text-app-on-color-muted">
-          Time slots, order, and nutrition targets for each slot.
+          {{ "Time slots, order, and nutrition targets for each slot." | translate }}
         </p>
       </div>
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
           @if (store.loading) {
             <span class="app-status-pill app-status-pill--neutral">
-              Loading...
+              {{ "Loading..." | translate }}
             </span>
           }
           @if (store.saving) {
             <span class="app-status-pill app-status-pill--saving">
-              Saving...
+              {{ "Saving..." | translate }}
             </span>
           }
           @if (store.loadingMeta) {
             <span class="app-status-pill app-status-pill--info">
-              Meta nutrition...
+              {{ "Meta nutrition..." | translate }}
             </span>
           }
         </div>
@@ -65,7 +65,7 @@
         }
         @if (store.lastMetaError) {
           <p class="app-alert">
-            Unable to load nutrition metadata; fallback is active.
+            {{ "Unable to load nutrition metadata; fallback is active." | translate }}
           </p>
         }
         <app-slot-list mode="manage"
@@ -86,7 +86,7 @@
     class="app-modal-backdrop"
     [class.app-modal-backdrop--embedded-slot]="embedded()"
     [style.--slot-dialog-top-offset.px]="embeddedDialogTopOffset()"
-    aria-label="Close la modale"
+    [attr.aria-label]="&quot;Close la modale&quot; | translate"
     (click)="onCancelForm()"
     ></button>
 }
@@ -105,16 +105,16 @@
       >
       <div class="app-dialog-header slot-feature__dialog-header">
         <div>
-          <p class="app-dialog-eyebrow">Planning</p>
+          <p class="app-dialog-eyebrow">{{ "Planning" | translate }}</p>
           <h3 class="app-dialog-title">
-            {{ store.formMode === 'edit' ? 'Edit un slot' : 'Add un slot' }}
+            {{ store.formMode === 'edit' ? ("Edit un slot" | translate) : ("Add un slot" | translate) }}
           </h3>
           <p class="app-dialog-subtitle">
-            Define the key, time range, and nutrition targets for this slot.
+            {{ "Define the key, time range, and nutrition targets for this slot." | translate }}
           </p>
         </div>
         <button mat-stroked-button type="button" (click)="onCancelForm()">
-          Close
+          {{ "Close" | translate }}
         </button>
       </div>
       <div class="app-dialog-content slot-feature__dialog-content">

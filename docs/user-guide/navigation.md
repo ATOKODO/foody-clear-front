@@ -42,4 +42,6 @@ Modal editors keep keyboard focus inside the active dialog. `Tab` and `Shift+Tab
 
 The theme control switches between light and dark mode. A saved choice is remembered in the browser; otherwise the app follows your system preference.
 
-The interface currently mixes English and French labels. These docs use English explanations and quote existing labels when useful: **Formulaire** means form, **Valider** means confirm, and **Convertir cochees** means convert checked items. A full language selector is planned, as described in [Project status](../project.md).
+Use **EN / FR**, beside the theme control, to change the interface language immediately. The choice is remembered in this browser; without a saved choice, French-language browsers start in French and other browsers start in English. Switching languages keeps the current page, open forms and unsaved values.
+
+Dates, numbers and currency follow the selected language. Product names, inventory names, recipe titles and other stored content stay unchanged. API paths, JSON field names, enum values and technical error details also remain unchanged. These documentation pages are in English.

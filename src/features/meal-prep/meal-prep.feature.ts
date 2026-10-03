@@ -1,3 +1,5 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
+import { Language } from '../../app/i18n/language';
 import { UiModal } from '../../app/ui/modal/modal';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
@@ -65,7 +67,7 @@ import {
 @Component({
   selector: 'app-meal-prep',
   standalone: true,
-  imports: [UiModal,
+  imports: [TranslatePipe, UiModal,
     CommonModule,
     FormsModule,
     MatButtonModule,
@@ -84,6 +86,7 @@ import {
   },
 })
 export class MealPrepFeature implements OnInit {
+  private readonly language = inject(Language);
   private readonly mealPrepSrv = inject(MealPrepService);
   private readonly productSrv = inject(ProductService);
 
@@ -497,7 +500,7 @@ export class MealPrepFeature implements OnInit {
   }
 
   resolveLineLabel(line: PreparedMealItem): string {
-    return resolveMealLineLabel(line);
+    return resolveMealLineLabel(line, (message) => this.language.translate(message));
   }
 
   resolveTypeLabel(type: MealPrepEntryType): string {
@@ -509,7 +512,7 @@ export class MealPrepFeature implements OnInit {
   }
 
   resolveProductName(productId: number | null): string {
-    return resolveMealPrepProductName(productId, this.products);
+    return resolveMealPrepProductName(productId, this.products, this.language.translate('No product selected'));
   }
 
   private handleScreenLoaded(

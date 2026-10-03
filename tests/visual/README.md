@@ -36,6 +36,8 @@ Service workers are blocked to keep API mocking independent of caches.
 - All 16 routes, with populated catalog/inventory/planning/execution data.
 - Calendar month/year/week/day, product creation dialog, nested inventory product picker.
 - Shopping list empty/error states and the mobile navigation drawer.
+- French home/calendar pages, product creation dialog and shopping list error state,
+  alongside the English route baselines in all four viewport/theme combinations.
 - Desktop 1440 × 1000 and mobile 390 × 844, each in light and dark mode (DPR 1).
 - A fresh browser context and cloned API state per test; date fixed at 25 March 2026,
   locale `en-GB`, timezone `Europe/Paris`, reduced motion and hidden text carets.

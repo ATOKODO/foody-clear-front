@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
@@ -26,6 +27,7 @@ export interface CategoryListItem {
 @Component({
   selector: 'app-category-list',
   imports: [
+    TranslatePipe,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,

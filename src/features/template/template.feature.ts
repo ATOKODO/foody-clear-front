@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import {
   Component,
   OnInit,
@@ -32,6 +33,7 @@ import { TemplateFeatureStore } from './template.store';
 @Component({
   selector: 'app-template',
   imports: [
+    TranslatePipe,
     MatButtonModule,
     MatCardModule,
     MatDialogModule,

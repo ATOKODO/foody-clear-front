@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 import { DOCUMENT } from '@angular/common';
 import {
@@ -33,7 +34,7 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 @Component({
   selector: 'app-day-set-feature',
-  imports: [UiModal,
+  imports: [TranslatePipe, UiModal,
     MatButtonModule,
     MatCardModule,
     UiErrorPanel,

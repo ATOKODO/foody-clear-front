@@ -1,19 +1,19 @@
 <section class="app-page app-page--wide stat-page" data-testid="statistic-page">
   <mat-card appearance="outlined" class="stat-card stat-toolbar-card">
   <div class="stat-toolbar-card__top">
-    <p>Adjust the period, timezone and analysis mode from one place.</p>
+    <p>{{ "Adjust the period, timezone and analysis mode from one place." | translate }}</p>
     <mat-button-toggle-group
       [(ngModel)]="activeView"
       class="stat-view-switch"
       data-testid="stat-view-switch"
-      aria-label="Change statistics view"
+      [attr.aria-label]="&quot;Change statistics view&quot; | translate"
     >
       @for (view of views; track view.value) {
         <mat-button-toggle
           [value]="view.value"
           [attr.data-testid]="'stat-view-' + view.value"
         >
-          {{ view.label }}
+          {{ (view.label) | translate }}
         </mat-button-toggle>
       }
     </mat-button-toggle-group>
@@ -27,7 +27,7 @@
         data-testid="stat-quick-7"
         (click)="applyQuickRange(7)"
       >
-        7 days
+        {{ "7 days" | translate }}
       </button>
       <button
         mat-stroked-button
@@ -35,7 +35,7 @@
         data-testid="stat-quick-30"
         (click)="applyQuickRange(30)"
       >
-        30 days
+        {{ "30 days" | translate }}
       </button>
       <button
         mat-stroked-button
@@ -43,7 +43,7 @@
         data-testid="stat-quick-90"
         (click)="applyQuickRange(90)"
       >
-        90 days
+        {{ "90 days" | translate }}
       </button>
       <button
         mat-raised-button
@@ -53,23 +53,23 @@
         [disabled]="loadingTimeline"
         (click)="refresh()"
       >
-        Refresh
+        {{ "Refresh" | translate }}
       </button>
     </div>
 
     <div class="stat-filters">
       <mat-form-field appearance="fill">
-        <mat-label>From</mat-label>
+        <mat-label>{{ "From" | translate }}</mat-label>
         <input matInput type="date" [(ngModel)]="fromDateLocal" />
       </mat-form-field>
 
       <mat-form-field appearance="fill">
-        <mat-label>To</mat-label>
+        <mat-label>{{ "To" | translate }}</mat-label>
         <input matInput type="date" [(ngModel)]="toDateLocal" />
       </mat-form-field>
 
       <mat-form-field appearance="fill">
-        <mat-label>Timezone</mat-label>
+        <mat-label>{{ "Timezone" | translate }}</mat-label>
         <input matInput [(ngModel)]="timezone" />
       </mat-form-field>
 
@@ -81,7 +81,7 @@
         [disabled]="loadingTimeline"
         (click)="refresh()"
       >
-        Load
+        {{ "Load" | translate }}
       </button>
     </div>
   </div>
@@ -95,15 +95,15 @@
     @if (timelineResponse; as timeline) {
       <div class="stat-grid stat-grid--summary">
         <mat-card appearance="outlined" class="stat-card stat-kpi">
-          <p>Montant total</p>
+          <p>{{ "Montant total" | translate }}</p>
           <strong>{{ formatCurrency(timeline.summary.totalAmount) }}</strong>
         </mat-card>
         <mat-card appearance="outlined" class="stat-card stat-kpi">
-          <p>Achats traces</p>
+          <p>{{ "Achats traces" | translate }}</p>
           <strong>{{ timeline.summary.purchaseCount }}</strong>
         </mat-card>
         <mat-card appearance="outlined" class="stat-card stat-kpi">
-          <p>Achats incomplets</p>
+          <p>{{ "Achats incomplets" | translate }}</p>
           <strong>{{ timeline.summary.incompletePurchaseCount }}</strong>
         </mat-card>
       </div>
@@ -112,10 +112,9 @@
       <mat-card appearance="outlined" class="stat-card">
         <div class="stat-card__head">
           <div>
-            <h2>Timeline des spending</h2>
+            <h2>{{ "Timeline des spending" | translate }}</h2>
             <p>
-              {{ timeline.fromDateLocal }} au {{ timeline.toDateLocal }} |
-              {{ timeline.timezone }}
+              {{ "{p0} au {p1} | {p2}" | translate: { p0: (timeline.fromDateLocal), p1: (timeline.toDateLocal), p2: (timeline.timezone) } }}
             </p>
           </div>
         </div>
@@ -145,7 +144,7 @@
                 formatDate(day.dateLocal)
               }}</span>
               <span class="expense-bar__meta"
-                >{{ day.expenses.purchaseCount }} achat(s)</span
+                >{{ "{p0} achat(s)" | translate: { p0: (day.expenses.purchaseCount) } }}</span
               >
             </button>
           }
@@ -156,10 +155,9 @@
       <mat-card appearance="outlined" class="stat-card">
         <div class="stat-card__head">
           <div>
-            <h2>Detail du {{ day.dateLocal }}</h2>
+            <h2>{{ "Detail du {p0}" | translate: { p0: (day.dateLocal) } }}</h2>
             <p>
-              {{ day.expenses.events.length }} evenement(s) |
-              {{ selectedDayExpenseTotal }}
+              {{ "{p0} evenement(s) | {p1}" | translate: { p0: (day.expenses.events.length), p1: (selectedDayExpenseTotal) } }}
             </p>
           </div>
         </div>
@@ -172,7 +170,7 @@
               >
                 <div>
                   <strong>{{ event.productName }}</strong>
-                  <p>{{ event.inventoryName || "Inventaire inconnu" }}</p>
+                  <p>{{ event.inventoryName || ("Inventaire inconnu" | translate) }}</p>
                   <p>
                     {{ formatDateTime(event.occurredAt) }} | {{ event.qty }}
                     {{ event.qtyUnit }}
@@ -190,13 +188,9 @@
                     event.excludedFromStats ||
                     event.pricingStatus === "excluded"
                   ) {
-                    <span class="status-chip">{{
-                      getPurchaseEventStatusLabel(event)
-                    }}</span>
+                    <span class="status-chip">{{ (getPurchaseEventStatusLabel(event)) | translate }}</span>
                   } @else {
-                    <span class="status-chip status-chip--warn">{{
-                      getPurchaseEventStatusLabel(event)
-                    }}</span>
+                    <span class="status-chip status-chip--warn">{{ (getPurchaseEventStatusLabel(event)) | translate }}</span>
                   }
                   @if (
                     event.excludedFromStats ||
@@ -209,7 +203,7 @@
                       [attr.data-testid]="'stat-purchase-restore-' + event.id"
                       (click)="restorePurchaseEvent(event)"
                     >
-                      Reintegrer
+                      {{ "Reintegrer" | translate }}
                     </button>
                   } @else {
                     <button
@@ -220,7 +214,7 @@
                       [attr.data-testid]="'stat-purchase-exclude-' + event.id"
                       (click)="excludePurchaseEvent(event)"
                     >
-                      Refunded
+                      {{ "Refunded" | translate }}
                     </button>
                   }
                 </div>
@@ -229,7 +223,7 @@
           </div>
         } @else {
           <p class="empty-copy" data-testid="stat-empty-expenses">
-            No achat sur cette daynee.
+            {{ "No achat sur cette daynee." | translate }}
           </p>
         }
       </mat-card>
@@ -240,16 +234,16 @@
     <mat-card appearance="outlined" class="stat-card">
       <div class="stat-card__head">
         <div>
-          <h2>Goals / day input</h2>
-          <p>Comparaison daynaliere entre reel et cible.</p>
+          <h2>{{ "Goals / day input" | translate }}</h2>
+          <p>{{ "Comparaison daynaliere entre reel et cible." | translate }}</p>
         </div>
         <mat-button-toggle-group
           [(ngModel)]="activeMetric"
-          aria-label="Choose metric"
+          [attr.aria-label]="&quot;Choose metric&quot; | translate"
         >
           @for (metric of metricOptions; track metric.key) {
             <mat-button-toggle [value]="metric.key">
-              {{ metric.label }}
+              {{ (metric.label) | translate }}
             </mat-button-toggle>
           }
         </mat-button-toggle-group>
@@ -280,7 +274,7 @@
                 ></span>
               </span>
               <span class="target-bar__meta">{{
-                day.inputs.targetSource
+                formatTargetSource(day.inputs.targetSource)
               }}</span>
             </button>
           }
@@ -291,39 +285,37 @@
       <mat-card appearance="outlined" class="stat-card">
         <div class="stat-card__head">
           <div>
-            <h2>Detail du {{ day.dateLocal }}</h2>
-            <p>{{ metricLabel }} | source {{ day.inputs.targetSource }}</p>
+            <h2>{{ "Detail du {p0}" | translate: { p0: (day.dateLocal) } }}</h2>
+            <p>{{ "{p0} | source {p1}" | translate: { p0: (metricLabel | translate), p1: (formatTargetSource(day.inputs.targetSource)) } }}</p>
           </div>
         </div>
         <div class="stat-grid stat-grid--summary">
           <div class="target-detail-box">
-            <span>Reel</span>
+            <span>{{ "Reel" | translate }}</span>
             <strong>{{ selectedDayTargetActual }}</strong>
           </div>
           <div class="target-detail-box">
-            <span>Cible</span>
+            <span>{{ "Cible" | translate }}</span>
             <strong>{{ selectedDayTargetGoal }}</strong>
           </div>
           <div class="target-detail-box">
-            <span>Delta</span>
+            <span>{{ "Delta" | translate }}</span>
             <strong>{{ selectedDayTargetDelta }}</strong>
           </div>
         </div>
         <div class="target-detail-meta">
           @if (day.inputs.assignment) {
             <p>
-              Cycle: {{ day.inputs.assignment.cycleTitle }} (day
-              {{ day.inputs.assignment.dayIndex }})
+              {{ "Cycle: {p0} (day {p1})" | translate: { p0: (day.inputs.assignment.cycleTitle), p1: (day.inputs.assignment.dayIndex) } }}
             </p>
           }
           @if (day.inputs.daySet) {
-            <p>Day set: {{ day.inputs.daySet.title }}</p>
+            <p>{{ "Day set: {p0}" | translate: { p0: (day.inputs.daySet.title) } }}</p>
           }
-          <p>Items saisis: {{ day.inputs.itemCount }}</p>
+          <p>{{ "Items saisis: {p0}" | translate: { p0: (day.inputs.itemCount) } }}</p>
           @if (day.inputs.incompleteNutritionKeys.length > 0) {
             <p>
-              Nutrition incomplete:
-              {{ day.inputs.incompleteNutritionKeys.join(", ") }}
+              {{ "Nutrition incomplete: {p0}" | translate: { p0: (day.inputs.incompleteNutritionKeys.join(", ")) } }}
             </p>
           }
         </div>
@@ -335,13 +327,13 @@
     <mat-card appearance="outlined" class="stat-card">
       <div class="stat-card__head">
         <div>
-          <h2>Evolution du prix product</h2>
-          <p>Historique versionne des prix avec delta absolu et pourcentage.</p>
+          <h2>{{ "Evolution du prix product" | translate }}</h2>
+          <p>{{ "Historique versionne des prix avec delta absolu et pourcentage." | translate }}</p>
         </div>
       </div>
       <div class="stat-filters">
         <mat-form-field appearance="fill">
-          <mat-label>Produit</mat-label>
+          <mat-label>{{ "Produit" | translate }}</mat-label>
           <mat-select
             data-testid="stat-price-product-select"
             [(ngModel)]="selectedPriceProductId"
@@ -357,7 +349,7 @@
       </div>
       <div class="stat-filters" data-testid="stat-price-correction-form">
         <mat-form-field appearance="fill">
-          <mat-label>Nouveau prix</mat-label>
+          <mat-label>{{ "Nouveau prix" | translate }}</mat-label>
           <input
             matInput
             type="number"
@@ -368,16 +360,16 @@
         </mat-form-field>
 
         <mat-form-field appearance="fill">
-          <mat-label>Unite</mat-label>
+          <mat-label>{{ "Unite" | translate }}</mat-label>
           <mat-select [(ngModel)]="priceCorrectionPriceUnit">
             @for (unit of priceUnitOptions; track unit) {
-              <mat-option [value]="unit">{{ unit }}</mat-option>
+              <mat-option [value]="unit">{{ (unit) | translate }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
 
         <mat-form-field appearance="fill">
-          <mat-label>Debut</mat-label>
+          <mat-label>{{ "Debut" | translate }}</mat-label>
           <input
             matInput
             type="date"
@@ -386,7 +378,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="fill">
-          <mat-label>Fin</mat-label>
+          <mat-label>{{ "Fin" | translate }}</mat-label>
           <input
             matInput
             type="date"
@@ -395,7 +387,7 @@
         </mat-form-field>
 
         <mat-checkbox [(ngModel)]="priceCorrectionRecalculatePurchases">
-          Recalculer les achats
+          {{ "Recalculer les achats" | translate }}
         </mat-checkbox>
 
         <button
@@ -406,14 +398,14 @@
           [disabled]="correctingPrice || selectedPriceProductId === null"
           (click)="submitPriceCorrection()"
         >
-          Corriger
+          {{ "Corriger" | translate }}
         </button>
       </div>
 
       @if (priceHistoryResponse; as history) {
         <div class="stat-grid stat-grid--summary">
           <div class="target-detail-box">
-            <span>Prix courant</span>
+            <span>{{ "Prix courant" | translate }}</span>
             <strong>
               {{
                 history.currentPrice.price !== null
@@ -424,7 +416,7 @@
             </strong>
           </div>
           <div class="target-detail-box">
-            <span>Variation</span>
+            <span>{{ "Variation" | translate }}</span>
             <strong>
               @if (history.stats.absoluteDelta !== null) {
                 {{ formatCurrency(history.stats.absoluteDelta) }}
@@ -434,11 +426,11 @@
             </strong>
           </div>
           <div class="target-detail-box">
-            <span>Changements</span>
+            <span>{{ "Changements" | translate }}</span>
             <strong>{{ history.stats.changeCount }}</strong>
           </div>
           <div class="target-detail-box">
-            <span>Min / Max</span>
+            <span>{{ "Min / Max" | translate }}</span>
             <strong>
               {{
                 history.stats.minPrice !== null
@@ -473,7 +465,7 @@
                     <span>{{ formatDateTime(change.effectiveFrom) }}</span>
                   </div>
                   <p>
-                    Ancien:
+                    {{ "Ancien:" | translate }}
                     @if (change.previousPrice !== null) {
                       <span>
                         {{ formatCurrency(change.previousPrice) }}
@@ -484,7 +476,7 @@
                     }
                   </p>
                   <p>
-                    Delta:
+                    {{ "Delta:" | translate }}
                     @if (change.absoluteDelta !== null) {
                       <span>
                         {{ formatCurrency(change.absoluteDelta) }}
@@ -505,14 +497,12 @@
           </div>
         } @else {
           <p class="empty-copy" data-testid="stat-empty-price-changes">
-            No changement de prix pour {{ selectedProductName }} sur cette
-            periode.
+            {{ "No changement de prix pour {p0} sur cette periode." | translate: { p0: (selectedProductName) } }}
           </p>
         }
       } @else {
         <p class="empty-copy" data-testid="stat-empty-price-history">
-          No historique de prix disponible pour {{ selectedProductName }} sur
-          cette periode.
+          {{ "No historique de prix disponible pour {p0} sur cette periode." | translate: { p0: (selectedProductName) } }}
         </p>
       }
     </mat-card>

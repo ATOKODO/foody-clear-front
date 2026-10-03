@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 // calendar-container.component.ts
 import {
   ChangeDetectionStrategy,
@@ -7,11 +8,13 @@ import {
   SimpleChanges,
   input,
   output,
+  inject,
 } from '@angular/core';
 import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { DateTime } from 'luxon';
+import { DateTime, Info } from 'luxon';
+import { Language } from '../../app/i18n/language';
 import {
   CalendarView,
   CalendarDay,
@@ -39,7 +42,6 @@ import {
   generateWeekDays,
   generateYearMonths,
   generateDayHours,
-  WEEKDAY_NAMES,
 } from '../../utils/calendar.utils';
 import {
   buildCalendarInsertedProducts,
@@ -165,7 +167,7 @@ function formatCalendarAssignmentProgress(assignment: CalendarAssignment): strin
 
 @Component({
   selector: 'app-calendar',
-  imports: [MatButtonModule, MatButtonToggleModule, DecimalPipe, NgTemplateOutlet],
+  imports: [TranslatePipe, MatButtonModule, MatButtonToggleModule, DecimalPipe, NgTemplateOutlet],
   templateUrl: './calendar.html',
   styleUrl: './calendar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -196,7 +198,10 @@ export class Calendar implements OnInit, OnChanges {
   readonly viewChanged = output<CalendarViewChangeEvent>();
 
   readonly VIEWS: CalendarView[] = ['year', 'month', 'week', 'day'];
-  readonly WEEKDAY_NAMES = WEEKDAY_NAMES;
+  readonly language = inject(Language);
+  get WEEKDAY_NAMES(): string[] {
+    return Info.weekdays('short', { locale: this.language.locale() });
+  }
   readonly HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 
   currentView: CalendarView = 'month';
@@ -562,14 +567,14 @@ export class Calendar implements OnInit, OnChanges {
       case 'year':
         return this.currentDate.toFormat('yyyy');
       case 'month':
-        return this.currentDate.setLocale('en').toFormat('LLLL yyyy');
+        return this.currentDate.setLocale(this.language.locale()).toFormat('LLLL yyyy');
       case 'week': {
         const start = this.currentDate.startOf('week');
         const end = this.currentDate.endOf('week');
-        return `${start.setLocale('en').toFormat('d MMM')} - ${end.setLocale('en').toFormat('d MMM yyyy')}`;
+        return `${start.setLocale(this.language.locale()).toFormat('d MMM')} - ${end.setLocale(this.language.locale()).toFormat('d MMM yyyy')}`;
       }
       case 'day':
-        return this.currentDate.setLocale('en').toFormat('EEEE d LLLL yyyy');
+        return this.currentDate.setLocale(this.language.locale()).toFormat('EEEE d LLLL yyyy');
       default:
         return '';
     }
@@ -589,6 +594,10 @@ export class Calendar implements OnInit, OnChanges {
     }
 
     return 'Day';
+  }
+
+  formatMonthName(month: MonthSummary): string {
+    return DateTime.local(month.year, month.month).setLocale(this.language.locale()).toFormat('LLLL');
   }
 
   private refreshView(): void {
@@ -702,14 +711,15 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   getWeekDayCycleProgress(day: CalendarDay): string | null {
+    const prefix = this.language.current() === 'fr' ? 'J' : 'D';
     if (day.assignment?.dayNumber) {
       return day.assignment.totalDays
-        ? `D${day.assignment.dayNumber}/${day.assignment.totalDays}`
-        : `D${day.assignment.dayNumber}`;
+        ? `${prefix}${day.assignment.dayNumber}/${day.assignment.totalDays}`
+        : `${prefix}${day.assignment.dayNumber}`;
     }
 
     const dayIndex = this.getWeekDayResponse(day.date)?.assignment?.dayIndex;
-    return typeof dayIndex === 'number' ? `D${dayIndex}` : null;
+    return typeof dayIndex === 'number' ? `${prefix}${dayIndex}` : null;
   }
 
   getWeekDayProductCount(dateLocal: string): number {
@@ -856,6 +866,8 @@ export class Calendar implements OnInit, OnChanges {
   getDaySlotMacroGroups(): CalendarDaySlotMacroGroup[] {
     return buildCalendarDaySlotMacroGroups(
       this.inputDayResponse()?.totalsMacros?.bySlot ?? [],
+      undefined,
+      this.language.locale(),
     );
   }
 
@@ -975,7 +987,7 @@ export class Calendar implements OnInit, OnChanges {
       day.assignment?.cycleName ??
       day.assignment?.label ??
       this.getWeekDayResponse(day.date)?.templateAssociation?.template.title ??
-      'Tracked day'
+      this.language.translate('Tracked day')
     );
   }
 
@@ -985,10 +997,13 @@ export class Calendar implements OnInit, OnChanges {
 
   getMonthDayProgressText(day: CalendarDay): string | null {
     if (day.assignment?.dayNumber) {
-      return `Day ${day.assignment.dayNumber}/${day.assignment.totalDays}`;
+      return this.language.translate('Day {p0}/{p1}', {
+        p0: day.assignment.dayNumber, p1: day.assignment.totalDays,
+      });
     }
 
-    return this.getTemplateSourceBadgeText(this.getWeekDayResponse(day.date));
+    const source = this.getTemplateSourceBadgeText(this.getWeekDayResponse(day.date));
+    return source === null ? null : this.language.translate(source);
   }
 
   getMonthDayAlertBadges(dateLocal: string): CalendarMonthAlertBadge[] {
@@ -1001,13 +1016,14 @@ export class Calendar implements OnInit, OnChanges {
       this.buildMacroComparisons(response),
       this.buildProjectedMacroComparisons(response),
       this.getPendingTemplateItemCount(response),
+      this.language.locale(),
     );
   }
 
   getDayMetricEntries(
     metrics: Record<string, number | InputDayMacroValue> | null | undefined,
   ): CalendarMacroMetricEntry[] {
-    return getCalendarMetricEntries(metrics);
+    return getCalendarMetricEntries(metrics, this.language.locale());
   }
 
   getDayTemplateTimelineBlocks(): CalendarWeekTimelineBlock[] {
@@ -1404,7 +1420,7 @@ export class Calendar implements OnInit, OnChanges {
   private buildMacroHighlights(
     dayTotal: Record<string, InputDayMacroValue> | null,
   ): CalendarWeekMacroHighlight[] {
-    return buildCalendarMacroHighlights(dayTotal);
+    return buildCalendarMacroHighlights(dayTotal, this.language.locale());
   }
 
   private buildMacroComparisons(
@@ -1424,7 +1440,7 @@ export class Calendar implements OnInit, OnChanges {
   private buildMacroComparisonsFromTotals(
     totals: InputDayTotalsMacrosSummary | null,
   ): CalendarMacroComparison[] {
-    return buildCalendarMacroComparisonsFromTotals(totals);
+    return buildCalendarMacroComparisonsFromTotals(totals, this.language.locale());
   }
 
   private hasTemplateData(response: InputDayResponse | null): boolean {
@@ -1436,7 +1452,7 @@ export class Calendar implements OnInit, OnChanges {
   }
 
   private formatQuantityLabel(value: number): string {
-    return formatCalendarQuantityLabel(value);
+    return formatCalendarQuantityLabel(value, this.language.locale());
   }
 
   private buildDayMacroCards(
@@ -1444,7 +1460,7 @@ export class Calendar implements OnInit, OnChanges {
     targets: Record<string, number> | null | undefined,
     deltas: Record<string, InputDayMacroValue> | null | undefined,
   ): CalendarDayMacroCard[] {
-    return buildCalendarDayMacroCards(consumedValues, targets, deltas);
+    return buildCalendarDayMacroCards(consumedValues, targets, deltas, this.language.locale());
   }
 
   private resolveCurrentDayInsertedProducts(
@@ -1463,7 +1479,7 @@ export class Calendar implements OnInit, OnChanges {
     value: number,
     maximumFractionDigits: number,
   ): string {
-    return formatCalendarCompactNumber(value, maximumFractionDigits);
+    return formatCalendarCompactNumber(value, maximumFractionDigits, this.language.locale());
   }
 
   private applyDayInsertedProducts(
@@ -1536,7 +1552,7 @@ export class Calendar implements OnInit, OnChanges {
     response: InputDayResponse | null,
     slots: CalendarDaySlot[],
   ): CalendarPlannedTemplateItem[] {
-    return resolvePendingCalendarTemplateItems(response, slots);
+    return resolvePendingCalendarTemplateItems(response, slots, this.language.locale());
   }
 
   getDayTemplateBlockEmptyText(block: CalendarWeekTimelineBlock): string {

@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 
 import { Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -85,6 +86,7 @@ const PRODUCT_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<ProductHubView>[]
 @Component({
   selector: 'app-product',
   imports: [
+    TranslatePipe,
     MatButtonModule,
     MatCardModule,
     MatDialogModule,
@@ -819,9 +821,9 @@ export class Product implements OnInit {
     return Array.from(new Set(names));
   }
 
-  private resolveLinkedEntityName(value: unknown): string {
+  private resolveLinkedEntityName(value: unknown): string | null {
     if (!value || typeof value !== 'object') {
-      return 'None';
+      return null;
     }
 
     const raw = value as Record<string, unknown>;
@@ -833,7 +835,7 @@ export class Product implements OnInit {
       }
     }
 
-    return 'None';
+    return null;
   }
 
   private extractCategoriesFromResponse(value: unknown): CategoryApiModel[] {

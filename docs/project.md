@@ -13,11 +13,11 @@ Use compatible revisions of both repositories and review migrations when updatin
 
 The current app provides the catalog, shopping, inventories, recipes, planning, daily tracking, statistics, themes, barcode lookup and mobile shell described in [All features and routes](./reference/features.md).
 
-It does not provide authentication, remote accounts, multiple isolated profiles, cloud synchronization, an offline write queue or a complete interface language selector. Local hosting is the intended current use.
+It does not provide authentication, remote accounts, multiple isolated profiles, cloud synchronization or an offline write queue. The EN / FR control beside the theme changes the interface language. Local hosting is the intended current use.
 
 ## Planned capabilities
 
-The repository roadmap includes multiple profiles with separate food data/goals/history, offline data synchronization beyond the cached app shell, and interface internationalization including French.
+The repository roadmap includes multiple profiles with separate food data/goals/history and offline data synchronization beyond the cached app shell.
 
 These are future directions, not features you can enable with an environment flag in this release. There is no promised release date in this documentation.
 

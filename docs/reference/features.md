@@ -38,10 +38,10 @@ This index covers every registered application screen, plus cross-screen feature
 | Multiple inventory sources and exact consumption allocations | [Day input](../user-guide/day-input.md) |
 | Actual and projected nutrition, incomplete-value indicators | [Templates](../user-guide/templates.md) · [Statistics](../user-guide/statistics.md) |
 | Restaurant/unplanned meals, macros and paid/free/refunded spending | [External meals](../user-guide/external-meals.md) |
-| Light/dark theme, responsive navigation and keyboard modal controls | [Navigation](../user-guide/navigation.md) |
+| EN/FR switching, light/dark theme, responsive navigation and keyboard modal controls | [Navigation](../user-guide/navigation.md) |
 | PWA installation, cached shell and update prompt | [Mobile guide](../user-guide/mobile.md) |
 | Application API, metadata endpoints and optional backend barcode proxy | [HTTP API](./api.md) |
 
 ## Features not yet available
 
-Authentication, multiple profiles, cloud accounts, queued offline writes, automatic offline synchronization and full language switching are not part of this release. See [Project status](../project.md).
+Authentication, multiple profiles, cloud accounts, queued offline writes and automatic offline synchronization are not part of this release. See [Project status](../project.md).

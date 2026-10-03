@@ -2,10 +2,10 @@
   <div class="overflow-x-auto rounded-xl border border-app-border">
     <table mat-table [dataSource]="resolvedCategories" class="category-table w-full">
       <ng-container matColumnDef="select">
-        <th mat-header-cell *matHeaderCellDef class="w-14" aria-label="Selection"></th>
+        <th mat-header-cell *matHeaderCellDef class="w-14" [attr.aria-label]="&quot;Selection&quot; | translate"></th>
         <td mat-cell *matCellDef="let item" class="w-14">
           <mat-checkbox [checked]="isSelected(item.id)"
-            [aria-label]="'Select ' + item.name"
+            [aria-label]="(&quot;&quot; + (&quot;Select&quot; | translate) + &quot; &quot;) + item.name"
             (change)="onCheckboxChange(item, $event.checked)"
             (click)="onCheckboxClick($event)"
             (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()" />
@@ -13,29 +13,29 @@
       </ng-container>
 
       <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Categorie</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Categorie" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ item.name }}</td>
       </ng-container>
 
       <ng-container matColumnDef="warnBeforeDays">
-        <th mat-header-cell *matHeaderCellDef>Alerte</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Alerte" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ getNumberDisplay(item.warnBeforeDays) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="recentlyExpiredDays">
-        <th mat-header-cell *matHeaderCellDef>Recent</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Recent" | translate }}</th>
         <td mat-cell *matCellDef="let item">
           {{ getNumberDisplay(item.recentlyExpiredDays) }}
         </td>
       </ng-container>
 
       <ng-container matColumnDef="minQuantity">
-        <th mat-header-cell *matHeaderCellDef>Min qty</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Min qty" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ getNumberDisplay(item.minQuantity) }}</td>
       </ng-container>
 
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <th mat-header-cell *matHeaderCellDef>{{ "Actions" | translate }}</th>
         <td
           mat-cell
           *matCellDef="let item"
@@ -48,7 +48,7 @@
               class="category-table__action category-table__action--edit"
               [attr.data-testid]="'category-edit-' + item.id"
               (click)="$event.stopPropagation(); onEditClick(item)">
-              Edit
+              {{ "Edit" | translate }}
             </button>
             <button
               mat-stroked-button
@@ -56,7 +56,7 @@
               class="category-table__action category-table__action--delete"
               [attr.data-testid]="'category-delete-' + item.id"
               (click)="$event.stopPropagation(); onDeleteClick(item)">
-              Remove
+              {{ "Remove" | translate }}
             </button>
           </div>
         </td>
@@ -80,13 +80,13 @@
 
 @if (!embedded()) {
   <section
-    aria-label="Liste des categories"
+    [attr.aria-label]="&quot;Liste des categories&quot; | translate"
     data-testid="category-list"
     class="w-full"
     [class]="compact() ? '' : 'mx-auto max-w-6xl px-4 py-6'">
     <mat-card class="overflow-hidden rounded-2xl" [class.shadow-none]="compact()">
       <div class="flex items-center justify-between gap-3 border-b border-app-border bg-app-surface-soft px-4 py-3 sm:px-6">
-        <h2 class="text-base font-semibold text-app-text-strong">Categories</h2>
+        <h2 class="text-base font-semibold text-app-text-strong">{{ "Categories" | translate }}</h2>
         @if (isManageMode) {
           <button
             mat-raised-button
@@ -95,7 +95,7 @@
             data-testid="category-add"
             class="add-btn"
             (click)="onAddClick()">
-            Add
+            {{ "Add" | translate }}
           </button>
         }
       </div>
@@ -106,7 +106,7 @@
       } @else {
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-content class="p-4 text-sm text-app-text">
-            No category available.
+            {{ "No category available." | translate }}
           </mat-card-content>
         </mat-card>
       }
@@ -117,7 +117,7 @@
     @if (hasItems) {
       <ng-container [ngTemplateOutlet]="tableContent" />
     } @else {
-      <p class="category-list__empty text-sm text-app-text">No category available.</p>
+      <p class="category-list__empty text-sm text-app-text">{{ "No category available." | translate }}</p>
     }
   </div>
 }

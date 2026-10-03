@@ -1,8 +1,8 @@
 <div class="template-list-shell" data-testid="template-list">
   <app-master-detail-layout
-    sideTitle="Templates"
-    sideSubtitle="Select a template and review its read-only details."
-    sideAriaLabel="Templates"
+    [sideTitle]="&quot;Templates&quot; | translate"
+    [sideSubtitle]="&quot;Select a template and review its read-only details.&quot; | translate"
+    [sideAriaLabel]="&quot;Templates&quot; | translate"
     sideWidth="24rem">
     <span side-actions class="template-master__count-badge">
       {{ sortedTemplates.length }}
@@ -20,8 +20,8 @@
               >
               <button type="button" class="template-master__card-select" [disabled]="busy" (click)="onTemplateClick(template.id)">
                 <span class="template-master__card-title">{{ template.title }}</span>
-                <span class="template-master__card-meta">{{ template.items.length }} template line(s)</span>
-                <span class="template-master__card-status">Template</span>
+                <span class="template-master__card-meta">{{ "{p0} template line(s)" | translate: { p0: (template.items.length) } }}</span>
+                <span class="template-master__card-status">{{ "Template" | translate }}</span>
               </button>
               <div class="template-master__card-actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                 <button
@@ -31,7 +31,7 @@
                   [attr.data-testid]="template.id === selectedTemplateId() ? 'template-edit' : 'template-edit-' + template.id"
                   (click)="onEditClick(template.id)"
                   [disabled]="busy">
-                  Edit
+                  {{ "Edit" | translate }}
                 </button>
                 <button
                   mat-stroked-button
@@ -40,7 +40,7 @@
                   [attr.data-testid]="'template-delete-' + template.id"
                   (click)="onDeleteClick(template.id)"
                   [disabled]="busy">
-                  Remove
+                  {{ "Remove" | translate }}
                 </button>
               </div>
             </div>
@@ -48,7 +48,7 @@
         </div>
       } @else {
         <div class="template-master__empty">
-          No template available.
+          {{ "No template available." | translate }}
         </div>
       }
     </div>
@@ -57,7 +57,7 @@
       @if (selectedTemplate(); as template) {
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-header>
-            <mat-card-title>Template lines</mat-card-title>
+            <mat-card-title>{{ "Template lines" | translate }}</mat-card-title>
             <mat-card-subtitle>{{ template.title }}</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content class="pt-2">
@@ -68,11 +68,11 @@
                 <table class="min-w-full text-sm">
                   <thead class="bg-app-surface-soft text-left text-app-text">
                     <tr>
-                      <th class="px-3 py-2">Element</th>
-                      <th class="px-3 py-2">Qty</th>
-                      <th class="px-3 py-2">Slot</th>
-                      <th class="px-3 py-2">Stock global</th>
-                      <th class="px-3 py-2">Inventory details</th>
+                      <th class="px-3 py-2">{{ "Element" | translate }}</th>
+                      <th class="px-3 py-2">{{ "Qty" | translate }}</th>
+                      <th class="px-3 py-2">{{ "Slot" | translate }}</th>
+                      <th class="px-3 py-2">{{ "Stock global" | translate }}</th>
+                      <th class="px-3 py-2">{{ "Inventory details" | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -83,11 +83,11 @@
                         >
                         <td class="px-3 py-2">
                           <p class="font-medium text-app-text-strong">{{ resolveTemplateItemLabel(item) }}</p>
-                          <p class="text-xs text-app-text-muted">{{ resolveTemplateItemTypeLabel(item) }}</p>
+                          <p class="text-xs text-app-text-muted">{{ (resolveTemplateItemTypeLabel(item)) | translate }}</p>
                         </td>
                         <td class="px-3 py-2">
                           {{ formatNutritionAmount(item.qty) }}
-                          <span class="text-app-text-muted">{{ item.qtyUnit ?? '-' }}</span>
+                          <span class="text-app-text-muted">{{ (item.qtyUnit ?? '-') | translate }}</span>
                         </td>
                         <td class="px-3 py-2">{{ resolveTemplateItemSlotLabel(item) }}</td>
                         <td class="px-3 py-2">
@@ -98,19 +98,16 @@
                             [class.bg-app-danger-surface]="item.stockAvailability?.enoughStock === false"
                             [class.text-app-danger]="item.stockAvailability?.enoughStock === false"
                             >
-                            {{ getStockAvailabilityLabel(item) }}
+                            {{ (getStockAvailabilityLabel(item)) | translate }}
                           </span>
                           <p class="mt-2 text-xs text-app-text">
-                            {{ formatNutritionAmount(item.stockAvailability?.totalAvailableNormalized) }}
-                            available /
-                            {{ formatNutritionAmount(item.stockAvailability?.requestedQtyNormalized) }}
-                            requested
+                            {{ "{p0} available / {p1} requested" | translate: { p0: (formatNutritionAmount(item.stockAvailability?.totalAvailableNormalized)), p1: (formatNutritionAmount(item.stockAvailability?.requestedQtyNormalized)) } }}
                           </p>
                         </td>
                         <td class="px-3 py-2">
                           <details [attr.data-testid]="'template-stock-detail-' + item.id">
                             <summary class="cursor-pointer text-xs font-medium text-app-text">
-                              View details
+                              {{ "View details" | translate }}
                             </summary>
                             <div class="mt-2 space-y-1">
                               @for (stock of item.stockByInventory ?? []; track stock) {
@@ -124,7 +121,7 @@
                                     [class.text-app-success]="stock.enoughStock"
                                     [class.text-app-danger]="!stock.enoughStock"
                                     >
-                                    ({{ stock.enoughStock ? 'OK' : 'KO' }})
+                                    ({{ stock.enoughStock ? ("OK" | translate) : ("KO" | translate) }})
                                   </span>
                                 </p>
                               }
@@ -132,7 +129,7 @@
                                 <p
                                   class="text-xs text-app-text-muted"
                                   >
-                                  No inventory details.
+                                  {{ "No inventory details." | translate }}
                                 </p>
                               }
                             </div>
@@ -145,7 +142,7 @@
               </div>
             } @else {
               <p class="rounded-lg border border-app-border bg-app-surface-soft px-3 py-2 text-sm text-app-text">
-                No lines in this template.
+                {{ "No lines in this template." | translate }}
               </p>
             }
           </mat-card-content>
@@ -155,18 +152,18 @@
             <mat-card-content class="space-y-4 p-4">
               <div class="template-compare-card__header">
                 <div>
-                  <p class="text-sm font-semibold text-app-text-strong">Nutrition comparison</p>
+                  <p class="text-sm font-semibold text-app-text-strong">{{ "Nutrition comparison" | translate }}</p>
                   <p class="text-xs text-app-text-muted">
-                    {{ getTargetSourceText(template.totalsMacros?.targetSource ?? 'none') }}
+                    {{ (getTargetSourceText(template.totalsMacros?.targetSource ?? 'none')) | translate }}
                   </p>
                 </div>
                 <mat-form-field appearance="fill" class="template-compare-card__field">
-                  <mat-label>Compare with day set</mat-label>
+                  <mat-label>{{ "Compare with day set" | translate }}</mat-label>
                   <mat-select
                     [ngModel]="compareDaySetId()"
                     (ngModelChange)="onCompareDaySetChange($event)"
                     >
-                    <mat-option [value]="null">No comparison</mat-option>
+                    <mat-option [value]="null">{{ "No comparison" | translate }}</mat-option>
                     @for (daySet of sortedDaySets; track daySet) {
                       <mat-option [value]="daySet.id">
                         {{ daySet.title }}
@@ -181,7 +178,7 @@
                   >
                   <p class="text-sm font-semibold text-app-text-strong">{{ daySet.title }}</p>
                   <p class="text-xs text-app-text-muted">
-                    Reference day set for comparison.
+                    {{ "Reference day set for comparison." | translate }}
                   </p>
                 </div>
               }
@@ -189,45 +186,45 @@
                 <div class="grid gap-3 md:grid-cols-3">
                   <div class="rounded-lg border border-app-border p-3">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-app-text-muted">
-                      Template total
+                      {{ "Template total" | translate }}
                     </p>
                     @for (entry of totals.dayTotal | keyvalue; track entry) {
                       <p class="text-sm text-app-text">
-                        <span class="font-medium text-app-text-strong">{{ entry.key }}:</span>
+                        <span class="font-medium text-app-text-strong">{{ (entry.key) | translate }}:</span>
                         {{ formatMacroValue(entry.value) }}
                       </p>
                     }
                   </div>
                   <div class="rounded-lg border border-app-border p-3">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-app-text-muted">
-                      Targets
+                      {{ "Targets" | translate }}
                     </p>
                     @if (!hasEntries(totals.targets)) {
                       <p class="text-sm text-app-text-muted">
-                        No target.
+                        {{ "No target." | translate }}
                       </p>
                     }
                     @for (entry of totals.targets | keyvalue; track entry) {
                       <p class="text-sm text-app-text">
-                        <span class="font-medium text-app-text-strong">{{ entry.key }}:</span>
+                        <span class="font-medium text-app-text-strong">{{ (entry.key) | translate }}:</span>
                         {{ formatNutritionAmount(entry.value) }}
                       </p>
                     }
                   </div>
                   <div class="rounded-lg border border-app-border p-3">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-app-text-muted">
-                      Delta
+                      {{ "Delta" | translate }}
                     </p>
                     @if (!hasEntries(totals.deltaToTargets)) {
                       <p class="text-sm text-app-text-muted">
-                        No delta.
+                        {{ "No delta." | translate }}
                       </p>
                     }
                     @for (entry of totals.deltaToTargets | keyvalue; track entry) {
                       <p
                         class="text-sm text-app-text"
                         >
-                        <span class="font-medium text-app-text-strong">{{ entry.key }}:</span>
+                        <span class="font-medium text-app-text-strong">{{ (entry.key) | translate }}:</span>
                         {{ formatMacroValue(entry.value) }}
                       </p>
                     }
@@ -240,7 +237,7 @@
             @if (totals.bySlot.length > 0) {
               <mat-card appearance="outlined" class="rounded-xl">
                 <mat-card-content class="space-y-3 p-4">
-                  <p class="text-sm font-semibold text-app-text-strong">Par slot</p>
+                  <p class="text-sm font-semibold text-app-text-strong">{{ "Par slot" | translate }}</p>
                   @for (slotTotals of totals.bySlot; track slotTotals) {
                     <div
                       class="space-y-2 rounded-lg border border-app-border bg-app-surface-soft p-3"
@@ -256,10 +253,10 @@
                         <div
                           class="text-sm text-app-text"
                           >
-                          <p class="font-medium text-app-text-strong">Consumed</p>
+                          <p class="font-medium text-app-text-strong">{{ "Consumed" | translate }}</p>
                           @for (entry of getSlotMacroEntries(slotTotals); track entry) {
                             <p>
-                              {{ entry.key }}: {{ formatMacroValue(entry.value) }}
+                              {{ (entry.key) | translate }}: {{ formatMacroValue(entry.value) }}
                             </p>
                           }
                         </div>
@@ -274,12 +271,10 @@
       } @else {
         <mat-card appearance="outlined" class="rounded-xl">
           <mat-card-content class="p-4 text-sm text-app-text">
-            Create a template or select one to review its lines and comparisons.
+            {{ "Create a template or select one to review its lines and comparisons." | translate }}
           </mat-card-content>
         </mat-card>
       }
     </div>
   </app-master-detail-layout>
 </div>
-
-

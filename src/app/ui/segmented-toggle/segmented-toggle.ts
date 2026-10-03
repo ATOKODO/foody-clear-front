@@ -1,5 +1,6 @@
 
 import { Component, input, output } from '@angular/core';
+import { TranslatePipe } from '../../i18n/translate-pipe';
 import {
   MatButtonToggleChange,
   MatButtonToggleModule,
@@ -13,7 +14,7 @@ export interface SegmentedToggleOption<TValue extends string = string> {
 
 @Component({
   selector: 'app-segmented-toggle',
-  imports: [MatButtonToggleModule],
+  imports: [MatButtonToggleModule, TranslatePipe],
   templateUrl: './segmented-toggle.html',
   styleUrl: './segmented-toggle.scss',
 })

@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import {
   Component,
   OnInit,
@@ -73,6 +74,7 @@ import {
 @Component({
   selector: 'app-cycle',
   imports: [
+    TranslatePipe,
     FormsModule,
     ListCycle,
     FormCycle,

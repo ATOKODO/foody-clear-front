@@ -24,6 +24,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:i18n": "node --test scripts/i18n-inventory.test.mjs",
     "test:coverage": "ng test --no-watch --code-coverage --browsers=ChromeHeadless",
     "e2e": "playwright test",
     "typecheck:e2e": "tsc -p tsconfig.e2e.json --noEmit",

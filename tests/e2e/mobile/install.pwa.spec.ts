@@ -46,12 +46,12 @@ test('serves an installable manifest and a working offline mobile shell', async 
 test('offers installation instructions on a mobile browser', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/home');
-  await page.getByRole('button', { name: 'Installer l’app', exact: true }).click();
+  await page.getByRole('button', { name: "Install app", exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('Android');
   await expect(dialog).toContainText('iPhone / iPad');
   await expect(dialog).toContainText('HTTPS');
-  await dialog.getByRole('button', { name: 'Fermer', exact: true }).click();
+  await dialog.getByRole('button', { name: "Close", exact: true }).click();
   await expect(dialog).toBeHidden();
 });
 

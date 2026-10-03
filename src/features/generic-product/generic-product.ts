@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 
 import { Component, OnChanges, OnInit, SimpleChanges, input, output, inject, signal } from '@angular/core';
@@ -26,7 +27,7 @@ import type { PortionUnit, QuantityUnit } from '../../services/product-service';
 
 @Component({
   selector: 'app-generic-product',
-  imports: [UiModal,
+  imports: [TranslatePipe, UiModal,
     FormsModule,
     MatButtonModule,
     MatCardModule,

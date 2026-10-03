@@ -8,13 +8,13 @@
             (click)="goToToday()"
             data-testid="calendar-today"
             class="rounded-lg border border-app-border-strong px-4 py-2 text-sm font-medium transition-colors hover:bg-app-surface-soft">
-            Today
+            {{ "Today" | translate }}
           </button>
           <div class="flex items-center gap-2">
             <button
               type="button"
               (click)="navigate('prev')"
-              aria-label="Previous period"
+              [attr.aria-label]="&quot;Previous period&quot; | translate"
               data-testid="calendar-prev"
               class="rounded-lg p-2 transition-colors hover:bg-app-surface-muted">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,7 +27,7 @@
             <button
               type="button"
               (click)="navigate('next')"
-              aria-label="Next period"
+              [attr.aria-label]="&quot;Next period&quot; | translate"
               data-testid="calendar-next"
               class="rounded-lg p-2 transition-colors hover:bg-app-surface-muted">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,7 +39,7 @@
         <mat-button-toggle-group
           [value]="currentView"
           (change)="switchView($event.value)"
-          aria-label="Select calendar view"
+          [attr.aria-label]="&quot;Select calendar view&quot; | translate"
           data-testid="calendar-view-toggle"
           class="calendar-view-toggle"
           hideSingleSelectionIndicator>
@@ -47,7 +47,7 @@
             <mat-button-toggle
               [value]="view"
               [attr.data-testid]="'calendar-view-' + view">
-              {{ getViewLabel(view) }}
+              {{ (getViewLabel(view)) | translate }}
             </mat-button-toggle>
           }
         </mat-button-toggle-group>
@@ -61,7 +61,7 @@
         class="flex h-full items-center justify-center"
         role="status"
         aria-live="polite"
-        aria-label="Loading calendar">
+        [attr.aria-label]="&quot;Loading calendar&quot; | translate">
         <div
           class="h-12 w-12 animate-spin rounded-full border-b-2 border-app-accent"
           aria-hidden="true"></div>
@@ -74,24 +74,24 @@
         <div class="calendar-year-summary border-b border-app-border p-4 sm:p-5">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p class="calendar-week-summary__eyebrow">Year view</p>
+              <p class="calendar-week-summary__eyebrow">{{ "Year view" | translate }}</p>
               <h3 class="text-xl font-semibold text-app-text-strong">{{ currentViewLabel }}</h3>
               <p class="mt-1 max-w-2xl text-sm text-app-text">
-                The year view condenses active months, scheduled days, and cycle changes into one overview.
+                {{ "The year view condenses active months, scheduled days, and cycle changes into one overview." | translate }}
               </p>
             </div>
             <div class="calendar-week-overview">
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getYearMonthCount() }}</span>
-                <span class="calendar-week-overview__label">months covered</span>
+                <span class="calendar-week-overview__label">{{ "months covered" | translate }}</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getYearAssignedDayCount() }}</span>
-                <span class="calendar-week-overview__label">scheduled days</span>
+                <span class="calendar-week-overview__label">{{ "scheduled days" | translate }}</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getYearActiveMonthCount() }}</span>
-                <span class="calendar-week-overview__label">active months</span>
+                <span class="calendar-week-overview__label">{{ "active months" | translate }}</span>
               </div>
             </div>
           </div>
@@ -110,24 +110,24 @@
                       <span>/</span>
                       <span class="calendar-year-card__eyebrow-value">{{ month.year }}</span>
                     </p>
-                    <h3 class="calendar-year-card__title">{{ month.name }}</h3>
+                    <h3 class="calendar-year-card__title">{{ formatMonthName(month) }}</h3>
                   </div>
                   <span class="calendar-year-card__status" [class.calendar-year-card__status--active]="month.hasAssignments">
-                    {{ month.hasAssignments ? 'Active' : 'Free' }}
+                    {{ month.hasAssignments ? ("Active" | translate) : ("calendar.free" | translate) }}
                   </span>
                 </div>
                 <div class="calendar-year-card__insights">
                   <span class="calendar-year-chip">
                     <span class="calendar-year-chip__value">{{ getYearMonthAssignedDayCount(month) }}</span>
-                    <span class="calendar-year-chip__label">day{{ getYearMonthAssignedDayCount(month) > 1 ? 's' : '' }}</span>
+                    <span class="calendar-year-chip__label">{{ "day{p0}" | translate: { p0: (getYearMonthAssignedDayCount(month) > 1 ? 's' : '') } }}</span>
                   </span>
                   <span class="calendar-year-chip" [class.calendar-year-chip--accent]="getYearMonthCycleCount(month) > 0">
                     <span class="calendar-year-chip__value">{{ getYearMonthCycleCount(month) }}</span>
-                    <span class="calendar-year-chip__label">cycle{{ getYearMonthCycleCount(month) > 1 ? 's' : '' }}</span>
+                    <span class="calendar-year-chip__label">{{ "cycle{p0}" | translate: { p0: (getYearMonthCycleCount(month) > 1 ? 's' : '') } }}</span>
                   </span>
                   @if (month.month === currentDate.month) {
                     <span class="calendar-year-chip calendar-year-chip--current">
-                      Current month
+                      {{ "Current month" | translate }}
                     </span>
                   }
                 </div>
@@ -158,8 +158,8 @@
                   <span class="calendar-year-card__footer-copy">
                     {{
                     month.hasAssignments
-                    ? 'Active days remain visible in the mini calendar.'
-                    : 'No cycle is planned for this month.'
+                    ? ("Active days remain visible in the mini calendar." | translate)
+                    : ("No cycle is planned for this month." | translate)
                     }}
                   </span>
                   <button
@@ -169,7 +169,7 @@
                     [attr.data-month]="month.month"
                     [attr.data-year]="month.year"
                     (click)="openMonthView(month)">
-                    Open month
+                    {{ "Open month" | translate }}
                   </button>
                 </div>
               </article>
@@ -185,28 +185,28 @@
         <div class="calendar-month-summary border-b border-app-border p-4 sm:p-5">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p class="calendar-week-summary__eyebrow">Month view</p>
+              <p class="calendar-week-summary__eyebrow">{{ "Month view" | translate }}</p>
               <h3 class="text-xl font-semibold text-app-text-strong">{{ currentViewLabel }}</h3>
               <p class="mt-1 max-w-2xl text-sm text-app-text">
-                The month view highlights active days, cycle changes, and quick actions.
+                {{ "The month view highlights active days, cycle changes, and quick actions." | translate }}
               </p>
             </div>
             <div class="calendar-week-overview">
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getMonthDayCount() }}</span>
-                <span class="calendar-week-overview__label">days in month</span>
+                <span class="calendar-week-overview__label">{{ "days in month" | translate }}</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getMonthAssignedDayCount() }}</span>
-                <span class="calendar-week-overview__label">scheduled days</span>
+                <span class="calendar-week-overview__label">{{ "scheduled days" | translate }}</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getMonthCycleCount() }}</span>
-                <span class="calendar-week-overview__label">active cycles</span>
+                <span class="calendar-week-overview__label">{{ "active cycles" | translate }}</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getMonthTemplateDayCount() }}</span>
-                <span class="calendar-week-overview__label">template days</span>
+                <span class="calendar-week-overview__label">{{ "template days" | translate }}</span>
               </div>
             </div>
           </div>
@@ -232,20 +232,20 @@
                   <button
                     type="button"
                     class="calendar-month-day__header calendar-month-day__select"
-                    [attr.aria-label]="'Open ' + day.date"
+                    [attr.aria-label]="(&quot;&quot; + (&quot;Open&quot; | translate) + &quot; &quot;) + day.date"
                     (click)="onMonthDayClick(day)">
                     <div class="calendar-month-day__date-group">
                       <span class="calendar-month-day__number">{{ day.dayNumber }}</span>
                       @if (day.dayNumber === 1 || !day.isCurrentMonth) {
                         <span
                           class="calendar-month-day__month-label">
-                          {{ day.dateObj.toFormat('LLL', { locale: 'fr' }) }}
+                          {{ day.dateObj.toFormat('LLL', { locale: language.locale() }) }}
                         </span>
                       }
                     </div>
                     <div class="calendar-month-day__actions">
                       @if (day.isToday) {
-                        <span class="calendar-month-day__today-pill">Today</span>
+                        <span class="calendar-month-day__today-pill">{{ "Today" | translate }}</span>
                       }
                     </div>
                   </button>
@@ -258,39 +258,39 @@
                           [attr.data-testid]="'calendar-month-open-day-' + day.date"
                           class="calendar-month-day__quick-action"
                           data-kind="day"
-                          [attr.aria-label]="'Open day view for ' + day.date"
-                          title="Open day view"
+                          [attr.aria-label]="(&quot;&quot; + (&quot;Open day view for&quot; | translate) + &quot; &quot;) + day.date"
+                          [title]="&quot;Open day view&quot; | translate"
                           (click)="$event.stopPropagation(); requestOpenDayView(day.date)">
                           <svg class="calendar-month-day__quick-action-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false" data-icon="today">
                             <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
                           </svg>
-                          <span class="calendar-month-day__quick-action-label">Day</span>
+                          <span class="calendar-month-day__quick-action-label">{{ "Day" | translate }}</span>
                         </button>
                         <button
                           type="button"
                           [attr.data-testid]="'calendar-month-manage-cycle-' + day.date"
                           class="calendar-month-day__quick-action"
                           data-kind="cycle"
-                          [attr.aria-label]="'Manage cycle for ' + day.date"
-                          title="Manage cycle"
+                          [attr.aria-label]="(&quot;&quot; + (&quot;Manage cycle for&quot; | translate) + &quot; &quot;) + day.date"
+                          [title]="&quot;Manage cycle&quot; | translate"
                           (click)="$event.stopPropagation(); onManageAssignment(day.date)">
                           <svg class="calendar-month-day__quick-action-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false" data-icon="autorenew">
                             <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
                           </svg>
-                          <span class="calendar-month-day__quick-action-label">Cycle</span>
+                          <span class="calendar-month-day__quick-action-label">{{ "Cycle" | translate }}</span>
                         </button>
                         <button
                           type="button"
                           [attr.data-testid]="'calendar-month-manage-items-' + day.date"
                           class="calendar-month-day__quick-action"
                           data-kind="items"
-                          [attr.aria-label]="'Manage entries for ' + day.date"
-                          title="Manage entries"
+                          [attr.aria-label]="(&quot;&quot; + (&quot;Manage entries for&quot; | translate) + &quot; &quot;) + day.date"
+                          [title]="&quot;Manage entries&quot; | translate"
                           (click)="$event.stopPropagation(); onManageItems(day.date)">
                           <svg class="calendar-month-day__quick-action-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false" data-icon="edit_note">
                             <path d="M3,10h11v2H3V10z M3,8h11V6H3V8z M3,16h7v-2H3V16z M18.01,12.87l0.71-0.71c0.39-0.39,1.02-0.39,1.41,0l0.71,0.71 c0.39,0.39,0.39,1.02,0,1.41l-0.71,0.71L18.01,12.87z M17.3,13.58l-5.3,5.3V21h2.12l5.3-5.3L17.3,13.58z" />
                           </svg>
-                          <span class="calendar-month-day__quick-action-label">Entry</span>
+                          <span class="calendar-month-day__quick-action-label">{{ "Entry" | translate }}</span>
                         </button>
                       </div>
                     }
@@ -300,7 +300,7 @@
                         [class.calendar-month-day__assignment--insight-only]="!day.assignment"
                         class="calendar-month-day__assignment">
                         <div class="calendar-month-day__assignment-head">
-                          <div class="calendar-month-day__assignment-type">{{ getMonthDayType(day) }}</div>
+                          <div class="calendar-month-day__assignment-type">{{ (getMonthDayType(day)) | translate }}</div>
                           <div class="calendar-month-day__assignment-title">
                             {{ getMonthDayTitle(day) }}
                           </div>
@@ -331,7 +331,7 @@
                                     @if (response.totalsMacros?.targetSource; as targetSource) {
                                       <span
                                         class="calendar-week-chip calendar-week-chip--target">
-                                        {{ getTargetSourceBadgeText(targetSource) }}
+                                        {{ (getTargetSourceBadgeText(targetSource)) | translate }}
                                       </span>
                                     }
                                     @if (getTemplateChipLabel(response); as templateLabel) {
@@ -343,7 +343,7 @@
                                     @if (getTemplateSourceBadgeText(response); as templateSource) {
                                       <span
                                         class="calendar-week-chip calendar-week-chip--template-source">
-                                        {{ templateSource }}
+                                        {{ (templateSource) | translate }}
                                       </span>
                                     }
                                   </div>
@@ -356,7 +356,7 @@
                                       <span
                                         class="calendar-month-day__alert-badge"
                                         [attr.data-tone]="badge.tone">
-                                        {{ badge.text }}
+                                        {{ (badge.text) | translate }}
                                       </span>
                                     }
                                   </div>
@@ -367,19 +367,19 @@
                         }
                         @if (!getWeekDayResponse(day.date) && !day.assignment) {
                           <div class="text-sm text-app-text-muted">
-                            No tracking data for this day.
+                            {{ "No tracking data for this day." | translate }}
                           </div>
                         }
                       </div>
                     } @else {
                       @if (day.isCurrentMonth) {
                         <div class="calendar-month-day__empty">
-                          <span class="calendar-month-day__empty-title">Free day</span>
-                          <span class="calendar-month-day__empty-text">Day, cycle or entry available</span>
+                          <span class="calendar-month-day__empty-title">{{ "Free day" | translate }}</span>
+                          <span class="calendar-month-day__empty-text">{{ "Day, cycle or entry available" | translate }}</span>
                         </div>
                       } @else {
                         <div class="calendar-month-day__outside-hint">
-                          {{ day.dateObj.toFormat('cccc', { locale: 'fr' }) }}
+                          {{ day.dateObj.toFormat('cccc', { locale: language.locale() }) }}
                         </div>
                       }
                     }
@@ -397,39 +397,39 @@
         <div class="calendar-week-summary border-b border-app-border p-4 sm:p-5">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p class="calendar-week-summary__eyebrow">Week view</p>
-              <h3 class="text-xl font-semibold text-app-text-strong">Week summary</h3>
+              <p class="calendar-week-summary__eyebrow">{{ "Week view" | translate }}</p>
+              <h3 class="text-xl font-semibold text-app-text-strong">{{ "Week summary" | translate }}</h3>
               <p class="mt-1 max-w-2xl text-sm text-app-text">
-                Each day combines cycle, macros, and slots in a single view.
+                {{ "Each day combines cycle, macros, and slots in a single view." | translate }}
               </p>
             </div>
             <div class="calendar-week-overview">
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getWeekSummaryDayCount() }}</span>
-                <span class="calendar-week-overview__label">active days</span>
+                <span class="calendar-week-overview__label">{{ "active days" | translate }}</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getWeekSummaryItemCount() }}</span>
-                <span class="calendar-week-overview__label">logged items</span>
+                <span class="calendar-week-overview__label">{{ "logged items" | translate }}</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getWeekSummaryEnergyTotal() }}</span>
-                <span class="calendar-week-overview__label">tracked kcal</span>
+                <span class="calendar-week-overview__label">{{ "tracked kcal" | translate }}</span>
               </div>
               <div class="calendar-week-overview__pill">
                 <span class="calendar-week-overview__value">{{ getWeekSummaryTemplateDayCount() }}</span>
-                <span class="calendar-week-overview__label">template days</span>
+                <span class="calendar-week-overview__label">{{ "template days" | translate }}</span>
               </div>
             </div>
           </div>
           @if (loadingDayItems()) {
             <p class="mt-3 text-xs text-app-text-muted">
-              Loading week products...
+              {{ "Loading week products..." | translate }}
             </p>
           }
           @if (dayItemsError()) {
             <p class="mt-2 rounded border border-app-danger-border bg-app-danger-surface px-2 py-1 text-xs text-app-danger">
-              Unable to load week products.
+              {{ "Unable to load week products." | translate }}
             </p>
           }
         </div>
@@ -442,12 +442,12 @@
               <div class="calendar-week-mobile__header">
                 <div>
                   <p class="calendar-week-mobile__weekday">
-                    {{ day.dateObj.toFormat('EEEE', { locale: 'fr' }) }}
+                    {{ day.dateObj.toFormat('EEEE', { locale: language.locale() }) }}
                   </p>
                   <div class="calendar-week-mobile__date-row">
                     <span class="calendar-week-mobile__date">{{ day.dayNumber }}</span>
                     @if (day.isToday) {
-                      <span class="calendar-week-mobile__today-pill">Today</span>
+                      <span class="calendar-week-mobile__today-pill">{{ "Today" | translate }}</span>
                     }
                   </div>
                 </div>
@@ -457,7 +457,7 @@
                     [attr.data-testid]="'calendar-week-mobile-items-' + day.date"
                     class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-app-border-strong px-2.5 py-1 text-[10px] font-medium text-app-text hover:bg-app-surface-muted"
                     (click)="$event.stopPropagation(); onManageItems(day.date)">
-                    Items
+                    {{ "Items" | translate }}
                   </button>
                   <button
                     mat-mini-fab
@@ -465,7 +465,7 @@
                     type="button"
                     [attr.data-testid]="'calendar-week-mobile-add-' + day.date"
                     class="calendar-add-trigger-week h-8 w-8 shadow-app-sm"
-                    [attr.aria-label]="'Add an item for ' + day.date"
+                    [attr.aria-label]="(&quot;&quot; + (&quot;Add an item for&quot; | translate) + &quot; &quot;) + day.date"
                     (click)="$event.stopPropagation(); onDayClick(day)">
                     +
                   </button>
@@ -503,11 +503,11 @@
                       >
                       <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onWeekTimelineBlockClick(day, block, $event)">
                         <div class="calendar-week-block__heading">
-                          <span class="calendar-week-block__title">{{ block.title }}</span>
-                          <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
+                          <span class="calendar-week-block__title">{{ block.kind === 'orphan' ? (block.title | translate) : block.title }}</span>
+                          <span class="calendar-week-block__time">{{ (block.rangeLabel) | translate }}</span>
                         </div>
                         <span class="calendar-week-block__count">
-                          {{ block.items.length }} entr{{ block.items.length > 1 ? 'ies' : 'y' }}
+                          {{ "{p0} entr{p1}" | translate: { p0: (block.items.length), p1: (block.items.length > 1 ? 'ies' : 'y') } }}
                         </span>
                       </button>
                       @if (block.items.length > 0) {
@@ -525,22 +525,22 @@
                                 </span>
                               </div>
                               <div class="calendar-week-block__item-meta">
-                                qty: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
+                                {{ "qty: {p0} - {p1}" | translate: { p0: (product.qty), p1: (product.slotTitle || product.slotKey) } }}
                               </div>
                             </button>
                           }
                         </div>
                       } @else {
-                        <p class="calendar-week-block__empty">No logged item in this time range.</p>
+                        <p class="calendar-week-block__empty">{{ "No logged item in this time range." | translate }}</p>
                       }
                     </div>
                   }
                 </div>
               } @else {
                 <div class="calendar-week-mobile__empty">
-                  <p class="calendar-week-mobile__empty-title">No time range for this day</p>
+                  <p class="calendar-week-mobile__empty-title">{{ "No time range for this day" | translate }}</p>
                   <p class="calendar-week-mobile__empty-text">
-                    Use the + button to add an action or open the day items.
+                    {{ "Use the + button to add an action or open the day items." | translate }}
                   </p>
                 </div>
               }
@@ -550,7 +550,7 @@
         <div class="calendar-week-grid">
           <div class="calendar-week-grid__timeline">
             <div class="calendar-week-grid__corner">
-              <span>Hours</span>
+              <span>{{ "Hours" | translate }}</span>
             </div>
             @for (day of weekDays; track trackByDate(dayIndex, day); let dayIndex = $index) {
               <div
@@ -562,12 +562,12 @@
                 <div class="calendar-week-grid__day-top">
                   <div>
                     <p class="calendar-week-grid__day-weekday">
-                      {{ day.dateObj.toFormat('EEE', { locale: 'fr' }) }}
+                      {{ day.dateObj.toFormat('EEE', { locale: language.locale() }) }}
                     </p>
                     <div class="calendar-week-grid__day-date-row">
                       <span class="calendar-week-grid__day-date">{{ day.dayNumber }}</span>
                       @if (day.isToday) {
-                        <span class="calendar-week-grid__today-pill">Today</span>
+                        <span class="calendar-week-grid__today-pill">{{ "Today" | translate }}</span>
                       }
                     </div>
                   </div>
@@ -599,7 +599,7 @@
                     [attr.data-testid]="'calendar-week-items-' + day.date"
                     class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-app-border-strong px-2.5 py-1 text-[10px] font-medium text-app-text hover:bg-app-surface-muted"
                     (click)="$event.stopPropagation(); onManageItems(day.date)">
-                    Items
+                    {{ "Items" | translate }}
                   </button>
                   <button
                     mat-mini-fab
@@ -607,7 +607,7 @@
                     type="button"
                     [attr.data-testid]="'calendar-week-add-' + day.date"
                     class="calendar-add-trigger-week h-8 w-8 shadow-app-sm"
-                    [attr.aria-label]="'Add an item for ' + day.date"
+                    [attr.aria-label]="(&quot;&quot; + (&quot;Add an item for&quot; | translate) + &quot; &quot;) + day.date"
                     (click)="$event.stopPropagation(); onDayClick(day)">
                     +
                   </button>
@@ -632,7 +632,7 @@
                   [style.grid-column-end]="dayIndex + 3"
                   [style.grid-row-start]="getWeekHourGridRowStart(hour)"
                   [style.grid-row-end]="getWeekHourGridRowEnd(hour)"
-                  [attr.aria-label]="'Open ' + (hour.toString().padStart(2, '0')) + ':00 for ' + day.date"
+                  [attr.aria-label]="(&quot;&quot; + (&quot;Open&quot; | translate) + &quot; &quot;) + (hour.toString().padStart(2, '0')) + (&quot;&quot; + (&quot;:00 for&quot; | translate) + &quot; &quot;) + day.date"
                   (click)="onHourClick({ hour: hour, label: hour + ':00', assignment: day.assignment }, day.date)">
                 </button>
               }
@@ -649,11 +649,11 @@
                   >
                   <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onWeekTimelineBlockClick(day, block, $event)">
                     <div class="calendar-week-block__heading">
-                      <span class="calendar-week-block__title">{{ block.title }}</span>
-                      <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
+                      <span class="calendar-week-block__title">{{ block.kind === 'orphan' ? (block.title | translate) : block.title }}</span>
+                      <span class="calendar-week-block__time">{{ (block.rangeLabel) | translate }}</span>
                     </div>
                     <span class="calendar-week-block__count">
-                      {{ block.items.length }} item{{ block.items.length > 1 ? 's' : '' }}
+                      {{ "{p0} item{p1}" | translate: { p0: (block.items.length), p1: (block.items.length > 1 ? 's' : '') } }}
                     </span>
                   </button>
                   @if (block.items.length > 0) {
@@ -671,13 +671,13 @@
                             </span>
                           </div>
                           <div class="calendar-week-block__item-meta">
-                            qty: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
+                            {{ "qty: {p0} - {p1}" | translate: { p0: (product.qty), p1: (product.slotTitle || product.slotKey) } }}
                           </div>
                         </button>
                       }
                     </div>
                   } @else {
-                    <p class="calendar-week-block__empty">No logged item in this time range.</p>
+                    <p class="calendar-week-block__empty">{{ "No logged item in this time range." | translate }}</p>
                   }
                 </div>
               }
@@ -693,12 +693,12 @@
         <div class="calendar-day-summary border-b border-app-border p-4 sm:p-5">
           <div class="calendar-day-summary__top">
             <div>
-              <p class="calendar-week-summary__eyebrow">Day view</p>
+              <p class="calendar-week-summary__eyebrow">{{ "Day view" | translate }}</p>
               <h3 class="calendar-day-summary__title">
-                {{ currentDate.setLocale('en').toFormat('EEEE d LLLL') }}
+                {{ currentDate.setLocale(language.locale()).toFormat('EEEE d LLLL') }}
               </h3>
               <p class="calendar-day-summary__description">
-                The daily dashboard and detailed slots are grouped into a single surface.
+                {{ "The daily dashboard and detailed slots are grouped into a single surface." | translate }}
               </p>
             </div>
             <div class="calendar-day-summary__actions">
@@ -707,14 +707,14 @@
                 data-testid="calendar-day-manage-cycle"
                 class="calendar-day-summary__action-button calendar-day-summary__action-button--cycle"
                 (click)="onManageAssignment(currentDate.toISODate())">
-                Manage cycle
+                {{ "Manage cycle" | translate }}
               </button>
               <button
                 type="button"
                 data-testid="calendar-day-manage-items"
                 class="calendar-day-summary__action-button calendar-day-summary__action-button--items"
                 (click)="onManageItems(currentDate.toISODate())">
-                Edit day
+                {{ "Edit day" | translate }}
               </button>
             </div>
           </div>
@@ -726,7 +726,7 @@
                 <p class="calendar-day-summary__assignment-title">{{ assignmentHighlight.title }}</p>
                 @if (assignmentHighlight.progress) {
                   <p class="calendar-day-summary__assignment-progress">
-                    {{ assignmentHighlight.progress }}
+                    {{ (assignmentHighlight.progress) | translate }}
                   </p>
                 }
               </div>
@@ -741,16 +741,16 @@
             <section class="calendar-day-summary__panel calendar-day-summary__panel--pilot">
               <div class="calendar-day-summary__panel-head">
                 <div class="calendar-day-summary__panel-copy">
-                  <p class="calendar-day-summary__panel-title">Day dashboard</p>
-                  <h4 class="calendar-day-summary__panel-heading">{{ getDayTargetHeadline() }}</h4>
+                  <p class="calendar-day-summary__panel-title">{{ "Day dashboard" | translate }}</p>
+                  <h4 class="calendar-day-summary__panel-heading">{{ (getDayTargetHeadline()) | translate }}</h4>
                   <p class="calendar-day-summary__panel-description">
-                    {{ getDayTargetSupportingText() }}
+                    {{ (getDayTargetSupportingText()) | translate }}
                   </p>
                 </div>
                 @if (inputDayResponse()?.totalsMacros?.targetSource; as targetSource) {
                   <span
                     class="calendar-day-summary__source-pill">
-                    {{ getDayTargetSourcePillText(targetSource) }}
+                    {{ (getDayTargetSourcePillText(targetSource)) | translate }}
                   </span>
                 }
               </div>
@@ -765,9 +765,9 @@
                   </div>
                 } @else {
                   <div class="calendar-day-summary__empty-state">
-                    <p class="calendar-day-summary__empty-title">No comparison available</p>
+                    <p class="calendar-day-summary__empty-title">{{ "No comparison available" | translate }}</p>
                     <p class="calendar-day-summary__empty-text">
-                      The summary appears once a nutrition target is available for the day.
+                      {{ "The summary appears once a nutrition target is available for the day." | translate }}
                     </p>
                   </div>
                 }
@@ -781,7 +781,7 @@
                       data-testid="calendar-day-toggle-slot-stats"
                       [attr.aria-expanded]="showDaySlotStats"
                       (click)="toggleDaySlotStats()">
-                      {{ showDaySlotStats ? 'Hide slots' : 'Show slots' }}
+                      {{ showDaySlotStats ? ("Hide slots" | translate) : ("Show slots" | translate) }}
                     </button>
                     @if (showDaySlotStats) {
                       <div class="mt-4 space-y-4" data-testid="calendar-day-slot-stats">
@@ -790,9 +790,9 @@
                             <div class="flex flex-wrap items-start justify-between gap-2">
                               <div>
                                 <p class="m-0 text-sm font-extrabold text-app-text-strong">{{ group.title }}</p>
-                                <p class="mt-1 text-xs font-semibold text-app-text-muted">{{ group.rangeLabel }}</p>
+                                <p class="mt-1 text-xs font-semibold text-app-text-muted">{{ (group.rangeLabel) | translate }}</p>
                               </div>
-                              <span class="calendar-day-summary__source-pill">Slot target</span>
+                              <span class="calendar-day-summary__source-pill">{{ "Slot target" | translate }}</span>
                             </div>
                             <div class="calendar-day-summary__macro-grid">
                         @for (macro of group.cards; track trackByDayMacroCard($index, macro)) {
@@ -812,12 +812,12 @@
           </div>
           @if (loadingDayItems()) {
             <p class="mt-3 text-xs text-app-text-muted">
-              Loading day products...
+              {{ "Loading day products..." | translate }}
             </p>
           }
           @if (dayItemsError()) {
             <p class="mt-2 rounded border border-app-danger-border bg-app-danger-surface px-2 py-1 text-xs text-app-danger">
-              Unable to load day products.
+              {{ "Unable to load day products." | translate }}
             </p>
           }
         </div>
@@ -825,34 +825,34 @@
           <section class="calendar-day-body__section calendar-day-body__section--primary calendar-day-hours">
             <div class="calendar-day-body__section-header">
               <div>
-                <p class="calendar-day-body__eyebrow">Quick access</p>
-                <h4 class="calendar-day-body__title">Day hours</h4>
+                <p class="calendar-day-body__eyebrow">{{ "Quick access" | translate }}</p>
+                <h4 class="calendar-day-body__title">{{ "Day hours" | translate }}</h4>
                 <p class="calendar-day-body__description">
-                  The time grid uses the main width to create or open an entry at the right moment.
+                  {{ "The time grid uses the main width to create or open an entry at the right moment." | translate }}
                 </p>
               </div>
-              <span class="calendar-week-meta-pill">{{ getDayItemCount() }} items</span>
+              <span class="calendar-week-meta-pill">{{ "{p0} items" | translate: { p0: (getDayItemCount()) } }}</span>
             </div>
             <div class="calendar-day-hours__grid">
               <div class="calendar-day-grid__timeline">
                 <div class="calendar-day-grid__corner">
-                  <span>Hours</span>
+                  <span>{{ "Hours" | translate }}</span>
                 </div>
                 <div class="calendar-day-grid__header">
                   <div class="calendar-day-grid__header-summary">
                     <div>
-                      <p class="calendar-day-grid__eyebrow">Timeline day</p>
-                      <p class="calendar-day-grid__title">Half-hour click targets</p>
+                      <p class="calendar-day-grid__eyebrow">{{ "Timeline day" | translate }}</p>
+                      <p class="calendar-day-grid__title">{{ "Half-hour click targets" | translate }}</p>
                     </div>
                     <div class="calendar-day-grid__header-meta">
-                      <span class="calendar-week-meta-pill">{{ getDayTemplateSlotCount() }} template(s)</span>
-                      <span class="calendar-week-meta-pill">{{ getDaySetSlotCount() }} day set slot(s)</span>
+                      <span class="calendar-week-meta-pill">{{ "{p0} template(s)" | translate: { p0: (getDayTemplateSlotCount()) } }}</span>
+                      <span class="calendar-week-meta-pill">{{ "{p0} day set slot(s)" | translate: { p0: (getDaySetSlotCount()) } }}</span>
                     </div>
                   </div>
                   <div class="calendar-day-grid__lanes" aria-hidden="true">
-                    <span class="calendar-day-grid__lane-label">Templates &amp; template slots</span>
+                    <span class="calendar-day-grid__lane-label">{{ "Templates & template slots" | translate }}</span>
                     <span class="calendar-day-grid__lane-label calendar-day-grid__lane-label--entries">
-                      Logged entries &amp; day set slots
+                      {{ "Logged entries & day set slots" | translate }}
                     </span>
                   </div>
                 </div>
@@ -871,7 +871,7 @@
                     [attr.data-testid]="'calendar-day-half-hour-' + hour.toString().padStart(2, '0') + '-00'"
                     [style.grid-row-start]="getDayHalfHourGridRowStart(hour, 0)"
                     [style.grid-row-end]="getDayHalfHourGridRowStart(hour, 0) + 1"
-                    [attr.aria-label]="'Open ' + hour.toString().padStart(2, '0') + ':00 for ' + currentDate.toISODate()"
+                    [attr.aria-label]="(&quot;&quot; + (&quot;Open&quot; | translate) + &quot; &quot;) + hour.toString().padStart(2, '0') + (&quot;&quot; + (&quot;:00 for&quot; | translate) + &quot; &quot;) + currentDate.toISODate()"
                     (click)="onDayHalfHourClick(hour, 0)">
                   </button>
                   <button
@@ -880,7 +880,7 @@
                     [attr.data-testid]="'calendar-day-half-hour-' + hour.toString().padStart(2, '0') + '-30'"
                     [style.grid-row-start]="getDayHalfHourGridRowStart(hour, 30)"
                     [style.grid-row-end]="getDayHalfHourGridRowStart(hour, 30) + 1"
-                    [attr.aria-label]="'Open ' + hour.toString().padStart(2, '0') + ':30 for ' + currentDate.toISODate()"
+                    [attr.aria-label]="(&quot;&quot; + (&quot;Open&quot; | translate) + &quot; &quot;) + hour.toString().padStart(2, '0') + (&quot;&quot; + (&quot;:30 for&quot; | translate) + &quot; &quot;) + currentDate.toISODate()"
                     (click)="onDayHalfHourClick(hour, 30)">
                   </button>
                 }
@@ -895,11 +895,11 @@
                       >
                       <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onDayTimelineBlockClick(block, $event)">
                         <div class="calendar-week-block__heading">
-                          <span class="calendar-week-block__title">{{ block.title }}</span>
-                          <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
+                          <span class="calendar-week-block__title">{{ block.kind === 'orphan' ? (block.title | translate) : block.title }}</span>
+                          <span class="calendar-week-block__time">{{ (block.rangeLabel) | translate }}</span>
                         </div>
                         <span class="calendar-week-block__count">
-                          {{ block.plannedItems.length }} planned
+                          {{ "{p0} planned" | translate: { p0: (block.plannedItems.length) } }}
                         </span>
                       </button>
                       @if (block.plannedItems.length > 0) {
@@ -916,17 +916,17 @@
                                   [attr.data-testid]="'calendar-day-convert-template-' + plannedItem.id"
                                   [disabled]="!plannedItem.stockAvailable || loadingDayItems()"
                                   (click)="onDayTemplateItemConvert(plannedItem, $event)">
-                                  Planned · log now
+                                  {{ "Planned · log now" | translate }}
                                 </button>
                               </div>
                               <div class="calendar-week-block__item-meta">
-                                qty: {{ plannedItem.qtyLabel }} · {{ plannedItem.stockLabel }}
+                                {{ "qty: {p0} · {p1}" | translate: { p0: (plannedItem.qtyLabel), p1: (plannedItem.stockLabel) } }}
                               </div>
                             </div>
                           }
                         </div>
                       } @else {
-                        <p class="calendar-week-block__empty">{{ getDayTemplateBlockEmptyText(block) }}</p>
+                        <p class="calendar-week-block__empty">{{ (getDayTemplateBlockEmptyText(block)) | translate }}</p>
                       }
                     </div>
                   }
@@ -943,11 +943,11 @@
                       >
                       <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onDayTimelineBlockClick(block, $event)">
                         <div class="calendar-week-block__heading">
-                          <span class="calendar-week-block__title">{{ block.title }}</span>
-                          <span class="calendar-week-block__time">{{ block.rangeLabel }}</span>
+                          <span class="calendar-week-block__title">{{ block.kind === 'orphan' ? (block.title | translate) : block.title }}</span>
+                          <span class="calendar-week-block__time">{{ (block.rangeLabel) | translate }}</span>
                         </div>
                         <span class="calendar-week-block__count">
-                          {{ block.items.length }} entr{{ block.items.length > 1 ? 'ies' : 'y' }}
+                          {{ "{p0} entr{p1}" | translate: { p0: (block.items.length), p1: (block.items.length > 1 ? 'ies' : 'y') } }}
                         </span>
                       </button>
                       @if (block.items.length > 0) {
@@ -964,7 +964,7 @@
                                   </span>
                                 </span>
                                 <span class="calendar-week-block__item-meta">
-                                  qty: {{ product.qty }} - {{ product.slotTitle || product.slotKey }}
+                                  {{ "qty: {p0} - {p1}" | translate: { p0: (product.qty), p1: (product.slotTitle || product.slotKey) } }}
                                 </span>
                               </button>
                               @if (product.templateItemId !== null) {
@@ -974,14 +974,14 @@
                                   [attr.data-testid]="'calendar-day-revert-template-' + product.id"
                                   [disabled]="loadingDayItems()"
                                   (click)="onDayTemplateItemRevert(product, $event)">
-                                  Move back to template
+                                  {{ "Move back to template" | translate }}
                                 </button>
                               }
                             </div>
                           }
                         </div>
                       } @else {
-                        <p class="calendar-week-block__empty">No logged entry in this slot.</p>
+                        <p class="calendar-week-block__empty">{{ "No logged entry in this slot." | translate }}</p>
                       }
                     </div>
                   }
@@ -992,13 +992,13 @@
           <aside class="calendar-day-body__section calendar-day-body__section--secondary calendar-day-entries">
             <div class="calendar-day-body__section-header">
               <div>
-                <p class="calendar-day-body__eyebrow">Quick summary</p>
-                <h4 class="calendar-day-body__title">Day entries</h4>
+                <p class="calendar-day-body__eyebrow">{{ "Quick summary" | translate }}</p>
+                <h4 class="calendar-day-body__title">{{ "Day entries" | translate }}</h4>
                 <p class="calendar-day-body__description">
-                  Compact side list of logged entries, sorted by time and ready to reopen.
+                  {{ "Compact side list of logged entries, sorted by time and ready to reopen." | translate }}
                 </p>
               </div>
-              <span class="calendar-week-meta-pill">{{ getDayItemCount() }} items</span>
+              <span class="calendar-week-meta-pill">{{ "{p0} items" | translate: { p0: (getDayItemCount()) } }}</span>
             </div>
             @if (getDayEntryRows(); as dayEntries) {
               @if (dayEntries.length > 0) {
@@ -1020,9 +1020,9 @@
                 </div>
               } @else {
                 <div class="calendar-day-empty">
-                  <p class="calendar-day-empty__title">No logged entry</p>
+                  <p class="calendar-day-empty__title">{{ "No logged entry" | translate }}</p>
                   <p class="calendar-day-empty__text">
-                    Use the time grid to quickly open an action for this day.
+                    {{ "Use the time grid to quickly open an action for this day." | translate }}
                   </p>
                 </div>
               }
@@ -1052,7 +1052,7 @@
             }
             @if (response.totalsMacros?.targetSource; as targetSource) {
               <span class="calendar-week-chip calendar-week-chip--target">
-                {{ getTargetSourceBadgeText(targetSource) }}
+                {{ (getTargetSourceBadgeText(targetSource)) | translate }}
               </span>
             }
             @if (getTemplateChipLabel(response); as templateLabel) {
@@ -1060,7 +1060,7 @@
             }
             @if (getTemplateSourceBadgeText(response); as templateSource) {
               <span class="calendar-week-chip calendar-week-chip--template-source">
-                {{ templateSource }}
+                {{ (templateSource) | translate }}
               </span>
             }
           </div>
@@ -1069,7 +1069,7 @@
           <div [attr.data-testid]="alertsTestId" class="calendar-week-day-details__alerts">
             @for (badge of alertBadges; track trackByMonthAlertBadge($index, badge)) {
               <span class="calendar-month-day__alert-badge" [attr.data-tone]="badge.tone">
-                {{ badge.text }}
+                {{ (badge.text) | translate }}
               </span>
             }
           </div>
@@ -1086,7 +1086,7 @@
     [attr.data-tone]="macro.tone">
     <div class="calendar-day-pilot-card__top">
       <div>
-        <p class="calendar-day-pilot-card__title">{{ macro.label }}</p>
+        <p class="calendar-day-pilot-card__title">{{ (macro.label) | translate }}</p>
         @if (macro.unit) {
           <p class="calendar-day-pilot-card__unit">{{ macro.unit }}</p>
         }
@@ -1094,15 +1094,15 @@
     </div>
     <div class="calendar-day-pilot-card__metrics">
       <div class="calendar-day-pilot-card__metric">
-        <span class="calendar-day-pilot-card__metric-label">Logged</span>
+        <span class="calendar-day-pilot-card__metric-label">{{ "Logged" | translate }}</span>
         <span class="calendar-day-pilot-card__metric-value">{{ macro.consumed }}</span>
       </div>
       <div class="calendar-day-pilot-card__metric">
-        <span class="calendar-day-pilot-card__metric-label">Target</span>
+        <span class="calendar-day-pilot-card__metric-label">{{ "Target" | translate }}</span>
         <span class="calendar-day-pilot-card__metric-value">{{ macro.target }}</span>
       </div>
       <div class="calendar-day-pilot-card__metric">
-        <span class="calendar-day-pilot-card__metric-label">Delta</span>
+        <span class="calendar-day-pilot-card__metric-label">{{ "Delta" | translate }}</span>
         <span class="calendar-day-pilot-card__metric-value calendar-day-pilot-card__metric-value--delta">
           {{ macro.delta }}
         </span>

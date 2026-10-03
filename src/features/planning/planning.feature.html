@@ -6,7 +6,7 @@
         data-testid="planning-today"
         class="planning-feature__today-button"
         (click)="goToCalendarToday()">
-        Today
+        {{ "Today" | translate }}
       </button>
 
       <div class="planning-feature__period-switcher">
@@ -14,7 +14,7 @@
           type="button"
           data-testid="planning-prev"
           class="planning-feature__nav-button"
-          aria-label="Previous period"
+          [attr.aria-label]="&quot;Previous period&quot; | translate"
           (click)="navigateCalendar('prev')">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -22,14 +22,14 @@
         </button>
 
         <h2 class="planning-feature__period-label">
-          {{ calendarHeaderLabel }}
+          {{ calendarHeaderLabel | translate }}
         </h2>
 
         <button
           type="button"
           data-testid="planning-next"
           class="planning-feature__nav-button"
-          aria-label="Next period"
+          [attr.aria-label]="&quot;Next period&quot; | translate"
           (click)="navigateCalendar('next')">
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -43,13 +43,13 @@
         class="planning-feature__refresh-button"
         (click)="refreshPlanningData(true)"
         [disabled]="loadingCycles || loadingAssignments || loadingDayItems || savingAssignment">
-        Refresh
+        {{ "Refresh" | translate }}
       </button>
     </div>
 
     <app-segmented-toggle [value]="currentCalendarView"
       [options]="calendarViewOptions"
-      [ariaLabel]="'Select calendar view'"
+      [ariaLabel]="(&quot;Select calendar view&quot; | translate)"
       [testId]="'planning-view-toggle'"
       [name]="'planning-view-toggle'"
       [maxWidth]="'46rem'"
@@ -62,28 +62,28 @@
       <div class="planning-feature__status-bar">
         @if (loadingCycles) {
           <span class="app-status-pill app-status-pill--neutral">
-            Loading cycles...
+            {{ "Loading cycles..." | translate }}
           </span>
         }
         @if (loadingAssignments) {
           <span class="app-status-pill app-status-pill--info">
-            Loading planning...
+            {{ "Loading planning..." | translate }}
           </span>
         }
         @if (loadingDayItems) {
           <span class="app-status-pill app-status-pill--success">
             {{
             currentCalendarView === 'month'
-            ? 'Loading input-month...'
+            ? ("Loading input-month..." | translate)
             : currentCalendarView === 'week'
-            ? 'Loading input-week...'
-            : 'Loading input-day...'
+            ? ("Loading input-week..." | translate)
+            : ("Loading input-day..." | translate)
             }}
           </span>
         }
         @if (savingAssignment) {
           <span class="app-status-pill app-status-pill--saving">
-            Saving assignment...
+            {{ "Saving assignment..." | translate }}
           </span>
         }
       </div>
@@ -128,7 +128,7 @@
 </section>
 
 @if (activeModal) {
-  <button type="button" class="app-modal-backdrop" aria-label="Close modal" (click)="closeActiveModal()"></button>
+  <button type="button" class="app-modal-backdrop" [attr.aria-label]="&quot;Close modal&quot; | translate" (click)="closeActiveModal()"></button>
 }
 @if (activeModal) {
   <div class="app-modal-shell" [attr.data-testid]="'planning-modal-' + activeModal">
@@ -139,20 +139,20 @@
       [class.app-modal-card--wide]="activeModal === 'items'"
       appModal [appModalDisableClose]="savingAssignment" (appModalClose)="closeActiveModal()"
       aria-modal="true"
-      aria-label="Planning dialog"
+      [attr.aria-label]="&quot;Planning dialog&quot; | translate"
       >
       @if (activeModal === 'actions') {
         <div class="planning-actions-modal">
           <div class="planning-actions-modal__header">
             <div class="planning-actions-modal__copy">
-              <p class="planning-actions-modal__eyebrow">Planning</p>
-              <h3 class="planning-actions-modal__title">Day actions</h3>
+              <p class="planning-actions-modal__eyebrow">{{ "Planning" | translate }}</p>
+              <h3 class="planning-actions-modal__title">{{ "Day actions" | translate }}</h3>
               <p class="planning-actions-modal__description">
-                Choose whether to manage the cycle for this day or open the entry editor.
+                {{ "Choose whether to manage the cycle for this day or open the entry editor." | translate }}
               </p>
             </div>
             <div class="planning-actions-modal__date-pill">
-              <span class="planning-actions-modal__date-label">Date</span>
+              <span class="planning-actions-modal__date-label">{{ "Date" | translate }}</span>
               <span class="planning-actions-modal__date-value">{{ selectedModalDateLocal }}</span>
               @if (selectedOccurredAt) {
                 <span class="planning-actions-modal__date-time">
@@ -173,10 +173,10 @@
                 </svg>
               </span>
               <span class="planning-action-card__content">
-                <span class="planning-action-card__label">Cycle</span>
-                <span class="planning-action-card__title">Manage cycle</span>
+                <span class="planning-action-card__label">{{ "Cycle" | translate }}</span>
+                <span class="planning-action-card__title">{{ "Manage cycle" | translate }}</span>
                 <span class="planning-action-card__text">
-                  Add, change, or remove the active assignment for this date.
+                  {{ "Add, change, or remove the active assignment for this date." | translate }}
                 </span>
               </span>
               <span class="planning-action-card__arrow" aria-hidden="true">
@@ -196,10 +196,10 @@
                 </svg>
               </span>
               <span class="planning-action-card__content">
-                <span class="planning-action-card__label">Day</span>
-                <span class="planning-action-card__title">Edit day</span>
+                <span class="planning-action-card__label">{{ "Day" | translate }}</span>
+                <span class="planning-action-card__title">{{ "Edit day" | translate }}</span>
                 <span class="planning-action-card__text">
-                  Open the entry editor directly for this date and time context.
+                  {{ "Open the entry editor directly for this date and time context." | translate }}
                 </span>
               </span>
               <span class="planning-action-card__arrow" aria-hidden="true">
@@ -219,10 +219,10 @@
                 </svg>
               </span>
               <span class="planning-action-card__content">
-                <span class="planning-action-card__label">External</span>
-                <span class="planning-action-card__title">Add external meal</span>
+                <span class="planning-action-card__label">{{ "External" | translate }}</span>
+                <span class="planning-action-card__title">{{ "Add external meal" | translate }}</span>
                 <span class="planning-action-card__text">
-                  Add an unplanned restaurant or meal entry with macros and spending, without inventory impact.
+                  {{ "Add an unplanned restaurant or meal entry with macros and spending, without inventory impact." | translate }}
                 </span>
               </span>
               <span class="planning-action-card__arrow" aria-hidden="true">
@@ -238,7 +238,7 @@
               type="button"
               class="planning-actions-modal__close"
               (click)="closeActiveModal()">
-              Close
+              {{ "Close" | translate }}
             </button>
           </div>
         </div>
@@ -246,23 +246,23 @@
       @if (activeModal === 'assignment') {
         <mat-card-header class="planning-assignment-modal__header">
           <mat-card-title>
-            {{ editingAssignment ? 'Edit assignment' : 'Assign cycle' }}
+            {{ editingAssignment ? ("Edit assignment" | translate) : ("Assign cycle" | translate) }}
           </mat-card-title>
           @if (editingAssignment) {
             <mat-card-subtitle>
-              Assignment #{{ editingAssignment.id }} - {{ editingAssignment.cycle.title }}
+              {{ "Assignment #{p0} - {p1}" | translate: { p0: (editingAssignment.id), p1: (editingAssignment.cycle.title) } }}
             </mat-card-subtitle>
           }
           @if (!editingAssignment) {
             <mat-card-subtitle>
-              Selected date: {{ clickedDateLocal }}
+              {{ "Selected date: {p0}" | translate: { p0: (clickedDateLocal) } }}
             </mat-card-subtitle>
           }
         </mat-card-header>
         <mat-card-content class="planning-assignment-modal__content space-y-4">
           <div class="planning-assignment-modal__controls">
             <mat-form-field appearance="outline" class="planning-assignment-modal__date-field w-full sm:w-80">
-              <mat-label>Start date</mat-label>
+              <mat-label>{{ "Start date" | translate }}</mat-label>
               <input
                 matInput
                 type="date"
@@ -281,7 +281,7 @@
         </mat-card-content>
         <mat-card-actions align="end" class="planning-assignment-modal__actions gap-2">
           <button mat-stroked-button type="button" (click)="closeActiveModal()" [disabled]="savingAssignment">
-            Cancel
+            {{ "Cancel" | translate }}
           </button>
           @if (editingAssignment) {
             <button
@@ -290,7 +290,7 @@
               type="button"
               (click)="removeAssignmentFromModal()"
               [disabled]="savingAssignment">
-              Remove
+              {{ "Remove" | translate }}
             </button>
           }
           <button
@@ -299,20 +299,20 @@
             type="button"
             (click)="saveAssignmentFromModal()"
             [disabled]="savingAssignment || !canSubmitModal">
-            Valider
+            {{ "Valider" | translate }}
           </button>
         </mat-card-actions>
       }
       @if (activeModal === 'items') {
         <mat-card-header>
-          <mat-card-title>Day items</mat-card-title>
+          <mat-card-title>{{ "Day items" | translate }}</mat-card-title>
           <mat-card-subtitle>
             <button
               mat-stroked-button
               type="button"
               data-testid="planning-items-external-entry"
               (click)="openExternalEntryFromItems()">
-              Entry externale
+              {{ "Entry externale" | translate }}
             </button>
           </mat-card-subtitle>
         </mat-card-header>
@@ -327,7 +327,7 @@
         </mat-card-content>
         <mat-card-actions align="end" class="gap-2 px-4 pb-4">
           <button mat-stroked-button type="button" (click)="closeActiveModal()">
-            Close
+            {{ "Close" | translate }}
           </button>
         </mat-card-actions>
       }

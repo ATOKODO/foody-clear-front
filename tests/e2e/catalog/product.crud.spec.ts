@@ -14,12 +14,12 @@ test('creates, edits and deletes a product', async ({ page, mockApi }) => {
   await expect(dialog).toBeVisible();
 
   await dialog.getByLabel('Name *').fill('E2E Product');
-  await dialog.getByLabel('quantityPerUnit *').fill('250');
+  await dialog.getByLabel("Quantity per unit *").fill('250');
   await selectMatOptionByLabel(page, dialog, 'Category', 'Fruits');
   await selectMatOptionByLabel(page, dialog, 'Generic product', 'Banane');
-  await selectMatOptionByLabel(page, dialog, 'unitType *', 'Unite');
-  await selectMatOptionByLabel(page, dialog, 'quantityUnit *', 'Gramme (g)');
-  await dialog.getByRole('button', { name: 'Valider' }).click();
+  await selectMatOptionByLabel(page, dialog, "Container type *", "Unit");
+  await selectMatOptionByLabel(page, dialog, "Quantity unit *", 'Gram (g)');
+  await dialog.getByRole('button', { name: "Confirm" }).click();
 
   const createdRow = page.locator('tr').filter({ hasText: 'E2E Product' }).last();
   await expect(createdRow).toBeVisible();
@@ -29,13 +29,17 @@ test('creates, edits and deletes a product', async ({ page, mockApi }) => {
   await expect(dialog).toBeVisible();
 
   await dialog.getByLabel('Name *').fill('E2E Product updated');
-  await dialog.getByLabel('quantityPerUnit *').fill('300');
+  await dialog.getByLabel("Quantity per unit *").fill('300');
   const removedNutritionIds = mockApi.state.products.find((product) => product.name === 'E2E Product')!.nutritionValues.map((value) => value.id);
   expect(removedNutritionIds.length).toBeGreaterThan(0);
   const removeNutrition = dialog.getByRole('button', { name: 'Remove', exact: true });
-  while (await removeNutrition.count()) await removeNutrition.first().click();
+  await expect(removeNutrition).toHaveCount(removedNutritionIds.length);
+  for (let remaining = removedNutritionIds.length; remaining > 0; remaining--) {
+    await removeNutrition.first().click();
+    await expect(removeNutrition).toHaveCount(remaining - 1);
+  }
   const updateRequest = page.waitForRequest((request) => request.method() === 'PATCH' && /\/product\/\d+$/.test(new URL(request.url()).pathname));
-  await dialog.getByRole('button', { name: 'Valider' }).click();
+  await dialog.getByRole('button', { name: "Confirm" }).click();
   expect((await updateRequest).postDataJSON()).toMatchObject({ nutritionValuesUpdated: [], nutritionValueIdsToRemove: removedNutritionIds });
 
   const updatedRow = page.locator('tr').filter({ hasText: 'E2E Product updated' }).last();

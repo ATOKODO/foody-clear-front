@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 
 import {
   Component,
@@ -33,6 +34,7 @@ export interface SlotFormValue {
 @Component({
   selector: 'app-slot-form',
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,

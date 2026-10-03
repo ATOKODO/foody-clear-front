@@ -115,10 +115,11 @@ export function getCalendarTemplateSourceBadgeText(
 export function formatCalendarCompactNumber(
   value: number,
   maximumFractionDigits: number,
+  locale = 'fr-FR',
 ): string {
   const hasFraction = Math.abs(value % 1) > Number.EPSILON;
 
-  return new Intl.NumberFormat('fr-FR', {
+  return new Intl.NumberFormat(locale, {
     minimumFractionDigits: hasFraction
       ? Math.min(1, maximumFractionDigits)
       : 0,
@@ -128,19 +129,21 @@ export function formatCalendarCompactNumber(
 
 export function formatCalendarWeekMacroValue(
   value: InputDayMacroValue,
+  locale = 'fr-FR',
 ): string {
   if (typeof value !== 'number') {
     return '...';
   }
 
-  return formatCalendarCompactNumber(value, Math.abs(value) >= 100 ? 0 : 1);
+  return formatCalendarCompactNumber(value, Math.abs(value) >= 100 ? 0 : 1, locale);
 }
 
 export function formatCalendarMetricValue(
   value: number | InputDayMacroValue | null | undefined,
+  locale = 'fr-FR',
 ): string {
   if (typeof value === 'number') {
-    return formatCalendarCompactNumber(value, Math.abs(value) >= 100 ? 0 : 1);
+    return formatCalendarCompactNumber(value, Math.abs(value) >= 100 ? 0 : 1, locale);
   }
 
   if (typeof value === 'string' && value.trim() !== '') {
@@ -152,11 +155,13 @@ export function formatCalendarMetricValue(
 
 export function formatCalendarSignedMetricValue(
   value: number | InputDayMacroValue | null | undefined,
+  locale = 'fr-FR',
 ): string {
   if (typeof value === 'number') {
     const formatted = formatCalendarCompactNumber(
       value,
       Math.abs(value) >= 100 ? 0 : 1,
+      locale,
     );
     return value > 0 ? `+${formatted}` : formatted;
   }
@@ -168,13 +173,14 @@ export function formatCalendarSignedMetricValue(
   return '--';
 }
 
-export function formatCalendarQuantityLabel(value: number): string {
-  return formatCalendarCompactNumber(value, Math.abs(value) >= 100 ? 0 : 2);
+export function formatCalendarQuantityLabel(value: number, locale = 'fr-FR'): string {
+  return formatCalendarCompactNumber(value, Math.abs(value) >= 100 ? 0 : 2, locale);
 }
 
 export function buildCalendarDaySlotMacroGroups(
   bySlot: InputDayTotalsMacrosBySlotEntry[],
   formatSlotRange: (slot: CalendarDaySlot) => string = formatCalendarSlotRange,
+  locale = 'fr-FR',
 ): CalendarDaySlotMacroGroup[] {
   return [...bySlot]
     .sort(
@@ -201,6 +207,7 @@ export function buildCalendarDaySlotMacroGroups(
           consumed,
           entry.targets,
           entry.deltaToTargets,
+          locale,
         ),
       };
     })
@@ -211,6 +218,7 @@ export function buildCalendarMonthAlertBadges(
   actualComparisons: CalendarMacroComparison[],
   projectedComparisons: CalendarMacroComparison[],
   pendingTemplateItems: number,
+  locale = 'fr-FR',
 ): CalendarMonthAlertBadge[] {
   const actualComparisonByKey = new Map(
     actualComparisons.map((comparison) => [comparison.key, comparison]),
@@ -221,7 +229,9 @@ export function buildCalendarMonthAlertBadges(
 
   const badges = CALENDAR_MACRO_ORDER.reduce<CalendarMonthAlertBadge[]>(
     (accumulator, key) => {
-      const macroLabel = CALENDAR_MONTH_MACRO_ALERT_LABELS[key] ?? key;
+      const macroLabel = !locale.startsWith('fr') && key === 'carbs' ? 'C'
+        : !locale.startsWith('fr') && key === 'lipids' ? 'F'
+        : CALENDAR_MONTH_MACRO_ALERT_LABELS[key] ?? key;
       const actualComparison = actualComparisonByKey.get(key);
       if (actualComparison?.status === 'over') {
         accumulator.push({
@@ -262,6 +272,7 @@ export function buildCalendarMonthAlertBadges(
 
 export function buildCalendarMacroHighlights(
   dayTotal: Record<string, InputDayMacroValue> | null,
+  locale = 'fr-FR',
 ): CalendarWeekMacroHighlight[] {
   if (!dayTotal) {
     return [];
@@ -278,7 +289,7 @@ export function buildCalendarMacroHighlights(
       {
         key,
         label: definition.label,
-        value: formatCalendarWeekMacroValue(value),
+        value: formatCalendarWeekMacroValue(value, locale),
         unit: definition.unit,
         tone: definition.tone,
       },
@@ -288,6 +299,7 @@ export function buildCalendarMacroHighlights(
 
 export function buildCalendarMacroComparisonsFromTotals(
   totals: InputDayTotalsMacrosSummary | null,
+  locale = 'fr-FR',
 ): CalendarMacroComparison[] {
   const dayTotal = totals?.dayTotal ?? null;
   const targets = totals?.targets ?? null;
@@ -316,10 +328,11 @@ export function buildCalendarMacroComparisonsFromTotals(
       {
         key,
         label: definition.label,
-        abbr: definition.abbr,
-        value: formatCalendarMetricValue(normalizedValue),
-        target: formatCalendarMetricValue(normalizedTarget),
-        percentage: formatCalendarComparisonPercentage(percentage),
+        abbr: !locale.startsWith('fr') && key === 'carbs' ? 'C'
+          : !locale.startsWith('fr') && key === 'lipids' ? 'F' : definition.abbr,
+        value: formatCalendarMetricValue(normalizedValue, locale),
+        target: formatCalendarMetricValue(normalizedTarget, locale),
+        percentage: formatCalendarComparisonPercentage(percentage, locale),
         status: resolveCalendarMacroComparisonStatus(
           normalizedValue,
           normalizedTarget,
@@ -335,6 +348,7 @@ export function buildCalendarDayMacroCards(
   consumedValues: Record<string, InputDayMacroValue> | null | undefined,
   targets: Record<string, number> | null | undefined,
   deltas: Record<string, InputDayMacroValue> | null | undefined,
+  locale = 'fr-FR',
 ): CalendarDayMacroCard[] {
   const keys = new Set<string>([
     ...Object.keys(consumedValues ?? {}),
@@ -353,9 +367,9 @@ export function buildCalendarDayMacroCards(
       return {
         key,
         label: definition?.label ?? key,
-        consumed: formatCalendarMetricValue(consumed ?? null),
-        target: formatCalendarMetricValue(target ?? null),
-        delta: formatCalendarSignedMetricValue(delta ?? null),
+        consumed: formatCalendarMetricValue(consumed ?? null, locale),
+        target: formatCalendarMetricValue(target ?? null, locale),
+        delta: formatCalendarSignedMetricValue(delta ?? null, locale),
         unit: definition?.unit ?? '',
         tone: definition?.tone ?? 'energy',
         status: resolveCalendarDayMacroCardStatus(consumed, target, delta),
@@ -365,6 +379,7 @@ export function buildCalendarDayMacroCards(
 
 export function getCalendarMetricEntries(
   metrics: Record<string, number | InputDayMacroValue> | null | undefined,
+  locale = 'fr-FR',
 ): CalendarMacroMetricEntry[] {
   if (!metrics) {
     return [];
@@ -378,7 +393,7 @@ export function getCalendarMetricEntries(
       return {
         key,
         label: definition?.label ?? key,
-        value: formatCalendarMetricValue(value),
+        value: formatCalendarMetricValue(value, locale),
         unit: definition?.unit ?? '',
       };
     });
@@ -449,10 +464,10 @@ export function resolveCalendarDayMacroCardStatus(
   return 'neutral';
 }
 
-function formatCalendarComparisonPercentage(percentage: number | null): string {
+function formatCalendarComparisonPercentage(percentage: number | null, locale: string): string {
   return percentage === null
     ? 'Cible 0'
-    : `${formatCalendarCompactNumber(percentage, 2)}%`;
+    : `${formatCalendarCompactNumber(percentage, 2, locale)}%`;
 }
 
 function roundCalendarComparisonNumber(value: number): number {

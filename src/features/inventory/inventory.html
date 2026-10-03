@@ -2,10 +2,10 @@
   <mat-card class="inventory-panel" data-testid="inventory-panel">
     <div class="inventory-panel__header">
       <div>
-        <p class="inventory-panel__eyebrow">Inventory</p>
-        <h2 class="inventory-panel__title" data-testid="inventory-panel-title">Inventories</h2>
+        <p class="inventory-panel__eyebrow">{{ "Inventory" | translate }}</p>
+        <h2 class="inventory-panel__title" data-testid="inventory-panel-title">{{ "Inventories" | translate }}</h2>
         <p class="inventory-panel__subtitle">
-          Select a stock location and inspect its current products in read-only mode.
+          {{ "Select a stock location and inspect its current products in read-only mode." | translate }}
         </p>
       </div>
 
@@ -17,7 +17,7 @@
           data-testid="inventory-refresh-action"
           (click)="onRefreshRequested()"
           [disabled]="loading || loadingProducts || loadingInventoryProducts || saving || loadingSelectedInventoryProducts">
-          Refresh
+          {{ "Refresh" | translate }}
         </button>
 
         <button
@@ -27,7 +27,7 @@
           data-testid="inventory-add-action"
           (click)="onAddRequested()"
           [disabled]="loading || loadingProducts || loadingInventoryProducts || saving">
-          Add inventory
+          {{ "Add inventory" | translate }}
         </button>
       </div>
     </div>
@@ -36,19 +36,19 @@
       @if (loading || loadingProducts || saving || loadingInventoryProducts || loadingSelectedInventoryProducts) {
         <div class="app-status-row">
           @if (loading) {
-            <span class="app-status-pill app-status-pill--neutral">Loading...</span>
+            <span class="app-status-pill app-status-pill--neutral">{{ "Loading..." | translate }}</span>
           }
           @if (loadingProducts) {
-            <span class="app-status-pill app-status-pill--info">Products...</span>
+            <span class="app-status-pill app-status-pill--info">{{ "Products..." | translate }}</span>
           }
           @if (saving) {
-            <span class="app-status-pill app-status-pill--saving">Saving...</span>
+            <span class="app-status-pill app-status-pill--saving">{{ "Saving..." | translate }}</span>
           }
           @if (loadingInventoryProducts) {
-            <span class="app-status-pill app-status-pill--info">Loading editor stock...</span>
+            <span class="app-status-pill app-status-pill--info">{{ "Loading editor stock..." | translate }}</span>
           }
           @if (loadingSelectedInventoryProducts) {
-            <span class="app-status-pill app-status-pill--info">Loading selected inventory...</span>
+            <span class="app-status-pill app-status-pill--info">{{ "Loading selected inventory..." | translate }}</span>
           }
         </div>
       }
@@ -58,15 +58,15 @@
       }
 
       <div class="inventory-summary">
-        <span>{{ inventoryListItems.length }} inventories</span>
-        <span>{{ products.length }} products in catalog</span>
+        <span>{{ "{p0} inventories" | translate: { p0: (inventoryListItems.length) } }}</span>
+        <span>{{ "{p0} products in catalog" | translate: { p0: (products.length) } }}</span>
       </div>
 
       <app-master-detail-layout
-        sideTitle="Inventories"
-        sideSubtitle="Select an inventory and manage it from the left actions."
-        sideAriaLabel="Inventories"
-        detailAriaLabel="Inventory details">
+        [sideTitle]="&quot;Inventories&quot; | translate"
+        [sideSubtitle]="&quot;Select an inventory and manage it from the left actions.&quot; | translate"
+        [sideAriaLabel]="&quot;Inventories&quot; | translate"
+        [detailAriaLabel]="&quot;Inventory details&quot; | translate">
         <div side-content class="inventory-stack">
           @for (inventory of inventoryListItems; track inventory.id) {
             <div
@@ -76,9 +76,9 @@
               >
               <button type="button" class="inventory-list-card__select" [disabled]="saving" (click)="selectInventory(inventory.id)">
                 <span class="inventory-list-card__title">{{ inventory.name }}</span>
-                <span class="inventory-list-card__meta">{{ inventory.productCount }} linked product(s)</span>
+                <span class="inventory-list-card__meta">{{ "{p0} linked product(s)" | translate: { p0: (inventory.productCount) } }}</span>
                 <span class="inventory-list-card__status" [class.inventory-list-card__status--empty]="inventory.productCount === 0">
-                  {{ inventory.productCount === 0 ? 'Empty' : 'Stocked' }}
+                  {{ inventory.productCount === 0 ? ("Empty" | translate) : ("Stocked" | translate) }}
                 </span>
               </button>
               <div class="inventory-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
@@ -88,7 +88,7 @@
                   class="inventory-action inventory-action--secondary"
                   (click)="onEditRequested(inventory)"
                   [disabled]="saving">
-                  Edit
+                  {{ "Edit" | translate }}
                 </button>
                 <button
                   mat-stroked-button
@@ -96,12 +96,12 @@
                   class="inventory-action inventory-action--danger"
                   (click)="onDeleteRequested(inventory)"
                   [disabled]="saving">
-                  Remove
+                  {{ "Remove" | translate }}
                 </button>
               </div>
             </div>
           } @empty {
-            <p class="inventory-empty">No inventory available.</p>
+            <p class="inventory-empty">{{ "No inventory available." | translate }}</p>
           }
         </div>
 
@@ -110,15 +110,15 @@
             <div class="inventory-workspace__header">
               <div>
                 <h3>{{ inventory.name }}</h3>
-                <p>{{ inventory.productCount }} linked product(s) in this inventory.</p>
+                <p>{{ "{p0} linked product(s) in this inventory." | translate: { p0: (inventory.productCount) } }}</p>
               </div>
             </div>
 
             <div class="inventory-detail-card">
               <div class="inventory-detail-card__header">
                 <div>
-                  <h4>Current stock</h4>
-                  <p>Read-only view. Use Edit in the left column to manage quantities.</p>
+                  <h4>{{ "Current stock" | translate }}</h4>
+                  <p>{{ "Read-only view. Use Edit in the left column to manage quantities." | translate }}</p>
                 </div>
               </div>
 
@@ -127,26 +127,26 @@
                   @for (item of selectedInventoryProducts; track item.id) {
                     <div class="inventory-detail-row">
                       <div class="inventory-detail-row__product">
-                        <strong>{{ item.product?.name ?? ('Product #' + item.productId) }}</strong>
-                        <span>Inventory item #{{ item.id }}</span>
+                        <strong>{{ item.product?.name ?? (("Product #" | translate) + item.productId) }}</strong>
+                        <span>{{ "Inventory item #{p0}" | translate: { p0: (item.id) } }}</span>
                       </div>
                       <div class="inventory-detail-row__qty">
                         <strong>{{ item.qtyOnHandInUnits }}</strong>
-                        <span>on hand</span>
+                        <span>{{ "on hand" | translate }}</span>
                       </div>
                       <div class="inventory-detail-row__normalized">
                         <strong>{{ item.qtyOnHandNormalized }}</strong>
-                        <span>normalized</span>
+                        <span>{{ "normalized" | translate }}</span>
                       </div>
                     </div>
                   }
                 } @else {
-                  <p class="inventory-empty">No linked products in this inventory.</p>
+                  <p class="inventory-empty">{{ "No linked products in this inventory." | translate }}</p>
                 }
               </div>
             </div>
           } @else {
-            <p class="inventory-empty inventory-empty--large">Select or create an inventory to start.</p>
+            <p class="inventory-empty inventory-empty--large">{{ "Select or create an inventory to start." | translate }}</p>
           }
         </div>
       </app-master-detail-layout>
@@ -155,11 +155,11 @@
 </section>
 
 @if (formVisible) {
-  <button type="button" class="app-modal-backdrop" aria-label="Close modal" (click)="closeFormModal()"></button>
+  <button type="button" class="app-modal-backdrop" [attr.aria-label]="&quot;Close modal&quot; | translate" (click)="closeFormModal()"></button>
 }
 @if (formVisible) {
   <div class="app-modal-shell" data-testid="inventory-dialog">
-    <mat-card appearance="outlined" class="app-modal-card inventory-modal-card--form rounded-xl" appModal [appModalDisableClose]="saving" (appModalClose)="closeFormModal()" aria-modal="true" aria-label="Inventory editor" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
+    <mat-card appearance="outlined" class="app-modal-card inventory-modal-card--form rounded-xl" appModal [appModalDisableClose]="saving" (appModalClose)="closeFormModal()" aria-modal="true" [attr.aria-label]="&quot;Inventory editor&quot; | translate" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
       <mat-card-content class="space-y-6 p-0">
         <app-inventory-form
           [mode]="formMode"
@@ -175,7 +175,7 @@
               type="button"
               (click)="openAddProductsModal()"
               [disabled]="saving || loadingProducts || loadingInventoryProducts">
-              Open add products
+              {{ "Open add products" | translate }}
             </button>
           }
           @if (formMode === 'edit') {
@@ -183,14 +183,14 @@
               inventory-form-under-name
               class="inventory-manage-products mt-4 space-y-4 rounded-xl border border-app-border bg-app-surface p-5">
               <div>
-                <h3 class="text-base font-semibold text-app-text-strong">Manage products</h3>
+                <h3 class="text-base font-semibold text-app-text-strong">{{ "Manage products" | translate }}</h3>
                 <p class="mt-1 text-sm text-app-text">
-                  Update current quantities, remove lines, or empty the inventory.
+                  {{ "Update current quantities, remove lines, or empty the inventory." | translate }}
                 </p>
               </div>
               @if (loadingInventoryProducts) {
                 <p class="text-sm text-app-text-muted">
-                  Loading linked products...
+                  {{ "Loading linked products..." | translate }}
                 </p>
               }
               @if (manageProductRows.length > 0) {
@@ -198,11 +198,11 @@
                   <table class="inventory-products-table w-full min-w-[820px] text-sm">
                     <thead class="bg-app-surface-soft text-left text-app-text">
                       <tr>
-                        <th class="px-3 py-2">Product</th>
-                        <th class="px-3 py-2">Current qty</th>
-                        <th class="px-3 py-2">Normalized stock</th>
-                        <th class="px-3 py-2">New qty</th>
-                        <th class="px-3 py-2 text-right">Action</th>
+                        <th class="px-3 py-2">{{ "Product" | translate }}</th>
+                        <th class="px-3 py-2">{{ "Current qty" | translate }}</th>
+                        <th class="px-3 py-2">{{ "Normalized stock" | translate }}</th>
+                        <th class="px-3 py-2">{{ "New qty" | translate }}</th>
+                        <th class="px-3 py-2 text-right">{{ "Action" | translate }}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -218,7 +218,7 @@
                           <td class="px-3 py-2">
                             <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
                               <mat-form-field appearance="fill" class="w-full">
-                                <mat-label>Quantity</mat-label>
+                                <mat-label>{{ "Quantity" | translate }}</mat-label>
                                 <input
                                   matInput
                                   type="number"
@@ -229,14 +229,14 @@
                                   (ngModelChange)="onManagedProductQtyChange()" />
                               </mat-form-field>
                               <mat-form-field appearance="fill" class="w-full">
-                                <mat-label>Unit</mat-label>
+                                <mat-label>{{ "Unit" | translate }}</mat-label>
                                 <mat-select
                                   [(ngModel)]="row.qtyUnit"
                                   [ngModelOptions]="{ standalone: true }"
                                   (ngModelChange)="onManagedProductQtyChange()">
                                   @for (option of row.qtyUnitOptions; track option) {
                                     <mat-option [value]="option.value">
-                                      {{ option.label }}
+                                      {{ (option.label) | translate }}
                                     </mat-option>
                                   }
                                 </mat-select>
@@ -244,7 +244,7 @@
                             </div>
                             @if (row.qtyUnitHelpText) {
                               <p class="mt-1 text-xs text-app-text-muted">
-                                {{ row.qtyUnitHelpText }}
+                                {{ formatQtyUnitHelpText(row) }}
                               </p>
                             }
                           </td>
@@ -254,7 +254,7 @@
                               color="warn"
                               type="button"
                               (click)="removeManagedProduct(row.productId)">
-                              Remove from list
+                              {{ "Remove from list" | translate }}
                             </button>
                           </td>
                         </tr>
@@ -264,12 +264,12 @@
                 </div>
               } @else {
                 <p class="text-sm text-app-text">
-                  No product is linked to this inventory.
+                  {{ "No product is linked to this inventory." | translate }}
                 </p>
               }
               @if (manageProductsFormError) {
                 <p class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger">
-                  {{ manageProductsFormError }}
+                  {{ (manageProductsFormError) | translate }}
                 </p>
               }
               <div class="flex flex-wrap justify-end gap-2 border-t border-app-border pt-4">
@@ -279,7 +279,7 @@
                   type="button"
                   (click)="emptyInventory()"
                   [disabled]="saving || editingInventoryProducts.length === 0">
-                  Empty inventory
+                  {{ "Empty inventory" | translate }}
                 </button>
                 <button
                   mat-raised-button
@@ -287,7 +287,7 @@
                   type="button"
                   (click)="saveManagedProducts()"
                   [disabled]="!canSaveManagedProducts">
-                  Save
+                  {{ "Save" | translate }}
                 </button>
               </div>
             </section>
@@ -297,17 +297,17 @@
           <section class="space-y-4 border-t border-app-border px-4 pb-6 sm:px-8">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h3 class="text-base font-semibold text-app-text-strong">Initial products</h3>
+                <h3 class="text-base font-semibold text-app-text-strong">{{ "Initial products" | translate }}</h3>
                 <p class="text-sm text-app-text">
-                  Select products to link to the inventory when it is created.
+                  {{ "Select products to link to the inventory when it is created." | translate }}
                 </p>
               </div>
               <span class="rounded-full bg-app-surface-muted px-3 py-1 text-xs font-medium text-app-text">
-                {{ createSelectedProductIds.length }} selected
+                {{ "{p0} selected" | translate: { p0: (createSelectedProductIds.length) } }}
               </span>
             </div>
             @if (loadingProducts) {
-              <p class="text-sm text-app-text-muted">Loading products...</p>
+              <p class="text-sm text-app-text-muted">{{ "Loading products..." | translate }}</p>
             }
             <app-product-list [mode]="'select-multi'"
               [products]="productListItems"
@@ -319,10 +319,10 @@
                 <table class="w-full min-w-[760px] text-sm">
                   <thead class="bg-app-surface-soft text-left text-app-text">
                     <tr>
-                      <th class="px-3 py-2">Product</th>
-                      <th class="px-3 py-2">Qty</th>
-                      <th class="px-3 py-2">Stats</th>
-                      <th class="px-3 py-2 text-right">Action</th>
+                      <th class="px-3 py-2">{{ "Product" | translate }}</th>
+                      <th class="px-3 py-2">{{ "Qty" | translate }}</th>
+                      <th class="px-3 py-2">{{ "Stats" | translate }}</th>
+                      <th class="px-3 py-2 text-right">{{ "Action" | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -333,7 +333,7 @@
                         <td class="px-3 py-2">
                           <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
                             <mat-form-field appearance="fill" class="w-full">
-                              <mat-label>Quantity</mat-label>
+                              <mat-label>{{ "Quantity" | translate }}</mat-label>
                               <input
                                 matInput
                                 type="number"
@@ -344,14 +344,14 @@
                                 (ngModelChange)="onCreateProductQtyChange()" />
                             </mat-form-field>
                             <mat-form-field appearance="fill" class="w-full">
-                              <mat-label>Unit</mat-label>
+                              <mat-label>{{ "Unit" | translate }}</mat-label>
                               <mat-select
                                 [(ngModel)]="row.qtyUnit"
                                 [ngModelOptions]="{ standalone: true }"
                                 (ngModelChange)="onCreateProductQtyChange()">
                                 @for (option of row.qtyUnitOptions; track option) {
                                   <mat-option [value]="option.value">
-                                    {{ option.label }}
+                                    {{ (option.label) | translate }}
                                   </mat-option>
                                 }
                               </mat-select>
@@ -359,19 +359,19 @@
                           </div>
                           @if (row.qtyUnitHelpText) {
                             <p class="mt-1 text-xs text-app-text-muted">
-                              {{ row.qtyUnitHelpText }}
+                              {{ formatQtyUnitHelpText(row) }}
                             </p>
                           }
                         </td>
                         <td class="px-3 py-2">
                           <mat-form-field appearance="fill" class="w-full">
-                            <mat-label>Stats</mat-label>
+                            <mat-label>{{ "Stats" | translate }}</mat-label>
                             <mat-select
                               [(ngModel)]="row.purchaseAccountingMode"
                               [ngModelOptions]="{ standalone: true }">
                               @for (option of purchaseAccountingModeOptions; track option.value) {
                                 <mat-option [value]="option.value">
-                                  {{ option.label }}
+                                  {{ (option.label) | translate }}
                                 </mat-option>
                               }
                             </mat-select>
@@ -383,7 +383,7 @@
                             color="warn"
                             type="button"
                             (click)="removeCreateSelectedProduct(row.productId)">
-                            Remove
+                            {{ "Remove" | translate }}
                           </button>
                         </td>
                       </tr>
@@ -393,12 +393,12 @@
               </div>
             } @else {
               <p class="text-sm text-app-text">
-                Select one or more products, then enter their starting quantity.
+                {{ "Select one or more products, then enter their starting quantity." | translate }}
               </p>
             }
             @if (createProductsFormError) {
               <p class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger">
-                {{ createProductsFormError }}
+                {{ (createProductsFormError) | translate }}
               </p>
             }
           </section>
@@ -406,7 +406,7 @@
       </mat-card-content>
       <mat-card-actions class="flex justify-center px-4 pb-6">
         <button mat-stroked-button type="button" (click)="closeFormModal()" [disabled]="saving">
-          Cancel
+          {{ "Cancel" | translate }}
         </button>
       </mat-card-actions>
     </mat-card>
@@ -414,20 +414,20 @@
 }
 
 @if (isAddProductsModalOpen) {
-  <button type="button" class="app-modal-backdrop inventory-modal-backdrop--nested" aria-label="Close modal" (click)="closeActiveModal()"></button>
+  <button type="button" class="app-modal-backdrop inventory-modal-backdrop--nested" [attr.aria-label]="&quot;Close modal&quot; | translate" (click)="closeActiveModal()"></button>
 }
 @if (isAddProductsModalOpen) {
   <div class="app-modal-shell inventory-modal-shell--nested" data-testid="inventory-add-products-dialog">
-    <mat-card class="app-modal-card app-modal-card--wide" appModal [appModalDisableClose]="saving" (appModalClose)="closeActiveModal()" aria-modal="true" aria-label="Add products" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
+    <mat-card class="app-modal-card app-modal-card--wide" appModal [appModalDisableClose]="saving" (appModalClose)="closeActiveModal()" aria-modal="true" [attr.aria-label]="&quot;Add products&quot; | translate" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
       <mat-card-header>
-        <mat-card-title>Add products</mat-card-title>
+        <mat-card-title>{{ "Add products" | translate }}</mat-card-title>
         <mat-card-subtitle>
-          You can add stock for any product, including one already present in the inventory.
+          {{ "You can add stock for any product, including one already present in the inventory." | translate }}
         </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content class="space-y-4 pt-2">
         @if (loadingProducts) {
-          <p class="text-sm text-app-text-muted">Loading products...</p>
+          <p class="text-sm text-app-text-muted">{{ "Loading products..." | translate }}</p>
         }
         <app-product-list [mode]="'select-multi'"
           [products]="addableProductListItems"
@@ -439,10 +439,10 @@
             <table class="w-full min-w-[760px] text-sm">
               <thead class="bg-app-surface-soft text-left text-app-text">
                 <tr>
-                  <th class="px-3 py-2">Product</th>
-                  <th class="px-3 py-2">Qty</th>
-                  <th class="px-3 py-2">Stats</th>
-                  <th class="px-3 py-2 text-right">Action</th>
+                  <th class="px-3 py-2">{{ "Product" | translate }}</th>
+                  <th class="px-3 py-2">{{ "Qty" | translate }}</th>
+                  <th class="px-3 py-2">{{ "Stats" | translate }}</th>
+                  <th class="px-3 py-2 text-right">{{ "Action" | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -453,7 +453,7 @@
                     <td class="px-3 py-2">
                       <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
                         <mat-form-field appearance="fill" class="w-full">
-                          <mat-label>Quantity</mat-label>
+                          <mat-label>{{ "Quantity" | translate }}</mat-label>
                           <input
                             matInput
                             type="number"
@@ -464,14 +464,14 @@
                             (ngModelChange)="onAddProductQtyChange()" />
                         </mat-form-field>
                         <mat-form-field appearance="fill" class="w-full">
-                          <mat-label>Unit</mat-label>
+                          <mat-label>{{ "Unit" | translate }}</mat-label>
                           <mat-select
                             [(ngModel)]="row.qtyUnit"
                             [ngModelOptions]="{ standalone: true }"
                             (ngModelChange)="onAddProductQtyChange()">
                             @for (option of row.qtyUnitOptions; track option) {
                               <mat-option [value]="option.value">
-                                {{ option.label }}
+                                {{ (option.label) | translate }}
                               </mat-option>
                             }
                           </mat-select>
@@ -479,19 +479,19 @@
                       </div>
                       @if (row.qtyUnitHelpText) {
                         <p class="mt-1 text-xs text-app-text-muted">
-                          {{ row.qtyUnitHelpText }}
+                          {{ formatQtyUnitHelpText(row) }}
                         </p>
                       }
                     </td>
                     <td class="px-3 py-2">
                       <mat-form-field appearance="fill" class="w-full">
-                        <mat-label>Stats</mat-label>
+                        <mat-label>{{ "Stats" | translate }}</mat-label>
                         <mat-select
                           [(ngModel)]="row.purchaseAccountingMode"
                           [ngModelOptions]="{ standalone: true }">
                           @for (option of purchaseAccountingModeOptions; track option.value) {
                             <mat-option [value]="option.value">
-                              {{ option.label }}
+                              {{ (option.label) | translate }}
                             </mat-option>
                           }
                         </mat-select>
@@ -503,7 +503,7 @@
                         color="warn"
                         type="button"
                         (click)="removeAddSelectedProduct(row.productId)">
-                        Remove
+                        {{ "Remove" | translate }}
                       </button>
                     </td>
                   </tr>
@@ -513,18 +513,18 @@
           </div>
         } @else {
           <p class="text-sm text-app-text">
-            Select one or more products, then enter the quantity to add.
+            {{ "Select one or more products, then enter the quantity to add." | translate }}
           </p>
         }
         @if (addProductsFormError) {
           <p class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger">
-            {{ addProductsFormError }}
+            {{ (addProductsFormError) | translate }}
           </p>
         }
       </mat-card-content>
       <mat-card-actions align="end" class="gap-2 px-4 pb-4">
         <button mat-stroked-button type="button" (click)="closeActiveModal()" [disabled]="saving">
-          Cancel
+          {{ "Cancel" | translate }}
         </button>
         <button
           mat-raised-button
@@ -532,7 +532,7 @@
           type="button"
           (click)="onAddSelectedProducts()"
           [disabled]="!canAddSelectedProducts">
-          Add
+          {{ "Add" | translate }}
         </button>
       </mat-card-actions>
     </mat-card>

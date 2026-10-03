@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
@@ -36,6 +37,7 @@ export interface DaySetListItem {
 @Component({
   selector: 'app-day-set-list',
   imports: [
+    TranslatePipe,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,

@@ -14,19 +14,19 @@ test('shows the product form validation errors', async ({ page, mockApi }) => {
   await expect(dialog).toBeVisible();
 
   await dialog.getByLabel('Name *').fill('   ');
-  await dialog.getByLabel('quantityPerUnit *').fill('250');
-  await dialog.getByRole('button', { name: 'Valider' }).click();
+  await dialog.getByLabel("Quantity per unit *").fill('250');
+  await dialog.getByRole('button', { name: "Confirm" }).click();
   await expect(dialog).toBeVisible();
   expect(mockApi.state.products.some((product) => product.name.trim() === '')).toBe(false);
 
   await dialog.getByLabel('Name *').fill('E2E Product validation');
-  await dialog.getByLabel('quantityPerUnit *').fill('250');
-  await selectMatOptionByLabel(page, dialog, 'unitType *', 'Unite');
-  await selectMatOptionByLabel(page, dialog, 'quantityUnit *', 'Gramme (g)');
-  await dialog.getByRole('spinbutton', { name: 'price', exact: true }).fill('3.20');
-  await dialog.getByRole('button', { name: 'Valider' }).click();
+  await dialog.getByLabel("Quantity per unit *").fill('250');
+  await selectMatOptionByLabel(page, dialog, "Container type *", "Unit");
+  await selectMatOptionByLabel(page, dialog, "Quantity unit *", 'Gram (g)');
+  await dialog.getByRole('spinbutton', { name: "Price", exact: true }).fill('3.20');
+  await dialog.getByRole('button', { name: "Confirm" }).click();
   await expect(
-    dialog.getByText('price et priceUnit doivent etre renseignes ensemble.').first(),
+    dialog.getByText("price and priceUnit must be provided together.").first(),
   ).toBeVisible();
 
   await dialog.getByRole('button', { name: 'Close' }).click();
@@ -37,14 +37,14 @@ test('shows the product form validation errors', async ({ page, mockApi }) => {
   await expect(dialog).toBeVisible();
 
   await dialog.getByLabel('Name *').fill('E2E Product validation 2');
-  await dialog.getByLabel('quantityPerUnit *').fill('250');
-  await selectMatOptionByLabel(page, dialog, 'unitType *', 'Unite');
-  await selectMatOptionByLabel(page, dialog, 'quantityUnit *', 'Gramme (g)');
-  await dialog.getByLabel('portionCount').fill('2');
-  await dialog.getByRole('button', { name: 'Valider' }).click();
+  await dialog.getByLabel("Quantity per unit *").fill('250');
+  await selectMatOptionByLabel(page, dialog, "Container type *", "Unit");
+  await selectMatOptionByLabel(page, dialog, "Quantity unit *", 'Gram (g)');
+  await dialog.getByLabel("Number of portions").fill('2');
+  await dialog.getByRole('button', { name: "Confirm" }).click();
   await expect(
     dialog
-      .getByText('portionUnit est requis si portionCount ou portionQuantityNormalized est renseigne.')
+      .getByText("portionUnit is required if portionCount or portionQuantityNormalized is set.")
       .first(),
   ).toBeVisible();
 });

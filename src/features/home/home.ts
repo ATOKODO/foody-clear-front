@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { getTemplateInventoryIds } from '../../utils/template-stock';
 import { NgClass } from '@angular/common';
 import { ChangeDetectorRef, Component, DestroyRef, NgZone, OnInit, inject, signal } from '@angular/core';
@@ -5,6 +6,7 @@ import { LatestRequest } from '../../utils/latest-request';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
 import { DateTime } from 'luxon';
+import { Language } from '../../app/i18n/language';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 import type {
   InputDayItemSummary,
@@ -54,6 +56,7 @@ import {
 @Component({
   selector: 'app-home',
   imports: [
+    TranslatePipe,
     RouterLink,
     NgClass,
     MatProgressBarModule,
@@ -82,7 +85,8 @@ export class Home implements OnInit {
   private deferredTimer: ReturnType<typeof setTimeout> | null = null;
 
   get todayDateLocal(): string { return this.localDay().toFormat('yyyy-LL-dd'); }
-  get todayLabel(): string { return this.localDay().setLocale('en').toFormat('cccc d LLLL'); }
+  readonly language = inject(Language);
+  get todayLabel(): string { return this.localDay().setLocale(this.language.locale()).toFormat('cccc d LLLL'); }
   get timezone(): string { return this.localDay().zoneName || 'UTC'; }
   get planningTodayQueryParams(): { view: string; date: string } {
     return { view: 'day', date: this.todayDateLocal };
@@ -175,11 +179,11 @@ export class Home implements OnInit {
   }
 
   get activeCycleLabel(): string {
-    return getActiveCycleLabel(this.inputDayResponse, this.todayTimelineDay);
+    return getActiveCycleLabel(this.inputDayResponse, this.todayTimelineDay, (source) => this.language.translate(source));
   }
 
   get activeDaySetLabel(): string {
-    return getActiveDaySetLabel(this.inputDayResponse, this.todayTimelineDay);
+    return getActiveDaySetLabel(this.inputDayResponse, this.todayTimelineDay, (source) => this.language.translate(source));
   }
 
   get enteredItemCount(): number {
@@ -203,11 +207,13 @@ export class Home implements OnInit {
       this.inputDayResponse,
       this.timezone,
       this.slotCatalog,
+      this.language.locale(),
+      (source) => this.language.translate(source),
     );
   }
 
   get macroCards(): HomeMacroCard[] {
-    return buildHomeMacroCards(this.inputDayResponse, this.todayTimelineDay);
+    return buildHomeMacroCards(this.inputDayResponse, this.todayTimelineDay, this.language.locale());
   }
 
   get recentPurchaseEvents(): InventoryPurchaseEventSummary[] {
@@ -231,11 +237,11 @@ export class Home implements OnInit {
   }
 
   formatCurrency(value: number | null | undefined): string {
-    return formatHomeCurrency(value);
+    return formatHomeCurrency(value, this.language.locale());
   }
 
   formatItemQty(item: InputDayItemSummary | InputDayTemplateItemSummary): string {
-    return formatHomeItemQty(item);
+    return formatHomeItemQty(item, this.language.locale(), (source) => this.language.translate(source));
   }
 
   formatDateTime(value: string | null | undefined): string {
@@ -243,7 +249,7 @@ export class Home implements OnInit {
   }
 
   getPurchaseEventLabel(event: InventoryPurchaseEventSummary): string {
-    return getPurchaseEventLabelView(event);
+    return getPurchaseEventLabelView(event, this.language.locale());
   }
 
   getTemplateStockLabel(item: InputDayTemplateItemSummary): string {
@@ -255,6 +261,7 @@ export class Home implements OnInit {
       item,
       this.inputDayResponse,
       this.slotCatalog,
+      (source) => this.language.translate(source),
     );
   }
 

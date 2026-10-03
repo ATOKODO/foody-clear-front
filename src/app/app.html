@@ -4,7 +4,7 @@
       type="button"
       class="app-shell__backdrop"
       (click)="closeMobileNavigation()"
-      aria-label="Close navigation"
+      [attr.aria-label]="'Close navigation' | translate"
     ></button>
   }
 
@@ -17,14 +17,14 @@
       <span class="app-shell__brand-mark">FC</span>
       <span class="app-shell__brand-copy">
         <span class="app-shell__brand-title">Foody Clear</span>
-        <span class="app-shell__brand-subtitle">Nutrition & operations control</span>
+        <span class="app-shell__brand-subtitle">{{ 'Nutrition & operations control' | translate }}</span>
       </span>
     </a>
 
-    <nav class="app-shell__navigation" aria-label="Main navigation">
+    <nav class="app-shell__navigation" [attr.aria-label]="'Main navigation' | translate">
       @for (group of navigationGroups; track group) {
         <section class="app-shell__group">
-          <p class="app-shell__group-label">{{ group.label }}</p>
+          <p class="app-shell__group-label">{{ group.label | translate }}</p>
           @for (entry of group.entries; track entry) {
             <a
               class="app-shell__nav-link"
@@ -36,8 +36,8 @@
               >
               <span class="app-shell__nav-icon">{{ entry.shortLabel }}</span>
               <span class="app-shell__nav-copy">
-                <span class="app-shell__nav-title">{{ entry.label }}</span>
-                <span class="app-shell__nav-description">{{ entry.description }}</span>
+                <span class="app-shell__nav-title">{{ entry.label | translate }}</span>
+                <span class="app-shell__nav-description">{{ entry.description | translate }}</span>
               </span>
             </a>
           }
@@ -54,7 +54,7 @@
           type="button"
           class="app-shell__menu-button"
           (click)="openMobileNavigation()"
-          aria-label="Open navigation"
+          [attr.aria-label]="'Open navigation' | translate"
           aria-controls="app-navigation"
           >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">
@@ -65,18 +65,19 @@
         </button>
 
         <div class="app-shell__header-copy">
-          <p class="app-shell__header-eyebrow">{{ currentGroupLabel }}</p>
-          <h1 class="app-shell__header-title">{{ currentEntry.label }}</h1>
-          <p class="app-shell__header-description">{{ currentEntry.description }}</p>
+          <p class="app-shell__header-eyebrow">{{ currentGroupLabel | translate }}</p>
+          <h1 class="app-shell__header-title">{{ currentEntry.label | translate }}</h1>
+          <p class="app-shell__header-description">{{ currentEntry.description | translate }}</p>
         </div>
       </div>
 
       <div class="app-shell__header-actions">
       <app-pwa-controls />
+      <div class="app-shell__appearance-controls">
       <button
         type="button"
         class="app-theme-toggle"
-        [attr.aria-label]="themeToggleLabel"
+        [attr.aria-label]="themeToggleLabel | translate"
         [attr.aria-pressed]="isDarkMode"
         (click)="toggleTheme()"
         >
@@ -102,16 +103,27 @@
         </span>
 
         <span class="app-theme-toggle__copy">
-          <span class="app-theme-toggle__title">{{ isDarkMode ? 'Dark theme' : 'Light theme' }}</span>
-          <span class="app-theme-toggle__subtitle">{{ themeToggleLabel }}</span>
+          <span class="app-theme-toggle__title">{{ (isDarkMode ? 'Dark theme' : 'Light theme') | translate }}</span>
+          <span class="app-theme-toggle__subtitle">{{ themeToggleLabel | translate }}</span>
         </span>
       </button>
+      <div class="app-language-toggle" role="group" [attr.aria-label]="'Application language' | translate" data-testid="language-switch">
+        <button type="button" data-testid="language-en"
+          [attr.aria-label]="'Choose English' | translate"
+          [attr.aria-pressed]="language.current() === 'en'"
+          (click)="language.set('en')">EN</button>
+        <button type="button" data-testid="language-fr"
+          [attr.aria-label]="'Choose French' | translate"
+          [attr.aria-pressed]="language.current() === 'fr'"
+          (click)="language.set('fr')">FR</button>
+      </div>
+      </div>
       </div>
     </header>
 
     <main class="app-shell__content">
       @if (!pwa.online()) {
-        <p class="app-alert" role="status">Hors connexion. L’app reste accessible ; les recherches et les enregistrements nécessitent une connexion au serveur.</p>
+        <p class="app-alert" role="status">{{ 'Hors connexion. L’app reste accessible ; les recherches et les enregistrements nécessitent une connexion au serveur.' | translate }}</p>
       }
       <router-outlet />
     </main>

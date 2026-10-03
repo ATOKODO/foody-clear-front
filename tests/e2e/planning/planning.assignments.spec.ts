@@ -15,7 +15,7 @@ test('creates a cycle assignment from the planning calendar', async ({ page, moc
   await expect(assignmentDialog).toBeVisible();
 
   await clickTestId(assignmentDialog, 'cycle-card-1');
-  await assignmentDialog.getByRole('button', { name: 'Valider', exact: true }).click();
+  await assignmentDialog.getByRole('button', { name: "Confirm", exact: true }).click();
 
   await expect.poll(() =>
     mockApi.state.cycleAssignments.some((assignment) => assignment.startDateLocal === '2026-03-22'),
@@ -36,7 +36,7 @@ test('edits and removes an assignment from planning', async ({ page, mockApi }) 
   await expect(assignmentDialog).toBeVisible();
 
   await fillLabeledInput(assignmentDialog, 'Start date', '2026-03-24');
-  await assignmentDialog.getByRole('button', { name: 'Valider', exact: true }).click();
+  await assignmentDialog.getByRole('button', { name: "Confirm", exact: true }).click();
 
   await expect.poll(() => mockApi.state.cycleAssignments.find((assignment) => assignment.id === 1)?.startDateLocal).toBe(
     '2026-03-24',

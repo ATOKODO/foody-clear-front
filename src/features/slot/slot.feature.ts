@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 import { DOCUMENT } from '@angular/common';
 import { Component, OnInit, inject, input, output, signal } from '@angular/core';
@@ -14,7 +15,7 @@ import { SlotFeatureStore } from './slot.store';
 
 @Component({
   selector: 'app-slot-feature',
-  imports: [UiModal,MatButtonModule, MatCardModule, UiErrorPanel, SlotList, SlotForm],
+  imports: [TranslatePipe, UiModal,MatButtonModule, MatCardModule, UiErrorPanel, SlotList, SlotForm],
   providers: [SlotFeatureStore],
   templateUrl: './slot.feature.html',
   styleUrl: './slot.feature.scss',

@@ -182,7 +182,7 @@ describe('ProductList', () => {
     ).map((cell) => (cell as HTMLElement).textContent?.trim() ?? '');
 
     expect(headerCells).toContain('Available');
-    expect(nativeElement.textContent).toContain('1200 g');
+    expect(nativeElement.textContent).toContain('1,200 g');
   });
 
   it('should hide the local chrome when embedded', () => {
@@ -255,11 +255,11 @@ describe('ProductList', () => {
     expect(component.trackById(0, products[0])).toBe('10');
     expect(component.isRowActive(products[0], 0)).toBeTrue();
     expect(component.isRowActive(products[1], 1)).toBeFalse();
-    expect(component.getUnitDisplay(products[0])).toBe('500 g (2 tranche)');
+    expect(component.getUnitDisplay(products[0])).toBe('500 g (2 slice)');
     expect(component.getUnitDisplay(products[1])).toBe('Piece');
     expect(component.getPriceDisplay(products[0])).toBe('2.35 / kg');
     expect(component.getPriceDisplay(products[1])).toBe('-');
-    expect(component.getAvailableQuantityDisplay(products[0])).toBe('1200.46 g');
+    expect(component.getAvailableQuantityDisplay(products[0])).toBe('1,200.46 g');
     expect(component.getAvailableQuantityDisplay(products[1])).toBe('-');
     expect(component.getTagNamesDisplay(products[0])).toBe('Bio');
     expect(component.getTagNamesDisplay({ id: '12', name: 'No tags' })).toBe('-');

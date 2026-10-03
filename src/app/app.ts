@@ -20,10 +20,12 @@ import {
 import { ThemeMode, ThemeService } from '../services/theme-service';
 import { PwaControls } from './ui/pwa-controls/pwa-controls';
 import { PwaService } from '../services/pwa-service';
+import { Language } from './i18n/language';
+import { TranslatePipe } from './i18n/translate-pipe';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, PwaControls],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, PwaControls, TranslatePipe],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {
@@ -31,6 +33,7 @@ import { PwaService } from '../services/pwa-service';
   },
 })
 export class App {
+  readonly language = inject(Language);
   readonly pwa = inject(PwaService);
   readonly navigationGroups = APP_SIDEBAR_NAVIGATION;
 

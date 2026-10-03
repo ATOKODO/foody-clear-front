@@ -79,13 +79,13 @@ export function formatInputDayDateTime(
   return parsed.setZone(timezone).toFormat('yyyy-LL-dd HH:mm');
 }
 
-export function formatInputDaySelectedDateLabel(dateLocal: string): string {
+export function formatInputDaySelectedDateLabel(dateLocal: string, locale = 'en'): string {
   const parsed = DateTime.fromISO(dateLocal);
   if (!parsed.isValid) {
     return dateLocal;
   }
 
-  return parsed.setLocale('en').toFormat('EEEE d LLLL yyyy');
+  return parsed.setLocale(locale).toFormat('EEEE d LLLL yyyy');
 }
 
 export function resolveInputDayItemSlot(
@@ -106,9 +106,10 @@ export function resolveInputDayItemSlot(
 export function resolveInputDayItemSlotTitle(
   item: InputDayItemSummary,
   availableSlots: readonly InputDayAvailableSlot[],
+  fallback = 'No slot',
 ): string {
   const matchedSlot = resolveInputDayItemSlot(item, availableSlots);
-  return matchedSlot?.title ?? item.slotKey?.trim() ?? 'No slot';
+  return matchedSlot?.title ?? item.slotKey?.trim() ?? fallback;
 }
 
 export function resolveInputDayItemSlotKey(
@@ -122,13 +123,14 @@ export function resolveInputDayItemSlotKey(
 export function resolveInputDayTemplateItemSlotTitle(
   item: InputDayTemplateItemSummary,
   availableSlots: readonly InputDayAvailableSlot[],
+  fallback = 'No slot',
 ): string {
   const matchedSlot =
     item.slotId === null
       ? null
       : availableSlots.find((slot) => slot.slotId === item.slotId) ?? null;
 
-  return matchedSlot?.title ?? item.slotKey?.trim() ?? 'No slot';
+  return matchedSlot?.title ?? item.slotKey?.trim() ?? fallback;
 }
 
 export function resolveInputDayTemplateItemSlotKey(
@@ -649,9 +651,9 @@ function resolveInputDayTagNames(tags: unknown): string[] {
   return Array.from(new Set(names));
 }
 
-function resolveInputDayLinkedEntityName(value: unknown): string {
+function resolveInputDayLinkedEntityName(value: unknown): string | null {
   if (!value || typeof value !== 'object') {
-    return 'None';
+    return null;
   }
 
   const raw = value as Record<string, unknown>;
@@ -663,5 +665,5 @@ function resolveInputDayLinkedEntityName(value: unknown): string {
     }
   }
 
-  return 'None';
+  return null;
 }

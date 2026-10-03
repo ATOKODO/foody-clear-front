@@ -1,9 +1,12 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
+import { Language } from '../../../app/i18n/language';
 import {
   Component,
   OnChanges,
   OnInit,
   SimpleChanges,
   input,
+  inject,
   output,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -83,11 +86,12 @@ export interface CycleListItem extends CycleMacroTotals {
 
 @Component({
   selector: 'app-list-cycle',
-  imports: [MatButtonModule, MatCardModule, MatCheckboxModule],
+  imports: [TranslatePipe, MatButtonModule, MatCardModule, MatCheckboxModule],
   templateUrl: './list-cycle.html',
   styleUrl: './list-cycle.scss',
 })
 export class ListCycle implements OnInit, OnChanges {
+  readonly language = inject(Language);
   readonly mode = input<CycleListMode>('manage');
   readonly cycles = input<CycleListItem[] | null>(null);
   readonly selectedIds = input<number[] | null>(null);
@@ -188,12 +192,7 @@ export class ListCycle implements OnInit, OnChanges {
   }
 
   formatAmount(value: number): string {
-    if (Number.isInteger(value)) {
-      return String(value);
-    }
-
-    const formatted = value.toFixed(2);
-    return formatted.endsWith('0') ? formatted.slice(0, -1) : formatted;
+    return this.language.formatNumber(value);
   }
 
   formatPercent(percentage: number | null): string {

@@ -1,3 +1,5 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
+import { Language } from '../../../app/i18n/language';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
@@ -5,6 +7,7 @@ import {
   OnInit,
   SimpleChanges,
   input,
+  inject,
   output,
   signal
 } from '@angular/core';
@@ -28,6 +31,7 @@ export type { ProductListItem } from './product-list-item.model';
 @Component({
   selector: 'app-product-list',
   imports: [
+    TranslatePipe,
     MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
@@ -40,6 +44,7 @@ export type { ProductListItem } from './product-list-item.model';
   styleUrl: './product-list.scss',
 })
 export class ProductList implements OnInit, OnChanges {
+  readonly language = inject(Language);
   readonly mode = input<ProductListMode>('manage');
   readonly products = input<ProductListItem[] | null>(null);
   readonly selectedIds = input<string[] | null>(null);
@@ -182,7 +187,7 @@ export class ProductList implements OnInit, OnChanges {
       item.portionCount > 0 &&
       item.portionUnit != null &&
       item.portionUnit.trim() !== ''
-        ? ` (${item.portionCount} ${item.portionUnit})`
+        ? ` (${this.language.formatNumber(item.portionCount)} ${this.language.translate(item.portionUnit)})`
         : '';
 
     if (
@@ -190,11 +195,11 @@ export class ProductList implements OnInit, OnChanges {
       item.quantityUnit == null ||
       item.quantityUnit.trim() === ''
     ) {
-      const base = item.unitType?.trim() || '-';
+      const base = this.language.translate(item.unitType?.trim() || '-');
       return `${base}${portionSuffix}`;
     }
 
-    return `${item.quantityPerUnit} ${item.quantityUnit}${portionSuffix}`;
+    return `${this.language.formatNumber(item.quantityPerUnit)} ${this.language.translate(item.quantityUnit)}${portionSuffix}`;
   }
 
   getPriceDisplay(item: ProductListItem): string {
@@ -204,7 +209,7 @@ export class ProductList implements OnInit, OnChanges {
 
     const rounded = Math.round(item.price * 100) / 100;
     const unit = item.priceUnit?.trim();
-    return unit ? `${rounded} / ${unit}` : String(rounded);
+    return unit ? `${this.language.formatNumber(rounded)} / ${this.language.translate(unit)}` : this.language.formatNumber(rounded);
   }
 
   getAvailableQuantityDisplay(item: ProductListItem): string {
@@ -214,9 +219,9 @@ export class ProductList implements OnInit, OnChanges {
 
     const rounded =
       Math.round(item.availableQuantity * 100) / 100;
-    const value = String(rounded);
+    const value = this.language.formatNumber(rounded);
     const unit = item.availableQuantityUnit?.trim() ?? '';
-    return unit === '' ? value : `${value} ${unit}`;
+    return unit === '' ? value : `${value} ${this.language.translate(unit)}`;
   }
 
   getTagNamesDisplay(item: ProductListItem): string {

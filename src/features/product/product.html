@@ -3,7 +3,7 @@
     <app-segmented-toggle [value]="activeView"
       [options]="viewOptions"
       (valueChange)="onActiveViewChange($event)"
-      ariaLabel="Select active catalog view"
+      [ariaLabel]="&quot;Select active catalog view&quot; | translate"
       data-testid="catalogue-view-toggle"
       name="catalogue-view"
      />
@@ -12,7 +12,7 @@
   <mat-card class="catalogue-panel" data-testid="catalogue-panel">
     <div class="catalogue-panel__header">
       <h2 class="catalogue-panel__title" data-testid="catalogue-panel-title">
-        {{ activeViewConfig.title }}
+        {{ (activeViewConfig.title) | translate }}
       </h2>
 
       <div class="catalogue-panel__actions">
@@ -24,7 +24,7 @@
           [disabled]="activeViewBusy"
           data-testid="catalogue-refresh-action"
           >
-          Refresh
+          {{ "Refresh" | translate }}
         </button>
 
         <button
@@ -35,7 +35,7 @@
           [disabled]="activeViewBusy"
           data-testid="catalogue-add-action"
           >
-          {{ activeViewConfig.addLabel }}
+          {{ (activeViewConfig.addLabel) | translate }}
         </button>
       </div>
     </div>
@@ -49,21 +49,21 @@
                 <span
                   class="app-status-pill app-status-pill--neutral"
                   >
-                  Loading...
+                  {{ "Loading..." | translate }}
                 </span>
               }
               @if (saving) {
                 <span
                   class="app-status-pill app-status-pill--saving"
                   >
-                  Saving...
+                  {{ "Saving..." | translate }}
                 </span>
               }
               @if (loadingMeta) {
                 <span
                   class="app-status-pill app-status-pill--info"
                   >
-                  Meta...
+                  {{ "Meta..." | translate }}
                 </span>
               }
             </div>
@@ -74,7 +74,7 @@
               <p
                 class="app-alert"
                 >
-                Unable to load metadata (units / nutrition keys), fallback enabled.
+                {{ "Unable to load metadata (units / nutrition keys), fallback enabled." | translate }}
               </p>
             }
             <app-product-list mode="manage"
@@ -112,13 +112,13 @@
   <div class="app-dialog" data-testid="product-dialog">
     <div class="app-dialog-header">
       <div>
-        <p class="app-dialog-eyebrow">Product</p>
-        <h3 class="app-dialog-title">{{ formDialogTitle }}</h3>
-        <p class="app-dialog-subtitle">{{ formDialogSubtitle }}</p>
+        <p class="app-dialog-eyebrow">{{ "Product" | translate }}</p>
+        <h3 class="app-dialog-title">{{ (formDialogTitle) | translate }}</h3>
+        <p class="app-dialog-subtitle">{{ (formDialogSubtitle) | translate }}</p>
       </div>
 
       <button mat-stroked-button type="button" (click)="onCancelForm()" [disabled]="saving">
-        Close
+        {{ "Close" | translate }}
       </button>
     </div>
 

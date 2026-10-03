@@ -1,21 +1,21 @@
 <section
   class="mx-auto max-w-5xl px-4 py-8 text-app-text-strong"
-  aria-label="Add ou modifier une category">
+  [attr.aria-label]="&quot;Add ou modifier une category&quot; | translate">
   @if (showHeading()) {
     <div class="mb-6 flex items-center justify-between border-b border-app-border pb-3">
-      <h2 class="text-xl font-medium">{{ heading }}</h2>
-      <button mat-stroked-button type="button" (click)="onMenuClick()">Options</button>
+      <h2 class="text-xl font-medium">{{ (heading) | translate }}</h2>
+      <button mat-stroked-button type="button" (click)="onMenuClick()">{{ "Options" | translate }}</button>
     </div>
   }
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
     <div class="grid gap-4 md:grid-cols-12">
       <mat-form-field appearance="fill" class="md:col-span-12">
-        <mat-label>Nom *</mat-label>
-        <input matInput type="text" formControlName="name" placeholder="Fruits" />
+        <mat-label>{{ "Nom *" | translate }}</mat-label>
+        <input matInput type="text" formControlName="name" [placeholder]="&quot;Fruits&quot; | translate" />
         @if (form.controls.name.hasError('required')) {
           <mat-error>
-            Le nom est requis.
+            {{ "Le nom est requis." | translate }}
           </mat-error>
         }
       </mat-form-field>
@@ -23,24 +23,24 @@
 
     <div class="grid gap-4 md:grid-cols-12">
       <mat-form-field appearance="fill" class="md:col-span-4">
-        <mat-label>Warn before days *</mat-label>
+        <mat-label>{{ "Warn before days *" | translate }}</mat-label>
         <input matInput type="number" min="0" formControlName="warnBeforeDays" />
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="md:col-span-4">
-        <mat-label>Recently expired days *</mat-label>
+        <mat-label>{{ "Recently expired days *" | translate }}</mat-label>
         <input matInput type="number" min="0" formControlName="recentlyExpiredDays" />
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="md:col-span-4">
-        <mat-label>Min quantity *</mat-label>
+        <mat-label>{{ "Min quantity *" | translate }}</mat-label>
         <input matInput type="number" min="0" step="0.01" formControlName="minQuantity" />
       </mat-form-field>
     </div>
 
     <div class="flex justify-center pt-2">
       <button mat-raised-button color="primary" type="submit" [disabled]="saving()" class="rounded-full px-8">
-        {{ mode() === 'edit' ? 'Update' : 'Create' }}
+        {{ mode() === 'edit' ? ("Update" | translate) : ("Create" | translate) }}
       </button>
     </div>
   </form>

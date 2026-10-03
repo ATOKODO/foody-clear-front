@@ -3,17 +3,17 @@
     <div class="app-status-row">
       @if (loading) {
         <span class="app-status-pill app-status-pill--neutral">
-          Loading...
+          {{ "Loading..." | translate }}
         </span>
       }
       @if (saving) {
         <span class="app-status-pill app-status-pill--saving">
-          Saving...
+          {{ "Saving..." | translate }}
         </span>
       }
       @if (loadingMeta) {
         <span class="app-status-pill app-status-pill--info">
-          Meta nutrition...
+          {{ "Meta nutrition..." | translate }}
         </span>
       }
     </div>
@@ -22,7 +22,7 @@
     }
     @if (lastMetaError) {
       <p class="app-alert">
-        Unable to load nutrition metadata; fallback is active.
+        {{ "Unable to load nutrition metadata; fallback is active." | translate }}
       </p>
     }
     <app-day-set-list mode="manage"
@@ -37,26 +37,26 @@
   <section class="app-page" data-testid="day-set-page">
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="bg-app-hero px-6 py-5 text-app-on-color">
-        <h2 class="text-xl font-semibold">Day sets</h2>
+        <h2 class="text-xl font-semibold">{{ "Day sets" | translate }}</h2>
         <p class="mt-1 text-sm text-app-on-color-muted">
-          Template days, nutrition targets, and linked templates.
+          {{ "Template days, nutrition targets, and linked templates." | translate }}
         </p>
       </div>
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
           @if (loading) {
             <span class="app-status-pill app-status-pill--neutral">
-              Loading...
+              {{ "Loading..." | translate }}
             </span>
           }
           @if (saving) {
             <span class="app-status-pill app-status-pill--saving">
-              Saving...
+              {{ "Saving..." | translate }}
             </span>
           }
           @if (loadingMeta) {
             <span class="app-status-pill app-status-pill--info">
-              Meta nutrition...
+              {{ "Meta nutrition..." | translate }}
             </span>
           }
         </div>
@@ -65,7 +65,7 @@
         }
         @if (lastMetaError) {
           <p class="app-alert">
-            Unable to load nutrition metadata; fallback is active.
+            {{ "Unable to load nutrition metadata; fallback is active." | translate }}
           </p>
         }
         <app-day-set-list mode="manage"
@@ -86,7 +86,7 @@
     class="app-modal-backdrop"
     [class.app-modal-backdrop--embedded-day-set]="embedded()"
     [style.--day-set-dialog-top-offset.px]="embeddedDialogTopOffset()"
-    aria-label="Close modal"
+    [attr.aria-label]="&quot;Close modal&quot; | translate"
     (click)="onCancelForm()"
     ></button>
 }
@@ -105,16 +105,16 @@
       >
       <div class="app-dialog-header day-set-feature__dialog-header">
         <div>
-          <p class="app-dialog-eyebrow">Planning</p>
+          <p class="app-dialog-eyebrow">{{ "Planning" | translate }}</p>
           <h3 class="app-dialog-title">
-            {{ formMode === 'edit' ? 'Edit day set' : 'Add day set' }}
+            {{ formMode === 'edit' ? ("Edit day set" | translate) : ("Add day set" | translate) }}
           </h3>
           <p class="app-dialog-subtitle">
-            Compose a day set with its slots and nutrition targets.
+            {{ "Compose a day set with its slots and nutrition targets." | translate }}
           </p>
         </div>
         <button mat-stroked-button type="button" (click)="onCancelForm()">
-          Close
+          {{ "Close" | translate }}
         </button>
       </div>
       <div class="app-dialog-content day-set-feature__dialog-content">

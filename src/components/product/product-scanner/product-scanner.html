@@ -1,68 +1,68 @@
-<section class="scanner" aria-label="Scanner un produit">
-  <p>Scannez le code-barres pour consulter les informations du produit dans Open Food Facts.</p>
+<section class="scanner" [attr.aria-label]="&quot;Scanner un produit&quot; | translate">
+  <p>{{ "Scannez le code-barres pour consulter les informations du produit dans Open Food Facts." | translate }}</p>
   <div class="scanner__camera" [hidden]="!scanning()">
-    <video #video muted playsinline aria-label="Aperçu de la caméra"></video>
-    <p role="status">Placez le code-barres au centre de l’image, avec suffisamment de lumière.</p>
+    <video #video muted playsinline [attr.aria-label]="&quot;Aperçu de la caméra&quot; | translate"></video>
+    <p role="status">{{ "Placez le code-barres au centre de l’image, avec suffisamment de lumière." | translate }}</p>
   </div>
   <div class="scanner__actions">
     @if (scanning()) {
-      <button mat-stroked-button type="button" (click)="stopCamera()">Arrêter la caméra</button>
+      <button mat-stroked-button type="button" (click)="stopCamera()">{{ "Arrêter la caméra" | translate }}</button>
     } @else {
-      <button mat-stroked-button type="button" [disabled]="disabled() || loading()" (click)="startCamera()">Scanner avec la caméra</button>
+      <button mat-stroked-button type="button" [disabled]="disabled() || loading()" (click)="startCamera()">{{ "Scanner avec la caméra" | translate }}</button>
     }
   </div>
-  @if (cameraError()) { <p class="app-alert" role="alert">{{ cameraError() }}</p> }
+  @if (cameraError()) { <p class="app-alert" role="alert">{{ (cameraError()) | translate }}</p> }
   <form class="scanner__search" (ngSubmit)="lookup()">
     <mat-form-field appearance="fill">
-      <mat-label>Code-barres du produit</mat-label>
+      <mat-label>{{ "Code-barres du produit" | translate }}</mat-label>
       <input matInput type="text" inputmode="numeric" autocomplete="off" maxlength="14"
         [ngModel]="barcode()" (ngModelChange)="onBarcodeChange($event)" name="barcode"
         [disabled]="disabled()" />
-      <mat-hint>Vous pouvez aussi saisir les chiffres sous le code-barres.</mat-hint>
+      <mat-hint>{{ "Vous pouvez aussi saisir les chiffres sous le code-barres." | translate }}</mat-hint>
     </mat-form-field>
     <button mat-raised-button type="submit" [disabled]="disabled() || loading() || !barcode().trim()">
-      {{ loading() ? 'Recherche…' : 'Rechercher le produit' }}
+      {{ loading() ? ("Recherche…" | translate) : ("Rechercher le produit" | translate) }}
     </button>
   </form>
-  @if (loading()) { <p role="status">Lecture des informations Open Food Facts…</p> }
-  @if (error()) { <p class="app-alert" role="alert">{{ error() }}</p> }
+  @if (loading()) { <p role="status">{{ "Lecture des informations Open Food Facts…" | translate }}</p> }
+  @if (error()) { <p class="app-alert" role="alert">{{ error() | translate }}</p> }
   @if (product(); as product) {
     <article class="scanner__result" data-testid="food-facts-product" aria-live="polite">
       <div class="scanner__identity">
-        @if (product.imageUrl) { <img [src]="product.imageUrl" [alt]="product.name || 'Photo du produit'" loading="lazy" referrerpolicy="no-referrer" /> }
+        @if (product.imageUrl) { <img [src]="product.imageUrl" [alt]="product.name || (&quot;Photo du produit&quot; | translate)" loading="lazy" referrerpolicy="no-referrer" /> }
         <div>
-          <h3>{{ product.name || 'Nom non renseigné' }}</h3>
-          <p>{{ product.brands || 'Marque non renseignée' }}</p>
-          <p>{{ product.quantity || 'Quantité non renseignée' }}</p>
-          <p>Code-barres : {{ product.barcode }}</p>
-          <p>Nutri-Score : {{ product.nutriScore || 'Non renseigné' }}</p>
+          <h3>{{ product.name || ("Nom non renseigné" | translate) }}</h3>
+          <p>{{ product.brands || ("Marque non renseignée" | translate) }}</p>
+          <p>{{ product.quantity || ("Quantité non renseignée" | translate) }}</p>
+          <p>{{ "Code-barres : {p0}" | translate: { p0: (product.barcode) } }}</p>
+          <p>{{ "Nutri-Score : {p0}" | translate: { p0: (product.nutriScore || ('Non renseigné' | translate)) } }}</p>
         </div>
       </div>
       <div class="scanner__details">
-        <h4>Ingrédients</h4>
-        <p>{{ product.ingredients || 'Non renseignés' }}</p>
-        <h4>Allergènes déclarés</h4>
-        <p>{{ product.allergens.length ? product.allergens.join(', ') : 'Non renseignés' }}</p>
+        <h4>{{ "Ingrédients" | translate }}</h4>
+        <p>{{ product.ingredients || ("Non renseignés" | translate) }}</p>
+        <h4>{{ "Allergènes déclarés" | translate }}</h4>
+        <p>{{ product.allergens.length ? formatAllergens(product.allergens) : ("Non renseignés" | translate) }}</p>
       </div>
       @if (product.nutritionValues.length) {
         <div class="scanner__nutrition">
           <table>
-            <caption>Valeurs nutritionnelles pour {{ product.nutritionValues[0].reference === 'PER_100ML' ? '100 ml' : '100 g' }}</caption>
-            <thead><tr><th scope="col">Nutriment</th><th scope="col">Quantité</th></tr></thead>
+            <caption>{{ "Valeurs nutritionnelles pour {p0}" | translate: { p0: (product.nutritionValues[0].reference === 'PER_100ML' ? '100 ml' : '100 g') } }}</caption>
+            <thead><tr><th scope="col">{{ "Nutriment" | translate }}</th><th scope="col">{{ "Quantité" | translate }}</th></tr></thead>
             <tbody>
               @for (value of product.nutritionValues; track value.nutritionKey) {
-                <tr><th scope="row">{{ nutritionLabels[value.nutritionKey] || value.nutritionKey }}</th><td>{{ value.amount }} {{ value.unit }}</td></tr>
+                <tr><th scope="row">{{ (nutritionLabels[value.nutritionKey] || value.nutritionKey) | translate }}</th><td>{{ language.formatNumber(value.amount) }} {{ value.unit | translate }}</td></tr>
               }
             </tbody>
           </table>
         </div>
-      } @else { <p>Valeurs nutritionnelles non renseignées.</p> }
-      <p class="scanner__source">Source : <a [href]="product.sourceUrl" target="_blank" rel="noopener noreferrer">Open Food Facts</a> ·
-        <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener noreferrer">ODbL</a>.
-        @if (product.imageUrl) { Photos : <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA</a>. }
+      } @else { <p>{{ "Valeurs nutritionnelles non renseignées." | translate }}</p> }
+      <p class="scanner__source">{{ "Source :" | translate }} <a [href]="product.sourceUrl" target="_blank" rel="noopener noreferrer">{{ "Open Food Facts" | translate }}</a> ·
+        <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener noreferrer">{{ "ODbL" | translate }}</a>.
+        @if (product.imageUrl) { {{ "Photos :" | translate }} <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">{{ "CC BY-SA" | translate }}</a>. }
       </p>
-      <p>Vérifiez les informations sur l’emballage avant d’ajouter le produit.</p>
-      <button mat-raised-button type="button" [disabled]="disabled()" (click)="useProduct()">Utiliser ces informations</button>
+      <p>{{ "Vérifiez les informations sur l’emballage avant d’ajouter le produit." | translate }}</p>
+      <button mat-raised-button type="button" [disabled]="disabled()" (click)="useProduct()">{{ "Utiliser ces informations" | translate }}</button>
     </article>
   }
 </section>

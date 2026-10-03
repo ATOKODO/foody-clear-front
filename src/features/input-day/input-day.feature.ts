@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { NgTemplateOutlet, KeyValuePipe } from '@angular/common';
 import {
   Component,
@@ -8,6 +9,7 @@ import {
   input,
   output,
   inject,
+  effect,
   signal,
 } from '@angular/core';
 import {
@@ -19,12 +21,15 @@ import {
 } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { LatestRequest } from '../../utils/latest-request';
+import { Language } from '../../app/i18n/language';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDatepickerIntl, MatDatepickerModule } from '@angular/material/datepicker';
+import { MaterialDatepickerIntl } from '../../app/i18n/material-datepicker-intl';
+import { LocalizedDateAdapter } from '../../app/i18n/localized-date-adapter';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatNativeDateModule } from '@angular/material/core';
+import { DateAdapter, MatNativeDateModule } from '@angular/material/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import {
@@ -84,8 +89,6 @@ import {
   formatInputDayDateLocal,
   formatInputDayDateTime,
   formatInputDaySelectedDateLabel,
-  formatInputDayMacroValue,
-  formatInputDayNutritionAmount,
   formatInputDayTime,
   getInputDaySelectedInventoriesTemplateStock,
   getInputDaySlotMacroEntries,
@@ -118,7 +121,12 @@ import {
 
 @Component({
   selector: 'app-input-day',
+  providers: [
+    { provide: MatDatepickerIntl, useExisting: MaterialDatepickerIntl },
+    { provide: DateAdapter, useClass: LocalizedDateAdapter },
+  ],
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
@@ -140,6 +148,7 @@ import {
 })
 export class InputDayFeature implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
+  readonly language = inject(Language);
   private readonly inputDaySrv = inject(InputDayService);
   private readonly productSrv = inject(ProductService);
   private readonly inventorySrv = inject(InventoryService);
@@ -221,6 +230,8 @@ export class InputDayFeature implements OnInit, OnChanges {
   >();
 
   constructor() {
+    const dateAdapter = inject(DateAdapter);
+    effect(() => dateAdapter.setLocale(this.language.locale()));
     this.form = this.fb.group({
       dateLocal: this.fb.control<Date | string | null>(null, {
         validators: [Validators.required],
@@ -346,7 +357,7 @@ export class InputDayFeature implements OnInit, OnChanges {
       return this.initialDateLocal()?.trim() || '-';
     }
 
-    return formatInputDaySelectedDateLabel(dateLocal);
+    return formatInputDaySelectedDateLabel(dateLocal, this.language.locale());
   }
 
   get productListItems(): ProductListItem[] {
@@ -400,14 +411,14 @@ export class InputDayFeature implements OnInit, OnChanges {
   get activeTemplateLabel(): string {
     const templateAssociation = this.inputDayResponse?.templateAssociation;
     if (!templateAssociation) {
-      return 'No active template';
+      return this.language.translate('No active template');
     }
 
     const sourceLabel =
       templateAssociation.source === 'manual'
         ? 'manual override'
         : 'day set inheritance';
-    return `${templateAssociation.template.title} (${sourceLabel})`;
+    return `${templateAssociation.template.title} (${this.language.translate(sourceLabel)})`;
   }
 
   get hasManualTemplateOverride(): boolean {
@@ -416,7 +427,7 @@ export class InputDayFeature implements OnInit, OnChanges {
 
   get selectedInventoriesLabel(): string {
     if (!this.hasSelectedInventories) {
-      return 'No inventory selected';
+      return this.language.translate('No inventory selected');
     }
 
     return this.selectedInventoryIds
@@ -425,21 +436,21 @@ export class InputDayFeature implements OnInit, OnChanges {
           this.inventories.find((item) => item.id === inventoryId) ?? null;
         return inventory
           ? `${inventory.name} (#${inventory.id})`
-          : `Inventory #${inventoryId}`;
+          : this.language.translate('Inventory #{p0}', { p0: inventoryId });
       })
       .join(', ');
   }
 
   get selectedBatchSlotLabel(): string {
     if (this.selectedSlotId === null) {
-      return 'No batch slot';
+      return this.language.translate('No batch slot');
     }
 
     const slot =
       this.availableSlots.find((item) => item.slotId === this.selectedSlotId) ??
       null;
     if (!slot) {
-      return `Slot #${this.selectedSlotId}`;
+      return this.language.translate('Slot #{p0}', { p0: this.selectedSlotId });
     }
 
     return `${slot.sortOrder}. ${slot.title} (${this.formatTime(slot.startTime)} - ${this.formatTime(slot.endTime)})`;
@@ -840,11 +851,11 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   formatMacroValue(value: InputDayMacroValue): string {
-    return formatInputDayMacroValue(value);
+    return typeof value === 'number' ? this.language.formatNumber(value) : value;
   }
 
   formatNutritionAmount(value: number): string {
-    return formatInputDayNutritionAmount(value);
+    return this.language.formatNumber(value);
   }
 
   formatTime(value: string | null | undefined): string {
@@ -856,7 +867,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   resolveItemSlotTitle(item: InputDayItemSummary): string {
-    return resolveInputDayItemSlotTitle(item, this.availableSlots);
+    return resolveInputDayItemSlotTitle(item, this.availableSlots, this.language.translate('No slot'));
   }
 
   resolveItemSlotKey(item: InputDayItemSummary): string {
@@ -864,7 +875,7 @@ export class InputDayFeature implements OnInit, OnChanges {
   }
 
   resolveTemplateItemSlotTitle(item: InputDayTemplateItemSummary): string {
-    return resolveInputDayTemplateItemSlotTitle(item, this.availableSlots);
+    return resolveInputDayTemplateItemSlotTitle(item, this.availableSlots, this.language.translate('No slot'));
   }
 
   resolveTemplateItemSlotKey(item: InputDayTemplateItemSummary): string {

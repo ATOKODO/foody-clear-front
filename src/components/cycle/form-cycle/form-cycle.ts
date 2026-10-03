@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 import {
   CdkDragDrop,
   DragDropModule,
@@ -71,6 +72,7 @@ interface DurationPreset {
 @Component({
   selector: 'app-form-cycle',
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     DragDropModule,

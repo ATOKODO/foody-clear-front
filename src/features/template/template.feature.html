@@ -1,7 +1,7 @@
 <section class="app-page template-page" data-testid="template-page">
   <mat-card class="template-panel" data-testid="template-panel">
     <div class="template-panel__header">
-      <h2 class="template-panel__title" data-testid="template-panel-title">Templates</h2>
+      <h2 class="template-panel__title" data-testid="template-panel-title">{{ "Templates" | translate }}</h2>
 
       <div class="template-panel__actions">
         <button
@@ -12,7 +12,7 @@
           (click)="onRefreshRequested()"
           [disabled]="busy"
           >
-          Rafraichir
+          {{ "Rafraichir" | translate }}
         </button>
 
         <button
@@ -23,7 +23,7 @@
           (click)="startCreateTemplate()"
           [disabled]="busy"
           >
-          New template
+          {{ "New template" | translate }}
         </button>
       </div>
     </div>
@@ -33,32 +33,32 @@
         <div class="app-status-row">
           @if (loadingTemplates) {
             <span class="app-status-pill app-status-pill--neutral">
-              Loading templates...
+              {{ "Loading templates..." | translate }}
             </span>
           }
           @if (loadingProducts) {
             <span class="app-status-pill app-status-pill--info">
-              Produits...
+              {{ "Produits..." | translate }}
             </span>
           }
           @if (loadingMealPrep) {
             <span class="app-status-pill app-status-pill--info">
-              Plats et repas...
+              {{ "Plats et repas..." | translate }}
             </span>
           }
           @if (loadingDaySets) {
             <span class="app-status-pill app-status-pill--info">
-              Day-sets...
+              {{ "Day-sets..." | translate }}
             </span>
           }
           @if (loadingSlots) {
             <span class="app-status-pill app-status-pill--info">
-              Slots...
+              {{ "Slots..." | translate }}
             </span>
           }
           @if (savingTemplate || savingItem) {
             <span class="app-status-pill app-status-pill--saving">
-              Saving...
+              {{ "Saving..." | translate }}
             </span>
           }
         </div>
@@ -97,9 +97,9 @@
   <div class="app-dialog" data-testid="template-dialog">
     <div class="app-dialog-header">
       <div>
-        <p class="app-dialog-eyebrow">Template</p>
-        <h3 class="app-dialog-title">{{ formDialogTitle }}</h3>
-        <p class="app-dialog-subtitle">{{ formDialogSubtitle }}</p>
+        <p class="app-dialog-eyebrow">{{ "Template" | translate }}</p>
+        <h3 class="app-dialog-title">{{ (formDialogTitle) | translate }}</h3>
+        <p class="app-dialog-subtitle">{{ (formDialogSubtitle) | translate }}</p>
       </div>
 
       <button
@@ -108,7 +108,7 @@
         (click)="closeEditorDialog()"
         [disabled]="savingTemplate || savingItem"
         >
-        Close
+        {{ "Close" | translate }}
       </button>
     </div>
 

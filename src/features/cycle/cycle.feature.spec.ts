@@ -507,11 +507,11 @@ describe('CycleFeature', () => {
     expect(component.formVisible).toBeTrue();
     expect(dialogText).toContain('Edit cycle');
     expect(dialogText).toContain(
-      'Les changements sont appliques sans quitter la liste.',
+      'Changes are applied without leaving the list.',
     );
   });
 
-  it('should confirm impact and send reschedule options when durationDays changes on edit', () => {
+  it('should confirm impact and send reschedule options when durationDays changes on edit', async () => {
     component.cycles = [
       {
         id: 9,
@@ -563,6 +563,7 @@ describe('CycleFeature', () => {
     });
     fixture.detectChanges();
 
+    await fixture.whenStable();
     expect(httpController.match('http://localhost:3000/cycle/9').length).toBe(
       0,
     );

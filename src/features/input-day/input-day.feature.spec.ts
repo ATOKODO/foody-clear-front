@@ -468,7 +468,7 @@ describe('InputDayFeature', () => {
     expect(textContent).toContain(
       'Daily targets inherited from the cycle (no active day set).',
     );
-    expect(textContent).toContain('proteins:');
+    expect(textContent).toContain('Protein:');
     expect(textContent).toContain('150');
   });
 

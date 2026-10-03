@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 import { DatePipe } from '@angular/common';
 import {
@@ -79,7 +80,7 @@ import {
 
 @Component({
   selector: 'app-planning',
-  imports: [UiModal,
+  imports: [TranslatePipe, UiModal,
     FormsModule,
     Calendar,
     InputDayFeature,
@@ -136,7 +137,9 @@ export class PlanningFeature implements OnInit, AfterViewInit {
   readonly initialCalendarView = resolvePlanningCalendarView(
     this.route.snapshot.queryParamMap,
   );
-  calendarHeaderLabel = 'Chargement...';
+  get calendarHeaderLabel(): string {
+    return this.calendarRef()?.currentViewLabel ?? 'Chargement...';
+  }
 
   currentCalendarView: CalendarView = this.initialCalendarView;
   currentAnchorDateLocal: string | null = null;
@@ -1052,9 +1055,6 @@ export class PlanningFeature implements OnInit, AfterViewInit {
       this.currentCalendarView = calendarRef.currentView;
     }
 
-    if (calendarRef?.currentViewLabel) {
-      this.calendarHeaderLabel = calendarRef.currentViewLabel;
-    }
   }
 
   private applyRouteCalendarState(): void {

@@ -1,3 +1,4 @@
+import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 
 import { Component, effect, inject, input, output } from '@angular/core';
@@ -10,7 +11,7 @@ import { CategoryStore } from './category.store';
 
 @Component({
   selector: 'app-category',
-  imports: [UiModal,
+  imports: [TranslatePipe, UiModal,
     MatButtonModule,
     MatCardModule,
     UiErrorPanel,

@@ -6,18 +6,18 @@
   [class.py-5]="inDialog()"
 >
   @if (showHeading()) {
-    <h2 class="mb-6 text-xl font-medium">{{ heading }}</h2>
+    <h2 class="mb-6 text-xl font-medium">{{ (heading) | translate }}</h2>
   }
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5">
     <div class="grid gap-4 md:grid-cols-12">
       <mat-form-field appearance="fill" class="fc-field md:col-span-8">
-        <mat-label>Title</mat-label>
+        <mat-label>{{ "Title" | translate }}</mat-label>
         <input matInput formControlName="titre" />
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="fc-field md:col-span-4">
-        <mat-label>Color</mat-label>
+        <mat-label>{{ "Color" | translate }}</mat-label>
         <mat-select formControlName="couleur">
           <mat-select-trigger>
             <span
@@ -35,7 +35,7 @@
                   [class]="resolveCycleToneClass(option.value)"
                   aria-hidden="true"
                 ></span>
-                <span>{{ option.label }}</span>
+                <span>{{ (option.label) | translate }}</span>
               </span>
             </mat-option>
           }
@@ -46,7 +46,7 @@
     <div class="space-y-3">
       <div class="grid gap-4 md:grid-cols-12 md:items-start">
         <mat-form-field appearance="fill" class="fc-field md:col-span-4">
-          <mat-label>Number of days</mat-label>
+          <mat-label>{{ "Number of days" | translate }}</mat-label>
           <input
             matInput
             type="number"
@@ -55,16 +55,16 @@
             (input)="onDurationDaysInput()"
           />
           @if (form.controls.durationDays.invalid) {
-            <mat-error> The cycle must last at least 1 day. </mat-error>
+            <mat-error> {{ "The cycle must last at least 1 day." | translate }} </mat-error>
           }
         </mat-form-field>
 
         <div class="md:col-span-8">
           <p class="text-sm font-semibold text-app-text-strong">
-            Duration shortcuts
+            {{ "Duration shortcuts" | translate }}
           </p>
           <p class="mt-1 text-sm text-app-text">
-            These buttons prefill the number of days. You can then adjust the value manually.
+            {{ "These buttons prefill the number of days. You can then adjust the value manually." | translate }}
           </p>
 
           <div class="mt-3 flex flex-wrap gap-2">
@@ -74,7 +74,7 @@
                 type="button"
                 (click)="applyDurationPreset(preset)"
               >
-                {{ preset.label }}
+                {{ (preset.label) | translate }}
               </button>
             }
           </div>
@@ -84,23 +84,22 @@
 
     <div class="space-y-3">
       <div class="flex items-center justify-between gap-3">
-        <h3 class="text-base font-semibold text-app-text-strong">Nutrition values</h3>
+        <h3 class="text-base font-semibold text-app-text-strong">{{ "Nutrition values" | translate }}</h3>
         <button mat-stroked-button type="button" (click)="addNutritionValue()">
-          Add value
+          {{ "Add value" | translate }}
         </button>
       </div>
 
       @if (nutritionKeys().length === 0) {
         <p class="text-sm text-app-text">
-          Nutrition meta keys are not loaded, free entry mode is enabled
-          active.
+          {{ "Nutrition meta keys are not loaded, free entry mode is enabled active." | translate }}
         </p>
       }
 
       @for (value of nutritionValues; track value; let i = $index) {
         <div class="grid gap-3 md:grid-cols-12 md:items-start">
           <mat-form-field appearance="fill" class="fc-field md:col-span-5">
-            <mat-label>Key</mat-label>
+            <mat-label>{{ "Key" | translate }}</mat-label>
             <mat-select
               [(ngModel)]="value.nutritionKey"
               [ngModelOptions]="{ standalone: true }"
@@ -108,16 +107,16 @@
             >
               @for (item of nutritionKeys(); track item) {
                 <mat-option [value]="item.value">
-                  {{ item.label }}
+                  {{ item.label | translate }}
                 </mat-option>
               }
             </mat-select>
             @if (nutritionKeys().length === 0) {
-              <mat-hint> No meta key available </mat-hint>
+              <mat-hint> {{ "No meta key available" | translate }} </mat-hint>
             }
           </mat-form-field>
           <mat-form-field appearance="fill" class="fc-field md:col-span-3">
-            <mat-label>Amount</mat-label>
+            <mat-label>{{ "Amount" | translate }}</mat-label>
             <input
               matInput
               type="number"
@@ -127,14 +126,14 @@
             />
           </mat-form-field>
           <mat-form-field appearance="fill" class="fc-field md:col-span-3">
-            <mat-label>Unit</mat-label>
+            <mat-label>{{ "Unit" | translate }}</mat-label>
             <mat-select
               [(ngModel)]="value.unit"
               [ngModelOptions]="{ standalone: true }"
             >
               @for (unit of getUnitsForKey(value.nutritionKey); track unit) {
                 <mat-option [value]="unit">
-                  {{ unit }}
+                  {{ (unit) | translate }}
                 </mat-option>
               }
             </mat-select>
@@ -146,7 +145,7 @@
               type="button"
               (click)="removeNutritionValue(i)"
             >
-              Remove
+              {{ "Remove" | translate }}
             </button>
           </div>
         </div>
@@ -157,14 +156,14 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 class="text-base font-semibold text-app-text-strong">
-            Default cycle slots
+            {{ "Default cycle slots" | translate }}
           </h3>
           <p class="text-sm text-app-text">
-            These slots are applied to all cycle days that do not use a day set.
+            {{ "These slots are applied to all cycle days that do not use a day set." | translate }}
           </p>
         </div>
         <p class="text-sm text-app-text-muted">
-          Selected: {{ selectedSlotIds.length }}
+          {{ "Selected: {p0}" | translate: { p0: (selectedSlotIds.length) } }}
         </p>
       </div>
 
@@ -177,12 +176,12 @@
       />
 
       <mat-form-field appearance="fill" class="fc-field w-full">
-        <mat-label>Default template</mat-label>
+        <mat-label>{{ "Default template" | translate }}</mat-label>
         <mat-select
           [(ngModel)]="selectedDefaultTemplateId"
           [ngModelOptions]="{ standalone: true }"
         >
-          <mat-option [value]="null">No template</mat-option>
+          <mat-option [value]="null">{{ "No template" | translate }}</mat-option>
           @for (template of templates(); track template.id) {
             <mat-option [value]="template.id">
               {{ template.title }}
@@ -190,7 +189,7 @@
           }
         </mat-select>
         <mat-hint>
-          Used for cycle days that do not use a day set.
+          {{ "Used for cycle days that do not use a day set." | translate }}
         </mat-hint>
       </mat-form-field>
     </div>
@@ -199,16 +198,15 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 class="text-base font-semibold text-app-text-strong">
-            Cycle day sets
+            {{ "Cycle day sets" | translate }}
           </h3>
           <p class="text-sm text-app-text">
-            Selected: {{ selectedDaySetIds.length }} /
-            {{ maxSelectableDaySets }}
+            {{ "Selected: {p0} / {p1}" | translate: { p0: (selectedDaySetIds.length), p1: (maxSelectableDaySets) } }}
           </p>
         </div>
 
         <p class="text-sm text-app-text-muted">
-          Checked day sets replace the first remaining day based on the cycle.
+          {{ "Checked day sets replace the first remaining day based on the cycle." | translate }}
         </p>
       </div>
 
@@ -216,7 +214,7 @@
         <p
           class="rounded-lg border border-app-danger-border bg-app-danger-surface px-3 py-2 text-sm text-app-danger"
         >
-          Some day sets are placed beyond the cycle duration. Move them into the valid area or remove them before saving.
+          {{ "Some day sets are placed beyond the cycle duration. Move them into the valid area or remove them before saving." | translate }}
         </p>
       }
 
@@ -231,9 +229,9 @@
 
     <div class="space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <h3 class="text-base font-semibold text-app-text-strong">Cycle order</h3>
+        <h3 class="text-base font-semibold text-app-text-strong">{{ "Cycle order" | translate }}</h3>
         <p class="text-sm text-app-text-muted">
-          Drag and drop days to place day sets among the default days.
+          {{ "Drag and drop days to place day sets among the default days." | translate }}
         </p>
       </div>
 
@@ -260,15 +258,15 @@
                   type="button"
                   class="fc-drag-handle"
                 >
-                  Move
+                  {{ "Move" | translate }}
                 </button>
                 <div class="min-w-0">
                   <p class="truncate text-sm font-semibold text-app-text-strong">
-                    Day {{ slot.dayNumber }}. {{ slot.title }}
+                    {{ "Day {p0}. {p1}" | translate: { p0: (slot.dayNumber), p1: (slot.title) } }}
                   </p>
                   @if (slot.isDefault) {
                     <p class="text-xs text-app-text-muted">
-                      Day based on the cycle target.
+                      {{ "Day based on the cycle target." | translate }}
                     </p>
                   } @else {
                     <p
@@ -277,9 +275,9 @@
                       [class.text-app-text-muted]="!slot.isOverflow"
                     >
                       @if (slot.isOverflow) {
-                        Position is outside the cycle duration. Move this day set before saving.
+                        {{ "Position is outside the cycle duration. Move this day set before saving." | translate }}
                       } @else {
-                        Day set #{{ slot.daySetId }}
+                        {{ "Day set #{p0}" | translate: { p0: (slot.daySetId) } }}
                       }
                     </p>
                   }
@@ -292,7 +290,7 @@
                   type="button"
                   (click)="removeDaySetFromOrder(slot.daySetId)"
                 >
-                  Remove
+                  {{ "Remove" | translate }}
                 </button>
               }
             </div>
@@ -303,7 +301,7 @@
           <p
             class="rounded-xl border border-dashed border-app-border-strong px-4 py-6 text-sm text-app-text-muted"
           >
-            No day configured.
+            {{ "No day configured." | translate }}
           </p>
         }
       </div>
@@ -317,7 +315,7 @@
         class="rounded-full px-8"
         [disabled]="saving() || !canSubmit"
       >
-        Save
+        {{ "Save" | translate }}
       </button>
     </div>
   </form>

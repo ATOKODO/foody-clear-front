@@ -3,12 +3,12 @@
   [style.--master-detail-side-width]="sideWidth()">
   <section
     class="master-detail-layout__side"
-    [attr.aria-label]="sideAriaLabel()">
+    [attr.aria-label]="(sideAriaLabel()) | translate">
     <div class="master-detail-layout__side-header">
       <div>
-        <h3>{{ sideTitle() }}</h3>
+        <h3>{{ (sideTitle()) | translate }}</h3>
         @if (sideSubtitle(); as subtitle) {
-          <p>{{ subtitle }}</p>
+          <p>{{ (subtitle) | translate }}</p>
         }
       </div>
       <ng-content select="[side-actions]" />
@@ -19,7 +19,7 @@
 
   <section
     class="master-detail-layout__detail"
-    [attr.aria-label]="detailAriaLabel()">
+    [attr.aria-label]="(detailAriaLabel()) | translate">
     <ng-content select="[detail-content]" />
   </section>
 </div>
