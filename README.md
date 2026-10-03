@@ -152,6 +152,9 @@ npm run lint           # Run ESLint analysis
 npm run e2e            # Run Playwright end-to-end tests
 npm run e2e:headed     # Run Playwright with a visible browser
 npm run e2e:smoke      # Run Playwright scenarios tagged with @smoke
+npm run e2e:vrt        # Compare the UI with versioned visual references
+npm run e2e:vrt:update # Update references after reviewing an intentional UI change
+npm run e2e:vrt:report # Open the visual report, including image diffs
 ```
 
 Before running the end-to-end tests for the first time, install the Playwright browsers:
@@ -159,6 +162,10 @@ Before running the end-to-end tests for the first time, install the Playwright b
 ```bash
 npx playwright install
 ```
+
+Visual regression tests use deterministic mock data and cover desktop/mobile layouts in
+light/dark themes. See [the VRT guide](tests/visual/README.md) for the Linux environment,
+baseline review workflow, coverage and CI artifacts. No running backend is needed.
 
 ## Forks and Contributions
 
