@@ -133,16 +133,6 @@
   font-size: $size;
 }
 
-@mixin empty-large {
-  display: grid;
-  min-height: 16rem;
-  place-items: center;
-  border: 1px dashed var(--app-border-strong);
-  border-radius: var(--app-radius-sm);
-  background: var(--app-surface-soft);
-  text-align: center;
-}
-
 @mixin embedded-feature {
   display: grid;
   gap: var(--app-space-4);

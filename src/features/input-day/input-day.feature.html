@@ -26,8 +26,7 @@
           {{ selectedDateLabel }}
         </p>
       </div>
-      <button
-        mat-stroked-button
+      <button appButton variant="secondary"
         type="button"
         data-testid="input-day-refresh"
         (click)="loadDay()"
@@ -140,8 +139,7 @@
 
         @if (isStandaloneMode) {
           <div class="flex flex-wrap justify-end gap-2">
-            <button
-              mat-stroked-button
+            <button appButton variant="secondary"
               type="button"
               data-testid="input-day-load"
               (click)="loadDay()"
@@ -321,16 +319,13 @@
               </p>
             }
             <div class="flex flex-wrap justify-end gap-2">
-              <button
-                mat-stroked-button
+              <button appButton variant="secondary"
                 type="button"
                 (click)="resetItemEditor()"
               >
                 {{ "Cancel edition" | translate }}
               </button>
-              <button
-                mat-stroked-button
-                color="warn"
+              <button appButton variant="danger"
                 type="button"
                 data-testid="input-day-delete-item"
                 (click)="removeItem()"
@@ -338,9 +333,7 @@
               >
                 {{ "Delete" | translate }}
               </button>
-              <button
-                mat-raised-button
-                color="primary"
+              <button appButton variant="raised"
                 type="button"
                 data-testid="input-day-submit-item"
                 (click)="submitItemEditor()"
@@ -419,14 +412,14 @@
                     </mat-form-field>
                   </div>
                 </div>
-                <div class="overflow-x-auto rounded-xl border border-app-border">
-                  <table class="w-full min-w-[640px] text-sm">
-                    <thead class="bg-app-surface-soft text-left text-app-text">
+                <div appTableScroll [label]="'Products' | translate">
+                  <table appTable class="min-w-[640px]">
+                    <thead>
                       <tr>
-                        <th class="px-3 py-2">{{ "Product" | translate }}</th>
-                        <th class="px-3 py-2">{{ "Qty" | translate }}</th>
-                        <th class="px-3 py-2">{{ "QtyUnit" | translate }}</th>
-                        <th class="px-3 py-2 text-right">{{ "Action" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Product" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Qty" | translate }}</th>
+                        <th appTableCell scope="col">{{ "QtyUnit" | translate }}</th>
+                        <th appTableCell contentAlign="end" scope="col">{{ "Action" | translate }}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -438,12 +431,12 @@
                           [attr.data-testid]="
                             'input-day-selected-product-' + row.productId
                           "
-                          class="border-t border-app-border-soft align-top"
-                        >
-                          <td class="px-3 py-2 font-medium text-app-text-strong">
+
+>
+                          <td appTableCell class="font-medium text-app-text-strong">
                             {{ row.productName }}
                           </td>
-                          <td class="px-3 py-2">
+                          <td appTableCell>
                             <mat-form-field appearance="fill" class="w-full">
                               <mat-label>{{ "Quantity" | translate }}</mat-label>
                               <input
@@ -456,7 +449,7 @@
                               />
                             </mat-form-field>
                           </td>
-                          <td class="px-3 py-2">
+                          <td appTableCell>
                             <mat-form-field appearance="fill" class="w-full">
                               <mat-label>{{ "Unit" | translate }}</mat-label>
                               <mat-select
@@ -472,10 +465,8 @@
                               </mat-select>
                             </mat-form-field>
                           </td>
-                          <td class="px-3 py-2 text-right">
-                            <button
-                              mat-stroked-button
-                              color="warn"
+                          <td appTableCell contentAlign="end">
+                            <button appButton variant="danger"
                               type="button"
                               (click)="removeSelectedProduct(row.productId)"
                             >
@@ -495,17 +486,14 @@
                   </p>
                 }
                 <div class="flex flex-wrap justify-end gap-2">
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="secondary"
                     type="button"
                     data-testid="input-day-reset-create"
                     (click)="resetCreateComposer()"
                   >
                     {{ "Reset" | translate }}
                   </button>
-                  <button
-                    mat-raised-button
-                    color="primary"
+                  <button appButton variant="raised"
                     type="button"
                     data-testid="input-day-create-items"
                     (click)="createSelectedItems()"
@@ -565,7 +553,7 @@
                   </p>
                 </div>
               } @else {
-                <p class="text-sm text-app-text">
+                <p appEmptyState appearance="text">
                   {{ "No assignation pour cette date." | translate }}
                 </p>
               }
@@ -595,35 +583,35 @@
                       }
                     </div>
                   } @else {
-                    <p class="text-xs text-app-text-muted">
+                    <p appEmptyState appearance="text" size="small">
                       {{ "No nutrition target is defined for this day set." | translate }}
                     </p>
                   }
-                  <div
-                    class="overflow-x-auto rounded-lg border border-app-border"
-                  >
-                    <table class="min-w-full text-sm">
-                      <thead class="bg-app-surface-soft text-left text-app-text">
+                  <div appTableScroll [label]="'Day set slots' | translate"
+
+>
+                    <table appTable>
+                      <thead>
                         <tr>
-                          <th class="px-3 py-2">{{ "Slot" | translate }}</th>
-                          <th class="px-3 py-2">{{ "Schedule" | translate }}</th>
-                          <th class="px-3 py-2">{{ "Targets" | translate }}</th>
+                          <th appTableCell scope="col">{{ "Slot" | translate }}</th>
+                          <th appTableCell scope="col">{{ "Schedule" | translate }}</th>
+                          <th appTableCell scope="col">{{ "Targets" | translate }}</th>
                         </tr>
                       </thead>
                       <tbody>
                         @for (slot of daySet.slots; track slot) {
-                          <tr class="border-t border-app-border-soft">
-                            <td class="px-3 py-2">
+                          <tr>
+                            <td appTableCell>
                               {{ slot.sortOrder }}. {{ slot.title }}
                               <span class="text-app-text-muted"
                                 >({{ slot.slotKey }})</span
                               >
                             </td>
-                            <td class="px-3 py-2">
+                            <td appTableCell>
                               {{ formatTime(slot.startTime) }} -
                               {{ formatTime(slot.endTime) }}
                             </td>
-                            <td class="px-3 py-2">
+                            <td appTableCell>
                               @if (hasEntries(slot.nutritionValue)) {
                                 <div class="flex flex-wrap gap-1">
                                   @for (
@@ -650,11 +638,11 @@
                 </div>
               } @else {
                 @if (response.totalsMacros?.targetSource === "cycle") {
-                  <p class="text-sm text-app-text">
+                  <p appEmptyState appearance="text">
                     {{ "No active day set for this day. Daily targets come from the cycle." | translate }}
                   </p>
                 } @else {
-                  <p class="text-sm text-app-text">{{ "No daySet retourne." | translate }}</p>
+                  <p appEmptyState appearance="text">{{ "No daySet retourne." | translate }}</p>
                 }
               }
             </mat-card-content>
@@ -693,8 +681,7 @@
                     </mat-select>
                   </mat-form-field>
                   @if (hasManualTemplateOverride) {
-                    <button
-                      mat-stroked-button
+                    <button appButton variant="secondary"
                       type="button"
                       data-testid="input-day-template-clear"
                       (click)="clearManualTemplateOverride()"
@@ -719,18 +706,18 @@
                 </p>
               }
               @if (templateItems.length > 0) {
-                <div class="overflow-x-auto rounded-lg border border-app-border">
-                  <table class="min-w-full text-sm">
-                    <thead class="bg-app-surface-soft text-left text-app-text">
+                <div appTableScroll [label]="'Template lines' | translate">
+                  <table appTable>
+                    <thead>
                       <tr>
-                        <th class="px-3 py-2">{{ "Product" | translate }}</th>
-                        <th class="px-3 py-2">{{ "Qty" | translate }}</th>
-                        <th class="px-3 py-2">{{ "Slot" | translate }}</th>
-                        <th class="px-3 py-2">{{ "Statut" | translate }}</th>
-                        <th class="px-3 py-2">{{ "Global stock" | translate }}</th>
-                        <th class="px-3 py-2">{{ "Selection active" | translate }}</th>
-                        <th class="px-3 py-2">{{ "Inventories" | translate }}</th>
-                        <th class="px-3 py-2 text-right">{{ "Actions" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Product" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Qty" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Slot" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Statut" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Global stock" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Selection active" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Inventories" | translate }}</th>
+                        <th appTableCell contentAlign="end" scope="col">{{ "Actions" | translate }}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -742,9 +729,9 @@
                           [attr.data-testid]="
                             'input-day-template-item-' + item.id
                           "
-                          class="border-t border-app-border-soft align-top"
-                        >
-                          <td class="px-3 py-2">
+
+>
+                          <td appTableCell>
                             <p class="font-medium text-app-text-strong">
                               {{ item.productName }}
                             </p>
@@ -752,17 +739,17 @@
                               #{{ item.productId }}
                             </p>
                           </td>
-                          <td class="px-3 py-2">
+                          <td appTableCell>
                             {{ formatNutritionAmount(item.qty) }}
                             <span class="text-app-text-muted">{{ (item.qtyUnit ?? "-") | translate }}</span>
                           </td>
-                          <td class="px-3 py-2">
+                          <td appTableCell>
                             {{ resolveTemplateItemSlotTitle(item) }}
                             <span class="text-xs text-app-text-muted"
                               >({{ resolveTemplateItemSlotKey(item) }})</span
                             >
                           </td>
-                          <td class="px-3 py-2">
+                          <td appTableCell>
                             <span
                               class="input-day-status rounded-full px-2 py-1 text-xs font-medium"
                               [class.input-day-status--info]="
@@ -779,7 +766,7 @@
                               }}
                             </span>
                           </td>
-                          <td class="px-3 py-2">
+                          <td appTableCell>
                             <span
                               class="input-day-status rounded-full px-2 py-1 text-xs font-medium"
                               [class.input-day-status--success]="
@@ -804,7 +791,7 @@
                                 )) } }}
                             </p>
                           </td>
-                          <td class="px-3 py-2">
+                          <td appTableCell>
                             @if (
                               getSelectedInventoriesTemplateStock(item);
                               as inventoryStock
@@ -837,7 +824,7 @@
                               </p>
                             }
                           </td>
-                          <td class="px-3 py-2">
+                          <td appTableCell>
                             <details>
                               <summary
                                 class="cursor-pointer text-xs font-medium text-app-text"
@@ -872,10 +859,8 @@
                               </div>
                             </details>
                           </td>
-                          <td class="px-3 py-2 text-right">
-                            <button
-                              mat-raised-button
-                              color="primary"
+                          <td appTableCell contentAlign="end">
+                            <button appButton variant="raised"
                               type="button"
                               [attr.data-testid]="
                                 'input-day-convert-template-' + item.id
@@ -898,7 +883,7 @@
                   </table>
                 </div>
               } @else {
-                <p class="text-sm text-app-text">
+                <p appEmptyState appearance="text">
                   {{ "No template line for this day." | translate }}
                 </p>
               }
@@ -909,19 +894,19 @@
           <mat-card-content class="space-y-3 p-4">
             <p class="text-sm font-semibold text-app-text-strong">{{ "Entered items" | translate }}</p>
             @if (response.items.length > 0) {
-              <div class="overflow-x-auto rounded-lg border border-app-border">
-                <table class="min-w-full text-sm">
-                  <thead class="bg-app-surface-soft text-left text-app-text">
+              <div appTableScroll [label]="'Entered items' | translate">
+                <table appTable>
+                  <thead>
                     <tr>
-                      <th class="px-3 py-2">{{ "Product" | translate }}</th>
-                      <th class="px-3 py-2">{{ "Inventory" | translate }}</th>
-                      <th class="px-3 py-2">{{ "Qty" | translate }}</th>
-                      <th class="px-3 py-2">{{ "occurredAt" | translate }}</th>
-                      <th class="px-3 py-2">{{ "insertedAt" | translate }}</th>
-                      <th class="px-3 py-2">{{ "Slot" | translate }}</th>
-                      <th class="px-3 py-2">{{ "slotKey" | translate }}</th>
-                      <th class="px-3 py-2">{{ "Nutrition" | translate }}</th>
-                      <th class="px-3 py-2 text-right">{{ "Actions" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Product" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Inventory" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Qty" | translate }}</th>
+                      <th appTableCell scope="col">{{ "occurredAt" | translate }}</th>
+                      <th appTableCell scope="col">{{ "insertedAt" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Slot" | translate }}</th>
+                      <th appTableCell scope="col">{{ "slotKey" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Nutrition" | translate }}</th>
+                      <th appTableCell contentAlign="end" scope="col">{{ "Actions" | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -931,9 +916,9 @@
                     ) {
                       <tr
                         [attr.data-testid]="'input-day-item-' + item.id"
-                        class="border-t border-app-border-soft align-top"
-                      >
-                        <td class="px-3 py-2">
+
+>
+                        <td appTableCell>
                           <p class="font-medium text-app-text-strong">
                             {{ item.productName }}
                             <span class="text-app-text-muted"
@@ -948,24 +933,24 @@
                             </span>
                           }
                         </td>
-                        <td class="px-3 py-2">{{ item.inventoryId ?? "-" }}</td>
-                        <td class="px-3 py-2">
+                        <td appTableCell>{{ item.inventoryId ?? "-" }}</td>
+                        <td appTableCell>
                           {{ formatNutritionAmount(item.qty) }}
                           <span class="text-app-text-muted">{{ (item.qtyUnit ?? "-") | translate }}</span>
                         </td>
-                        <td class="px-3 py-2">
+                        <td appTableCell>
                           {{ formatDateTime(item.occurredAt) }}
                         </td>
-                        <td class="px-3 py-2">
+                        <td appTableCell>
                           {{ formatDateTime(item.insertedAt) }}
                         </td>
-                        <td class="px-3 py-2">
+                        <td appTableCell>
                           {{ resolveItemSlotTitle(item) }}
                         </td>
-                        <td class="px-3 py-2">
+                        <td appTableCell>
                           {{ resolveItemSlotKey(item) }}
                         </td>
-                        <td class="px-3 py-2">
+                        <td appTableCell>
                           <div class="flex flex-wrap gap-1">
                             @for (
                               nutrition of item.nutritionValue | keyvalue;
@@ -980,19 +965,16 @@
                             }
                           </div>
                         </td>
-                        <td class="px-3 py-2">
+                        <td appTableCell>
                           <div class="flex justify-end gap-2">
-                            <button
-                              mat-stroked-button
+                            <button appButton variant="secondary"
                               type="button"
                               class="input-day-edit-item"
                               (click)="startEditingItem(item.id)"
                             >
                               {{ "Edit" | translate }}
                             </button>
-                            <button
-                              mat-stroked-button
-                              color="warn"
+                            <button appButton variant="danger"
                               type="button"
                               class="input-day-delete-item"
                               (click)="removeItem(item.id)"
@@ -1007,7 +989,7 @@
                 </table>
               </div>
             } @else {
-              <p class="text-sm text-app-text">
+              <p appEmptyState appearance="text">
                 {{ "No item logged for this day." | translate }}
               </p>
             }
@@ -1123,16 +1105,13 @@
               </p>
             }
             <div class="flex flex-wrap justify-end gap-2">
-              <button
-                mat-stroked-button
+              <button appButton variant="secondary"
                 type="button"
                 (click)="resetItemEditor()"
               >
                 {{ "Cancel edition" | translate }}
               </button>
-              <button
-                mat-stroked-button
-                color="warn"
+              <button appButton variant="danger"
                 type="button"
                 data-testid="input-day-delete-item"
                 (click)="removeItem()"
@@ -1140,9 +1119,7 @@
               >
                 {{ "Delete" | translate }}
               </button>
-              <button
-                mat-raised-button
-                color="primary"
+              <button appButton variant="raised"
                 type="button"
                 data-testid="input-day-submit-item"
                 (click)="submitItemEditor()"
@@ -1207,7 +1184,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-app-text-muted">{{ "No target." | translate }}</p>
+                        <p appEmptyState appearance="text">{{ "No target." | translate }}</p>
                       }
                     </div>
                     <div class="rounded-lg border border-app-border p-3">
@@ -1231,7 +1208,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-app-text-muted">{{ "No delta." | translate }}</p>
+                        <p appEmptyState appearance="text">{{ "No delta." | translate }}</p>
                       }
                     </div>
                   </div>
@@ -1289,7 +1266,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-app-text-muted">{{ "No target." | translate }}</p>
+                        <p appEmptyState appearance="text">{{ "No target." | translate }}</p>
                       }
                     </div>
                     <div class="rounded-lg border border-app-border p-3">
@@ -1313,7 +1290,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="text-sm text-app-text-muted">{{ "No delta." | translate }}</p>
+                        <p appEmptyState appearance="text">{{ "No delta." | translate }}</p>
                       }
                     </div>
                   </div>

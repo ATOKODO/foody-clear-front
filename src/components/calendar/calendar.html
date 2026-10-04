@@ -3,7 +3,7 @@
     <header class="border-b border-app-border px-4 py-3 shadow-app-sm">
       <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div class="flex items-center gap-3">
-          <button
+          <button appButton variant="plain"
             type="button"
             (click)="goToToday()"
             data-testid="calendar-today"
@@ -11,7 +11,7 @@
             {{ "Today" | translate }}
           </button>
           <div class="flex items-center gap-2">
-            <button
+            <button appButton variant="plain"
               type="button"
               (click)="navigate('prev')"
               [attr.aria-label]="&quot;Previous period&quot; | translate"
@@ -24,7 +24,7 @@
             <h2 class="min-w-[200px] text-center text-lg font-semibold">
               {{ currentViewLabel }}
             </h2>
-            <button
+            <button appButton variant="plain"
               type="button"
               (click)="navigate('next')"
               [attr.aria-label]="&quot;Next period&quot; | translate"
@@ -138,7 +138,7 @@
                     </div>
                   }
                   @for (day of month.days; track trackByDate($index, day)) {
-                    <button
+                    <button appButton variant="plain"
                       type="button"
                       class="calendar-year-mini-day"
                       [attr.data-testid]="'calendar-year-day-' + day.date"
@@ -162,7 +162,7 @@
                     : ("No cycle is planned for this month." | translate)
                     }}
                   </span>
-                  <button
+                  <button appButton variant="plain"
                     type="button"
                     class="calendar-year-card__footer-action"
                     [attr.data-testid]="'calendar-open-month-' + month.year + '-' + month.month"
@@ -229,7 +229,7 @@
                   [class.calendar-month-day--outside]="!day.isCurrentMonth"
                   [class.calendar-month-day--today]="day.isToday"
                   [class.calendar-month-day--interactive]="day.isCurrentMonth">
-                  <button
+                  <button appButton variant="plain"
                     type="button"
                     class="calendar-month-day__header calendar-month-day__select"
                     [attr.aria-label]="(&quot;&quot; + (&quot;Open&quot; | translate) + &quot; &quot;) + day.date"
@@ -253,7 +253,7 @@
                     @if (day.isCurrentMonth) {
                       <!-- Material Icons (Apache-2.0); attribution/license: /icons/material-icons-LICENSE.txt. -->
                       <div class="calendar-month-day__quick-actions">
-                        <button
+                        <button appButton variant="plain"
                           type="button"
                           [attr.data-testid]="'calendar-month-open-day-' + day.date"
                           class="calendar-month-day__quick-action"
@@ -266,7 +266,7 @@
                           </svg>
                           <span class="calendar-month-day__quick-action-label">{{ "Day" | translate }}</span>
                         </button>
-                        <button
+                        <button appButton variant="plain"
                           type="button"
                           [attr.data-testid]="'calendar-month-manage-cycle-' + day.date"
                           class="calendar-month-day__quick-action"
@@ -279,7 +279,7 @@
                           </svg>
                           <span class="calendar-month-day__quick-action-label">{{ "Cycle" | translate }}</span>
                         </button>
-                        <button
+                        <button appButton variant="plain"
                           type="button"
                           [attr.data-testid]="'calendar-month-manage-items-' + day.date"
                           class="calendar-month-day__quick-action"
@@ -373,7 +373,7 @@
                       </div>
                     } @else {
                       @if (day.isCurrentMonth) {
-                        <div class="calendar-month-day__empty">
+                        <div appEmptyState appearance="panel" size="small" class="calendar-month-day__empty">
                           <span class="calendar-month-day__empty-title">{{ "Free day" | translate }}</span>
                           <span class="calendar-month-day__empty-text">{{ "Day, cycle or entry available" | translate }}</span>
                         </div>
@@ -452,16 +452,14 @@
                   </div>
                 </div>
                 <div class="calendar-week-mobile__actions">
-                  <button
+                  <button appButton variant="plain"
                     type="button"
                     [attr.data-testid]="'calendar-week-mobile-items-' + day.date"
                     class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-app-border-strong px-2.5 py-1 text-[10px] font-medium text-app-text hover:bg-app-surface-muted"
                     (click)="$event.stopPropagation(); onManageItems(day.date)">
                     {{ "Items" | translate }}
                   </button>
-                  <button
-                    mat-mini-fab
-                    color="primary"
+                  <button appButton variant="filled" size="small"
                     type="button"
                     [attr.data-testid]="'calendar-week-mobile-add-' + day.date"
                     class="calendar-add-trigger-week h-8 w-8 shadow-app-sm"
@@ -501,7 +499,7 @@
                       [class.calendar-week-block--orphan]="block.kind === 'orphan'"
                       [attr.data-tone]="block.tone"
                       >
-                      <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onWeekTimelineBlockClick(day, block, $event)">
+                      <button appButton variant="plain" type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onWeekTimelineBlockClick(day, block, $event)">
                         <div class="calendar-week-block__heading">
                           <span class="calendar-week-block__title">{{ block.kind === 'orphan' ? (block.title | translate) : block.title }}</span>
                           <span class="calendar-week-block__time">{{ (block.rangeLabel) | translate }}</span>
@@ -513,7 +511,7 @@
                       @if (block.items.length > 0) {
                         <div class="calendar-week-block__items">
                           @for (product of block.items; track trackByInsertedProduct($index, product)) {
-                            <button
+                            <button appButton variant="plain"
                               type="button"
                               (click)="onItemClick(product, day.date, $event)"
                               [attr.data-testid]="'calendar-week-mobile-item-' + day.date + '-' + product.id"
@@ -531,13 +529,13 @@
                           }
                         </div>
                       } @else {
-                        <p class="calendar-week-block__empty">{{ "No logged item in this time range." | translate }}</p>
+                        <p appEmptyState appearance="text" size="small" tone="contextual" class="calendar-week-block__empty">{{ "No logged item in this time range." | translate }}</p>
                       }
                     </div>
                   }
                 </div>
               } @else {
-                <div class="calendar-week-mobile__empty">
+                <div appEmptyState appearance="panel" class="calendar-week-mobile__empty">
                   <p class="calendar-week-mobile__empty-title">{{ "No time range for this day" | translate }}</p>
                   <p class="calendar-week-mobile__empty-text">
                     {{ "Use the + button to add an action or open the day items." | translate }}
@@ -594,16 +592,14 @@
                     }" />
                 }
                 <div class="calendar-week-grid__day-actions">
-                  <button
+                  <button appButton variant="plain"
                     type="button"
                     [attr.data-testid]="'calendar-week-items-' + day.date"
                     class="calendar-items-trigger-week calendar-week-grid__ghost-button rounded-full border border-app-border-strong px-2.5 py-1 text-[10px] font-medium text-app-text hover:bg-app-surface-muted"
                     (click)="$event.stopPropagation(); onManageItems(day.date)">
                     {{ "Items" | translate }}
                   </button>
-                  <button
-                    mat-mini-fab
-                    color="primary"
+                  <button appButton variant="filled" size="small"
                     type="button"
                     [attr.data-testid]="'calendar-week-add-' + day.date"
                     class="calendar-add-trigger-week h-8 w-8 shadow-app-sm"
@@ -624,7 +620,7 @@
             }
             @for (day of weekDays; track trackByDate(dayIndex, day); let dayIndex = $index) {
               @for (hour of HOURS; track trackByHour($index, hour)) {
-                <button
+                <button appButton variant="plain"
                   type="button"
                   class="calendar-week-grid__hour-cell"
                   [attr.data-testid]="'calendar-week-hour-' + day.date + '-' + hour.toString().padStart(2, '0')"
@@ -647,7 +643,7 @@
                   [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
                   [style.grid-row-end]="getWeekTimelineBlockGridRowEnd(block)"
                   >
-                  <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onWeekTimelineBlockClick(day, block, $event)">
+                  <button appButton variant="plain" type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onWeekTimelineBlockClick(day, block, $event)">
                     <div class="calendar-week-block__heading">
                       <span class="calendar-week-block__title">{{ block.kind === 'orphan' ? (block.title | translate) : block.title }}</span>
                       <span class="calendar-week-block__time">{{ (block.rangeLabel) | translate }}</span>
@@ -659,7 +655,7 @@
                   @if (block.items.length > 0) {
                     <div class="calendar-week-block__items">
                       @for (product of block.items; track trackByInsertedProduct($index, product)) {
-                        <button
+                        <button appButton variant="plain"
                           type="button"
                           (click)="onItemClick(product, day.date, $event)"
                           [attr.data-testid]="'calendar-week-item-' + day.date + '-' + product.id"
@@ -677,7 +673,7 @@
                       }
                     </div>
                   } @else {
-                    <p class="calendar-week-block__empty">{{ "No logged item in this time range." | translate }}</p>
+                    <p appEmptyState appearance="text" size="small" tone="contextual" class="calendar-week-block__empty">{{ "No logged item in this time range." | translate }}</p>
                   }
                 </div>
               }
@@ -702,14 +698,14 @@
               </p>
             </div>
             <div class="calendar-day-summary__actions">
-              <button
+              <button appButton variant="plain"
                 type="button"
                 data-testid="calendar-day-manage-cycle"
                 class="calendar-day-summary__action-button calendar-day-summary__action-button--cycle"
                 (click)="onManageAssignment(currentDate.toISODate())">
                 {{ "Manage cycle" | translate }}
               </button>
-              <button
+              <button appButton variant="plain"
                 type="button"
                 data-testid="calendar-day-manage-items"
                 class="calendar-day-summary__action-button calendar-day-summary__action-button--items"
@@ -764,7 +760,7 @@
                     }
                   </div>
                 } @else {
-                  <div class="calendar-day-summary__empty-state">
+                  <div appEmptyState appearance="panel" class="calendar-day-summary__empty-state">
                     <p class="calendar-day-summary__empty-title">{{ "No comparison available" | translate }}</p>
                     <p class="calendar-day-summary__empty-text">
                       {{ "The summary appears once a nutrition target is available for the day." | translate }}
@@ -775,8 +771,7 @@
               @if (getDaySlotMacroGroups(); as slotGroups) {
                 @if (slotGroups.length > 0) {
                   <div class="mt-4 border-t border-app-border pt-4">
-                    <button
-                      mat-stroked-button
+                    <button appButton variant="secondary"
                       type="button"
                       data-testid="calendar-day-toggle-slot-stats"
                       [attr.aria-expanded]="showDaySlotStats"
@@ -865,7 +860,7 @@
                   </div>
                 }
                 @for (hour of HOURS; track trackByHour($index, hour)) {
-                  <button
+                  <button appButton variant="plain"
                     type="button"
                     class="calendar-day-grid__half-hour-cell"
                     [attr.data-testid]="'calendar-day-half-hour-' + hour.toString().padStart(2, '0') + '-00'"
@@ -874,7 +869,7 @@
                     [attr.aria-label]="(&quot;&quot; + (&quot;Open&quot; | translate) + &quot; &quot;) + hour.toString().padStart(2, '0') + (&quot;&quot; + (&quot;:00 for&quot; | translate) + &quot; &quot;) + currentDate.toISODate()"
                     (click)="onDayHalfHourClick(hour, 0)">
                   </button>
-                  <button
+                  <button appButton variant="plain"
                     type="button"
                     class="calendar-day-grid__half-hour-cell calendar-day-grid__half-hour-cell--mid"
                     [attr.data-testid]="'calendar-day-half-hour-' + hour.toString().padStart(2, '0') + '-30'"
@@ -893,7 +888,7 @@
                       [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
                       [style.grid-row-end]="getWeekTimelineBlockGridRowEnd(block)"
                       >
-                      <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onDayTimelineBlockClick(block, $event)">
+                      <button appButton variant="plain" type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onDayTimelineBlockClick(block, $event)">
                         <div class="calendar-week-block__heading">
                           <span class="calendar-week-block__title">{{ block.kind === 'orphan' ? (block.title | translate) : block.title }}</span>
                           <span class="calendar-week-block__time">{{ (block.rangeLabel) | translate }}</span>
@@ -910,7 +905,7 @@
                               class="calendar-week-block__item calendar-week-block__item--planned">
                               <div class="calendar-week-block__item-top">
                                 <span class="calendar-week-block__item-name">{{ plannedItem.productName }}</span>
-                                <button
+                                <button appButton variant="plain"
                                   type="button"
                                   class="rounded-full border border-app-info-border bg-app-info-surface px-2 py-1 text-[0.64rem] font-bold text-app-info disabled:cursor-not-allowed disabled:border-app-border disabled:bg-app-surface-muted disabled:text-app-text-muted"
                                   [attr.data-testid]="'calendar-day-convert-template-' + plannedItem.id"
@@ -926,7 +921,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="calendar-week-block__empty">{{ (getDayTemplateBlockEmptyText(block)) | translate }}</p>
+                        <p appEmptyState appearance="text" size="small" tone="contextual" class="calendar-week-block__empty">{{ (getDayTemplateBlockEmptyText(block)) | translate }}</p>
                       }
                     </div>
                   }
@@ -941,7 +936,7 @@
                       [style.grid-row-start]="getWeekTimelineBlockGridRowStart(block)"
                       [style.grid-row-end]="getWeekTimelineBlockGridRowEnd(block)"
                       >
-                      <button type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onDayTimelineBlockClick(block, $event)">
+                      <button appButton variant="plain" type="button" class="calendar-week-block__header calendar-week-block__select" (click)="onDayTimelineBlockClick(block, $event)">
                         <div class="calendar-week-block__heading">
                           <span class="calendar-week-block__title">{{ block.kind === 'orphan' ? (block.title | translate) : block.title }}</span>
                           <span class="calendar-week-block__time">{{ (block.rangeLabel) | translate }}</span>
@@ -956,7 +951,7 @@
                             <div
                               [attr.data-testid]="'calendar-day-item-' + product.id"
                               class="calendar-week-block__item calendar-day-grid__completed-item">
-                              <button type="button" class="calendar-week-block__item-select" (click)="onItemClick(product, product.dateLocal, $event)">
+                              <button appButton variant="plain" type="button" class="calendar-week-block__item-select" (click)="onItemClick(product, product.dateLocal, $event)">
                                 <span class="calendar-week-block__item-top">
                                   <span class="calendar-week-block__item-name">{{ product.productName }}</span>
                                   <span class="calendar-week-block__item-time">
@@ -968,7 +963,7 @@
                                 </span>
                               </button>
                               @if (product.templateItemId !== null) {
-                                <button
+                                <button appButton variant="plain"
                                   type="button"
                                   class="mt-2 rounded-full border border-app-warning-border bg-app-warning-surface px-2 py-1 text-[0.64rem] font-bold text-app-warning disabled:cursor-not-allowed disabled:opacity-60"
                                   [attr.data-testid]="'calendar-day-revert-template-' + product.id"
@@ -981,7 +976,7 @@
                           }
                         </div>
                       } @else {
-                        <p class="calendar-week-block__empty">{{ "No logged entry in this slot." | translate }}</p>
+                        <p appEmptyState appearance="text" size="small" tone="contextual" class="calendar-week-block__empty">{{ "No logged entry in this slot." | translate }}</p>
                       }
                     </div>
                   }
@@ -1004,7 +999,7 @@
               @if (dayEntries.length > 0) {
                 <div class="calendar-day-entries__list">
                   @for (entry of dayEntries; track trackByDayEntryRow($index, entry)) {
-                    <button
+                    <button appButton variant="plain"
                       type="button"
                       class="calendar-day-entry"
                       [attr.data-testid]="'calendar-day-entry-' + entry.id"
@@ -1019,7 +1014,7 @@
                   }
                 </div>
               } @else {
-                <div class="calendar-day-empty">
+                <div appEmptyState appearance="panel" class="calendar-day-empty">
                   <p class="calendar-day-empty__title">{{ "No logged entry" | translate }}</p>
                   <p class="calendar-day-empty__text">
                     {{ "Use the time grid to quickly open an action for this day." | translate }}

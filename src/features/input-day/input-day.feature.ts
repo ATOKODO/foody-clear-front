@@ -1,3 +1,8 @@
+import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
+import { UiTableScroll } from '../../app/ui/table-scroll/table-scroll';
+import { UiTableCell } from '../../app/ui/table-cell/table-cell';
+import { UiTable } from '../../app/ui/table/table';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { NgTemplateOutlet, KeyValuePipe } from '@angular/common';
 import {
@@ -22,7 +27,6 @@ import {
 import { forkJoin } from 'rxjs';
 import { LatestRequest } from '../../utils/latest-request';
 import { Language } from '../../app/i18n/language';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerIntl, MatDatepickerModule } from '@angular/material/datepicker';
 import { MaterialDatepickerIntl } from '../../app/i18n/material-datepicker-intl';
@@ -125,11 +129,10 @@ import {
     { provide: MatDatepickerIntl, useExisting: MaterialDatepickerIntl },
     { provide: DateAdapter, useClass: LocalizedDateAdapter },
   ],
-  imports: [
+  imports: [UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiButton,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
-    MatButtonModule,
     MatCardModule,
     MatDatepickerModule,
     MatFormFieldModule,

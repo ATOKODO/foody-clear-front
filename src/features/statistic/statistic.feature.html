@@ -21,33 +21,28 @@
 
   <div class="stat-toolbar-card__controls">
     <div class="stat-toolbar-card__actions">
-      <button
-        mat-stroked-button
+      <button appButton variant="secondary"
         type="button"
         data-testid="stat-quick-7"
         (click)="applyQuickRange(7)"
       >
         {{ "7 days" | translate }}
       </button>
-      <button
-        mat-stroked-button
+      <button appButton variant="secondary"
         type="button"
         data-testid="stat-quick-30"
         (click)="applyQuickRange(30)"
       >
         {{ "30 days" | translate }}
       </button>
-      <button
-        mat-stroked-button
+      <button appButton variant="secondary"
         type="button"
         data-testid="stat-quick-90"
         (click)="applyQuickRange(90)"
       >
         {{ "90 days" | translate }}
       </button>
-      <button
-        mat-raised-button
-        color="primary"
+      <button appButton variant="raised"
         type="button"
         data-testid="stat-refresh"
         [disabled]="loadingTimeline"
@@ -73,9 +68,7 @@
         <input matInput [(ngModel)]="timezone" />
       </mat-form-field>
 
-      <button
-        mat-flat-button
-        color="primary"
+      <button appButton variant="filled"
         type="button"
         data-testid="stat-load"
         [disabled]="loadingTimeline"
@@ -120,7 +113,7 @@
         </div>
         <div class="expense-timeline" data-testid="stat-expense-timeline">
           @for (day of timeline.days; track day.dateLocal) {
-            <button
+            <button appButton variant="plain"
               type="button"
               class="expense-bar"
               [attr.data-testid]="'stat-expense-day-' + day.dateLocal"
@@ -196,8 +189,7 @@
                     event.excludedFromStats ||
                     event.pricingStatus === "excluded"
                   ) {
-                    <button
-                      mat-stroked-button
+                    <button appButton variant="secondary"
                       type="button"
                       [disabled]="savingPurchaseEventId === event.id"
                       [attr.data-testid]="'stat-purchase-restore-' + event.id"
@@ -206,9 +198,7 @@
                       {{ "Reintegrer" | translate }}
                     </button>
                   } @else {
-                    <button
-                      mat-stroked-button
-                      color="warn"
+                    <button appButton variant="danger"
                       type="button"
                       [disabled]="savingPurchaseEventId === event.id"
                       [attr.data-testid]="'stat-purchase-exclude-' + event.id"
@@ -222,7 +212,7 @@
             }
           </div>
         } @else {
-          <p class="empty-copy" data-testid="stat-empty-expenses">
+          <p appEmptyState appearance="text" class="empty-copy" data-testid="stat-empty-expenses">
             {{ "No achat sur cette daynee." | translate }}
           </p>
         }
@@ -251,7 +241,7 @@
       @if (timelineResponse; as timeline) {
         <div class="target-timeline" data-testid="stat-target-timeline">
           @for (day of timeline.days; track day.dateLocal) {
-            <button
+            <button appButton variant="plain"
               type="button"
               class="target-bar"
               [attr.data-testid]="'stat-target-day-' + day.dateLocal"
@@ -390,9 +380,7 @@
           {{ "Recalculer les achats" | translate }}
         </mat-checkbox>
 
-        <button
-          mat-flat-button
-          color="primary"
+        <button appButton variant="filled"
           type="button"
           data-testid="stat-price-correction-submit"
           [disabled]="correctingPrice || selectedPriceProductId === null"
@@ -496,12 +484,12 @@
             }
           </div>
         } @else {
-          <p class="empty-copy" data-testid="stat-empty-price-changes">
+          <p appEmptyState appearance="text" class="empty-copy" data-testid="stat-empty-price-changes">
             {{ "No changement de prix pour {p0} sur cette periode." | translate: { p0: (selectedProductName) } }}
           </p>
         }
       } @else {
-        <p class="empty-copy" data-testid="stat-empty-price-history">
+        <p appEmptyState appearance="text" class="empty-copy" data-testid="stat-empty-price-history">
           {{ "No historique de prix disponible pour {p0} sur cette periode." | translate: { p0: (selectedProductName) } }}
         </p>
       }

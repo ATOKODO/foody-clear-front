@@ -1,3 +1,5 @@
+import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { getTemplateInventoryIds } from '../../utils/template-stock';
 import { NgClass } from '@angular/common';
@@ -55,7 +57,7 @@ import {
 
 @Component({
   selector: 'app-home',
-  imports: [
+  imports: [UiEmptyState, UiButton,
     TranslatePipe,
     RouterLink,
     NgClass,

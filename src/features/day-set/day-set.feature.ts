@@ -1,3 +1,6 @@
+import { UiAlert } from '../../app/ui/alert/alert';
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 import { DOCUMENT } from '@angular/common';
@@ -10,7 +13,6 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
   DaySetForm,
@@ -34,8 +36,7 @@ import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 
 @Component({
   selector: 'app-day-set-feature',
-  imports: [TranslatePipe, UiModal,
-    MatButtonModule,
+  imports: [UiAlert, UiStatusBadge, UiButton, TranslatePipe, UiModal,
     MatCardModule,
     UiErrorPanel,
     DaySetList,

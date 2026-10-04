@@ -18,8 +18,7 @@
       </h2>
 
       <div class="cycle-panel__actions">
-        <button
-          mat-stroked-button
+        <button appButton variant="secondary"
           type="button"
           class="cycle-action cycle-action--secondary"
           data-testid="cycle-refresh-action"
@@ -29,8 +28,7 @@
           {{ "Refresh" | translate }}
         </button>
 
-        <button
-          mat-stroked-button
+        <button appButton variant="primary"
           type="button"
           class="cycle-action cycle-action--primary"
           (click)="onAddActiveView()"
@@ -48,32 +46,32 @@
           <div class="cycle-panel__section" data-testid="cycle-list-view">
             <div class="app-status-row">
               @if (loading) {
-                <span class="app-status-pill app-status-pill--neutral">
+                <span appStatusBadge tone="neutral">
                   {{ "Loading..." | translate }}
                 </span>
               }
               @if (saving) {
-                <span class="app-status-pill app-status-pill--saving">
+                <span appStatusBadge tone="saving">
                   {{ "Saving..." | translate }}
                 </span>
               }
               @if (loadingMeta) {
-                <span class="app-status-pill app-status-pill--info">
+                <span appStatusBadge tone="info">
                   {{ "Meta nutrition..." | translate }}
                 </span>
               }
               @if (loadingDaySets) {
-                <span class="app-status-pill app-status-pill--info">
+                <span appStatusBadge tone="info">
                   {{ "Targets..." | translate }}
                 </span>
               }
               @if (loadingSlots) {
-                <span class="app-status-pill app-status-pill--info">
+                <span appStatusBadge tone="info">
                   {{ "Slots..." | translate }}
                 </span>
               }
               @if (loadingTemplates) {
-                <span class="app-status-pill app-status-pill--info">
+                <span appStatusBadge tone="info">
                   {{ "Templates..." | translate }}
                 </span>
               }
@@ -82,7 +80,7 @@
               <app-ui-error-panel [error]="lastError" />
             }
             @if (lastMetaError) {
-              <p class="app-alert">
+              <p appAlert>
                 {{ "Unable to load nutrition meta keys, fallback mode is active." | translate }}
               </p>
             }
@@ -123,7 +121,7 @@
         <p class="app-dialog-subtitle">{{ (formDialogSubtitle) | translate }}</p>
       </div>
 
-      <button mat-stroked-button type="button" (click)="onCancelForm()">
+      <button appButton variant="secondary" type="button" (click)="onCancelForm()">
         {{ "Close" | translate }}
       </button>
     </div>
@@ -197,17 +195,14 @@
     </mat-dialog-content>
 
     <mat-dialog-actions align="end" class="gap-2">
-      <button
-        mat-stroked-button
+      <button appButton variant="secondary"
         type="button"
         (click)="cancelImpactUpdate()"
         [disabled]="saving"
       >
         {{ "Cancel" | translate }}
       </button>
-      <button
-        mat-raised-button
-        color="primary"
+      <button appButton variant="raised"
         type="button"
         (click)="confirmImpactUpdate()"
         [disabled]="saving"

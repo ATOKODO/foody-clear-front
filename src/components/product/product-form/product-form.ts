@@ -1,3 +1,6 @@
+import { UiCodePanel } from '../../../app/ui/code-panel/code-panel';
+import { UiAlert } from '../../../app/ui/alert/alert';
+import { UiButton } from '../../../app/ui/button/button';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 
 import {
@@ -13,7 +16,6 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -69,11 +71,10 @@ export interface ProductFormValue {
 
 @Component({
   selector: 'app-product-form',
-  imports: [
+  imports: [UiCodePanel, UiAlert, UiButton,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
-    MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,

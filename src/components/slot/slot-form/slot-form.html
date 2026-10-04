@@ -2,7 +2,7 @@
   @if (showHeading()) {
     <div class="mb-6 flex items-center justify-between border-b border-app-border pb-3">
       <h2 class="text-xl font-medium">{{ (heading) | translate }}</h2>
-      <button mat-stroked-button type="button" (click)="onMenuClick()">{{ "Options" | translate }}</button>
+      <button appButton variant="secondary" type="button" (click)="onMenuClick()">{{ "Options" | translate }}</button>
     </div>
   }
 
@@ -39,7 +39,7 @@
     <div class="space-y-3">
       <div class="flex items-center justify-between gap-3">
         <h3 class="text-base font-semibold text-app-text-strong">{{ "Nutrition values" | translate }}</h3>
-        <button mat-stroked-button type="button" (click)="addNutritionValue()">
+        <button appButton variant="secondary" type="button" (click)="addNutritionValue()">
           {{ "Add value" | translate }}
         </button>
       </div>
@@ -104,7 +104,7 @@
             </mat-select>
           </mat-form-field>
           <div class="md:col-span-1 md:pt-2">
-            <button mat-stroked-button color="warn" type="button" (click)="removeNutritionValue(i)">
+            <button appButton variant="danger" type="button" (click)="removeNutritionValue(i)">
               {{ "Remove" | translate }}
             </button>
           </div>
@@ -113,7 +113,7 @@
     </div>
 
     <div class="flex justify-center pt-2">
-      <button mat-raised-button color="primary" type="submit" [disabled]="saving()" class="rounded-full px-8">
+      <button appButton variant="raised" type="submit" [disabled]="saving()" class="rounded-full px-8">
         {{ "Save" | translate }}
       </button>
     </div>

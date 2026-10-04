@@ -1,3 +1,6 @@
+import { UiAlert } from '../../app/ui/alert/alert';
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import {
   Component,
@@ -10,7 +13,6 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DateTime } from 'luxon';
-import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -73,12 +75,11 @@ import {
 
 @Component({
   selector: 'app-cycle',
-  imports: [
+  imports: [UiAlert, UiStatusBadge, UiButton,
     TranslatePipe,
     FormsModule,
     ListCycle,
     FormCycle,
-    MatButtonModule,
     MatButtonToggleModule,
     MatCardModule,
     MatDialogModule,

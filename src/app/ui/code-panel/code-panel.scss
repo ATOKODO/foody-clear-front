@@ -1,0 +1,24 @@
+@use "mixins" as ds;
+
+:host {
+  display: block;
+  max-width: 100%;
+  overflow: auto;
+  padding: var(--app-space-4);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface-muted);
+  color: var(--app-text-strong);
+  font-family: var(--app-font-mono);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+:host(.app-code-panel--wrap) {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+:host(:focus-visible) {
+  @include ds.focus-ring;
+}

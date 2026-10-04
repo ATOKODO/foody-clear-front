@@ -1,0 +1,27 @@
+:host {
+  display: grid;
+  gap: var(--app-space-3);
+  padding: 0.95rem var(--app-space-4);
+  border: 1px solid var(--app-warning-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
+}
+
+:host(.app-alert--error) {
+  border-color: var(--app-danger-border);
+  background: var(--app-danger-bg);
+  color: var(--app-danger-text);
+}
+
+:host(.app-alert--info) {
+  border-color: var(--app-info-border);
+  background: var(--app-info-bg);
+  color: var(--app-info-text);
+}
+
+:host(.app-alert--success) {
+  border-color: var(--app-success-border);
+  background: var(--app-success-bg);
+  color: var(--app-success-text);
+}

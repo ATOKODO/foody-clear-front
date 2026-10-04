@@ -1,0 +1,14 @@
+@use "mixins" as ds;
+
+:host {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+:host(.app-ui-table-scroll--outlined) {
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+}
+
+:host(:focus-visible) { @include ds.focus-ring; }

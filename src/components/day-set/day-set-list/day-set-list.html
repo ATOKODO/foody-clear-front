@@ -7,16 +7,14 @@
     @if (hasItems) {
       <ng-container [ngTemplateOutlet]="tableContent" />
     } @else {
-      <p class="dsl-empty text-sm text-app-text">{{ "No day set available." | translate }}</p>
+      <p appEmptyState appearance="text" class="dsl-empty">{{ "No day set available." | translate }}</p>
     }
   } @else {
     <mat-card class="overflow-hidden rounded-2xl">
       <div class="flex items-center justify-between gap-3 border-b border-app-border bg-app-surface-soft px-4 py-3 sm:px-6">
         <h2 class="text-base font-semibold text-app-text-strong">{{ "Day Sets" | translate }}</h2>
         @if (isManageMode) {
-          <button
-            mat-raised-button
-            color="primary"
+          <button appButton variant="raised"
             type="button"
             data-testid="day-set-add"
             class="add-btn"
@@ -31,9 +29,9 @@
         </div>
       } @else {
         <mat-card appearance="outlined" class="rounded-xl">
-          <mat-card-content class="p-4 text-sm text-app-text">
+          <mat-card-content class="p-4"><p appEmptyState>
             {{ "No day set available." | translate }}
-          </mat-card-content>
+          </p></mat-card-content>
         </mat-card>
       }
     </mat-card>
@@ -88,16 +86,14 @@
           <th mat-header-cell *matHeaderCellDef>{{ "Actions" | translate }}</th>
           <td mat-cell *matCellDef="let item" class="dsl-actions-cell" tabindex="-1">
             <div class="dsl-actions">
-              <button
-                mat-stroked-button
+              <button appButton variant="edit"
                 type="button"
                 class="dsl-action dsl-action--edit"
                 [attr.data-testid]="'day-set-edit-' + item.id"
                 (click)="$event.stopPropagation(); onEditClick(item)">
                 {{ "Edit" | translate }}
               </button>
-              <button
-                mat-stroked-button
+              <button appButton variant="secondary"
                 type="button"
                 class="dsl-action dsl-action--delete"
                 [attr.data-testid]="'day-set-delete-' + item.id"

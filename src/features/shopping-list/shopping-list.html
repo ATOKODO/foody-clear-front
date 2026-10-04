@@ -25,8 +25,7 @@
         </p>
       </div>
       <div class="shopping-list-panel__actions">
-        <button
-          mat-stroked-button
+        <button appButton variant="secondary"
           type="button"
           class="shopping-list-action shopping-list-action--secondary"
           (click)="store.loadScreen()"
@@ -34,8 +33,7 @@
           {{ "Refresh" | translate }}
         </button>
         @if (store.activeView === 'list') {
-          <button
-            mat-stroked-button
+          <button appButton variant="primary"
             type="button"
             class="shopping-list-action shopping-list-action--primary"
             (click)="store.openCreateListEditor()"
@@ -50,10 +48,10 @@
       @if (store.loading || store.saving) {
         <div class="app-status-row">
           @if (store.loading) {
-            <span class="app-status-pill app-status-pill--neutral">{{ "Loading..." | translate }}</span>
+            <span appStatusBadge tone="neutral">{{ "Loading..." | translate }}</span>
           }
           @if (store.saving) {
-            <span class="app-status-pill app-status-pill--saving">{{ "Saving..." | translate }}</span>
+            <span appStatusBadge tone="saving">{{ "Saving..." | translate }}</span>
           }
         </div>
       }
@@ -80,7 +78,7 @@
                 class="shopping-list-list-card"
                 [class.is-active]="store.selectedList?.id === list.id"
                 >
-                <button type="button" class="shopping-list-list-card__select" (click)="store.selectList(list.id)">
+                <button appButton variant="plain" type="button" class="shopping-list-list-card__select" (click)="store.selectList(list.id)">
                   <span class="shopping-list-list-card__title">{{ list.name }}</span>
                   <span class="shopping-list-list-card__meta">
                     {{ "{p0} line(s) - {p1} checked" | translate: { p0: (list.items.length), p1: (store.countChecked(list)) } }}
@@ -90,16 +88,14 @@
                   </span>
                 </button>
                 <div class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="secondary"
                     type="button"
                     class="shopping-list-action shopping-list-action--secondary"
                     (click)="store.openSelectedListEditor(list.id)"
                     [disabled]="store.saving">
                     {{ "Edit" | translate }}
                   </button>
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="danger"
                     type="button"
                     class="shopping-list-action shopping-list-action--danger"
                     (click)="store.selectList(list.id); store.deleteSelectedList()"
@@ -109,7 +105,7 @@
                 </div>
               </div>
             } @empty {
-              <p class="shopping-list-empty">{{ "No list." | translate }}</p>
+              <p appEmptyState appearance="text" class="shopping-list-empty">{{ "No list." | translate }}</p>
             }
           </div>
 
@@ -137,13 +133,13 @@
                       <span>{{ item.qty }} {{ (item.qtyUnit ?? '-') | translate }} - {{ item.checked ? ("Checked" | translate) : ("To buy" | translate) }}</span>
                     </div>
                   } @empty {
-                    <p class="shopping-list-empty">{{ "No product in this list." | translate }}</p>
+                    <p appEmptyState appearance="text" class="shopping-list-empty">{{ "No product in this list." | translate }}</p>
                   }
                 </div>
               </div>
 
             } @else {
-              <p class="shopping-list-empty shopping-list-empty--large">{{ "Select or create a list to get started." | translate }}</p>
+              <p appEmptyState appearance="large" class="shopping-list-empty shopping-list-empty--large">{{ "Select or create a list to get started." | translate }}</p>
             }
           </div>
         </app-master-detail-layout>
@@ -159,22 +155,20 @@
                 class="shopping-list-list-card"
                 [class.is-active]="store.selectedTemplate?.id === template.id"
                 >
-                <button type="button" class="shopping-list-list-card__select" (click)="store.selectTemplate(template.id)">
+                <button appButton variant="plain" type="button" class="shopping-list-list-card__select" (click)="store.selectTemplate(template.id)">
                   <span class="shopping-list-list-card__title">{{ template.name }}</span>
                   <span class="shopping-list-list-card__meta">{{ "{p0} produit(s)" | translate: { p0: (template.items.length) } }}</span>
                   <span class="shopping-list-list-card__status shopping-list-list-card__status--template">{{ "Template" | translate }}</span>
                 </button>
                 <div class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="secondary"
                     type="button"
                     class="shopping-list-action shopping-list-action--secondary"
                     (click)="store.openSelectedTemplateEditor(template.id)"
                     [disabled]="store.saving">
                     {{ "Edit" | translate }}
                   </button>
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="danger"
                     type="button"
                     class="shopping-list-action shopping-list-action--danger"
                     (click)="store.selectTemplate(template.id); store.deleteSelectedTemplate()"
@@ -184,7 +178,7 @@
                 </div>
               </div>
             } @empty {
-              <p class="shopping-list-empty">{{ "No template." | translate }}</p>
+              <p appEmptyState appearance="text" class="shopping-list-empty">{{ "No template." | translate }}</p>
             }
           </div>
 
@@ -212,12 +206,12 @@
                       <span>{{ item.qty }} {{ (item.qtyUnit ?? '-') | translate }}</span>
                     </div>
                   } @empty {
-                    <p class="shopping-list-empty">{{ "This template is empty." | translate }}</p>
+                    <p appEmptyState appearance="text" class="shopping-list-empty">{{ "This template is empty." | translate }}</p>
                   }
                 </div>
               </div>
             } @else {
-              <p class="shopping-list-empty shopping-list-empty--large">{{ "No template selected." | translate }}</p>
+              <p appEmptyState appearance="large" class="shopping-list-empty shopping-list-empty--large">{{ "No template selected." | translate }}</p>
             }
           </div>
         </app-master-detail-layout>
@@ -226,7 +220,7 @@
   </mat-card>
 
   @if (store.isListEditorOpen) {
-    <button
+    <button appButton variant="plain"
       type="button"
       class="app-modal-backdrop"
       [attr.aria-label]="&quot;Close l'edition de liste&quot; | translate"
@@ -243,8 +237,7 @@
             <h3>{{ store.listEditorMode === 'create' ? ("Create une liste" | translate) : ("Edit la liste" | translate) }}</h3>
             <p>{{ "Edite le nom et les produits depuis cette modale." | translate }}</p>
           </div>
-          <button
-            mat-stroked-button
+          <button appButton variant="secondary"
             type="button"
             class="shopping-list-action shopping-list-action--secondary"
             (click)="store.closeListEditor()"
@@ -259,8 +252,7 @@
               <mat-label>{{ "Nom de la liste" | translate }}</mat-label>
               <input matInput [(ngModel)]="store.draftListName" />
             </mat-form-field>
-            <button
-              mat-stroked-button
+            <button appButton variant="primary"
               type="button"
               class="shopping-list-action shopping-list-action--primary"
               (click)="store.saveListEditor()"
@@ -272,8 +264,7 @@
               <mat-label>{{ "Nom de la liste" | translate }}</mat-label>
               <input matInput [(ngModel)]="list.name" />
             </mat-form-field>
-            <button
-              mat-stroked-button
+            <button appButton variant="primary"
               type="button"
               class="shopping-list-action shopping-list-action--primary"
               (click)="store.saveListEditor()"
@@ -293,8 +284,7 @@
                 <div class="shopping-list-product-pick">
                   <span>{{ "Product" | translate }}</span>
                   <strong>{{ store.resolveDraftProductName() }}</strong>
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="secondary"
                     type="button"
                     class="shopping-list-action shopping-list-action--secondary"
                     (click)="store.openProductPicker()"
@@ -317,8 +307,7 @@
                   </mat-select>
                 </mat-form-field>
 
-                <button
-                  mat-stroked-button
+                <button appButton variant="primary"
                   type="button"
                   class="shopping-list-action shopping-list-action--primary"
                   (click)="store.addItemToSelectedList()"
@@ -335,16 +324,14 @@
                   <p>{{ "Coche ce qui doit etre envoye vers l'inventory." | translate }}</p>
                 </div>
                 <div class="shopping-list-inline-actions">
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="secondary"
                     type="button"
                     class="shopping-list-action shopping-list-action--secondary"
                     (click)="store.setAllChecked(true)"
                     [disabled]="store.saving || list.items.length === 0">
                     {{ "Tout cocher" | translate }}
                   </button>
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="secondary"
                     type="button"
                     class="shopping-list-action shopping-list-action--secondary"
                     (click)="store.setAllChecked(false)"
@@ -383,16 +370,14 @@
                     </mat-form-field>
 
                     <div class="shopping-list-line-card__actions">
-                      <button
-                        mat-stroked-button
+                      <button appButton variant="secondary"
                         type="button"
                         class="shopping-list-action shopping-list-action--secondary"
                         (click)="store.saveItem(item)"
                         [disabled]="store.saving">
                         {{ "Edit" | translate }}
                       </button>
-                      <button
-                        mat-stroked-button
+                      <button appButton variant="danger"
                         type="button"
                         class="shopping-list-action shopping-list-action--danger"
                         (click)="store.removeItem(item.id)"
@@ -402,7 +387,7 @@
                     </div>
                   </div>
                 } @empty {
-                  <p class="shopping-list-empty">{{ "No product in this list." | translate }}</p>
+                  <p appEmptyState appearance="text" class="shopping-list-empty">{{ "No product in this list." | translate }}</p>
                 }
               </div>
             </div>
@@ -422,16 +407,14 @@
                     </mat-select>
                   </mat-form-field>
                   <div class="shopping-list-inline-actions shopping-list-inline-actions--left">
-                    <button
-                      mat-stroked-button
+                    <button appButton variant="secondary"
                       type="button"
                       class="shopping-list-action shopping-list-action--secondary"
                       (click)="store.convertChecked()"
                       [disabled]="store.saving || store.selectedInventoryId === null || store.checkedItemCount === 0">
                       {{ "Convertir cochees" | translate }}
                     </button>
-                    <button
-                      mat-stroked-button
+                    <button appButton variant="primary"
                       type="button"
                       class="shopping-list-action shopping-list-action--primary"
                       (click)="store.convertAll()"
@@ -450,8 +433,7 @@
                     <mat-label>{{ "Template name" | translate }}</mat-label>
                     <input matInput [(ngModel)]="store.templateDraftName" />
                   </mat-form-field>
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="primary"
                     type="button"
                     class="shopping-list-action shopping-list-action--primary"
                     (click)="store.saveAsTemplate()"
@@ -467,7 +449,7 @@
   }
 
   @if (store.isTemplateEditorOpen) {
-    <button
+    <button appButton variant="plain"
       type="button"
       class="app-modal-backdrop"
       [attr.aria-label]="&quot;Close template editor&quot; | translate"
@@ -484,8 +466,7 @@
             <h3>{{ "Edit template" | translate }}</h3>
             <p>{{ "Le contenu reste consultable a droite, les actions sont dans la side list." | translate }}</p>
           </div>
-          <button
-            mat-stroked-button
+          <button appButton variant="secondary"
             type="button"
             class="shopping-list-action shopping-list-action--secondary"
             (click)="store.closeTemplateEditor()"
@@ -500,8 +481,7 @@
               <mat-label>{{ "Template name" | translate }}</mat-label>
               <input matInput [(ngModel)]="template.name" />
             </mat-form-field>
-            <button
-              mat-stroked-button
+            <button appButton variant="primary"
               type="button"
               class="shopping-list-action shopping-list-action--primary"
               (click)="store.saveTemplateEditor()"
@@ -519,8 +499,7 @@
                   <mat-label>{{ "Nom de la nouvelle liste" | translate }}</mat-label>
                   <input matInput [(ngModel)]="store.templateCreateListName" />
                 </mat-form-field>
-                <button
-                  mat-stroked-button
+                <button appButton variant="primary"
                   type="button"
                   class="shopping-list-action shopping-list-action--primary"
                   (click)="store.createListFromTemplate()"
@@ -536,7 +515,7 @@
   }
 
   @if (store.isProductPickerOpen) {
-    <button
+    <button appButton variant="plain"
       type="button"
       class="app-modal-backdrop"
       [attr.aria-label]="&quot;Close la selection produit&quot; | translate"
@@ -553,8 +532,7 @@
             <h3>{{ "Choose a product" | translate }}</h3>
             <p>{{ "Search and select the product to add to the list." | translate }}</p>
           </div>
-          <button
-            mat-stroked-button
+          <button appButton variant="secondary"
             type="button"
             class="shopping-list-action shopping-list-action--secondary"
             (click)="store.closeProductPicker()">

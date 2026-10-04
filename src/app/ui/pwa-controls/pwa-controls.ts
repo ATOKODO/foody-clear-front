@@ -1,12 +1,12 @@
+import { UiButton } from '../button/button';
 import { TranslatePipe } from '../../i18n/translate-pipe';
 import { Component, TemplateRef, inject, viewChild } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { PwaService } from '../../../services/pwa-service';
 
 @Component({
   selector: 'app-pwa-controls',
-  imports: [TranslatePipe, MatButtonModule, MatDialogModule],
+  imports: [UiButton, TranslatePipe, MatDialogModule],
   templateUrl: './pwa-controls.html',
   host: { style: 'display: block' },
 })

@@ -2,13 +2,15 @@ import { Component, inject, input } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { TranslatePipe } from '../../i18n/translate-pipe';
 import { Language } from '../../i18n/language';
+import { UiAlert } from '../alert/alert';
+import { UiCodePanel } from '../code-panel/code-panel';
 
 @Component({
   selector: 'app-ui-error-panel',
-  imports: [JsonPipe, TranslatePipe],
+  imports: [UiAlert, UiCodePanel, JsonPipe, TranslatePipe],
   template: `
     @if (error()) {
-      <section class="app-alert app-alert--error" role="alert">
+      <section appAlert tone="error" role="alert">
         <div class="app-alert__copy">
           <p class="app-alert__title">{{ title() | translate }}</p>
           <p class="app-alert__message">{{ displayMessage | translate }}</p>
@@ -16,7 +18,7 @@ import { Language } from '../../i18n/language';
         @if (showDetails) {
           <details class="app-alert__details">
             <summary>{{ detailsLabel() | translate }}</summary>
-            <pre>{{ error() | json }}</pre>
+            <pre appCodePanel wrap>{{ error() | json }}</pre>
           </details>
         }
       </section>

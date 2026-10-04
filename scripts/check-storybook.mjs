@@ -2,11 +2,23 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { resolve, relative, dirname } from 'node:path';
 import ts from 'typescript';
+import { assertSharedPrimitives, componentTemplates } from './ui-inventory.mjs';
 
 const walk = directory => readdirSync(directory, { withFileTypes: true }).flatMap(entry =>
   entry.isDirectory() ? walk(resolve(directory, entry.name)) : [resolve(directory, entry.name)]);
 const parse = file => ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
 const components = new Map();
+let buttons = 0;
+let feedback = 0;
+for (const component of componentTemplates()) {
+  for (const element of component.elements) {
+    const attrs = { ...element.attributes, ...element.inputs };
+    const location = `${relative('.', component.templateFile)}:${element.line}`;
+    assertSharedPrimitives(element, location);
+    if (element.tag === 'button') buttons++;
+    if (['appStatusBadge', 'appAlert', 'appCodePanel'].some(name => name in attrs)) feedback++;
+  }
+}
 for (const file of walk('src').filter(file => file.endsWith('.ts') && !file.endsWith('.spec.ts') && !file.includes('/stories/'))) {
   for (const node of parse(file).statements) {
     if (!ts.isClassDeclaration(node) || !node.name) continue;
@@ -39,7 +51,7 @@ for (const file of walk('stories').filter(file => file.endsWith('.stories.ts')))
 const missing = [...components].filter(([file]) => !covered.has(file));
 assert.equal(missing.length, 0, `Production components missing stories:\n${missing.map(([file, name]) => `${name}: ${relative('.', file)}`).join('\n')}`);
 const modal = readFileSync('stories/ui/UiModal.stories.ts', 'utf8');
-assert(modal.includes('imports: [UiModal]') && modal.includes('appModalClose'), 'The modal directive needs an interactive usage story');
+assert(/imports:\s*\[UiModal\b/.test(modal) && modal.includes('appModalClose'), 'The modal directive needs an interactive usage story');
 assert(readFileSync('src/app/stories/foundations/foundations.ts', 'utf8').includes('_tokens.scss?raw'), 'Foundations must read the real design tokens');
 assert(!readFileSync('src/main.ts', 'utf8').includes('stories'), 'Storybook must not enter the app bootstrap');
-console.log(`Storybook inventory: ${covered.size}/${components.size} production components + UiModal; ${storyCount} stories.`);
+console.log(`Storybook inventory: ${covered.size}/${components.size} production components + UiModal; ${storyCount} stories; ${buttons} shared buttons; ${feedback} shared feedback instances (production and previews).`);

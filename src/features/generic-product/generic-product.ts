@@ -1,9 +1,10 @@
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 
 import { Component, OnChanges, OnInit, SimpleChanges, input, output, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -27,9 +28,8 @@ import type { PortionUnit, QuantityUnit } from '../../services/product-service';
 
 @Component({
   selector: 'app-generic-product',
-  imports: [TranslatePipe, UiModal,
+  imports: [UiStatusBadge, UiButton, TranslatePipe, UiModal,
     FormsModule,
-    MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,

@@ -69,8 +69,7 @@
 
           <div class="mt-3 flex flex-wrap gap-2">
             @for (preset of durationPresets; track preset) {
-              <button
-                mat-stroked-button
+              <button appButton variant="secondary"
                 type="button"
                 (click)="applyDurationPreset(preset)"
               >
@@ -85,7 +84,7 @@
     <div class="space-y-3">
       <div class="flex items-center justify-between gap-3">
         <h3 class="text-base font-semibold text-app-text-strong">{{ "Nutrition values" | translate }}</h3>
-        <button mat-stroked-button type="button" (click)="addNutritionValue()">
+        <button appButton variant="secondary" type="button" (click)="addNutritionValue()">
           {{ "Add value" | translate }}
         </button>
       </div>
@@ -139,9 +138,7 @@
             </mat-select>
           </mat-form-field>
           <div class="md:col-span-1 md:pt-2">
-            <button
-              mat-stroked-button
-              color="warn"
+            <button appButton variant="danger"
               type="button"
               (click)="removeNutritionValue(i)"
             >
@@ -252,9 +249,8 @@
           >
             <div class="flex items-center justify-between gap-3">
               <div class="flex min-w-0 items-center gap-3">
-                <button
+                <button appButton variant="secondary"
                   cdkDragHandle
-                  mat-stroked-button
                   type="button"
                   class="fc-drag-handle"
                 >
@@ -284,9 +280,7 @@
                 </div>
               </div>
               @if (!slot.isDefault) {
-                <button
-                  mat-stroked-button
-                  color="warn"
+                <button appButton variant="danger"
                   type="button"
                   (click)="removeDaySetFromOrder(slot.daySetId)"
                 >
@@ -298,9 +292,9 @@
         }
 
         @if (timelineSlots.length === 0) {
-          <p
-            class="rounded-xl border border-dashed border-app-border-strong px-4 py-6 text-sm text-app-text-muted"
-          >
+          <p appEmptyState appearance="text"
+            class="rounded-xl border border-dashed border-app-border-strong px-4 py-6"
+>
             {{ "No day configured." | translate }}
           </p>
         }
@@ -308,9 +302,7 @@
     </div>
 
     <div class="flex justify-center pt-2">
-      <button
-        mat-raised-button
-        color="primary"
+      <button appButton variant="raised"
         type="submit"
         class="rounded-full px-8"
         [disabled]="saving() || !canSubmit"

@@ -15,9 +15,7 @@
 .scanner__details { display: grid; gap: var(--app-space-2); }
 .scanner__details h4 { font-weight: var(--app-font-weight-semibold); }
 .scanner__nutrition { overflow: auto; }
-.scanner__nutrition table { width: 100%; text-align: left; }
 .scanner__nutrition caption { text-align: left; margin-bottom: var(--app-space-2); }
-.scanner__nutrition th, .scanner__nutrition td { padding: var(--app-space-2); border-bottom: 1px solid var(--app-border); }
 .scanner__source { font-size: 0.85rem; color: var(--app-text-muted); }
 .scanner__source a { text-decoration: underline; }
 

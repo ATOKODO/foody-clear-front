@@ -73,8 +73,7 @@
   font-weight: var(--app-font-weight-bold);
 }
 
-.template-master__card-meta,
-.template-master__empty {
+.template-master__card-meta {
   color: var(--app-text-muted);
   font-size: var(--app-font-size-sm);
 }
@@ -108,13 +107,6 @@
 
 .template-master__action--delete {
   @include ds.action-tone(danger);
-}
-
-.template-master__empty {
-  border: 1px dashed var(--app-border);
-  border-radius: var(--app-radius-sm);
-  background: var(--app-surface-soft);
-  padding: var(--app-space-4);
 }
 
 .template-compare-card__header {

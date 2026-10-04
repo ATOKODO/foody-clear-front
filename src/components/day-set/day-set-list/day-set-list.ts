@@ -1,3 +1,5 @@
+import { UiEmptyState } from '../../../app/ui/empty-state/empty-state';
+import { UiButton } from '../../../app/ui/button/button';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 import { NgTemplateOutlet } from '@angular/common';
 import {
@@ -8,7 +10,6 @@ import {
   input,
   output
 } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTableModule } from '@angular/material/table';
@@ -36,9 +37,8 @@ export interface DaySetListItem {
 
 @Component({
   selector: 'app-day-set-list',
-  imports: [
+  imports: [UiEmptyState, UiButton,
     TranslatePipe,
-    MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
     MatTableModule,

@@ -31,14 +31,14 @@
           <div class="shape" [style.border-radius]="'var(--app-radius-' + radius + ')'">{{ radius }}</div>
         }
       </div>
-      <h3>Responsive breakpoints</h3><pre>{{ breakpoints }}</pre>
+      <h3>Responsive breakpoints</h3><pre appCodePanel>{{ breakpoints }}</pre>
       <h3>Elevation & motion</h3>
       <div class="shape" style="box-shadow: var(--app-shadow-md); transition: var(--app-transition-interactive)">Card elevation / interactive transition</div>
       <p>Motion tokens and stacking levels are listed in All semantic tokens.</p>
     }
     @case ('primitives') {
       <h2>Material controls</h2>
-      <div class="row"><button mat-flat-button>Primary</button><button mat-stroked-button>Secondary</button><button mat-button>Text</button><button mat-flat-button disabled>Disabled</button></div>
+      <div class="row"><button appButton variant="filled">Primary</button><button appButton variant="secondary">Secondary</button><button appButton variant="text">Text</button><button appButton variant="filled" disabled>Disabled</button></div>
       <div class="row">
         <mat-form-field><mat-label>Product</mat-label><input matInput value="Banane" /><mat-hint>Required field</mat-hint></mat-form-field>
         <mat-form-field><mat-label>Inventory</mat-label><mat-select value="fridge"><mat-option value="fridge">Fridge</mat-option><mat-option value="pantry">Pantry</mat-option></mat-select></mat-form-field>
@@ -47,11 +47,11 @@
       <mat-card><mat-card-header><mat-card-title>Daily summary</mat-card-title><mat-card-subtitle>Material card on the semantic surface</mat-card-subtitle></mat-card-header><mat-card-content>2,100 kcal · 120 g protein</mat-card-content></mat-card>
       <h2>Feedback</h2>
       <div class="app-status-row">
-        @for (tone of ['neutral', 'saving', 'warning', 'info', 'success']; track tone) { <span [class]="'app-status-pill app-status-pill--' + tone">{{ tone }}</span> }
+        @for (tone of statusTones; track tone) { <span appStatusBadge [tone]="tone">{{ tone }}</span> }
       </div>
-      <div class="app-alert"><div class="app-alert__copy"><h3 class="app-alert__title">Low stock</h3><p class="app-alert__message">Some planned products are unavailable.</p></div></div>
-      <div class="app-alert app-alert--error"><div class="app-alert__copy"><h3 class="app-alert__title">Request failed</h3><p class="app-alert__message">Retry after checking your connection.</p></div></div>
-      <pre class="app-code-panel">Demo data only</pre>
+      <div appAlert><div class="app-alert__copy"><h3 class="app-alert__title">Low stock</h3><p class="app-alert__message">Some planned products are unavailable.</p></div></div>
+      <div appAlert tone="error"><div class="app-alert__copy"><h3 class="app-alert__title">Request failed</h3><p class="app-alert__message">Retry after checking your connection.</p></div></div>
+      <pre appCodePanel class="app-code-panel">Demo data only</pre>
       <h2>Data tones</h2>
       <p>Shared category and cycle colors, including their gradient and border roles.</p>
       <div class="token-grid">
@@ -64,9 +64,9 @@
       <h2>Calendar quick actions · Material Icons</h2>
       <p>Local inline SVGs under Apache-2.0. See /icons/material-icons-LICENSE.txt.</p>
       <div class="row">
-        <button mat-stroked-button aria-label="Day"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" /></svg> Day</button>
-        <button mat-stroked-button aria-label="Cycle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26l1.46-1.46A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.45.83.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" /></svg> Cycle</button>
-        <button mat-stroked-button aria-label="Entry"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h10v2H3zm0-4h10v2H3zm0 8h7v2H3zm11 0v3h3l6-6-3-3zm2 1 4-4 1 1-4 4h-1z" /></svg> Entry</button>
+        <button appButton variant="secondary" aria-label="Day"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" /></svg> Day</button>
+        <button appButton variant="secondary" aria-label="Cycle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26l1.46-1.46A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.45.83.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" /></svg> Cycle</button>
+        <button appButton variant="secondary" aria-label="Entry"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h10v2H3zm0-4h10v2H3zm0 8h7v2H3zm11 0v3h3l6-6-3-3zm2 1 4-4 1 1-4 4h-1z" /></svg> Entry</button>
       </div>
     }
   }

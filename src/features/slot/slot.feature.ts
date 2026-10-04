@@ -1,8 +1,10 @@
+import { UiAlert } from '../../app/ui/alert/alert';
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 import { DOCUMENT } from '@angular/common';
 import { Component, OnInit, inject, input, output, signal } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
   SlotForm,
@@ -15,7 +17,7 @@ import { SlotFeatureStore } from './slot.store';
 
 @Component({
   selector: 'app-slot-feature',
-  imports: [TranslatePipe, UiModal,MatButtonModule, MatCardModule, UiErrorPanel, SlotList, SlotForm],
+  imports: [UiAlert, UiStatusBadge, UiButton, TranslatePipe, UiModal,MatCardModule, UiErrorPanel, SlotList, SlotForm],
   providers: [SlotFeatureStore],
   templateUrl: './slot.feature.html',
   styleUrl: './slot.feature.scss',

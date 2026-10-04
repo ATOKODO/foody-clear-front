@@ -1,7 +1,9 @@
+import { UiAlert } from '../../app/ui/alert/alert';
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 
 import { Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { Category as CategoryFeature } from '../category/category';
@@ -85,9 +87,8 @@ const PRODUCT_HUB_VIEW_OPTIONS: readonly SegmentedToggleOption<ProductHubView>[]
 
 @Component({
   selector: 'app-product',
-  imports: [
+  imports: [UiAlert, UiStatusBadge, UiButton,
     TranslatePipe,
-    MatButtonModule,
     MatCardModule,
     MatDialogModule,
     SegmentedToggle,

@@ -1,8 +1,9 @@
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 
 import { Component, effect, inject, input, output } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
 import { CategoryForm } from '../../components/category/category-form/category-form';
@@ -11,8 +12,7 @@ import { CategoryStore } from './category.store';
 
 @Component({
   selector: 'app-category',
-  imports: [TranslatePipe, UiModal,
-    MatButtonModule,
+  imports: [UiStatusBadge, UiButton, TranslatePipe, UiModal,
     MatCardModule,
     UiErrorPanel,
     CategoryList,

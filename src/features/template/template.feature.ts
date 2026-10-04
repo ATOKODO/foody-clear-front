@@ -1,3 +1,5 @@
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import {
   Component,
@@ -7,7 +9,6 @@ import {
   effect,
   viewChild,
 } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import {
   MatDialog,
@@ -32,9 +33,8 @@ import { TemplateFeatureStore } from './template.store';
 
 @Component({
   selector: 'app-template',
-  imports: [
+  imports: [UiStatusBadge, UiButton,
     TranslatePipe,
-    MatButtonModule,
     MatCardModule,
     MatDialogModule,
     MatProgressBarModule,

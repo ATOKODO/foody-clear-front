@@ -35,7 +35,8 @@ for (const variant of variants) {
       });
       await page.setViewportSize(variant);
       await page.goto(`/iframe.html?id=${story.id}&viewMode=story&globals=theme:${variant.theme};language:${variant.language}`);
-      await expect(page.locator('#storybook-root')).not.toBeEmpty({ timeout: 20_000 });
+      // An accessible icon-only button is rendered even when it has no text content.
+      await expect.poll(() => page.locator('#storybook-root').evaluate(root => root.childElementCount), { timeout: 20_000 }).toBeGreaterThan(0);
       await expect(page.locator('html')).toHaveAttribute('lang', variant.language);
       await expect.poll(() => page.locator('html').evaluate(el => el.classList.contains('dark'))).toBe(variant.theme === 'dark');
       await expect(page.locator('.sb-errordisplay')).not.toBeVisible();
@@ -136,4 +137,43 @@ test('shell navigation stays inside the canvas and uses isolated data', async ({
   await expect(page.locator('.shopping-list-list-card__title').first()).toHaveText('Courses de la semaine');
   await expect(page).toHaveURL(/\/iframe\.html\?/);
   await expect(page.locator('app-ui-error-panel')).toHaveCount(0);
+});
+
+test('shared buttons support keyboard activation, disabled/loading states and accessible icons', async ({ page }) => {
+  await page.goto('/iframe.html?id=ui-button--primary&viewMode=story');
+  const button = page.getByRole('button', { name: 'Save', exact: true });
+  await button.evaluate(node => {
+    node.setAttribute('data-activations', '0');
+    node.addEventListener('click', () => node.setAttribute('data-activations', String(Number(node.getAttribute('data-activations')) + 1)));
+  });
+  await button.focus();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Space');
+  await expect(button).toHaveAttribute('data-activations', '2');
+  for (const state of ['disabled', 'loading']) {
+    await page.goto(`/iframe.html?id=ui-button--${state}&viewMode=story`);
+    await expect(button).toBeDisabled();
+    if (state === 'loading') await expect(button).toHaveAttribute('aria-busy', 'true');
+    await button.evaluate(node => {
+      node.setAttribute('data-activations', '0');
+      node.addEventListener('click', () => node.setAttribute('data-activations', '1'));
+      node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    await expect(button).toHaveAttribute('data-activations', '0');
+  }
+  await page.goto('/iframe.html?id=ui-button--icon&viewMode=story');
+  await expect(page.getByRole('button', { name: 'Add', exact: true })).toBeVisible();
+  await expect(page.locator('button svg')).toHaveAttribute('aria-hidden', 'true');
+});
+
+test('button variants are editable in Controls and activation is recorded in Actions', async ({ page }) => {
+  await page.goto('/?path=/story/ui-button--primary');
+  await page.getByRole('tab', { name: 'Controls' }).click();
+  const variant = page.getByRole('row').filter({ has: page.getByText('variant', { exact: true }) });
+  await variant.getByRole('combobox').selectOption('danger');
+  const button = page.frameLocator('#storybook-preview-iframe').getByRole('button', { name: 'Save', exact: true });
+  await expect(button).toHaveClass(/app-ui-button--danger/);
+  await button.click();
+  await page.getByRole('tab', { name: /^Actions\b/ }).click();
+  await expect(page.getByText('activated', { exact: false }).last()).toBeVisible();
 });

@@ -40,5 +40,11 @@ module.exports = defineConfig([
       angular.configs.templateAccessibility,
     ],
     rules: {},
-  }
+  },
+  {
+    files: ["src/app/ui/button/button.ts", "src/app/ui/status-badge/status-badge.ts", "src/app/ui/alert/alert.ts", "src/app/ui/code-panel/code-panel.ts", "src/app/ui/table/table.ts", "src/app/ui/table-cell/table-cell.ts", "src/app/ui/table-scroll/table-scroll.ts", "src/app/ui/empty-state/empty-state.ts"],
+    rules: {
+      "@angular-eslint/component-selector": ["error", { type: "attribute", prefix: "app", style: "camelCase" }],
+    },
+  },
 ]);

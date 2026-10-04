@@ -1,3 +1,5 @@
+import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 // calendar-container.component.ts
 import {
@@ -11,7 +13,6 @@ import {
   inject,
 } from '@angular/core';
 import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { DateTime, Info } from 'luxon';
 import { Language } from '../../app/i18n/language';
@@ -167,7 +168,7 @@ function formatCalendarAssignmentProgress(assignment: CalendarAssignment): strin
 
 @Component({
   selector: 'app-calendar',
-  imports: [TranslatePipe, MatButtonModule, MatButtonToggleModule, DecimalPipe, NgTemplateOutlet],
+  imports: [UiEmptyState, UiButton, TranslatePipe, MatButtonToggleModule, DecimalPipe, NgTemplateOutlet],
   templateUrl: './calendar.html',
   styleUrl: './calendar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

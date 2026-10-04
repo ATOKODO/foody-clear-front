@@ -32,10 +32,13 @@
 .stat-card__head p,
 .target-detail-meta p,
 .detail-item p,
-.empty-copy,
 .stat-toolbar-card__top p {
   margin: 0;
   color: var(--stat-muted);
+}
+
+.empty-copy {
+  margin: 0;
 }
 
 .stat-filters,

@@ -1,3 +1,5 @@
+import { UiEmptyState } from '../../../app/ui/empty-state/empty-state';
+import { UiButton } from '../../../app/ui/button/button';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 import { Language } from '../../../app/i18n/language';
 import { NgTemplateOutlet } from '@angular/common';
@@ -11,7 +13,6 @@ import {
   output,
   signal
 } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -30,9 +31,8 @@ export type { ProductListItem } from './product-list-item.model';
 
 @Component({
   selector: 'app-product-list',
-  imports: [
+  imports: [UiEmptyState, UiButton,
     TranslatePipe,
-    MatButtonModule,
     MatCardModule,
     MatCheckboxModule,
     MatFormFieldModule,

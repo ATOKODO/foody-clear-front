@@ -21,8 +21,7 @@
         </p>
       </div>
       <div class="meal-prep-panel__actions">
-        <button
-          mat-stroked-button
+        <button appButton variant="secondary"
           type="button"
           class="meal-prep-action meal-prep-action--secondary"
           (click)="loadScreen()"
@@ -30,8 +29,7 @@
           {{ "Refresh" | translate }}
         </button>
         @if (activeView === 'dish') {
-          <button
-            mat-stroked-button
+          <button appButton variant="primary"
             type="button"
             class="meal-prep-action meal-prep-action--primary"
             (click)="openCreateDishEditor()"
@@ -39,8 +37,7 @@
             {{ "New dish" | translate }}
           </button>
         } @else {
-          <button
-            mat-stroked-button
+          <button appButton variant="primary"
             type="button"
             class="meal-prep-action meal-prep-action--primary"
             (click)="openCreateMealEditor()"
@@ -55,10 +52,10 @@
       @if (loading || saving) {
         <div class="app-status-row">
           @if (loading) {
-            <span class="app-status-pill app-status-pill--neutral">{{ "Loading..." | translate }}</span>
+            <span appStatusBadge tone="neutral">{{ "Loading..." | translate }}</span>
           }
           @if (saving) {
-            <span class="app-status-pill app-status-pill--saving">{{ "Saving..." | translate }}</span>
+            <span appStatusBadge tone="saving">{{ "Saving..." | translate }}</span>
           }
         </div>
       }
@@ -92,7 +89,7 @@
                 class="meal-prep-list-card"
                 [class.is-active]="selectedDish?.id === dish.id"
                 >
-                <button type="button" class="meal-prep-list-card__select" (click)="selectDish(dish.id)">
+                <button appButton variant="plain" type="button" class="meal-prep-list-card__select" (click)="selectDish(dish.id)">
                   <span class="meal-prep-list-card__title">{{ dish.name }}</span>
                   <span class="meal-prep-list-card__meta">{{ "{p0} line(s)" | translate: { p0: (dish.items.length) } }}</span>
                   <span
@@ -102,16 +99,14 @@
                   </span>
                 </button>
                 <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="secondary"
                     type="button"
                     class="meal-prep-action meal-prep-action--secondary"
                     (click)="openSelectedDishEditor(dish.id)"
                     [disabled]="saving">
                     {{ "Edit" | translate }}
                   </button>
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="danger"
                     type="button"
                     class="meal-prep-action meal-prep-action--danger"
                     (click)="selectDish(dish.id); deleteSelectedDish()"
@@ -121,7 +116,7 @@
                 </div>
               </div>
             } @empty {
-              <p class="meal-prep-empty">{{ "No dish yet." | translate }}</p>
+              <p appEmptyState appearance="text" class="meal-prep-empty">{{ "No dish yet." | translate }}</p>
             }
           </div>
 
@@ -132,8 +127,7 @@
                   <h3>{{ dish.name }}</h3>
                   <p>{{ "{p0} line(s) in this dish." | translate: { p0: (dish.items.length) } }}</p>
                 </div>
-                <button
-                  mat-stroked-button
+                <button appButton variant="secondary"
                   type="button"
                   class="meal-prep-action meal-prep-action--secondary"
                   (click)="createShoppingListFromSelectedDish()"
@@ -160,12 +154,12 @@
                       <span>{{ item.qty }} {{ (item.qtyUnit ?? '-') | translate }}</span>
                     </div>
                   } @empty {
-                    <p class="meal-prep-empty">{{ "No lines in this dish." | translate }}</p>
+                    <p appEmptyState appearance="text" class="meal-prep-empty">{{ "No lines in this dish." | translate }}</p>
                   }
                 </div>
               </div>
             } @else {
-              <p class="meal-prep-empty meal-prep-empty--large">{{ "Select or create a dish." | translate }}</p>
+              <p appEmptyState appearance="large" class="meal-prep-empty meal-prep-empty--large">{{ "Select or create a dish." | translate }}</p>
             }
           </div>
         </app-master-detail-layout>
@@ -180,7 +174,7 @@
                 class="meal-prep-list-card"
                 [class.is-active]="selectedMeal?.id === meal.id"
                 >
-                <button type="button" class="meal-prep-list-card__select" (click)="selectMeal(meal.id)">
+                <button appButton variant="plain" type="button" class="meal-prep-list-card__select" (click)="selectMeal(meal.id)">
                   <span class="meal-prep-list-card__title">{{ meal.name }}</span>
                   <span class="meal-prep-list-card__meta">{{ "{p0} line(s)" | translate: { p0: (meal.items.length) } }}</span>
                   <span
@@ -190,16 +184,14 @@
                   </span>
                 </button>
                 <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="secondary"
                     type="button"
                     class="meal-prep-action meal-prep-action--secondary"
                     (click)="openSelectedMealEditor(meal.id)"
                     [disabled]="saving">
                     {{ "Edit" | translate }}
                   </button>
-                  <button
-                    mat-stroked-button
+                  <button appButton variant="danger"
                     type="button"
                     class="meal-prep-action meal-prep-action--danger"
                     (click)="selectMeal(meal.id); deleteSelectedMeal()"
@@ -209,7 +201,7 @@
                 </div>
               </div>
             } @empty {
-              <p class="meal-prep-empty">{{ "No meal yet." | translate }}</p>
+              <p appEmptyState appearance="text" class="meal-prep-empty">{{ "No meal yet." | translate }}</p>
             }
           </div>
 
@@ -220,8 +212,7 @@
                   <h3>{{ meal.name }}</h3>
                   <p>{{ "{p0} line(s) in this meal." | translate: { p0: (meal.items.length) } }}</p>
                 </div>
-                <button
-                  mat-stroked-button
+                <button appButton variant="secondary"
                   type="button"
                   class="meal-prep-action meal-prep-action--secondary"
                   (click)="createShoppingListFromSelectedMeal()"
@@ -248,12 +239,12 @@
                       <span>{{ item.qty }} {{ (item.qtyUnit ?? '-') | translate }}</span>
                     </div>
                   } @empty {
-                    <p class="meal-prep-empty">{{ "No lines in this meal." | translate }}</p>
+                    <p appEmptyState appearance="text" class="meal-prep-empty">{{ "No lines in this meal." | translate }}</p>
                   }
                 </div>
               </div>
             } @else {
-              <p class="meal-prep-empty meal-prep-empty--large">{{ "Select or create a meal." | translate }}</p>
+              <p appEmptyState appearance="large" class="meal-prep-empty meal-prep-empty--large">{{ "Select or create a meal." | translate }}</p>
             }
           </div>
         </app-master-detail-layout>
@@ -263,7 +254,7 @@
 </section>
 
 @if (isEditorOpen) {
-  <button
+  <button appButton variant="plain"
     type="button"
     class="app-modal-backdrop"
     [attr.aria-label]="&quot;Close editor&quot; | translate"
@@ -304,8 +295,7 @@
                   <div class="meal-prep-line-card__source">
                     <span class="meal-prep-line-card__label">{{ "Product" | translate }}</span>
                     <strong>{{ resolveProductName(line.productId) }}</strong>
-                    <button
-                      mat-stroked-button
+                    <button appButton variant="secondary"
                       type="button"
                       class="meal-prep-action meal-prep-action--secondary"
                       (click)="openDishProductPicker($index)"
@@ -326,7 +316,7 @@
                       }
                     </mat-select>
                   </mat-form-field>
-                  <button mat-stroked-button color="warn" type="button" (click)="removeDishLine($index)" [disabled]="saving">
+                  <button appButton variant="danger" type="button" (click)="removeDishLine($index)" [disabled]="saving">
                     {{ "Remove" | translate }}
                   </button>
                 </div>
@@ -365,8 +355,7 @@
                     <div class="meal-prep-line-card__source">
                       <span class="meal-prep-line-card__label">{{ "Product" | translate }}</span>
                       <strong>{{ resolveProductName(line.productId) }}</strong>
-                      <button
-                        mat-stroked-button
+                      <button appButton variant="secondary"
                         type="button"
                         class="meal-prep-action meal-prep-action--secondary"
                         (click)="openMealProductPicker($index)"
@@ -389,7 +378,7 @@
                       }
                     </mat-select>
                   </mat-form-field>
-                  <button mat-stroked-button color="warn" type="button" (click)="removeMealLine($index)" [disabled]="saving">
+                  <button appButton variant="danger" type="button" (click)="removeMealLine($index)" [disabled]="saving">
                     {{ "Remove" | translate }}
                   </button>
                 </div>
@@ -400,21 +389,21 @@
       </mat-card-content>
 
       <mat-card-actions align="end" class="gap-2 px-4 pb-4">
-        <button mat-stroked-button type="button" (click)="closeEditor()" [disabled]="saving">
+        <button appButton variant="secondary" type="button" (click)="closeEditor()" [disabled]="saving">
           {{ "Cancel" | translate }}
         </button>
         @if (activeView === 'dish') {
-          <button mat-stroked-button type="button" (click)="addDishLine()" [disabled]="saving">
+          <button appButton variant="secondary" type="button" (click)="addDishLine()" [disabled]="saving">
             {{ "Add line" | translate }}
           </button>
-          <button mat-raised-button color="primary" type="button" (click)="saveDish()" [disabled]="!canSaveDish() || saving">
+          <button appButton variant="raised" type="button" (click)="saveDish()" [disabled]="!canSaveDish() || saving">
             {{ editingDishId === null ? ("Create dish" | translate) : ("Save dish" | translate) }}
           </button>
         } @else {
-          <button mat-stroked-button type="button" (click)="addMealLine()" [disabled]="saving">
+          <button appButton variant="secondary" type="button" (click)="addMealLine()" [disabled]="saving">
             {{ "Add line" | translate }}
           </button>
-          <button mat-raised-button color="primary" type="button" (click)="saveMeal()" [disabled]="!canSaveMeal() || saving">
+          <button appButton variant="raised" type="button" (click)="saveMeal()" [disabled]="!canSaveMeal() || saving">
             {{ editingMealId === null ? ("Create meal" | translate) : ("Save meal" | translate) }}
           </button>
         }
@@ -424,7 +413,7 @@
 }
 
 @if (isProductPickerOpen) {
-  <button
+  <button appButton variant="plain"
     type="button"
     class="app-modal-backdrop"
     [attr.aria-label]="&quot;Close product picker&quot; | translate"
@@ -453,7 +442,7 @@
           (selected)="onProductPicked($event)" />
       </mat-card-content>
       <mat-card-actions align="end" class="gap-2 px-4 pb-4">
-        <button mat-stroked-button type="button" (click)="closeProductPicker()">
+        <button appButton variant="secondary" type="button" (click)="closeProductPicker()">
           {{ "Cancel" | translate }}
         </button>
       </mat-card-actions>

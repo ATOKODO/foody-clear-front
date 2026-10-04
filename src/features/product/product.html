@@ -16,8 +16,7 @@
       </h2>
 
       <div class="catalogue-panel__actions">
-        <button
-          mat-stroked-button
+        <button appButton variant="secondary"
           type="button"
           class="catalogue-action catalogue-action--secondary"
           (click)="onRefreshActiveView()"
@@ -27,8 +26,7 @@
           {{ "Refresh" | translate }}
         </button>
 
-        <button
-          mat-stroked-button
+        <button appButton variant="primary"
           type="button"
           class="catalogue-action catalogue-action--primary"
           (click)="onAddActiveView()"
@@ -47,21 +45,21 @@
             <div class="app-status-row">
               @if (loading) {
                 <span
-                  class="app-status-pill app-status-pill--neutral"
+                  appStatusBadge tone="neutral"
                   >
                   {{ "Loading..." | translate }}
                 </span>
               }
               @if (saving) {
                 <span
-                  class="app-status-pill app-status-pill--saving"
+                  appStatusBadge tone="saving"
                   >
                   {{ "Saving..." | translate }}
                 </span>
               }
               @if (loadingMeta) {
                 <span
-                  class="app-status-pill app-status-pill--info"
+                  appStatusBadge tone="info"
                   >
                   {{ "Meta..." | translate }}
                 </span>
@@ -72,7 +70,7 @@
             }
             @if (lastMetaError) {
               <p
-                class="app-alert"
+                appAlert
                 >
                 {{ "Unable to load metadata (units / nutrition keys), fallback enabled." | translate }}
               </p>
@@ -117,7 +115,7 @@
         <p class="app-dialog-subtitle">{{ (formDialogSubtitle) | translate }}</p>
       </div>
 
-      <button mat-stroked-button type="button" (click)="onCancelForm()" [disabled]="saving">
+      <button appButton variant="secondary" type="button" (click)="onCancelForm()" [disabled]="saving">
         {{ "Close" | translate }}
       </button>
     </div>

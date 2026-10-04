@@ -69,6 +69,7 @@ export default defineConfig({
         { text: 'Architecture', link: '/development/architecture' },
         { text: 'Testing', link: '/development/testing' },
         { text: 'Storybook & design system', link: '/development/storybook' },
+        { text: 'UI coverage audit', link: '/development/ui-audit' },
         { text: 'Maintain these docs', link: '/development/documentation' },
         { text: 'Project status and license', link: '/project' },
       ] },

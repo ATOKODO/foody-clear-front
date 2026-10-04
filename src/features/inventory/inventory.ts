@@ -1,10 +1,15 @@
+import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
+import { UiTableScroll } from '../../app/ui/table-scroll/table-scroll';
+import { UiTableCell } from '../../app/ui/table-cell/table-cell';
+import { UiTable } from '../../app/ui/table/table';
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { Language } from '../../app/i18n/language';
 import { UiModal } from '../../app/ui/modal/modal';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { LatestRequest } from '../../utils/latest-request';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -55,9 +60,8 @@ import {
 
 @Component({
   selector: 'app-inventory',
-  imports: [TranslatePipe, UiModal,
+  imports: [UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiStatusBadge, UiButton, TranslatePipe, UiModal,
     FormsModule,
-    MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,

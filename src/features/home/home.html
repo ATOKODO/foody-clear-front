@@ -9,7 +9,7 @@
     </div>
 
     <div class="home-dashboard__hero-actions">
-      <button
+      <button appButton variant="plain"
         type="button"
         class="home-dashboard__hero-link home-dashboard__hero-link--ghost"
         data-testid="home-dashboard-refresh"
@@ -21,7 +21,7 @@
       <a routerLink="/product" class="home-dashboard__hero-link home-dashboard__hero-link--primary">
         {{ "Open catalog" | translate }}
       </a>
-      <button
+      <button appButton variant="plain"
         type="button"
         class="home-dashboard__hero-link home-dashboard__hero-link--secondary"
         data-testid="home-dashboard-external-entry"
@@ -91,7 +91,7 @@
                             {{ (getTemplateStockLabel(item)) | translate }}
                           </small>
                           @if (isConvertedTemplateItem(item)) {
-                            <button
+                            <button appButton variant="plain"
                               type="button"
                               class="home-schedule__action home-schedule__action--revert"
                               [disabled]="loadingDay"
@@ -100,7 +100,7 @@
                               {{ "Restore to template" | translate }}
                             </button>
                           } @else {
-                            <button
+                            <button appButton variant="plain"
                               type="button"
                               class="home-schedule__action home-schedule__action--secondary"
                               [disabled]="!canConvertTemplateItem(item) || loadingDay"
@@ -129,14 +129,14 @@
                   </div>
                 }
                 @if (row.plannedItems.length === 0 && row.items.length === 0) {
-                  <p class="home-schedule__empty">{{ "Nothing planned for this slot." | translate }}</p>
+                  <p appEmptyState appearance="text" class="home-schedule__empty">{{ "Nothing planned for this slot." | translate }}</p>
                 }
               </div>
             </article>
           }
         </div>
       } @else {
-        <p class="home-panel__empty">{{ "No planning returned for today." | translate }}</p>
+        <p appEmptyState appearance="text" class="home-panel__empty">{{ "No planning returned for today." | translate }}</p>
       }
     </article>
 
@@ -173,7 +173,7 @@
             }
           </div>
         } @else {
-          <p class="home-panel__empty">{{ "No entries submitted today." | translate }}</p>
+          <p appEmptyState appearance="text" class="home-panel__empty">{{ "No entries submitted today." | translate }}</p>
         }
       </article>
 
@@ -235,7 +235,7 @@
             }
           </div>
         } @else {
-          <p class="home-panel__empty">{{ "No purchases linked to today." | translate }}</p>
+          <p appEmptyState appearance="text" class="home-panel__empty">{{ "No purchases linked to today." | translate }}</p>
         }
       </article>
     </aside>
@@ -258,10 +258,10 @@
       />
     } @placeholder {
       <div class="home-editor-launch">
-        <p class="home-panel__empty">
+        <p appEmptyState appearance="text" class="home-panel__empty">
           {{ "Load the editor on demand to keep the dashboard responsive." | translate }}
         </p>
-        <button
+        <button appButton variant="plain"
           #quickEntryTrigger
           type="button"
           class="home-editor-launch__button"

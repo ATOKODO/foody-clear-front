@@ -166,8 +166,7 @@
   font-weight: var(--app-font-weight-bold);
 }
 
-.meal-prep-list-card__meta,
-.meal-prep-empty {
+.meal-prep-list-card__meta {
   color: var(--app-text-muted);
   font-size: var(--app-font-size-sm);
 }
@@ -249,10 +248,6 @@
   flex-wrap: wrap;
   gap: var(--app-space-2);
   margin-top: 0.35rem;
-}
-
-.meal-prep-empty--large {
-  @include feature.empty-large;
 }
 
 .meal-prep-editor-card--modal {

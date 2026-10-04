@@ -1,9 +1,10 @@
+import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { Language } from '../../app/i18n/language';
 import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { LatestRequest } from '../../utils/latest-request';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
@@ -53,10 +54,9 @@ import {
 
 @Component({
   selector: 'app-statistic',
-  imports: [
+  imports: [UiEmptyState, UiButton,
     TranslatePipe,
     FormsModule,
-    MatButtonModule,
     MatButtonToggleModule,
     MatCardModule,
     MatCheckboxModule,

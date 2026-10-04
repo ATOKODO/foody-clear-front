@@ -1,3 +1,8 @@
+import { UiEmptyState } from '../../../app/ui/empty-state/empty-state';
+import { UiTableScroll } from '../../../app/ui/table-scroll/table-scroll';
+import { UiTableCell } from '../../../app/ui/table-cell/table-cell';
+import { UiTable } from '../../../app/ui/table/table';
+import { UiButton } from '../../../app/ui/button/button';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 import { Language } from '../../../app/i18n/language';
 import { buildProductQtyUnitOptions, normalizeQtyUnitSelection } from '../../../utils/product-quantity';
@@ -12,7 +17,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -45,10 +49,9 @@ export interface TemplateFormSubmittedEvent {
 
 @Component({
   selector: 'app-template-form',
-  imports: [
+  imports: [UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiButton,
     TranslatePipe,
     FormsModule,
-    MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,

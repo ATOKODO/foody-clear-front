@@ -1,3 +1,5 @@
+import { UiEmptyState } from '../../../app/ui/empty-state/empty-state';
+import { UiButton } from '../../../app/ui/button/button';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 import {
   CdkDragDrop,
@@ -19,7 +21,6 @@ import {
   FormBuilder,
   Validators,
 } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -71,12 +72,11 @@ interface DurationPreset {
 
 @Component({
   selector: 'app-form-cycle',
-  imports: [
+  imports: [UiEmptyState, UiButton,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     DragDropModule,
-    MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,

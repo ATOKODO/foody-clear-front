@@ -3,7 +3,7 @@
     <h2 class="text-xl font-medium">{{ (heading) | translate }}</h2>
     <div class="inventory-form__header-actions flex flex-wrap items-center gap-2">
       <ng-content select="[inventory-form-header-actions]"></ng-content>
-      <button mat-stroked-button type="button" (click)="onMenuClick()">{{ "Options" | translate }}</button>
+      <button appButton variant="secondary" type="button" (click)="onMenuClick()">{{ "Options" | translate }}</button>
     </div>
   </div>
 
@@ -20,7 +20,7 @@
       </div>
 
       <div class="mt-6 w-50 flex items-start md:col-span-4 md:items-end">
-        <button mat-raised-button color="primary" type="submit" class="w-full" [disabled]="saving()">
+        <button appButton variant="raised" type="submit" class="w-full" [disabled]="saving()">
           {{ mode() === 'edit' ? ("Update" | translate) : ("Create" | translate) }}
         </button>
       </div>

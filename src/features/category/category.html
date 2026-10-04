@@ -3,14 +3,14 @@
     <div class="app-status-row">
       @if (store.loading()) {
         <span
-          class="app-status-pill app-status-pill--neutral"
+          appStatusBadge tone="neutral"
           >
           {{ "Loading..." | translate }}
         </span>
       }
       @if (store.saving()) {
         <span
-          class="app-status-pill app-status-pill--saving"
+          appStatusBadge tone="saving"
           >
           {{ "Saving..." | translate }}
         </span>
@@ -36,9 +36,7 @@
           <h2 class="text-xl font-semibold">{{ "Categories" | translate }}</h2>
           <p class="mt-1 text-sm text-app-on-color-muted">{{ "Structure, alertes et seuils par category." | translate }}</p>
         </div>
-        <button
-          mat-raised-button
-          color="primary"
+        <button appButton variant="raised"
           type="button"
           (click)="store.refresh()"
           >
@@ -49,14 +47,14 @@
         <div class="app-status-row">
           @if (store.loading()) {
             <span
-              class="app-status-pill app-status-pill--neutral"
+              appStatusBadge tone="neutral"
               >
               {{ "Loading..." | translate }}
             </span>
           }
           @if (store.saving()) {
             <span
-              class="app-status-pill app-status-pill--saving"
+              appStatusBadge tone="saving"
               >
               {{ "Saving..." | translate }}
             </span>
@@ -79,7 +77,7 @@
 
 
 @if (store.formVisible()) {
-  <button
+  <button appButton variant="plain"
     type="button"
     class="app-modal-backdrop"
     [attr.aria-label]="&quot;Close la modale&quot; | translate"
@@ -100,7 +98,7 @@
           <h3 class="app-dialog-title">{{ (store.dialogTitle()) | translate }}</h3>
           <p class="app-dialog-subtitle">{{ (store.dialogSubtitle()) | translate }}</p>
         </div>
-        <button mat-stroked-button type="button" (click)="store.cancelForm()">
+        <button appButton variant="secondary" type="button" (click)="store.cancelForm()">
           {{ "Close" | translate }}
         </button>
       </div>

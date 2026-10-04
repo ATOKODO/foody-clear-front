@@ -1,0 +1,12 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 42rem;
+  color: var(--app-text-strong);
+}
+
+mat-form-field { width: min(100%, 24rem); }
+mat-progress-bar { width: 100%; }
+mat-card-content, .tab-content { padding: var(--app-space-4); }
+.table-scroll { overflow: auto; }
+table { width: 100%; min-width: 32rem; }

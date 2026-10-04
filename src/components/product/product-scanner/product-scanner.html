@@ -6,12 +6,12 @@
   </div>
   <div class="scanner__actions">
     @if (scanning()) {
-      <button mat-stroked-button type="button" (click)="stopCamera()">{{ "Arrêter la caméra" | translate }}</button>
+      <button appButton variant="secondary" type="button" (click)="stopCamera()">{{ "Arrêter la caméra" | translate }}</button>
     } @else {
-      <button mat-stroked-button type="button" [disabled]="disabled() || loading()" (click)="startCamera()">{{ "Scanner avec la caméra" | translate }}</button>
+      <button appButton variant="secondary" type="button" [disabled]="disabled() || loading()" (click)="startCamera()">{{ "Scanner avec la caméra" | translate }}</button>
     }
   </div>
-  @if (cameraError()) { <p class="app-alert" role="alert">{{ (cameraError()) | translate }}</p> }
+  @if (cameraError()) { <p appAlert role="alert">{{ (cameraError()) | translate }}</p> }
   <form class="scanner__search" (ngSubmit)="lookup()">
     <mat-form-field appearance="fill">
       <mat-label>{{ "Code-barres du produit" | translate }}</mat-label>
@@ -20,12 +20,12 @@
         [disabled]="disabled()" />
       <mat-hint>{{ "Vous pouvez aussi saisir les chiffres sous le code-barres." | translate }}</mat-hint>
     </mat-form-field>
-    <button mat-raised-button type="submit" [disabled]="disabled() || loading() || !barcode().trim()">
+    <button appButton variant="raised" type="submit" [disabled]="disabled() || loading() || !barcode().trim()">
       {{ loading() ? ("Recherche…" | translate) : ("Rechercher le produit" | translate) }}
     </button>
   </form>
   @if (loading()) { <p role="status">{{ "Lecture des informations Open Food Facts…" | translate }}</p> }
-  @if (error()) { <p class="app-alert" role="alert">{{ error() | translate }}</p> }
+  @if (error()) { <p appAlert role="alert">{{ error() | translate }}</p> }
   @if (product(); as product) {
     <article class="scanner__result" data-testid="food-facts-product" aria-live="polite">
       <div class="scanner__identity">
@@ -45,13 +45,13 @@
         <p>{{ product.allergens.length ? formatAllergens(product.allergens) : ("Non renseignés" | translate) }}</p>
       </div>
       @if (product.nutritionValues.length) {
-        <div class="scanner__nutrition">
-          <table>
+        <div appTableScroll [label]="'Nutrition values' | translate" class="scanner__nutrition">
+          <table appTable>
             <caption>{{ "Valeurs nutritionnelles pour {p0}" | translate: { p0: (product.nutritionValues[0].reference === 'PER_100ML' ? '100 ml' : '100 g') } }}</caption>
-            <thead><tr><th scope="col">{{ "Nutriment" | translate }}</th><th scope="col">{{ "Quantité" | translate }}</th></tr></thead>
+            <thead><tr><th appTableCell scope="col">{{ "Nutriment" | translate }}</th><th appTableCell scope="col">{{ "Quantité" | translate }}</th></tr></thead>
             <tbody>
               @for (value of product.nutritionValues; track value.nutritionKey) {
-                <tr><th scope="row">{{ (nutritionLabels[value.nutritionKey] || value.nutritionKey) | translate }}</th><td>{{ language.formatNumber(value.amount) }} {{ value.unit | translate }}</td></tr>
+                <tr><th appTableCell scope="row">{{ (nutritionLabels[value.nutritionKey] || value.nutritionKey) | translate }}</th><td appTableCell>{{ language.formatNumber(value.amount) }} {{ value.unit | translate }}</td></tr>
               }
             </tbody>
           </table>
@@ -62,7 +62,7 @@
         @if (product.imageUrl) { {{ "Photos :" | translate }} <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">{{ "CC BY-SA" | translate }}</a>. }
       </p>
       <p>{{ "Vérifiez les informations sur l’emballage avant d’ajouter le produit." | translate }}</p>
-      <button mat-raised-button type="button" [disabled]="disabled()" (click)="useProduct()">{{ "Utiliser ces informations" | translate }}</button>
+      <button appButton variant="raised" type="button" [disabled]="disabled()" (click)="useProduct()">{{ "Utiliser ces informations" | translate }}</button>
     </article>
   }
 </section>

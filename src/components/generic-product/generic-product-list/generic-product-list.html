@@ -42,17 +42,14 @@
           class="generic-product-table__actions-cell"
           >
           <div class="generic-product-table__actions">
-            <button
-              mat-stroked-button
+            <button appButton variant="edit"
               type="button"
               class="generic-product-table__action generic-product-table__action--edit"
               [attr.data-testid]="'generic-product-edit-' + item.id"
               (click)="$event.stopPropagation(); onEditClick(item)">
               {{ "Edit" | translate }}
             </button>
-            <button
-              mat-stroked-button
-              color="warn"
+            <button appButton variant="danger"
               type="button"
               class="generic-product-table__action generic-product-table__action--delete"
               [attr.data-testid]="'generic-product-delete-' + item.id"
@@ -89,9 +86,7 @@
       <div class="flex items-center justify-between gap-3 border-b border-app-border bg-app-surface-soft px-4 py-3 sm:px-6">
         <h2 class="text-base font-semibold text-app-text-strong">{{ "Generic Products" | translate }}</h2>
         @if (isManageMode) {
-          <button
-            mat-raised-button
-            color="primary"
+          <button appButton variant="raised"
             type="button"
             data-testid="generic-product-add"
             class="add-btn"
@@ -106,9 +101,9 @@
         </div>
       } @else {
         <mat-card appearance="outlined" class="rounded-xl">
-          <mat-card-content class="p-4 text-sm text-app-text">
+          <mat-card-content class="p-4"><p appEmptyState>
             {{ "No generic product available." | translate }}
-          </mat-card-content>
+          </p></mat-card-content>
         </mat-card>
       }
     </mat-card>
@@ -118,7 +113,7 @@
     @if (hasItems) {
       <ng-container [ngTemplateOutlet]="tableContent" />
     } @else {
-      <p class="generic-product-list__empty text-sm text-app-text">{{ "No generic product available." | translate }}</p>
+      <p appEmptyState appearance="text" class="generic-product-list__empty">{{ "No generic product available." | translate }}</p>
     }
   </div>
 }

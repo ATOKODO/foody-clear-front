@@ -1,3 +1,5 @@
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { UiModal } from '../../app/ui/modal/modal';
 import { DatePipe } from '@angular/common';
@@ -14,7 +16,6 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LatestRequest } from '../../utils/latest-request';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -80,12 +81,11 @@ import {
 
 @Component({
   selector: 'app-planning',
-  imports: [TranslatePipe, UiModal,
+  imports: [UiStatusBadge, UiButton, TranslatePipe, UiModal,
     FormsModule,
     Calendar,
     InputDayFeature,
     ListCycle,
-    MatButtonModule,
     MatCardModule,
     MatDialogModule,
     MatFormFieldModule,

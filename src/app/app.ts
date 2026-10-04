@@ -1,3 +1,5 @@
+import { UiAlert } from './ui/alert/alert';
+import { UiButton } from './ui/button/button';
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Component, DestroyRef, inject } from '@angular/core';
@@ -25,7 +27,7 @@ import { TranslatePipe } from './i18n/translate-pipe';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, PwaControls, TranslatePipe],
+  imports: [UiAlert, UiButton, RouterLink, RouterLinkActive, RouterOutlet, PwaControls, TranslatePipe],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {

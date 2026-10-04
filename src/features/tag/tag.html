@@ -2,12 +2,12 @@
   <div class="space-y-4" data-testid="tag-embedded">
     <div class="app-status-row">
       @if (loading()) {
-        <span class="app-status-pill app-status-pill--neutral">
+        <span appStatusBadge tone="neutral">
           {{ "Loading..." | translate }}
         </span>
       }
       @if (saving()) {
-        <span class="app-status-pill app-status-pill--saving">
+        <span appStatusBadge tone="saving">
           {{ "Saving..." | translate }}
         </span>
       }
@@ -32,19 +32,19 @@
             {{ "Taxonomie et etiquetage transverse du catalogue." | translate }}
           </p>
         </div>
-        <button mat-raised-button color="primary" type="button" (click)="onRefreshRequested()">
+        <button appButton variant="raised" type="button" (click)="onRefreshRequested()">
           {{ "Refresh" | translate }}
         </button>
       </div>
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
           @if (loading()) {
-            <span class="app-status-pill app-status-pill--neutral">
+            <span appStatusBadge tone="neutral">
               {{ "Loading..." | translate }}
             </span>
           }
           @if (saving()) {
-            <span class="app-status-pill app-status-pill--saving">
+            <span appStatusBadge tone="saving">
               {{ "Saving..." | translate }}
             </span>
           }
@@ -64,7 +64,7 @@
 
 
 @if (formVisible) {
-  <button type="button" class="app-modal-backdrop" [attr.aria-label]="&quot;Close la modale&quot; | translate" (click)="onCancelForm()"></button>
+  <button appButton variant="plain" type="button" class="app-modal-backdrop" [attr.aria-label]="&quot;Close la modale&quot; | translate" (click)="onCancelForm()"></button>
 }
 @if (formVisible) {
   <div class="app-modal-shell">
@@ -85,7 +85,7 @@
             {{ "Utilise des tags pour filtrer rapidement les products et regrouper les usages." | translate }}
           </p>
         </div>
-        <button mat-stroked-button type="button" (click)="onCancelForm()">
+        <button appButton variant="secondary" type="button" (click)="onCancelForm()">
           {{ "Close" | translate }}
         </button>
       </div>

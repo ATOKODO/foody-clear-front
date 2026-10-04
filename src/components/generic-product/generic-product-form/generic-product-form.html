@@ -4,7 +4,7 @@
   @if (showHeading()) {
     <div class="mb-6 flex items-center justify-between border-b border-app-border pb-3">
       <h2 class="text-xl font-medium">{{ (heading) | translate }}</h2>
-      <button mat-stroked-button type="button" (click)="onMenuClick()">{{ "Options" | translate }}</button>
+      <button appButton variant="secondary" type="button" (click)="onMenuClick()">{{ "Options" | translate }}</button>
     </div>
   }
 
@@ -63,7 +63,7 @@
     </div>
 
     <div class="flex justify-center pt-2">
-      <button mat-raised-button color="primary" type="submit" [disabled]="saving()" class="rounded-full px-8">
+      <button appButton variant="raised" type="submit" [disabled]="saving()" class="rounded-full px-8">
         {{ mode() === 'edit' ? ("Update" | translate) : ("Create" | translate) }}
       </button>
     </div>

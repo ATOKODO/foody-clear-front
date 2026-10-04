@@ -116,10 +116,8 @@
   }
 
   <mat-dialog-actions align="end" class="external-entry-dialog__actions">
-    <button mat-stroked-button type="button" (click)="cancel()" [disabled]="saving">{{ "Cancel" | translate }}</button>
-    <button
-      mat-raised-button
-      color="primary"
+    <button appButton variant="secondary" type="button" (click)="cancel()" [disabled]="saving">{{ "Cancel" | translate }}</button>
+    <button appButton variant="raised"
       type="button"
       data-testid="external-entry-submit"
       (click)="submit()"

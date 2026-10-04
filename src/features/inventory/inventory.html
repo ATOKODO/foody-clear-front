@@ -10,8 +10,7 @@
       </div>
 
       <div class="inventory-panel__actions">
-        <button
-          mat-stroked-button
+        <button appButton variant="secondary"
           type="button"
           class="inventory-action inventory-action--secondary"
           data-testid="inventory-refresh-action"
@@ -20,8 +19,7 @@
           {{ "Refresh" | translate }}
         </button>
 
-        <button
-          mat-stroked-button
+        <button appButton variant="primary"
           type="button"
           class="inventory-action inventory-action--primary"
           data-testid="inventory-add-action"
@@ -36,19 +34,19 @@
       @if (loading || loadingProducts || saving || loadingInventoryProducts || loadingSelectedInventoryProducts) {
         <div class="app-status-row">
           @if (loading) {
-            <span class="app-status-pill app-status-pill--neutral">{{ "Loading..." | translate }}</span>
+            <span appStatusBadge tone="neutral">{{ "Loading..." | translate }}</span>
           }
           @if (loadingProducts) {
-            <span class="app-status-pill app-status-pill--info">{{ "Products..." | translate }}</span>
+            <span appStatusBadge tone="info">{{ "Products..." | translate }}</span>
           }
           @if (saving) {
-            <span class="app-status-pill app-status-pill--saving">{{ "Saving..." | translate }}</span>
+            <span appStatusBadge tone="saving">{{ "Saving..." | translate }}</span>
           }
           @if (loadingInventoryProducts) {
-            <span class="app-status-pill app-status-pill--info">{{ "Loading editor stock..." | translate }}</span>
+            <span appStatusBadge tone="info">{{ "Loading editor stock..." | translate }}</span>
           }
           @if (loadingSelectedInventoryProducts) {
-            <span class="app-status-pill app-status-pill--info">{{ "Loading selected inventory..." | translate }}</span>
+            <span appStatusBadge tone="info">{{ "Loading selected inventory..." | translate }}</span>
           }
         </div>
       }
@@ -74,7 +72,7 @@
               [class.is-active]="selectedInventory?.id === inventory.id"
               [attr.data-testid]="'inventory-select-' + inventory.id"
               >
-              <button type="button" class="inventory-list-card__select" [disabled]="saving" (click)="selectInventory(inventory.id)">
+              <button appButton variant="plain" type="button" class="inventory-list-card__select" [disabled]="saving" (click)="selectInventory(inventory.id)">
                 <span class="inventory-list-card__title">{{ inventory.name }}</span>
                 <span class="inventory-list-card__meta">{{ "{p0} linked product(s)" | translate: { p0: (inventory.productCount) } }}</span>
                 <span class="inventory-list-card__status" [class.inventory-list-card__status--empty]="inventory.productCount === 0">
@@ -82,16 +80,14 @@
                 </span>
               </button>
               <div class="inventory-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                <button
-                  mat-stroked-button
+                <button appButton variant="secondary"
                   type="button"
                   class="inventory-action inventory-action--secondary"
                   (click)="onEditRequested(inventory)"
                   [disabled]="saving">
                   {{ "Edit" | translate }}
                 </button>
-                <button
-                  mat-stroked-button
+                <button appButton variant="danger"
                   type="button"
                   class="inventory-action inventory-action--danger"
                   (click)="onDeleteRequested(inventory)"
@@ -101,7 +97,7 @@
               </div>
             </div>
           } @empty {
-            <p class="inventory-empty">{{ "No inventory available." | translate }}</p>
+            <p appEmptyState appearance="text" class="inventory-empty">{{ "No inventory available." | translate }}</p>
           }
         </div>
 
@@ -141,12 +137,12 @@
                     </div>
                   }
                 } @else {
-                  <p class="inventory-empty">{{ "No linked products in this inventory." | translate }}</p>
+                  <p appEmptyState appearance="text" class="inventory-empty">{{ "No linked products in this inventory." | translate }}</p>
                 }
               </div>
             </div>
           } @else {
-            <p class="inventory-empty inventory-empty--large">{{ "Select or create an inventory to start." | translate }}</p>
+            <p appEmptyState appearance="text" class="inventory-empty inventory-empty--large">{{ "Select or create an inventory to start." | translate }}</p>
           }
         </div>
       </app-master-detail-layout>
@@ -155,7 +151,7 @@
 </section>
 
 @if (formVisible) {
-  <button type="button" class="app-modal-backdrop" [attr.aria-label]="&quot;Close modal&quot; | translate" (click)="closeFormModal()"></button>
+  <button appButton variant="plain" type="button" class="app-modal-backdrop" [attr.aria-label]="&quot;Close modal&quot; | translate" (click)="closeFormModal()"></button>
 }
 @if (formVisible) {
   <div class="app-modal-shell" data-testid="inventory-dialog">
@@ -168,10 +164,8 @@
           (submitted)="onFormSubmitted($event)"
           (menuClicked)="onMenuClicked()">
           @if (formMode === 'edit') {
-            <button
+            <button appButton variant="raised"
               inventory-form-header-actions
-              mat-raised-button
-              color="primary"
               type="button"
               (click)="openAddProductsModal()"
               [disabled]="saving || loadingProducts || loadingInventoryProducts">
@@ -194,28 +188,27 @@
                 </p>
               }
               @if (manageProductRows.length > 0) {
-                <div class="overflow-x-auto rounded-xl border border-app-border">
-                  <table class="inventory-products-table w-full min-w-[820px] text-sm">
-                    <thead class="bg-app-surface-soft text-left text-app-text">
+                <div appTableScroll [label]="'Products in stock' | translate">
+                  <table appTable class="inventory-products-table min-w-[820px]">
+                    <thead>
                       <tr>
-                        <th class="px-3 py-2">{{ "Product" | translate }}</th>
-                        <th class="px-3 py-2">{{ "Current qty" | translate }}</th>
-                        <th class="px-3 py-2">{{ "Normalized stock" | translate }}</th>
-                        <th class="px-3 py-2">{{ "New qty" | translate }}</th>
-                        <th class="px-3 py-2 text-right">{{ "Action" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Product" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Current qty" | translate }}</th>
+                        <th appTableCell scope="col">{{ "Normalized stock" | translate }}</th>
+                        <th appTableCell scope="col">{{ "New qty" | translate }}</th>
+                        <th appTableCell contentAlign="end" scope="col">{{ "Action" | translate }}</th>
                       </tr>
                     </thead>
                     <tbody>
                       @for (row of manageProductRows; track trackBySelectedProductRow($index, row)) {
-                        <tr
-                          class="border-t border-app-border-soft align-top">
-                          <td class="px-3 py-2 font-medium text-app-text-strong">{{ row.productName }}</td>
-                          <td class="px-3 py-2 text-app-text">{{ row.currentQtyDisplay }}</td>
-                          <td class="px-3 py-2 text-app-text">
+                        <tr>
+                          <td appTableCell class="font-medium text-app-text-strong">{{ row.productName }}</td>
+                          <td appTableCell class="text-app-text">{{ row.currentQtyDisplay }}</td>
+                          <td appTableCell class="text-app-text">
                             {{ row.currentNormalizedQty ?? '-' }}
                             <span class="text-app-text-muted">{{ row.currentNormalizedUnit ?? '' }}</span>
                           </td>
-                          <td class="px-3 py-2">
+                          <td appTableCell>
                             <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
                               <mat-form-field appearance="fill" class="w-full">
                                 <mat-label>{{ "Quantity" | translate }}</mat-label>
@@ -248,10 +241,8 @@
                               </p>
                             }
                           </td>
-                          <td class="px-3 py-2 text-right">
-                            <button
-                              mat-stroked-button
-                              color="warn"
+                          <td appTableCell contentAlign="end">
+                            <button appButton variant="danger"
                               type="button"
                               (click)="removeManagedProduct(row.productId)">
                               {{ "Remove from list" | translate }}
@@ -263,7 +254,7 @@
                   </table>
                 </div>
               } @else {
-                <p class="text-sm text-app-text">
+                <p appEmptyState appearance="text">
                   {{ "No product is linked to this inventory." | translate }}
                 </p>
               }
@@ -273,17 +264,13 @@
                 </p>
               }
               <div class="flex flex-wrap justify-end gap-2 border-t border-app-border pt-4">
-                <button
-                  mat-stroked-button
-                  color="warn"
+                <button appButton variant="danger"
                   type="button"
                   (click)="emptyInventory()"
                   [disabled]="saving || editingInventoryProducts.length === 0">
                   {{ "Empty inventory" | translate }}
                 </button>
-                <button
-                  mat-raised-button
-                  color="primary"
+                <button appButton variant="raised"
                   type="button"
                   (click)="saveManagedProducts()"
                   [disabled]="!canSaveManagedProducts">
@@ -315,22 +302,21 @@
               [compact]="true"
               (selectedMany)="onCreateProductsSelected($event)" />
             @if (createSelectedProductRows.length > 0) {
-              <div class="overflow-x-auto rounded-xl border border-app-border">
-                <table class="w-full min-w-[760px] text-sm">
-                  <thead class="bg-app-surface-soft text-left text-app-text">
+              <div appTableScroll [label]="'Products' | translate">
+                <table appTable class="min-w-[760px]">
+                  <thead>
                     <tr>
-                      <th class="px-3 py-2">{{ "Product" | translate }}</th>
-                      <th class="px-3 py-2">{{ "Qty" | translate }}</th>
-                      <th class="px-3 py-2">{{ "Stats" | translate }}</th>
-                      <th class="px-3 py-2 text-right">{{ "Action" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Product" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Qty" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Stats" | translate }}</th>
+                      <th appTableCell contentAlign="end" scope="col">{{ "Action" | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (row of createSelectedProductRows; track trackBySelectedProductRow($index, row)) {
-                      <tr
-                        class="border-t border-app-border-soft align-top">
-                        <td class="px-3 py-2 font-medium text-app-text-strong">{{ row.productName }}</td>
-                        <td class="px-3 py-2">
+                      <tr>
+                        <td appTableCell class="font-medium text-app-text-strong">{{ row.productName }}</td>
+                        <td appTableCell>
                           <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
                             <mat-form-field appearance="fill" class="w-full">
                               <mat-label>{{ "Quantity" | translate }}</mat-label>
@@ -363,7 +349,7 @@
                             </p>
                           }
                         </td>
-                        <td class="px-3 py-2">
+                        <td appTableCell>
                           <mat-form-field appearance="fill" class="w-full">
                             <mat-label>{{ "Stats" | translate }}</mat-label>
                             <mat-select
@@ -377,10 +363,8 @@
                             </mat-select>
                           </mat-form-field>
                         </td>
-                        <td class="px-3 py-2 text-right">
-                          <button
-                            mat-stroked-button
-                            color="warn"
+                        <td appTableCell contentAlign="end">
+                          <button appButton variant="danger"
                             type="button"
                             (click)="removeCreateSelectedProduct(row.productId)">
                             {{ "Remove" | translate }}
@@ -405,7 +389,7 @@
         }
       </mat-card-content>
       <mat-card-actions class="flex justify-center px-4 pb-6">
-        <button mat-stroked-button type="button" (click)="closeFormModal()" [disabled]="saving">
+        <button appButton variant="secondary" type="button" (click)="closeFormModal()" [disabled]="saving">
           {{ "Cancel" | translate }}
         </button>
       </mat-card-actions>
@@ -414,7 +398,7 @@
 }
 
 @if (isAddProductsModalOpen) {
-  <button type="button" class="app-modal-backdrop inventory-modal-backdrop--nested" [attr.aria-label]="&quot;Close modal&quot; | translate" (click)="closeActiveModal()"></button>
+  <button appButton variant="plain" type="button" class="app-modal-backdrop inventory-modal-backdrop--nested" [attr.aria-label]="&quot;Close modal&quot; | translate" (click)="closeActiveModal()"></button>
 }
 @if (isAddProductsModalOpen) {
   <div class="app-modal-shell inventory-modal-shell--nested" data-testid="inventory-add-products-dialog">
@@ -435,22 +419,21 @@
           [compact]="true"
           (selectedMany)="onProductsToAddSelected($event)" />
         @if (addSelectedProductRows.length > 0) {
-          <div class="overflow-x-auto rounded-xl border border-app-border">
-            <table class="w-full min-w-[760px] text-sm">
-              <thead class="bg-app-surface-soft text-left text-app-text">
+          <div appTableScroll [label]="'Products' | translate">
+            <table appTable class="min-w-[760px]">
+              <thead>
                 <tr>
-                  <th class="px-3 py-2">{{ "Product" | translate }}</th>
-                  <th class="px-3 py-2">{{ "Qty" | translate }}</th>
-                  <th class="px-3 py-2">{{ "Stats" | translate }}</th>
-                  <th class="px-3 py-2 text-right">{{ "Action" | translate }}</th>
+                  <th appTableCell scope="col">{{ "Product" | translate }}</th>
+                  <th appTableCell scope="col">{{ "Qty" | translate }}</th>
+                  <th appTableCell scope="col">{{ "Stats" | translate }}</th>
+                  <th appTableCell contentAlign="end" scope="col">{{ "Action" | translate }}</th>
                 </tr>
               </thead>
               <tbody>
                 @for (row of addSelectedProductRows; track trackBySelectedProductRow($index, row)) {
-                  <tr
-                    class="border-t border-app-border-soft align-top">
-                    <td class="px-3 py-2 font-medium text-app-text-strong">{{ row.productName }}</td>
-                    <td class="px-3 py-2">
+                  <tr>
+                    <td appTableCell class="font-medium text-app-text-strong">{{ row.productName }}</td>
+                    <td appTableCell>
                       <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
                         <mat-form-field appearance="fill" class="w-full">
                           <mat-label>{{ "Quantity" | translate }}</mat-label>
@@ -483,7 +466,7 @@
                         </p>
                       }
                     </td>
-                    <td class="px-3 py-2">
+                    <td appTableCell>
                       <mat-form-field appearance="fill" class="w-full">
                         <mat-label>{{ "Stats" | translate }}</mat-label>
                         <mat-select
@@ -497,10 +480,8 @@
                         </mat-select>
                       </mat-form-field>
                     </td>
-                    <td class="px-3 py-2 text-right">
-                      <button
-                        mat-stroked-button
-                        color="warn"
+                    <td appTableCell contentAlign="end">
+                      <button appButton variant="danger"
                         type="button"
                         (click)="removeAddSelectedProduct(row.productId)">
                         {{ "Remove" | translate }}
@@ -523,12 +504,10 @@
         }
       </mat-card-content>
       <mat-card-actions align="end" class="gap-2 px-4 pb-4">
-        <button mat-stroked-button type="button" (click)="closeActiveModal()" [disabled]="saving">
+        <button appButton variant="secondary" type="button" (click)="closeActiveModal()" [disabled]="saving">
           {{ "Cancel" | translate }}
         </button>
-        <button
-          mat-raised-button
-          color="primary"
+        <button appButton variant="raised"
           type="button"
           (click)="onAddSelectedProducts()"
           [disabled]="!canAddSelectedProducts">

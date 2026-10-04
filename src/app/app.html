@@ -1,6 +1,6 @@
 <div class="app-shell">
   @if (mobileNavigationOpen) {
-    <button
+    <button appButton variant="plain"
       type="button"
       class="app-shell__backdrop"
       (click)="closeMobileNavigation()"
@@ -50,7 +50,7 @@
   <div class="app-shell__main">
     <header class="app-shell__header">
       <div class="app-shell__header-primary">
-        <button
+        <button appButton variant="plain"
           type="button"
           class="app-shell__menu-button"
           (click)="openMobileNavigation()"
@@ -74,7 +74,7 @@
       <div class="app-shell__header-actions">
       <app-pwa-controls />
       <div class="app-shell__appearance-controls">
-      <button
+      <button appButton variant="plain"
         type="button"
         class="app-theme-toggle"
         [attr.aria-label]="themeToggleLabel | translate"
@@ -108,11 +108,11 @@
         </span>
       </button>
       <div class="app-language-toggle" role="group" [attr.aria-label]="'Application language' | translate" data-testid="language-switch">
-        <button type="button" data-testid="language-en"
+        <button appButton variant="plain" type="button" data-testid="language-en"
           [attr.aria-label]="'Choose English' | translate"
           [attr.aria-pressed]="language.current() === 'en'"
           (click)="language.set('en')">EN</button>
-        <button type="button" data-testid="language-fr"
+        <button appButton variant="plain" type="button" data-testid="language-fr"
           [attr.aria-label]="'Choose French' | translate"
           [attr.aria-pressed]="language.current() === 'fr'"
           (click)="language.set('fr')">FR</button>
@@ -123,7 +123,7 @@
 
     <main class="app-shell__content">
       @if (!pwa.online()) {
-        <p class="app-alert" role="status">{{ 'Hors connexion. L’app reste accessible ; les recherches et les enregistrements nécessitent une connexion au serveur.' | translate }}</p>
+        <p appAlert role="status">{{ 'Hors connexion. L’app reste accessible ; les recherches et les enregistrements nécessitent une connexion au serveur.' | translate }}</p>
       }
       <router-outlet />
     </main>

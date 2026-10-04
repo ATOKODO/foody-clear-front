@@ -1,3 +1,5 @@
+import { UiEmptyState } from '../../../app/ui/empty-state/empty-state';
+import { UiButton } from '../../../app/ui/button/button';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 import { Language } from '../../../app/i18n/language';
 import {
@@ -9,7 +11,6 @@ import {
   inject,
   output,
 } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TypeDuree } from '../form-cycle/form-cycle';
@@ -86,7 +87,7 @@ export interface CycleListItem extends CycleMacroTotals {
 
 @Component({
   selector: 'app-list-cycle',
-  imports: [TranslatePipe, MatButtonModule, MatCardModule, MatCheckboxModule],
+  imports: [UiEmptyState, UiButton, TranslatePipe, MatCardModule, MatCheckboxModule],
   templateUrl: './list-cycle.html',
   styleUrl: './list-cycle.scss',
 })

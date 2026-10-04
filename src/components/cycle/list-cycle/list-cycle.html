@@ -14,9 +14,7 @@
         {{ "Cycles" | translate }}
       </h3>
       @if (isManageMode && showAddButton()) {
-        <button
-          mat-raised-button
-          color="primary"
+        <button appButton variant="raised"
           data-testid="cycle-add"
           class="add-btn"
           type="button"
@@ -352,8 +350,7 @@
                                 {{ "{p0} linked day set(s)" | translate: { p0: (cycle.daySets.length) } }}
                               </p>
                             </div>
-                            <button
-                              mat-stroked-button
+                            <button appButton variant="secondary"
                               type="button"
                               class="lc-toggle-btn"
                               [attr.aria-expanded]="isExpanded(cycle.id)"
@@ -424,17 +421,14 @@
                       class="flex flex-wrap items-center gap-2 xl:max-w-xs xl:justify-end"
                     >
                       @if (isManageMode) {
-                        <button
-                          mat-stroked-button
+                        <button appButton variant="secondary"
                           type="button"
                           [attr.data-testid]="'cycle-edit-' + cycle.id"
                           (click)="stopPropagation($event); onEdit(cycle)"
                         >
                           {{ "Edit" | translate }}
                         </button>
-                        <button
-                          mat-stroked-button
-                          color="warn"
+                        <button appButton variant="danger"
                           type="button"
                           [attr.data-testid]="'cycle-delete-' + cycle.id"
                           (click)="stopPropagation($event); onDelete(cycle)"
@@ -689,7 +683,7 @@
                           </div>
                         } @else {
                           @if (!daySet.hasMissingSlotBreakdown) {
-                            <p class="mt-3 text-sm text-app-text-muted">
+                            <p appEmptyState appearance="text" class="mt-3">
                               {{ "No slot linked to this day set." | translate }}
                             </p>
                           }
@@ -698,7 +692,7 @@
                     }
                   </div>
                 } @else {
-                  <p class="text-sm text-app-text-muted">
+                  <p appEmptyState appearance="text">
                     {{ "No day set linked to this cycle." | translate }}
                   </p>
                 }
@@ -708,8 +702,7 @@
               <div
                 class="lc-card__footer flex flex-wrap gap-2 border-t border-app-border pt-3"
               >
-                <button
-                  mat-stroked-button
+                <button appButton variant="secondary"
                   type="button"
                   class="lc-footer-action lc-footer-action--detail"
                   [attr.aria-expanded]="isExpanded(cycle.id)"
@@ -717,8 +710,7 @@
                 >
                   {{ (getToggleLabel(cycle.id)) | translate }}
                 </button>
-                <button
-                  mat-stroked-button
+                <button appButton variant="secondary"
                   type="button"
                   class="lc-footer-action"
                   [attr.data-testid]="'cycle-edit-' + cycle.id"
@@ -726,9 +718,7 @@
                 >
                   {{ "Edit" | translate }}
                 </button>
-                <button
-                  mat-stroked-button
-                  color="warn"
+                <button appButton variant="danger"
                   type="button"
                   class="lc-footer-action lc-footer-action--danger"
                   [attr.data-testid]="'cycle-delete-' + cycle.id"
@@ -744,12 +734,12 @@
     </div>
   } @else {
     @if (isEmbeddedManageMode) {
-      <p class="lc-empty text-sm text-app-text">{{ "No cycle available." | translate }}</p>
+      <p appEmptyState appearance="text" class="lc-empty">{{ "No cycle available." | translate }}</p>
     } @else {
       <mat-card appearance="outlined" class="rounded-xl">
-        <mat-card-content class="p-4 text-sm text-app-text">
+        <mat-card-content class="p-4"><p appEmptyState>
           {{ "No cycle available." | translate }}
-        </mat-card-content>
+        </p></mat-card-content>
       </mat-card>
     }
   }

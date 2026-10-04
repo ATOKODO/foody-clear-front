@@ -1,3 +1,4 @@
+import { UiButton } from '../../../app/ui/button/button';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 
 import {
@@ -10,7 +11,6 @@ import {
   output
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
@@ -22,10 +22,9 @@ export interface TagFormValue {
 
 @Component({
   selector: 'app-tag-form',
-  imports: [
+  imports: [UiButton,
     TranslatePipe,
     ReactiveFormsModule,
-    MatButtonModule,
     MatFormFieldModule,
     MatInputModule
   ],

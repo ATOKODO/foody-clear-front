@@ -2,17 +2,17 @@
   <div class="slot-feature slot-feature--embedded" data-testid="slot-page">
     <div class="app-status-row">
       @if (store.loading) {
-        <span class="app-status-pill app-status-pill--neutral">
+        <span appStatusBadge tone="neutral">
           {{ "Loading..." | translate }}
         </span>
       }
       @if (store.saving) {
-        <span class="app-status-pill app-status-pill--saving">
+        <span appStatusBadge tone="saving">
           {{ "Saving..." | translate }}
         </span>
       }
       @if (store.loadingMeta) {
-        <span class="app-status-pill app-status-pill--info">
+        <span appStatusBadge tone="info">
           {{ "Meta nutrition..." | translate }}
         </span>
       }
@@ -21,7 +21,7 @@
       <app-ui-error-panel [error]="store.lastError" />
     }
     @if (store.lastMetaError) {
-      <p class="app-alert">
+      <p appAlert>
         {{ "Unable to load nutrition metadata; fallback is active." | translate }}
       </p>
     }
@@ -45,17 +45,17 @@
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
           @if (store.loading) {
-            <span class="app-status-pill app-status-pill--neutral">
+            <span appStatusBadge tone="neutral">
               {{ "Loading..." | translate }}
             </span>
           }
           @if (store.saving) {
-            <span class="app-status-pill app-status-pill--saving">
+            <span appStatusBadge tone="saving">
               {{ "Saving..." | translate }}
             </span>
           }
           @if (store.loadingMeta) {
-            <span class="app-status-pill app-status-pill--info">
+            <span appStatusBadge tone="info">
               {{ "Meta nutrition..." | translate }}
             </span>
           }
@@ -64,7 +64,7 @@
           <app-ui-error-panel [error]="store.lastError" />
         }
         @if (store.lastMetaError) {
-          <p class="app-alert">
+          <p appAlert>
             {{ "Unable to load nutrition metadata; fallback is active." | translate }}
           </p>
         }
@@ -81,7 +81,7 @@
 
 
 @if (store.formVisible()) {
-  <button
+  <button appButton variant="plain"
     type="button"
     class="app-modal-backdrop"
     [class.app-modal-backdrop--embedded-slot]="embedded()"
@@ -113,7 +113,7 @@
             {{ "Define the key, time range, and nutrition targets for this slot." | translate }}
           </p>
         </div>
-        <button mat-stroked-button type="button" (click)="onCancelForm()">
+        <button appButton variant="secondary" type="button" (click)="onCancelForm()">
           {{ "Close" | translate }}
         </button>
       </div>

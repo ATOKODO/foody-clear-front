@@ -1,0 +1,31 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--app-space-8);
+  padding: 0.35rem 0.85rem;
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-pill);
+  font-size: 0.78rem;
+  font-weight: var(--app-font-weight-bold);
+  background: var(--app-surface-muted);
+  color: var(--app-text);
+}
+
+:host(.app-status-pill--saving),
+:host(.app-status-pill--warning) {
+  border-color: var(--app-warning-border);
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
+}
+
+:host(.app-status-pill--info) {
+  border-color: var(--app-info-border);
+  background: var(--app-info-bg);
+  color: var(--app-info-text);
+}
+
+:host(.app-status-pill--success) {
+  border-color: var(--app-success-border);
+  background: var(--app-success-bg);
+  color: var(--app-success-text);
+}

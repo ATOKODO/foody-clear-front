@@ -1,0 +1,78 @@
+@use "mixins" as ds;
+
+// The host is the native button, without an extra wrapper or focus target.
+:host(:focus-visible) { @include ds.focus-ring; }
+:host(:not(.app-ui-button--plain)) {
+  @include ds.action-base;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--app-space-2);
+  box-sizing: border-box;
+  min-width: var(--app-space-10);
+  min-height: var(--app-space-10);
+  padding: var(--app-space-2) var(--app-space-6);
+  border-style: solid;
+  font-family: var(--app-font-sans);
+  font-size: var(--app-font-size-sm);
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  touch-action: manipulation;
+}
+:host(.app-ui-button--primary) { @include ds.action-tone(primary); }
+:host(.app-ui-button--secondary) { @include ds.action-tone(secondary); }
+:host(.app-ui-button--danger) { @include ds.action-tone(danger); }
+:host(.app-ui-button--edit) { @include ds.action-tone(edit); }
+:host(.app-ui-button--filled) {
+  border-color: transparent;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+}
+:host(.app-ui-button--raised) {
+  border-color: transparent;
+  background: var(--app-surface-soft);
+  color: var(--app-accent);
+  box-shadow: var(--app-shadow-sm);
+}
+:host(.app-ui-button--text), :host(.app-ui-button--icon) {
+  border-color: transparent;
+  background: transparent;
+  color: var(--app-accent);
+}
+:host(.app-ui-button--icon) {
+  width: var(--app-space-10);
+  height: var(--app-space-10);
+  padding: var(--app-space-2);
+}
+:host(.app-ui-button--small:not(.app-ui-button--plain)) {
+  min-height: var(--app-space-8);
+  padding: var(--app-space-1) var(--app-space-3);
+  font-size: var(--app-font-size-xs);
+}
+:host(.app-ui-button--large:not(.app-ui-button--plain)) {
+  min-height: calc(var(--app-space-6) * 2);
+  padding: var(--app-space-3) var(--app-space-8);
+  font-size: var(--app-font-size-md);
+}
+:host(:hover:not(:disabled):not(.app-ui-button--plain)) { filter: brightness(0.96); }
+:host(:active:not(:disabled):not(.app-ui-button--plain)) { filter: brightness(0.9); }
+:host(:disabled:not(.app-ui-button--plain)) { opacity: 0.55; cursor: default; }
+:host(.app-ui-button--loading) { cursor: wait; }
+:host(.app-ui-button--loading)::after {
+  content: "";
+  width: var(--app-space-4);
+  height: var(--app-space-4);
+  flex: none;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: var(--app-radius-pill);
+  animation: button-progress 700ms linear infinite;
+}
+@keyframes button-progress { to { transform: rotate(360deg); } }
+@include ds.reduced-motion {
+  :host { transition: none; }
+  :host(.app-ui-button--loading)::after { animation: none; }
+}

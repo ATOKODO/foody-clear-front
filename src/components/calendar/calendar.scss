@@ -706,7 +706,6 @@
   color: var(--app-warning-text);
 }
 
-.calendar-month-day__empty,
 .calendar-month-day__outside-hint {
   display: flex;
   flex: 0 0 auto;
@@ -717,6 +716,13 @@
   border-radius: 1rem;
   padding: 0.7rem;
   background: var(--app-surface-soft);
+}
+
+.calendar-month-day__empty {
+  flex: 0 0 auto;
+  min-height: 5.6rem;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 .calendar-month-day__empty-title {
@@ -952,13 +958,6 @@
 .calendar-week-mobile__blocks {
   display: grid;
   gap: 0.65rem;
-}
-
-.calendar-week-mobile__empty {
-  border: 1px dashed var(--app-border-strong);
-  border-radius: 1rem;
-  padding: 0.8rem;
-  background: var(--app-surface-soft);
 }
 
 .calendar-week-mobile__empty-title {
@@ -1349,16 +1348,6 @@
 
 .calendar-day-summary__empty-state {
   margin-top: 0.95rem;
-  border: 1px dashed var(--app-border-strong);
-  border-radius: 1rem;
-  padding: 0.95rem 1rem;
-  background:
-    radial-gradient(
-      circle at top right,
-      var(--app-info-bg),
-      transparent 34%
-    ),
-    var(--app-surface-soft);
 }
 
 .calendar-day-summary__empty-title {
@@ -1535,19 +1524,7 @@
 
 .calendar-day-empty {
   margin-top: 0.85rem;
-  border: 1px dashed var(--app-border-strong);
-  border-radius: 1rem;
-  padding: 1rem;
   min-height: 9.5rem;
-  background:
-    radial-gradient(
-      circle at top right,
-      var(--app-info-bg),
-      transparent 32%
-    ),
-    var(--app-surface-soft);
-  display: grid;
-  align-content: start;
 }
 
 .calendar-day-empty__title {
@@ -1835,7 +1812,6 @@
 
 .calendar-week-block__time,
 .calendar-week-block__count,
-.calendar-week-block__empty,
 .calendar-week-block__item-meta,
 .calendar-week-block__item-time {
   font-size: 0.67rem;
@@ -1920,7 +1896,6 @@
 
 .calendar-week-block__empty {
   margin: 0;
-  line-height: 1.35;
 }
 
 @include ds.media-up(extra-wide) {

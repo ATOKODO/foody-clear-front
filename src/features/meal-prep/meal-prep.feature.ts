@@ -1,3 +1,6 @@
+import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
+import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { Language } from '../../app/i18n/language';
 import { UiModal } from '../../app/ui/modal/modal';
@@ -5,7 +8,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -67,10 +69,9 @@ import {
 @Component({
   selector: 'app-meal-prep',
   standalone: true,
-  imports: [TranslatePipe, UiModal,
+  imports: [UiEmptyState, UiStatusBadge, UiButton, TranslatePipe, UiModal,
     CommonModule,
     FormsModule,
-    MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,

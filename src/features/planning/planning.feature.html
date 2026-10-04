@@ -1,7 +1,7 @@
 <section class="app-page app-page--wide" data-testid="planning-page">
   <div class="planning-feature__header">
     <div class="planning-feature__header-nav">
-      <button
+      <button appButton variant="plain"
         type="button"
         data-testid="planning-today"
         class="planning-feature__today-button"
@@ -10,7 +10,7 @@
       </button>
 
       <div class="planning-feature__period-switcher">
-        <button
+        <button appButton variant="plain"
           type="button"
           data-testid="planning-prev"
           class="planning-feature__nav-button"
@@ -25,7 +25,7 @@
           {{ calendarHeaderLabel | translate }}
         </h2>
 
-        <button
+        <button appButton variant="plain"
           type="button"
           data-testid="planning-next"
           class="planning-feature__nav-button"
@@ -37,7 +37,7 @@
         </button>
       </div>
 
-      <button
+      <button appButton variant="plain"
         type="button"
         data-testid="planning-refresh"
         class="planning-feature__refresh-button"
@@ -61,17 +61,17 @@
     @if (showPlanningStatus) {
       <div class="planning-feature__status-bar">
         @if (loadingCycles) {
-          <span class="app-status-pill app-status-pill--neutral">
+          <span appStatusBadge tone="neutral">
             {{ "Loading cycles..." | translate }}
           </span>
         }
         @if (loadingAssignments) {
-          <span class="app-status-pill app-status-pill--info">
+          <span appStatusBadge tone="info">
             {{ "Loading planning..." | translate }}
           </span>
         }
         @if (loadingDayItems) {
-          <span class="app-status-pill app-status-pill--success">
+          <span appStatusBadge tone="success">
             {{
             currentCalendarView === 'month'
             ? ("Loading input-month..." | translate)
@@ -82,7 +82,7 @@
           </span>
         }
         @if (savingAssignment) {
-          <span class="app-status-pill app-status-pill--saving">
+          <span appStatusBadge tone="saving">
             {{ "Saving assignment..." | translate }}
           </span>
         }
@@ -128,7 +128,7 @@
 </section>
 
 @if (activeModal) {
-  <button type="button" class="app-modal-backdrop" [attr.aria-label]="&quot;Close modal&quot; | translate" (click)="closeActiveModal()"></button>
+  <button appButton variant="plain" type="button" class="app-modal-backdrop" [attr.aria-label]="&quot;Close modal&quot; | translate" (click)="closeActiveModal()"></button>
 }
 @if (activeModal) {
   <div class="app-modal-shell" [attr.data-testid]="'planning-modal-' + activeModal">
@@ -162,7 +162,7 @@
             </div>
           </div>
           <div class="planning-actions-modal__grid">
-            <button
+            <button appButton variant="plain"
               type="button"
               class="planning-action-card planning-action-card--cycle"
               data-testid="planning-action-cycle"
@@ -185,7 +185,7 @@
                 </svg>
               </span>
             </button>
-            <button
+            <button appButton variant="plain"
               type="button"
               class="planning-action-card planning-action-card--item"
               data-testid="planning-action-items"
@@ -208,7 +208,7 @@
                 </svg>
               </span>
             </button>
-            <button
+            <button appButton variant="plain"
               type="button"
               class="planning-action-card planning-action-card--external"
               data-testid="planning-action-external-entry"
@@ -233,8 +233,7 @@
             </button>
           </div>
           <div class="planning-actions-modal__footer">
-            <button
-              mat-stroked-button
+            <button appButton variant="secondary"
               type="button"
               class="planning-actions-modal__close"
               (click)="closeActiveModal()">
@@ -280,22 +279,18 @@
           }
         </mat-card-content>
         <mat-card-actions align="end" class="planning-assignment-modal__actions gap-2">
-          <button mat-stroked-button type="button" (click)="closeActiveModal()" [disabled]="savingAssignment">
+          <button appButton variant="secondary" type="button" (click)="closeActiveModal()" [disabled]="savingAssignment">
             {{ "Cancel" | translate }}
           </button>
           @if (editingAssignment) {
-            <button
-              mat-stroked-button
-              color="warn"
+            <button appButton variant="danger"
               type="button"
               (click)="removeAssignmentFromModal()"
               [disabled]="savingAssignment">
               {{ "Remove" | translate }}
             </button>
           }
-          <button
-            mat-raised-button
-            color="primary"
+          <button appButton variant="raised"
             type="button"
             (click)="saveAssignmentFromModal()"
             [disabled]="savingAssignment || !canSubmitModal">
@@ -307,8 +302,7 @@
         <mat-card-header>
           <mat-card-title>{{ "Day items" | translate }}</mat-card-title>
           <mat-card-subtitle>
-            <button
-              mat-stroked-button
+            <button appButton variant="secondary"
               type="button"
               data-testid="planning-items-external-entry"
               (click)="openExternalEntryFromItems()">
@@ -326,7 +320,7 @@
             (itemsChanged)="onEmbeddedItemsChanged()" />
         </mat-card-content>
         <mat-card-actions align="end" class="gap-2 px-4 pb-4">
-          <button mat-stroked-button type="button" (click)="closeActiveModal()">
+          <button appButton variant="secondary" type="button" (click)="closeActiveModal()">
             {{ "Close" | translate }}
           </button>
         </mat-card-actions>

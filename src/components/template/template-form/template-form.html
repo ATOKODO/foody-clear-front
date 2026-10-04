@@ -5,9 +5,7 @@
       <input matInput [(ngModel)]="draftTitle" [placeholder]="&quot;Training day&quot; | translate" />
     </mat-form-field>
 
-    <button
-      mat-raised-button
-      color="primary"
+    <button appButton variant="raised"
       type="button"
       data-testid="template-save"
       (click)="onTemplateSave()"
@@ -17,9 +15,7 @@
     </button>
 
     @if (template()) {
-      <button
-        mat-stroked-button
-        color="warn"
+      <button appButton variant="danger"
         type="button"
         data-testid="template-delete"
         (click)="onTemplateDelete()"
@@ -168,17 +164,14 @@
           </p>
         }
         <div class="flex flex-wrap justify-end gap-2">
-          <button
-            mat-stroked-button
+          <button appButton variant="secondary"
             type="button"
             (click)="resetItemDraft()"
             [disabled]="savingTemplate() || savingItem()"
           >
             {{ "Reset" | translate }}
           </button>
-          <button
-            mat-raised-button
-            color="primary"
+          <button appButton variant="raised"
             type="button"
             data-testid="template-item-save"
             (click)="onItemSave()"
@@ -196,24 +189,24 @@
       </mat-card-header>
       <mat-card-content class="pt-2">
         @if (template.items.length > 0) {
-          <div class="overflow-x-auto rounded-xl border border-app-border">
-            <table class="min-w-full text-sm">
-              <thead class="bg-app-surface-soft text-left text-app-text">
+          <div appTableScroll [label]="'Template lines' | translate">
+            <table appTable>
+              <thead>
                 <tr>
-                  <th class="px-3 py-2">{{ "Item" | translate }}</th>
-                  <th class="px-3 py-2">{{ "Qty" | translate }}</th>
-                  <th class="px-3 py-2">{{ "Slot" | translate }}</th>
-                  <th class="px-3 py-2">{{ "Global stock" | translate }}</th>
-                  <th class="px-3 py-2 text-right">{{ "Actions" | translate }}</th>
+                  <th appTableCell scope="col">{{ "Item" | translate }}</th>
+                  <th appTableCell scope="col">{{ "Qty" | translate }}</th>
+                  <th appTableCell scope="col">{{ "Slot" | translate }}</th>
+                  <th appTableCell scope="col">{{ "Global stock" | translate }}</th>
+                  <th appTableCell contentAlign="end" scope="col">{{ "Actions" | translate }}</th>
                 </tr>
               </thead>
               <tbody>
                 @for (item of template.items; track item.id) {
                   <tr
                     [attr.data-testid]="'template-item-edit-row-' + item.id"
-                    class="border-t border-app-border-soft align-top"
-                  >
-                    <td class="px-3 py-2">
+
+>
+                    <td appTableCell>
                       <p class="font-medium text-app-text-strong">
                         {{ resolveTemplateItemLabel(item) }}
                       </p>
@@ -221,11 +214,11 @@
                         {{ (resolveTemplateItemTypeLabel(item)) | translate }}
                       </p>
                     </td>
-                    <td class="px-3 py-2">
+                    <td appTableCell>
                       {{ formatNutritionAmount(item.qty) }}
                       <span class="text-app-text-muted">{{ (item.qtyUnit ?? "-") | translate }}</span>
                     </td>
-                    <td class="px-3 py-2">
+                    <td appTableCell>
                       {{ resolveTemplateItemSlotLabel(item) }}
                       @if (item.slotId === null) {
                         <p class="text-xs text-app-text-muted">
@@ -233,7 +226,7 @@
                         </p>
                       }
                     </td>
-                    <td class="px-3 py-2">
+                    <td appTableCell>
                       <span
                         class="rounded-full px-2 py-1 text-xs font-medium"
                         [class.bg-app-success-surface]="item.stockAvailability.enoughStock"
@@ -244,10 +237,9 @@
                         {{ item.stockAvailability.enoughStock ? ("Stock OK" | translate) : ("Low stock" | translate) }}
                       </span>
                     </td>
-                    <td class="px-3 py-2">
+                    <td appTableCell>
                       <div class="flex justify-end gap-2">
-                        <button
-                          mat-stroked-button
+                        <button appButton variant="secondary"
                           type="button"
                           [attr.data-testid]="'template-item-edit-' + item.id"
                           (click)="editItem(item)"
@@ -255,9 +247,7 @@
                         >
                           {{ "Edit" | translate }}
                         </button>
-                        <button
-                          mat-stroked-button
-                          color="warn"
+                        <button appButton variant="danger"
                           type="button"
                           [attr.data-testid]="'template-item-delete-' + item.id"
                           (click)="onItemDelete(item.id)"
@@ -273,7 +263,7 @@
             </table>
           </div>
         } @else {
-          <p class="rounded-lg border border-app-border bg-app-surface-soft px-3 py-2 text-sm text-app-text">
+          <p appEmptyState appearance="panel">
             {{ "No ligne dans ce template." | translate }}
           </p>
         }

@@ -18,14 +18,13 @@
               [class.is-active]="template.id === selectedTemplateId()"
               [class.is-disabled]="busy"
               >
-              <button type="button" class="template-master__card-select" [disabled]="busy" (click)="onTemplateClick(template.id)">
+              <button appButton variant="plain" type="button" class="template-master__card-select" [disabled]="busy" (click)="onTemplateClick(template.id)">
                 <span class="template-master__card-title">{{ template.title }}</span>
                 <span class="template-master__card-meta">{{ "{p0} template line(s)" | translate: { p0: (template.items.length) } }}</span>
                 <span class="template-master__card-status">{{ "Template" | translate }}</span>
               </button>
               <div class="template-master__card-actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                <button
-                  mat-stroked-button
+                <button appButton variant="edit"
                   type="button"
                   class="template-master__action template-master__action--edit"
                   [attr.data-testid]="template.id === selectedTemplateId() ? 'template-edit' : 'template-edit-' + template.id"
@@ -33,8 +32,7 @@
                   [disabled]="busy">
                   {{ "Edit" | translate }}
                 </button>
-                <button
-                  mat-stroked-button
+                <button appButton variant="secondary"
                   type="button"
                   class="template-master__action template-master__action--delete"
                   [attr.data-testid]="'template-delete-' + template.id"
@@ -47,7 +45,7 @@
           }
         </div>
       } @else {
-        <div class="template-master__empty">
+        <div appEmptyState appearance="panel" class="template-master__empty">
           {{ "No template available." | translate }}
         </div>
       }
@@ -62,35 +60,35 @@
           </mat-card-header>
           <mat-card-content class="pt-2">
             @if (template.items.length > 0) {
-              <div
-                class="overflow-x-auto rounded-xl border border-app-border"
-                >
-                <table class="min-w-full text-sm">
-                  <thead class="bg-app-surface-soft text-left text-app-text">
+              <div appTableScroll [label]="'Template lines' | translate"
+
+>
+                <table appTable>
+                  <thead>
                     <tr>
-                      <th class="px-3 py-2">{{ "Element" | translate }}</th>
-                      <th class="px-3 py-2">{{ "Qty" | translate }}</th>
-                      <th class="px-3 py-2">{{ "Slot" | translate }}</th>
-                      <th class="px-3 py-2">{{ "Stock global" | translate }}</th>
-                      <th class="px-3 py-2">{{ "Inventory details" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Element" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Qty" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Slot" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Stock global" | translate }}</th>
+                      <th appTableCell scope="col">{{ "Inventory details" | translate }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (item of template.items; track item) {
                       <tr
                         [attr.data-testid]="'template-item-row-' + item.id"
-                        class="border-t border-app-border-soft align-top"
-                        >
-                        <td class="px-3 py-2">
+
+>
+                        <td appTableCell>
                           <p class="font-medium text-app-text-strong">{{ resolveTemplateItemLabel(item) }}</p>
                           <p class="text-xs text-app-text-muted">{{ (resolveTemplateItemTypeLabel(item)) | translate }}</p>
                         </td>
-                        <td class="px-3 py-2">
+                        <td appTableCell>
                           {{ formatNutritionAmount(item.qty) }}
                           <span class="text-app-text-muted">{{ (item.qtyUnit ?? '-') | translate }}</span>
                         </td>
-                        <td class="px-3 py-2">{{ resolveTemplateItemSlotLabel(item) }}</td>
-                        <td class="px-3 py-2">
+                        <td appTableCell>{{ resolveTemplateItemSlotLabel(item) }}</td>
+                        <td appTableCell>
                           <span
                             class="rounded-full px-2 py-1 text-xs font-medium"
                             [class.bg-app-success-surface]="item.stockAvailability?.enoughStock === true"
@@ -104,7 +102,7 @@
                             {{ "{p0} available / {p1} requested" | translate: { p0: (formatNutritionAmount(item.stockAvailability?.totalAvailableNormalized)), p1: (formatNutritionAmount(item.stockAvailability?.requestedQtyNormalized)) } }}
                           </p>
                         </td>
-                        <td class="px-3 py-2">
+                        <td appTableCell>
                           <details [attr.data-testid]="'template-stock-detail-' + item.id">
                             <summary class="cursor-pointer text-xs font-medium text-app-text">
                               {{ "View details" | translate }}
@@ -126,9 +124,9 @@
                                 </p>
                               }
                               @if ((item.stockByInventory ?? []).length === 0) {
-                                <p
-                                  class="text-xs text-app-text-muted"
-                                  >
+                                <p appEmptyState appearance="text" size="small"
+
+>
                                   {{ "No inventory details." | translate }}
                                 </p>
                               }
@@ -141,7 +139,7 @@
                 </table>
               </div>
             } @else {
-              <p class="rounded-lg border border-app-border bg-app-surface-soft px-3 py-2 text-sm text-app-text">
+              <p appEmptyState appearance="panel">
                 {{ "No lines in this template." | translate }}
               </p>
             }
@@ -200,7 +198,7 @@
                       {{ "Targets" | translate }}
                     </p>
                     @if (!hasEntries(totals.targets)) {
-                      <p class="text-sm text-app-text-muted">
+                      <p appEmptyState appearance="text">
                         {{ "No target." | translate }}
                       </p>
                     }
@@ -216,7 +214,7 @@
                       {{ "Delta" | translate }}
                     </p>
                     @if (!hasEntries(totals.deltaToTargets)) {
-                      <p class="text-sm text-app-text-muted">
+                      <p appEmptyState appearance="text">
                         {{ "No delta." | translate }}
                       </p>
                     }

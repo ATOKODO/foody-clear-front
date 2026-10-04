@@ -1,0 +1,87 @@
+@switch (section()) {
+  @case ('field') {
+    <mat-form-field [appearance]="appearance()">
+      <mat-label>{{ label() }}</mat-label>
+      @if (fieldType() === 'textarea') {
+        <textarea matInput [formControl]="control()" rows="4"></textarea>
+      } @else {
+        <input matInput [type]="fieldType()" [formControl]="control()" />
+      }
+      @if (fieldType() === 'number') { <span matTextSuffix>g</span> }
+      <mat-hint>Required field</mat-hint>
+      <mat-error>This field is required.</mat-error>
+    </mat-form-field>
+  }
+  @case ('select') {
+    <mat-form-field [appearance]="appearance()">
+      <mat-label>{{ label() }}</mat-label>
+      <mat-select [formControl]="selectControl()" [multiple]="multiple()">
+        @if (!empty()) {
+          <mat-option value="fridge">Fridge</mat-option>
+          <mat-option value="pantry">Pantry</mat-option>
+          <mat-option value="frozen">Freezer</mat-option>
+        }
+      </mat-select>
+      <mat-hint>{{ empty() ? 'No inventory available' : 'Choose your inventories' }}</mat-hint>
+      <mat-error>Choose an inventory.</mat-error>
+    </mat-form-field>
+  }
+  @case ('date') {
+    <mat-form-field [appearance]="appearance()">
+      <mat-label>{{ label() }}</mat-label>
+      <input matInput [matDatepicker]="picker" [formControl]="dateControl()" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker" />
+      <mat-datepicker #picker />
+      <mat-hint>Choose the local date</mat-hint>
+      <mat-error>Choose a valid date.</mat-error>
+    </mat-form-field>
+  }
+  @case ('checkbox') {
+    <mat-checkbox [disabled]="disabled()" [checked]="checked()" [indeterminate]="indeterminate()">{{ label() }}</mat-checkbox>
+  }
+  @case ('card') {
+    <mat-card [appearance]="cardAppearance()">
+      <mat-card-header><mat-card-title>{{ label() }}</mat-card-title><mat-card-subtitle>Daily nutrition summary</mat-card-subtitle></mat-card-header>
+      <mat-card-content><p>2,100 kcal · 120 g protein</p><p>Semantic surfaces and the application's Material theme.</p></mat-card-content>
+      <mat-card-actions align="end"><button appButton variant="secondary" [disabled]="disabled()">View entries</button></mat-card-actions>
+    </mat-card>
+  }
+  @case ('tabs') {
+    <mat-tab-group animationDuration="0ms">
+      <mat-tab label="Form"><p class="tab-content">Manual product entry</p></mat-tab>
+      <mat-tab label="JSON" [disabled]="disabled()"><p class="tab-content">JSON product entry</p></mat-tab>
+      <mat-tab label="Scanner"><p class="tab-content">Barcode lookup</p></mat-tab>
+    </mat-tab-group>
+  }
+  @case ('progress') {
+    <mat-progress-bar [mode]="progressMode()" [value]="60" [bufferValue]="80" [attr.aria-label]="label()" />
+  }
+  @case ('toggle') {
+    <mat-button-toggle-group [multiple]="multiple()" [disabled]="disabled()" [value]="multiple() ? ['day', 'week'] : 'week'" [attr.aria-label]="label()">
+      <mat-button-toggle value="day">Day</mat-button-toggle>
+      <mat-button-toggle value="week">Week</mat-button-toggle>
+      <mat-button-toggle value="month">Month</mat-button-toggle>
+    </mat-button-toggle-group>
+  }
+  @case ('table') {
+    <div class="table-scroll">
+      <table mat-table [dataSource]="rows()" [attr.aria-label]="label()">
+        <ng-container matColumnDef="selected">
+          <th mat-header-cell *matHeaderCellDef>Select</th>
+          <td mat-cell *matCellDef="let row"><mat-checkbox [disabled]="disabled()" [aria-label]="'Select ' + row.name" /></td>
+        </ng-container>
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Product</th>
+          <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+        </ng-container>
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef>Quantity</th>
+          <td mat-cell *matCellDef="let row">{{ row.quantity }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="['selected', 'name', 'quantity']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['selected', 'name', 'quantity']"></tr>
+      </table>
+      @if (empty()) { <p>No products available.</p> }
+    </div>
+  }
+}

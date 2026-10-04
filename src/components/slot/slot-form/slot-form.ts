@@ -1,3 +1,4 @@
+import { UiButton } from '../../../app/ui/button/button';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 
 import {
@@ -10,7 +11,6 @@ import {
   output
 } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -33,11 +33,10 @@ export interface SlotFormValue {
 
 @Component({
   selector: 'app-slot-form',
-  imports: [
+  imports: [UiButton,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
-    MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule

@@ -1,3 +1,8 @@
+import { UiTableScroll } from '../../../app/ui/table-scroll/table-scroll';
+import { UiTableCell } from '../../../app/ui/table-cell/table-cell';
+import { UiTable } from '../../../app/ui/table/table';
+import { UiAlert } from '../../../app/ui/alert/alert';
+import { UiButton } from '../../../app/ui/button/button';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 import { Language } from '../../../app/i18n/language';
 import { FOOD_FACTS_ALLERGEN_LABELS } from '../../../services/open-food-facts.mapper';
@@ -5,7 +10,6 @@ import { Component, DestroyRef, ElementRef, OnChanges, OnDestroy, inject, input,
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Subscription } from 'rxjs';
@@ -14,7 +18,7 @@ import { FoodFactsProduct, OpenFoodFactsService, isProductBarcode } from '../../
 
 @Component({
   selector: 'app-product-scanner',
-  imports: [TranslatePipe, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [UiTableScroll, UiTableCell, UiTable, UiAlert, UiButton, TranslatePipe, FormsModule, MatFormFieldModule, MatInputModule],
   providers: [BarcodeScannerService],
   templateUrl: './product-scanner.html',
   styleUrl: './product-scanner.scss',
