@@ -1,5 +1,11 @@
 @use "tailwindcss";
 
+// Workbench examples and tests must not add utilities to the production bundle.
+@source not "../stories";
+@source not "../.storybook";
+@source not "./app/stories";
+@source not "../tests/storybook";
+
 // Tailwind utilities expose design-system roles instead of palette implementation details.
 @theme inline {
   --color-app-background: var(--app-bg);

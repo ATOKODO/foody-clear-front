@@ -1,0 +1,11 @@
+import type { Meta, StoryObj } from '@storybook/angular-vite';
+import { fn } from 'storybook/test';
+import { TemplateList } from '../../src/components/template/template-list/template-list';
+import { templates, daySets, state } from '../support/fixtures';
+const meta = { title: 'Components/TemplateList', component: TemplateList, args: { templates, daySets, slots: state.slots, editRequested: fn(), deleteRequested: fn(), templateSelected: fn(), compareDaySetChanged: fn() } } satisfies Meta<TemplateList>;
+export default meta;
+type Story = StoryObj<TemplateList>;
+export const Populated: Story = {};
+export const Selected: Story = { args: { selectedTemplateId: 1, selectedTemplate: templates[0], compareDaySetId: 1 } };
+export const Empty: Story = { args: { templates: [] } };
+export const Loading: Story = { args: { templates: [], loadingTemplates: true } };

@@ -68,6 +68,7 @@ export default defineConfig({
       { text: 'Development', collapsed: true, items: [
         { text: 'Architecture', link: '/development/architecture' },
         { text: 'Testing', link: '/development/testing' },
+        { text: 'Storybook & design system', link: '/development/storybook' },
         { text: 'Maintain these docs', link: '/development/documentation' },
         { text: 'Project status and license', link: '/project' },
       ] },

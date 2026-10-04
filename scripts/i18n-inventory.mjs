@@ -5,6 +5,8 @@ import { parseTemplate } from '@angular/compiler';
 export function sourceFiles(directory = 'src') {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name);
+    // Story-only documentation is not part of the bilingual application bundle.
+    if (path === 'src/app/stories') return [];
     return entry.isDirectory() ? sourceFiles(path) : [path];
   });
 }

@@ -154,6 +154,10 @@ npm run e2e:smoke      # Run Playwright scenarios tagged with @smoke
 npm run e2e:vrt        # Compare the UI with versioned visual references
 npm run e2e:vrt:update # Update references after reviewing an intentional UI change
 npm run e2e:vrt:report # Open the visual report, including image diffs
+npm run storybook       # Component/design-system workbench at localhost:6006
+npm run storybook:check # Check complete component coverage and story types
+npm run build-storybook # Generate the static workbench in dist/storybook
+npm run storybook:test  # Browser-check the built workbench
 ```
 
 Before running the end-to-end tests for the first time, install the Playwright browsers:

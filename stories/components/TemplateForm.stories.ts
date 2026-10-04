@@ -1,0 +1,11 @@
+import type { Meta, StoryObj } from '@storybook/angular-vite';
+import { fn } from 'storybook/test';
+import { TemplateForm } from '../../src/components/template/template-form/template-form';
+import { products, templates, state } from '../support/fixtures';
+const meta = { title: 'Components/TemplateForm', component: TemplateForm, args: { products, slots: state.slots, qtyUnitOptions: ['unit', 'g', 'kg', 'ml', 'l'], templateSubmitted: fn(), templateDeleted: fn(), itemSubmitted: fn(), itemDeleted: fn() } } satisfies Meta<TemplateForm>;
+export default meta;
+type Story = StoryObj<TemplateForm>;
+export const Create: Story = {};
+export const Edit: Story = { args: { mode: 'edit', template: templates[0] } };
+export const Saving: Story = { args: { mode: 'edit', template: templates[0], savingTemplate: true, savingItem: true } };
+export const ItemError: Story = { args: { mode: 'edit', template: templates[0], itemError: 'Invalid quantity' } };

@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "noPropertyAccessFromIndexSignature": false,
+    "resolveJsonModule": true
+  },
+  "include": ["./**/*.ts", "../stories/**/*.ts", "../src/**/*.ts", "../tests/mocks/**/*.ts"],
+  "exclude": ["../src/**/*.spec.ts"]
+}

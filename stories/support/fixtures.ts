@@ -1,0 +1,24 @@
+import { createMockApiState } from '../../tests/mocks/state';
+import { buildInputDayResponse, buildTemplateResponse, hydrateCycle, hydrateCycleAssignment, hydrateDaySet, hydrateProduct } from '../../tests/mocks/shared';
+import type { Product } from '../../src/services/product-service';
+import type { Cycle } from '../../src/interfaces/cycle.interface';
+import type { CycleAssignment } from '../../src/interfaces/cycle-assignment.interface';
+import type { DaySet } from '../../src/interfaces/day-set.interface';
+import type { Template } from '../../src/interfaces/template.interface';
+import { buildCycleHubListItems, DEFAULT_CYCLE_MACRO_NUTRITION_KEYS } from '../../src/features/cycle/cycle.viewmodel';
+
+export const state = createMockApiState();
+export const products = state.products.map(p => hydrateProduct(state, p) as unknown as Product);
+export const templates = state.templates.map(t => buildTemplateResponse(state, t) as unknown as Template);
+export const daySets = state.daySets.map(d => hydrateDaySet(state, d) as unknown as DaySet);
+export const cycles = state.cycles.map(c => hydrateCycle(state, c) as unknown as Cycle);
+export const cycleAssignments = state.cycleAssignments.map(c => hydrateCycleAssignment(state, c) as unknown as CycleAssignment);
+export const day = buildInputDayResponse(state, '2026-03-25');
+export const listProducts = state.products.map(p => ({ ...p, id: String(p.id), category: state.categories.find(c => c.id === p.categoryId)?.name, genericProduct: state.genericProducts.find(g => g.id === p.genericProductId)?.name, tagNames: p.tagIds.map(id => state.tags.find(t => t.id === id)?.name ?? ''), nutritionValuesCount: p.nutritionValues.length, availableQuantity: 1200, availableQuantityUnit: 'g' }));
+export const listCategories = state.categories.map(c => ({ ...c, id: String(c.id) }));
+export const listTags = state.tags.map(t => ({ ...t, id: String(t.id) }));
+export const listGenericProducts = state.genericProducts.map(p => ({ ...p, id: String(p.id), minQuantityUnitType: null, minQuantityMetricType: null }));
+export const listInventories = state.inventories.map(i => ({ ...i, id: String(i.id), productCount: 3 }));
+export const listSlots = state.slots.map(s => ({ ...s, id: String(s.id) }));
+export const listDaySets = state.daySets.map(d => ({ ...d, id: String(d.id) }));
+export const listCycles = buildCycleHubListItems(cycles, DEFAULT_CYCLE_MACRO_NUTRITION_KEYS, daySets, state.slots);

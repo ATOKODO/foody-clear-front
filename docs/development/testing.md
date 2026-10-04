@@ -17,6 +17,9 @@ From `foody-clear-front`:
 | `npm run e2e` | Application browser tests |
 | `npm run e2e:smoke` | Tests marked `@smoke` |
 | `npm run e2e:pwa` | Production build plus PWA/virtual-camera tests |
+| `npm run storybook:check` | Coverage of every production component and story TypeScript compilation |
+| `npm run build-storybook` | Static component/design-system workbench |
+| `npm run storybook:test` | All built stories, themes/languages, network isolation and key interactions |
 
 Install browser binaries if your environment does not already supply them:
 
@@ -27,6 +30,8 @@ npx playwright install chromium
 See `playwright.config.ts` and `playwright.pwa.config.ts` for web-server and browser configuration. Karma needs a Chrome/Chromium executable; set `CHROME_BIN` when it is not discovered automatically. The no-sandbox launcher is intended for environments where the ordinary launcher cannot run.
 
 Browser tests cover navigation, CRUD/editor behavior, stock-backed planning, keyboard interaction, scanner behavior and production app installation/offline shell behavior. Use the PWA configuration for service-worker behavior rather than assuming the development server tests it.
+
+See [Storybook](./storybook.md) for the isolated component catalog, seeded scenarios and design-system maintenance.
 
 ## Backend unit and build checks
 

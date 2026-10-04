@@ -22,8 +22,8 @@ import type {
 export type IdKey = keyof MockApiState['nextIds'];
 
 export type MockApiRequestContext = {
-  route: Route;
-  request: Request;
+  route?: Route;
+  request: Pick<Request, 'method'>;
   url: URL;
   path: string;
   state: MockApiState;

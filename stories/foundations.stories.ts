@@ -1,0 +1,10 @@
+import type { Meta, StoryObj } from '@storybook/angular-vite';
+import { Foundations } from '../src/app/stories/foundations/foundations';
+const meta = { title: 'Design system/Foundations', component: Foundations, parameters: { layout: 'fullscreen' } } satisfies Meta<Foundations>;
+export default meta;
+type Story = StoryObj<Foundations>;
+export const Tokens: Story = { args: { section: 'tokens' } };
+export const Typography: Story = { args: { section: 'typography' } };
+export const SpacingShapeAndMotion: Story = { args: { section: 'layout' } };
+export const ControlsAndFeedback: Story = { args: { section: 'primitives' } };
+export const Icons: Story = { args: { section: 'icons' } };

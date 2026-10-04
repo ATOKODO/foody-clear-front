@@ -1,0 +1,40 @@
+name: Storybook
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: storybook-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  catalog:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps --no-shell chromium
+      - run: npm run storybook:check
+      - run: npm run build-storybook
+      - run: npm run storybook:test
+      - name: Upload workbench and browser report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storybook
+          path: |
+            dist/storybook/
+            playwright-report/storybook/
+            test-results/
+          retention-days: 14
