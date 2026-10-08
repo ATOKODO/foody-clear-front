@@ -29,3 +29,69 @@
   background: var(--app-success-bg);
   color: var(--app-success-text);
 }
+
+:host(.app-status-pill--danger) {
+  border-color: var(--app-danger-border);
+  background: var(--app-danger-bg);
+  color: var(--app-danger-text);
+}
+
+:host(.app-status-pill--small),
+:host(.app-status-pill--compact),
+:host(.app-status-pill--card),
+:host(.app-status-pill--counter),
+:host(.app-status-pill--chip) {
+  min-height: 0;
+  padding: var(--app-space-1) var(--app-space-2);
+  font-size: var(--app-font-size-xs);
+}
+
+:host(.app-status-pill--card) {
+  padding-inline: 0.55rem;
+}
+
+:host(.app-status-pill--counter) {
+  padding-inline: var(--app-space-3);
+}
+
+:host(.app-status-pill--chip) {
+  padding: 0.2rem 0.55rem;
+}
+
+:host(.app-status-pill--compact) {
+  padding-block: calc(var(--app-space-1) / 2);
+}
+
+:host(.app-status-pill--marker) {
+  min-height: 1.15rem;
+  padding: 0.12rem 0.45rem;
+  font-size: 0.62rem;
+  font-style: normal;
+  letter-spacing: 0;
+}
+
+:host(.app-status-pill--weight-normal) {
+  font-weight: 400;
+}
+
+:host(.app-status-pill--weight-medium) {
+  font-weight: var(--app-font-weight-medium);
+}
+
+:host(.app-status-pill--weight-semibold) {
+  font-weight: var(--app-font-weight-semibold);
+}
+
+:host(.app-status-pill--weight-heavy) {
+  font-weight: 850;
+}
+
+:host(.app-status-pill--appearance-soft),
+:host(.app-status-pill--appearance-bare) {
+  border: 0;
+}
+
+:host(.app-status-pill--appearance-bare) {
+  background: transparent;
+  color: inherit;
+}

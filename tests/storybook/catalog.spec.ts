@@ -37,6 +37,8 @@ for (const variant of variants) {
       await page.goto(`/iframe.html?id=${story.id}&viewMode=story&globals=theme:${variant.theme};language:${variant.language}`);
       // An accessible icon-only button is rendered even when it has no text content.
       await expect.poll(() => page.locator('#storybook-root').evaluate(root => root.childElementCount), { timeout: 20_000 }).toBeGreaterThan(0);
+      await expect(page.locator('#storybook-root')).toHaveAttribute('data-story-finished-id', story.id, { timeout: 20_000 });
+      await expect(page.locator('#storybook-root')).toHaveAttribute('data-story-finished-status', 'success');
       await expect(page.locator('html')).toHaveAttribute('lang', variant.language);
       await expect.poll(() => page.locator('html').evaluate(el => el.classList.contains('dark'))).toBe(variant.theme === 'dark');
       await expect(page.locator('.sb-errordisplay')).not.toBeVisible();

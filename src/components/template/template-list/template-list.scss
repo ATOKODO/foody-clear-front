@@ -15,15 +15,6 @@
   gap: var(--app-space-4);
 }
 
-.template-master__count-badge {
-  border-radius: var(--app-radius-pill);
-  background: var(--app-surface-muted);
-  color: var(--app-text);
-  padding: var(--app-space-1) var(--app-space-3);
-  font-size: var(--app-font-size-xs);
-  font-weight: var(--app-font-weight-semibold);
-}
-
 .template-master__stack {
   display: grid;
   gap: var(--app-space-3);
@@ -80,12 +71,6 @@
 
 .template-master__card-status {
   width: fit-content;
-  border-radius: var(--app-radius-pill);
-  background: var(--app-info-bg);
-  color: var(--app-info-text);
-  padding: var(--app-space-1) var(--app-space-2);
-  font-size: var(--app-font-size-xs);
-  font-weight: var(--app-font-weight-bold);
 }
 
 .template-master__card-actions {

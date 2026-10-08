@@ -1,0 +1,34 @@
+:host {
+  display: grid;
+  gap: 0.18rem;
+  align-content: start;
+  justify-items: start;
+  width: fit-content;
+  min-width: 10.5rem;
+  padding: 0.8rem 0.95rem;
+  border: 1px solid var(--app-border);
+  border-radius: 1rem;
+  background: var(--app-surface-raised);
+  box-shadow: var(--app-shadow-sm);
+}
+
+.app-date-badge__label {
+  color: var(--app-text-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.app-date-badge__value {
+  color: var(--app-text-strong);
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.app-date-badge__detail {
+  color: var(--app-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+}

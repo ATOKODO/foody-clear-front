@@ -1,0 +1,168 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--app-radius-pill);
+}
+
+:host(.app-calendar-tag--year-status),
+:host(.app-calendar-tag--year-chip) {
+  padding: 0.34rem 0.62rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+:host(.app-calendar-tag--year-status) {
+  background: var(--app-border);
+  white-space: nowrap;
+}
+
+:host(.app-calendar-tag--year-status.app-calendar-tag--tone-active) {
+  background: var(--app-info-bg);
+  color: var(--app-info-strong-text);
+}
+
+:host(.app-calendar-tag--year-chip) {
+  gap: 0.35rem;
+  border: 1px solid var(--app-border-strong);
+  background: var(--app-surface-soft);
+}
+
+:host(.app-calendar-tag--year-chip.app-calendar-tag--tone-accent) {
+  border-color: var(--app-accent-soft);
+  background: var(--app-success-bg);
+  color: var(--app-success-text);
+}
+
+.app-calendar-tag__value {
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.app-calendar-tag__label {
+  line-height: 1;
+}
+
+:host(.app-calendar-tag--month-today),
+:host(.app-calendar-tag--week-today),
+:host(.app-calendar-tag--mobile-today) {
+  background: var(--app-info-bg);
+  color: var(--app-info-strong-text);
+  font-weight: 700;
+}
+
+:host(.app-calendar-tag--month-today) {
+  padding: 0.24rem 0.55rem;
+  font-size: 0.64rem;
+}
+
+:host(.app-calendar-tag--week-today) {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.66rem;
+}
+
+:host(.app-calendar-tag--mobile-today) {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.65rem;
+}
+
+:host(.app-calendar-tag--chip),
+:host(.app-calendar-tag--meta) {
+  gap: 0.35rem;
+  color: var(--app-text);
+  background: var(--app-surface-soft);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+:host(.app-calendar-tag--chip) {
+  padding: 0.42rem 0.72rem;
+  border: 1px solid var(--app-border-soft);
+}
+
+:host(.app-calendar-tag--chip.app-calendar-tag--tone-dayset) {
+  border-color: var(--app-accent-soft);
+  color: var(--app-success-text);
+  background: linear-gradient(135deg, var(--app-success-bg), var(--app-success-bg));
+}
+
+:host(.app-calendar-tag--chip.app-calendar-tag--tone-target) {
+  border-color: var(--app-warning-border);
+  color: var(--app-warning-text);
+  background: linear-gradient(135deg, var(--app-warning-bg), var(--app-warning-bg));
+}
+
+:host(.app-calendar-tag--chip.app-calendar-tag--compact) {
+  padding: 0.32rem 0.56rem;
+  font-size: 0.64rem;
+}
+
+:host(.app-calendar-tag--meta) {
+  padding: 0.36rem 0.68rem;
+  border: 1px solid var(--app-border-strong);
+}
+
+:host(.app-calendar-tag--alert) {
+  border: 1px solid var(--app-border);
+  padding: 0.24rem 0.5rem;
+  background: var(--app-surface-soft);
+  color: var(--app-text-strong);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:host(.app-calendar-tag--alert.app-calendar-tag--context-on-color) {
+  border-color: var(--app-on-color-border);
+  background: var(--app-contrast-surface-muted);
+  color: var(--app-text-on-color);
+}
+
+:host(.app-calendar-tag--alert.app-calendar-tag--tone-projected) {
+  border-color: var(--app-info-border);
+  background: var(--app-info-bg);
+  color: var(--app-info-strong-text);
+}
+
+:host(.app-calendar-tag--alert.app-calendar-tag--tone-projected.app-calendar-tag--context-on-color) {
+  color: var(--app-text-on-color);
+}
+
+:host(.app-calendar-tag--alert.app-calendar-tag--tone-template) {
+  border-color: var(--app-warning-border);
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
+}
+
+:host(.app-calendar-tag--alert.app-calendar-tag--tone-template.app-calendar-tag--context-on-color) {
+  background: var(--app-warning-border);
+  color: var(--app-text-on-color);
+}
+
+:host(.app-calendar-tag--alert.app-calendar-tag--compact) {
+  font-size: 0.54rem;
+  padding: 0.22rem 0.44rem;
+}
+
+:host(.app-calendar-tag--assignment) {
+  padding: 0.36rem 0.65rem;
+  border: 1px solid var(--app-on-color-border);
+  background: var(--app-on-color-surface);
+  font-size: 0.7rem;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+:host(.app-calendar-tag--source) {
+  width: fit-content;
+  border: 1px solid var(--app-info-border);
+  padding: 0.42rem 0.8rem;
+  background: var(--app-info-bg);
+  color: var(--app-info-text);
+  font-size: 0.72rem;
+  font-weight: 800;
+}

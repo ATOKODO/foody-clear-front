@@ -1,0 +1,7 @@
+:host { display: block; }
+
+:host(.app-ui-disclosure--panel) {
+  padding: var(--app-space-4);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+}

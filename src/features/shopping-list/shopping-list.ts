@@ -1,4 +1,5 @@
 import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
+import { UiSummaryPill } from '../../app/ui/summary-pill/summary-pill';
 import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
 import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
@@ -20,7 +21,7 @@ import { ShoppingListStore } from './shopping-list.store';
 @Component({
   selector: 'app-shopping-list',
   standalone: true,
-  imports: [UiEmptyState, UiStatusBadge, UiButton, TranslatePipe, UiModal,
+  imports: [UiSummaryPill, UiEmptyState, UiStatusBadge, UiButton, TranslatePipe, UiModal,
     CommonModule,
     FormsModule,
     MatCardModule,

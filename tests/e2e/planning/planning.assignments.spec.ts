@@ -49,3 +49,19 @@ test('edits and removes an assignment from planning', async ({ page, mockApi }) 
 
   await expect.poll(() => mockApi.state.cycleAssignments.length).toBe(0);
 });
+
+test('keeps the selected date when opening a day-action dialog and its entry editor', async ({ page }) => {
+  await page.goto('/planning');
+  await expect(page.getByTestId('planning-page')).toBeVisible();
+  await clickTestId(page, 'planning-view-year');
+  await page.getByTestId('calendar-year-day-2026-03-25').click();
+  const actions = page.getByTestId('planning-modal-actions');
+  const date = actions.locator('[appDateBadge]');
+  await expect(date.locator('.app-date-badge__value')).toHaveText('2026-03-25');
+  await expect(date.locator('.app-date-badge__detail')).toHaveCount(0);
+  await actions.getByTestId('planning-action-items').click();
+  await expect(actions).toHaveCount(0);
+  await expect(page.getByTestId('planning-modal-items')).toBeVisible();
+  await page.getByTestId('planning-modal-items').getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.getByTestId('planning-modal-items')).toHaveCount(0);
+});

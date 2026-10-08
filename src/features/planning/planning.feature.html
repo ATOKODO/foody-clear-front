@@ -16,9 +16,7 @@
           class="planning-feature__nav-button"
           [attr.aria-label]="&quot;Previous period&quot; | translate"
           (click)="navigateCalendar('prev')">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
+          <app-icon name="chevron_left" size="small" />
         </button>
 
         <h2 class="planning-feature__period-label">
@@ -31,9 +29,7 @@
           class="planning-feature__nav-button"
           [attr.aria-label]="&quot;Next period&quot; | translate"
           (click)="navigateCalendar('next')">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
+          <app-icon name="chevron_right" size="small" />
         </button>
       </div>
 
@@ -151,15 +147,9 @@
                 {{ "Choose whether to manage the cycle for this day or open the entry editor." | translate }}
               </p>
             </div>
-            <div class="planning-actions-modal__date-pill">
-              <span class="planning-actions-modal__date-label">{{ "Date" | translate }}</span>
-              <span class="planning-actions-modal__date-value">{{ selectedModalDateLocal }}</span>
-              @if (selectedOccurredAt) {
-                <span class="planning-actions-modal__date-time">
-                  {{ selectedOccurredAt | date: 'HH:mm' }}
-                </span>
-              }
-            </div>
+            <div appDateBadge class="planning-actions-modal__date-pill"
+              [label]="'Date' | translate" [value]="selectedModalDateLocal"
+              [detail]="selectedOccurredAt ? (selectedOccurredAt | date: 'HH:mm') : null"></div>
           </div>
           <div class="planning-actions-modal__grid">
             <button appButton variant="plain"
@@ -168,9 +158,7 @@
               data-testid="planning-action-cycle"
               (click)="openAssignmentFromActions()">
               <span class="planning-action-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h10M7 12h10M7 17h6" />
-                </svg>
+                <app-icon name="assignment" />
               </span>
               <span class="planning-action-card__content">
                 <span class="planning-action-card__label">{{ "Cycle" | translate }}</span>
@@ -180,9 +168,7 @@
                 </span>
               </span>
               <span class="planning-action-card__arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 6l6 6-6 6" />
-                </svg>
+                <app-icon name="arrow_right" />
               </span>
             </button>
             <button appButton variant="plain"
@@ -191,9 +177,7 @@
               data-testid="planning-action-items"
               (click)="openItemsFromActions()">
               <span class="planning-action-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 7h12M6 12h12M6 17h8" />
-                </svg>
+                <app-icon name="day_entries" />
               </span>
               <span class="planning-action-card__content">
                 <span class="planning-action-card__label">{{ "Day" | translate }}</span>
@@ -203,9 +187,7 @@
                 </span>
               </span>
               <span class="planning-action-card__arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 6l6 6-6 6" />
-                </svg>
+                <app-icon name="arrow_right" />
               </span>
             </button>
             <button appButton variant="plain"
@@ -214,9 +196,7 @@
               data-testid="planning-action-external-entry"
               (click)="openExternalEntryFromActions()">
               <span class="planning-action-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v18M7 8h10M7 13h10M7 18h10" />
-                </svg>
+                <app-icon name="external_meal" />
               </span>
               <span class="planning-action-card__content">
                 <span class="planning-action-card__label">{{ "External" | translate }}</span>
@@ -226,9 +206,7 @@
                 </span>
               </span>
               <span class="planning-action-card__arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 6l6 6-6 6" />
-                </svg>
+                <app-icon name="arrow_right" />
               </span>
             </button>
           </div>

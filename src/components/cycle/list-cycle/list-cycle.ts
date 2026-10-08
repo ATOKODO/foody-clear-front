@@ -1,3 +1,4 @@
+import { UiBreakdownBadge } from '../../../app/ui/breakdown-badge/breakdown-badge';
 import { UiEmptyState } from '../../../app/ui/empty-state/empty-state';
 import { UiButton } from '../../../app/ui/button/button';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
@@ -87,7 +88,7 @@ export interface CycleListItem extends CycleMacroTotals {
 
 @Component({
   selector: 'app-list-cycle',
-  imports: [UiEmptyState, UiButton, TranslatePipe, MatCardModule, MatCheckboxModule],
+  imports: [UiBreakdownBadge, UiEmptyState, UiButton, TranslatePipe, MatCardModule, MatCheckboxModule],
   templateUrl: './list-cycle.html',
   styleUrl: './list-cycle.scss',
 })

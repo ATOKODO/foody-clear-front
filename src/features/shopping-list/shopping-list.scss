@@ -105,10 +105,6 @@
   padding: var(--app-space-4);
 }
 
-.shopping-list-summary span {
-  @include feature.summary-pill;
-}
-
 .shopping-list-editor-card,
 .shopping-list-table-card,
 .shopping-list-convert-card,
@@ -196,17 +192,6 @@
 
 .shopping-list-list-card__status {
   width: fit-content;
-  border-radius: var(--app-radius-pill);
-  padding: 0.25rem 0.55rem;
-  background: var(--app-warning-bg);
-  color: var(--app-warning-text);
-  font-size: var(--app-font-size-xs);
-  font-weight: var(--app-font-weight-bold);
-}
-
-.shopping-list-list-card__status--template {
-  background: var(--app-info-bg);
-  color: var(--app-info-text);
 }
 
 .shopping-list-product-pick {

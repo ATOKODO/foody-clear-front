@@ -11,6 +11,7 @@ const meta = {
 } satisfies Meta<Calendar>;
 export default meta;
 type Story = StoryObj<Calendar>;
+export const Year: Story = { args: { initialView: 'year' } };
 export const Month: Story = { args: { initialView: 'month' } };
 export const Week: Story = { args: { initialView: 'week' } };
 export const Day: Story = { args: { initialView: 'day' } };

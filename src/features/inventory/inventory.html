@@ -56,8 +56,8 @@
       }
 
       <div class="inventory-summary">
-        <span>{{ "{p0} inventories" | translate: { p0: (inventoryListItems.length) } }}</span>
-        <span>{{ "{p0} products in catalog" | translate: { p0: (products.length) } }}</span>
+        <span appSummaryPill>{{ "{p0} inventories" | translate: { p0: (inventoryListItems.length) } }}</span>
+        <span appSummaryPill>{{ "{p0} products in catalog" | translate: { p0: (products.length) } }}</span>
       </div>
 
       <app-master-detail-layout
@@ -75,7 +75,8 @@
               <button appButton variant="plain" type="button" class="inventory-list-card__select" [disabled]="saving" (click)="selectInventory(inventory.id)">
                 <span class="inventory-list-card__title">{{ inventory.name }}</span>
                 <span class="inventory-list-card__meta">{{ "{p0} linked product(s)" | translate: { p0: (inventory.productCount) } }}</span>
-                <span class="inventory-list-card__status" [class.inventory-list-card__status--empty]="inventory.productCount === 0">
+                <span appStatusBadge size="card" appearance="soft" class="inventory-list-card__status"
+                  [tone]="inventory.productCount === 0 ? 'warning' : 'success'">
                   {{ inventory.productCount === 0 ? ("Empty" | translate) : ("Stocked" | translate) }}
                 </span>
               </button>
@@ -289,7 +290,7 @@
                   {{ "Select products to link to the inventory when it is created." | translate }}
                 </p>
               </div>
-              <span class="rounded-full bg-app-surface-muted px-3 py-1 text-xs font-medium text-app-text">
+              <span appStatusBadge size="counter" emphasis="medium" appearance="soft">
                 {{ "{p0} selected" | translate: { p0: (createSelectedProductIds.length) } }}
               </span>
             </div>

@@ -4,7 +4,7 @@
     [sideSubtitle]="&quot;Select a template and review its read-only details.&quot; | translate"
     [sideAriaLabel]="&quot;Templates&quot; | translate"
     sideWidth="24rem">
-    <span side-actions class="template-master__count-badge">
+    <span appStatusBadge side-actions size="counter" emphasis="semibold" appearance="soft">
       {{ sortedTemplates.length }}
     </span>
 
@@ -21,7 +21,7 @@
               <button appButton variant="plain" type="button" class="template-master__card-select" [disabled]="busy" (click)="onTemplateClick(template.id)">
                 <span class="template-master__card-title">{{ template.title }}</span>
                 <span class="template-master__card-meta">{{ "{p0} template line(s)" | translate: { p0: (template.items.length) } }}</span>
-                <span class="template-master__card-status">{{ "Template" | translate }}</span>
+                <span appStatusBadge tone="info" size="small" appearance="soft" class="template-master__card-status">{{ "Template" | translate }}</span>
               </button>
               <div class="template-master__card-actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                 <button appButton variant="edit"
@@ -89,13 +89,9 @@
                         </td>
                         <td appTableCell>{{ resolveTemplateItemSlotLabel(item) }}</td>
                         <td appTableCell>
-                          <span
-                            class="rounded-full px-2 py-1 text-xs font-medium"
-                            [class.bg-app-success-surface]="item.stockAvailability?.enoughStock === true"
-                            [class.text-app-success]="item.stockAvailability?.enoughStock === true"
-                            [class.bg-app-danger-surface]="item.stockAvailability?.enoughStock === false"
-                            [class.text-app-danger]="item.stockAvailability?.enoughStock === false"
-                            >
+                          <span appStatusBadge size="small" emphasis="medium"
+                            [appearance]="item.stockAvailability?.enoughStock === true || item.stockAvailability?.enoughStock === false ? 'soft' : 'bare'"
+                            [tone]="item.stockAvailability?.enoughStock === true ? 'success' : item.stockAvailability?.enoughStock === false ? 'danger' : 'neutral'">
                             {{ (getStockAvailabilityLabel(item)) | translate }}
                           </span>
                           <p class="mt-2 text-xs text-app-text">
@@ -103,8 +99,8 @@
                           </p>
                         </td>
                         <td appTableCell>
-                          <details [attr.data-testid]="'template-stock-detail-' + item.id">
-                            <summary class="cursor-pointer text-xs font-medium text-app-text">
+                          <details appDisclosure [attr.data-testid]="'template-stock-detail-' + item.id">
+                            <summary appDisclosureSummary size="small">
                               {{ "View details" | translate }}
                             </summary>
                             <div class="mt-2 space-y-1">

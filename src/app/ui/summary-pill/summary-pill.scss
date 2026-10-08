@@ -1,0 +1,11 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border-radius: var(--app-radius-pill);
+  padding: 0.4rem 0.7rem;
+  background: var(--app-surface-muted);
+  color: var(--app-text-strong);
+  font-size: 0.8rem;
+  font-weight: var(--app-font-weight-semibold);
+}

@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideZonelessChangeDetection } from '@angular/core';
 
 import { TemplateList } from './template-list';
-import { Template } from '../../../interfaces/template.interface';
+import { Template, TemplateItem } from '../../../interfaces/template.interface';
 
 describe('TemplateList', () => {
   let component: TemplateList;
@@ -99,5 +100,36 @@ describe('TemplateList', () => {
 
     expect(nativeElement.querySelector('.template-compare-card__field')).not.toBeNull();
     expect(nativeElement.textContent).toContain('Nutrition comparison');
+  });
+});
+
+describe('TemplateList shared stock badges', () => {
+  it('distinguishes available, insufficient and unavailable stock without an implicit alert', async () => {
+    await TestBed.configureTestingModule({
+      imports: [TemplateList], providers: [provideZonelessChangeDetection()],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(TemplateList);
+    for (const [enoughStock, label, tone, appearance] of [
+      [true, 'Stock OK', 'success', 'soft'],
+      [false, 'Low stock', 'danger', 'soft'],
+      [undefined, 'Unknown stock', 'neutral', 'bare'],
+      [null, 'Unknown stock', 'neutral', 'bare'],
+    ] as const) {
+      const item = {
+        id: 21, productId: 1, productName: 'Demo product', qty: 1, qtyUnit: 'piece',
+        slotId: null, slotKey: null, stockByInventory: [],
+        stockAvailability: enoughStock === undefined ? undefined : {
+          enoughStock, totalAvailableNormalized: 10, requestedQtyNormalized: 1,
+        },
+      } as unknown as TemplateItem;
+      fixture.componentRef.setInput('selectedTemplate', { id: 2, title: 'Demo template', items: [item] });
+      await fixture.whenStable();
+      const row: HTMLElement = fixture.nativeElement.querySelector('[data-testid="template-item-row-21"]');
+      const badge = row.querySelector('span.app-status-pill')!;
+      expect(badge.textContent?.trim()).toBe(label);
+      expect(badge.classList.contains(`app-status-pill--${tone}`)).toBeTrue();
+      expect(badge.classList.contains(`app-status-pill--appearance-${appearance}`)).toBeTrue();
+      expect(badge.getAttribute('role')).toBeNull();
+    }
   });
 });

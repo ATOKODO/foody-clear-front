@@ -158,7 +158,7 @@
                   <strong>
                     {{ entry.productName }}
                     @if (entry.isExternal) {
-                      <em class="home-day-entry__badge">{{ "External" | translate }}</em>
+                      <em appStatusBadge tone="info" size="marker" emphasis="heavy" appearance="soft" class="home-day-entry__badge">{{ "External" | translate }}</em>
                     }
                   </strong>
                   <small>{{ entry.slotLabel }}</small>

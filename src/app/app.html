@@ -57,11 +57,7 @@
           [attr.aria-label]="'Open navigation' | translate"
           aria-controls="app-navigation"
           >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">
-            <path d="M4 7h16"></path>
-            <path d="M4 12h16"></path>
-            <path d="M4 17h16"></path>
-          </svg>
+          <app-icon name="menu" />
         </button>
 
         <div class="app-shell__header-copy">
@@ -83,22 +79,10 @@
         >
         <span class="app-theme-toggle__icon" aria-hidden="true">
           @if (!isDarkMode) {
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
-              <circle cx="12" cy="12" r="4"></circle>
-              <path d="M12 2v2.5"></path>
-              <path d="M12 19.5V22"></path>
-              <path d="M4.93 4.93l1.77 1.77"></path>
-              <path d="M17.3 17.3l1.77 1.77"></path>
-              <path d="M2 12h2.5"></path>
-              <path d="M19.5 12H22"></path>
-              <path d="M4.93 19.07l1.77-1.77"></path>
-              <path d="M17.3 6.7l1.77-1.77"></path>
-            </svg>
+            <app-icon name="sun" />
           }
           @if (isDarkMode) {
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3c0.2 0 0.4 0.01 0.59 0.03A7 7 0 0 0 21 12.79z"></path>
-            </svg>
+            <app-icon name="moon" />
           }
         </span>
 

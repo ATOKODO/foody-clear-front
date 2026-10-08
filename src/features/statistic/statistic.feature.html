@@ -181,9 +181,9 @@
                     event.excludedFromStats ||
                     event.pricingStatus === "excluded"
                   ) {
-                    <span class="status-chip">{{ (getPurchaseEventStatusLabel(event)) | translate }}</span>
+                    <span appStatusBadge size="chip" emphasis="normal" appearance="bare">{{ (getPurchaseEventStatusLabel(event)) | translate }}</span>
                   } @else {
-                    <span class="status-chip status-chip--warn">{{ (getPurchaseEventStatusLabel(event)) | translate }}</span>
+                    <span appStatusBadge tone="warning" size="chip" emphasis="normal" appearance="soft">{{ (getPurchaseEventStatusLabel(event)) | translate }}</span>
                   }
                   @if (
                     event.excludedFromStats ||

@@ -1,3 +1,6 @@
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
+import { UiDisclosure } from '../../app/ui/disclosure/disclosure';
+import { UiDisclosureSummary } from '../../app/ui/disclosure-summary/disclosure-summary';
 import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
 import { UiTableScroll } from '../../app/ui/table-scroll/table-scroll';
 import { UiTableCell } from '../../app/ui/table-cell/table-cell';
@@ -129,7 +132,7 @@ import {
     { provide: MatDatepickerIntl, useExisting: MaterialDatepickerIntl },
     { provide: DateAdapter, useClass: LocalizedDateAdapter },
   ],
-  imports: [UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiButton,
+  imports: [UiStatusBadge, UiDisclosure, UiDisclosureSummary, UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiButton,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,

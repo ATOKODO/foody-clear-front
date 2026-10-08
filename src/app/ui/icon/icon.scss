@@ -1,0 +1,14 @@
+:host {
+  display: inline-flex;
+  width: var(--app-space-6);
+  height: var(--app-space-6);
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+:host(.app-ui-icon--small) { width: var(--app-space-5); height: var(--app-space-5); }
+:host(.app-ui-icon--large) { width: var(--app-space-8); height: var(--app-space-8); }
+
+svg { display: block; width: 100%; height: 100%; }

@@ -72,9 +72,9 @@
 
       <div class="meal-prep-toolbar">
         <div class="meal-prep-summary">
-          <span>{{ "{p0} dish(es)" | translate: { p0: (dishes.length) } }}</span>
-          <span>{{ "{p0} meals" | translate: { p0: (meals.length) } }}</span>
-          <span>{{ "{p0} product(s)" | translate: { p0: (products.length) } }}</span>
+          <span appSummaryPill>{{ "{p0} dish(es)" | translate: { p0: (dishes.length) } }}</span>
+          <span appSummaryPill>{{ "{p0} meals" | translate: { p0: (meals.length) } }}</span>
+          <span appSummaryPill>{{ "{p0} product(s)" | translate: { p0: (products.length) } }}</span>
         </div>
       </div>
 
@@ -92,9 +92,8 @@
                 <button appButton variant="plain" type="button" class="meal-prep-list-card__select" (click)="selectDish(dish.id)">
                   <span class="meal-prep-list-card__title">{{ dish.name }}</span>
                   <span class="meal-prep-list-card__meta">{{ "{p0} line(s)" | translate: { p0: (dish.items.length) } }}</span>
-                  <span
-                    class="meal-prep-list-card__status"
-                    [class.is-ready]="dish.availability?.isInStock">
+                  <span appStatusBadge size="card" appearance="soft" class="meal-prep-list-card__status"
+                    [tone]="dish.availability?.isInStock ? 'success' : 'warning'">
                     {{ dish.availability?.isInStock ? ("In stock" | translate) : ("Incomplete stock" | translate) }}
                   </span>
                 </button>
@@ -142,7 +141,7 @@
                     <h4>{{ "Dish contents" | translate }}</h4>
                     <p>{{ dish.availability?.isInStock ? ("Ready with current stock" | translate) : ("Shopping needed" | translate) }}</p>
                   </div>
-                  <span class="meal-prep-badge">
+                  <span appSummaryPill>
                     {{ "{p0} possible" | translate: { p0: (resolveAvailabilityLabel(dish.availability?.maxPreparations)) } }}
                   </span>
                 </div>
@@ -177,9 +176,8 @@
                 <button appButton variant="plain" type="button" class="meal-prep-list-card__select" (click)="selectMeal(meal.id)">
                   <span class="meal-prep-list-card__title">{{ meal.name }}</span>
                   <span class="meal-prep-list-card__meta">{{ "{p0} line(s)" | translate: { p0: (meal.items.length) } }}</span>
-                  <span
-                    class="meal-prep-list-card__status"
-                    [class.is-ready]="meal.availability?.isInStock">
+                  <span appStatusBadge size="card" appearance="soft" class="meal-prep-list-card__status"
+                    [tone]="meal.availability?.isInStock ? 'success' : 'warning'">
                     {{ meal.availability?.isInStock ? ("In stock" | translate) : ("Incomplete stock" | translate) }}
                   </span>
                 </button>
@@ -227,7 +225,7 @@
                     <h4>{{ "Meal contents" | translate }}</h4>
                     <p>{{ meal.availability?.isInStock ? ("Ready with current stock" | translate) : ("Shopping needed" | translate) }}</p>
                   </div>
-                  <span class="meal-prep-badge">
+                  <span appSummaryPill>
                     {{ "{p0} possible" | translate: { p0: (resolveAvailabilityLabel(meal.availability?.maxPreparations)) } }}
                   </span>
                 </div>

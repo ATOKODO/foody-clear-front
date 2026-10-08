@@ -4,28 +4,6 @@
   @include ds.host-block;
 }
 
-.input-day-status {
-  border: 1px solid transparent;
-}
-
-.input-day-status--info {
-  background: var(--app-info-bg);
-  border-color: var(--app-info-border);
-  color: var(--app-info-text);
-}
-
-.input-day-status--success {
-  background: var(--app-success-bg);
-  border-color: var(--app-success-border);
-  color: var(--app-success-text);
-}
-
-.input-day-status--danger {
-  background: var(--app-danger-bg);
-  border-color: var(--app-danger-border);
-  color: var(--app-danger-text);
-}
-
 .input-day-text--success {
   color: var(--app-success-text);
 }

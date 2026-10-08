@@ -1,3 +1,5 @@
+import { UiDisclosure } from '../../../app/ui/disclosure/disclosure';
+import { UiDisclosureSummary } from '../../../app/ui/disclosure-summary/disclosure-summary';
 import { UiCodePanel } from '../../../app/ui/code-panel/code-panel';
 import { UiAlert } from '../../../app/ui/alert/alert';
 import { UiButton } from '../../../app/ui/button/button';
@@ -71,7 +73,7 @@ export interface ProductFormValue {
 
 @Component({
   selector: 'app-product-form',
-  imports: [UiCodePanel, UiAlert, UiButton,
+  imports: [UiDisclosure, UiDisclosureSummary, UiCodePanel, UiAlert, UiButton,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,

@@ -2,6 +2,16 @@ import { applicationConfig, type Preview } from '@storybook/angular-vite';
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 import { Settings } from 'luxon';
 import { provideStoryEnvironment } from '../stories/support/environment';
+import { addons } from 'storybook/preview-api';
+import { STORY_FINISHED, type StoryFinishedPayload } from 'storybook/internal/core-events';
+
+// Canvas content can appear before a play function succeeds or throws. Expose
+// Storybook's own completion result so browser coverage waits for interactions.
+addons.getChannel().on(STORY_FINISHED, ({ storyId, status }: StoryFinishedPayload) => {
+  const root = document.getElementById('storybook-root');
+  root?.setAttribute('data-story-finished-id', storyId);
+  root?.setAttribute('data-story-finished-status', status);
+});
 
 // Stable clock for the date-sensitive home, planning, calendar and statistics screens.
 Settings.now = () => Date.parse('2026-03-25T12:00:00+01:00');

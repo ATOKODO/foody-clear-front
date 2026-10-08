@@ -2,6 +2,7 @@ import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
 import { UiTableScroll } from '../../app/ui/table-scroll/table-scroll';
 import { UiTableCell } from '../../app/ui/table-cell/table-cell';
 import { UiTable } from '../../app/ui/table/table';
+import { UiSummaryPill } from '../../app/ui/summary-pill/summary-pill';
 import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
 import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
@@ -60,7 +61,7 @@ import {
 
 @Component({
   selector: 'app-inventory',
-  imports: [UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiStatusBadge, UiButton, TranslatePipe, UiModal,
+  imports: [UiSummaryPill, UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiStatusBadge, UiButton, TranslatePipe, UiModal,
     FormsModule,
     MatCardModule,
     MatFormFieldModule,

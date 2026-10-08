@@ -259,19 +259,6 @@
   white-space: nowrap;
 }
 
-.status-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-}
-
-.status-chip--warn {
-  background: var(--app-warning-bg);
-  color: var(--app-warning-text);
-}
-
 .target-detail-box {
   padding: 0.9rem 1rem;
   border-radius: 1rem;

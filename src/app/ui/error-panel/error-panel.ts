@@ -1,3 +1,5 @@
+import { UiDisclosure } from '../disclosure/disclosure';
+import { UiDisclosureSummary } from '../disclosure-summary/disclosure-summary';
 import { Component, inject, input } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { TranslatePipe } from '../../i18n/translate-pipe';
@@ -7,7 +9,7 @@ import { UiCodePanel } from '../code-panel/code-panel';
 
 @Component({
   selector: 'app-ui-error-panel',
-  imports: [UiAlert, UiCodePanel, JsonPipe, TranslatePipe],
+  imports: [UiDisclosure, UiDisclosureSummary, UiAlert, UiCodePanel, JsonPipe, TranslatePipe],
   template: `
     @if (error()) {
       <section appAlert tone="error" role="alert">
@@ -16,8 +18,8 @@ import { UiCodePanel } from '../code-panel/code-panel';
           <p class="app-alert__message">{{ displayMessage | translate }}</p>
         </div>
         @if (showDetails) {
-          <details class="app-alert__details">
-            <summary>{{ detailsLabel() | translate }}</summary>
+          <details appDisclosure class="app-alert__details">
+            <summary appDisclosureSummary emphasis="strong">{{ detailsLabel() | translate }}</summary>
             <pre appCodePanel wrap>{{ error() | json }}</pre>
           </details>
         }

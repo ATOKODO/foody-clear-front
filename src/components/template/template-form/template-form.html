@@ -227,13 +227,8 @@
                       }
                     </td>
                     <td appTableCell>
-                      <span
-                        class="rounded-full px-2 py-1 text-xs font-medium"
-                        [class.bg-app-success-surface]="item.stockAvailability.enoughStock"
-                        [class.text-app-success]="item.stockAvailability.enoughStock"
-                        [class.bg-app-danger-surface]="!item.stockAvailability.enoughStock"
-                        [class.text-app-danger]="!item.stockAvailability.enoughStock"
-                      >
+                      <span appStatusBadge size="small" emphasis="medium" appearance="soft"
+                        [tone]="item.stockAvailability.enoughStock ? 'success' : 'danger'">
                         {{ item.stockAvailability.enoughStock ? ("Stock OK" | translate) : ("Low stock" | translate) }}
                       </span>
                     </td>

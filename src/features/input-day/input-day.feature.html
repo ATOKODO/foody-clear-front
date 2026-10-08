@@ -574,9 +574,7 @@
                         target of daySet.nutritionValue | keyvalue;
                         track target
                       ) {
-                        <span
-                          class="input-day-status input-day-status--info rounded-full px-2 py-1 text-xs"
-                        >
+                        <span appStatusBadge tone="info" size="small" emphasis="normal">
                           {{ (target.key) | translate }}:
                           {{ formatNutritionAmount(target.value) }}
                         </span>
@@ -750,15 +748,8 @@
                             >
                           </td>
                           <td appTableCell>
-                            <span
-                              class="input-day-status rounded-full px-2 py-1 text-xs font-medium"
-                              [class.input-day-status--info]="
-                                item.status === 'pending'
-                              "
-                              [class.input-day-status--success]="
-                                item.status === 'converted'
-                              "
-                            >
+                            <span appStatusBadge size="small" emphasis="medium"
+                              [tone]="item.status === 'converted' ? 'success' : 'info'">
                               {{
                                 item.status === "converted"
                                   ? ("Converted" | translate)
@@ -767,15 +758,8 @@
                             </span>
                           </td>
                           <td appTableCell>
-                            <span
-                              class="input-day-status rounded-full px-2 py-1 text-xs font-medium"
-                              [class.input-day-status--success]="
-                                item.stockAvailability.enoughStock
-                              "
-                              [class.input-day-status--danger]="
-                                !item.stockAvailability.enoughStock
-                              "
-                            >
+                            <span appStatusBadge size="small" emphasis="medium"
+                              [tone]="item.stockAvailability.enoughStock ? 'success' : 'danger'">
                               {{
                                 item.stockAvailability.enoughStock
                                   ? ("Stock OK" | translate)
@@ -825,10 +809,8 @@
                             }
                           </td>
                           <td appTableCell>
-                            <details>
-                              <summary
-                                class="cursor-pointer text-xs font-medium text-app-text"
-                              >
+                            <details appDisclosure>
+                              <summary appDisclosureSummary size="small">
                                 {{ "View" | translate }}
                               </summary>
                               <div class="mt-2 space-y-1">
@@ -926,9 +908,7 @@
                             >
                           </p>
                           @if (item.templateItemId) {
-                            <span
-                              class="input-day-status input-day-status--success mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
-                            >
+                            <span appStatusBadge tone="success" size="compact" emphasis="medium" class="mt-1">
                               {{ "Effective depuis template" | translate }}
                             </span>
                           }

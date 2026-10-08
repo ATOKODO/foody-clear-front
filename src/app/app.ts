@@ -1,3 +1,4 @@
+import { UiIcon } from './ui/icon/icon';
 import { UiAlert } from './ui/alert/alert';
 import { UiButton } from './ui/button/button';
 
@@ -27,7 +28,7 @@ import { TranslatePipe } from './i18n/translate-pipe';
 
 @Component({
   selector: 'app-root',
-  imports: [UiAlert, UiButton, RouterLink, RouterLinkActive, RouterOutlet, PwaControls, TranslatePipe],
+  imports: [UiIcon, UiAlert, UiButton, RouterLink, RouterLinkActive, RouterOutlet, PwaControls, TranslatePipe],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {

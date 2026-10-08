@@ -18,6 +18,7 @@ import { handlePlanningRequest } from '../../tests/mocks/handlers/planning';
 import { handleExecutionRequest } from '../../tests/mocks/handlers/execution';
 import { handleAnalyticsRequest } from '../../tests/mocks/handlers/analytics';
 import { createSupplementaryState, handleSupplementaryRequest, type SupplementaryState } from './supplementary-api';
+import type { ExternalMealEntrySummary } from '../../src/interfaces/input-day.interface';
 
 type Scenario = 'populated' | 'empty' | 'loading' | 'error';
 const STORY_STATE = new InjectionToken<{ state: MockApiState; extra: SupplementaryState; scenario: Scenario }>('Isolated Storybook API');
@@ -68,7 +69,10 @@ export function provideStoryEnvironment(context: StoryContext): (Provider | Envi
   return [
     { provide: STORY_STATE, useFactory: () => {
       const state = scenarioState(scenario);
-      return { state, extra: createSupplementaryState(state, scenario === 'empty'), scenario };
+      const extra = createSupplementaryState(state, scenario === 'empty');
+      const externalEntries = context.parameters['apiExternalEntries'] as Record<string, ExternalMealEntrySummary[]> | undefined;
+      for (const [date, entries] of Object.entries(externalEntries ?? {})) extra.externalEntries.set(date, structuredClone(entries));
+      return { state, extra, scenario };
     } },
     provideHttpClient(withInterceptors([storyApi])),
     provideNoopAnimations(),

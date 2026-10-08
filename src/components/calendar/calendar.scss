@@ -174,23 +174,6 @@
   color: var(--app-text-strong);
 }
 
-.calendar-year-card__status {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 0.34rem 0.62rem;
-  background: var(--app-border);
-  color: var(--app-text);
-  font-size: 0.68rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.calendar-year-card__status--active {
-  background: var(--app-info-bg);
-  color: var(--app-info-strong-text);
-}
-
 .calendar-year-card__insights,
 .calendar-week-day-details__chips,
 .calendar-week-day-details__alerts {
@@ -199,34 +182,7 @@
   gap: 0.45rem;
 }
 
-.calendar-year-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px solid var(--app-border-strong);
-  border-radius: 999px;
-  padding: 0.34rem 0.62rem;
-  background: var(--app-surface-soft);
-  color: var(--app-text);
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-
-.calendar-year-chip__value {
-  font-size: 0.82rem;
-  font-weight: 800;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
-}
-
-.calendar-year-chip__label {
-  line-height: 1;
-}
-
-.calendar-year-chip--accent,
 .calendar-month-day__quick-action[data-kind="items"],
-.calendar-year-chip--current,
 .calendar-month-day__quick-action[data-kind="cycle"] {
   border-color: var(--app-accent-soft);
   background: var(--app-success-bg);
@@ -498,17 +454,6 @@
   align-items: center;
 }
 
-.calendar-month-day__today-pill {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 0.24rem 0.55rem;
-  background: var(--app-info-bg);
-  color: var(--app-info-strong-text);
-  font-size: 0.64rem;
-  font-weight: 700;
-}
-
 .calendar-month-day__body {
   display: flex;
   min-height: 0;
@@ -656,50 +601,6 @@
   gap: 0.35rem;
 }
 
-.calendar-month-day__alert-badge {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--app-on-color-border);
-  border-radius: 999px;
-  padding: 0.24rem 0.5rem;
-  background: var(--app-contrast-surface-muted);
-  color: var(--app-text-on-color);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.calendar-month-day__alert-badge[data-tone="projected"] {
-  border-color: var(--app-info-border);
-  background: var(--app-info-bg);
-}
-
-.calendar-month-day__alert-badge[data-tone="template"] {
-  border-color: var(--app-warning-border);
-  background: var(--app-warning-border);
-}
-
-.calendar-month-day__assignment--insight-only .calendar-month-day__alert-badge,
-.calendar-week-day-details .calendar-month-day__alert-badge {
-  border-color: var(--app-border);
-  background: var(--app-surface-soft);
-  color: var(--app-text-strong);
-}
-
-.calendar-month-day__assignment--insight-only
-  .calendar-month-day__alert-badge[data-tone="projected"],
-.calendar-week-day-details
-  .calendar-month-day__alert-badge[data-tone="projected"] {
-  border-color: var(--app-info-border);
-  background: var(--app-info-bg);
-  color: var(--app-info-strong-text);
-}
-
-.calendar-month-day__assignment--insight-only
-  .calendar-month-day__alert-badge[data-tone="template"],
-.calendar-week-day-details
-  .calendar-month-day__alert-badge[data-tone="template"],
 .calendar-week-block[data-tone="2"] {
   border-color: var(--app-warning-border);
   background: var(--app-warning-bg);
@@ -758,79 +659,11 @@
   gap: 0.75rem;
 }
 
-.calendar-week-overview__pill {
-  display: flex;
-  min-width: 7.5rem;
-  flex-direction: column;
-  gap: 0.15rem;
-  border: 1px solid var(--app-border-soft);
-  border-radius: 1rem;
-  padding: 0.8rem 0.95rem;
-  background: var(--app-surface);
-  box-shadow: var(--app-shadow-sm);
-  backdrop-filter: blur(12px);
-}
-
-.calendar-week-overview__value,
 .calendar-week-mobile__date {
   font-size: 1.15rem;
   font-weight: 700;
   line-height: 1;
   color: var(--app-text-strong);
-}
-
-.calendar-week-overview__label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--app-text-muted);
-}
-
-.calendar-week-chip,
-.calendar-week-meta-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 600;
-}
-
-.calendar-week-chip {
-  padding: 0.42rem 0.72rem;
-  border: 1px solid var(--app-border-soft);
-  color: var(--app-text);
-  background: var(--app-surface-soft);
-}
-
-.calendar-week-chip--dayset {
-  border-color: var(--app-accent-soft);
-  color: var(--app-success-text);
-  background: linear-gradient(
-    135deg,
-    var(--app-success-bg),
-    var(--app-success-bg)
-  );
-}
-
-.calendar-week-chip--target,
-.calendar-week-chip--template,
-.calendar-week-chip--template-source {
-  border-color: var(--app-warning-border);
-  color: var(--app-warning-text);
-  background: linear-gradient(
-    135deg,
-    var(--app-warning-bg),
-    var(--app-warning-bg)
-  );
-}
-
-.calendar-week-meta-pill {
-  padding: 0.36rem 0.68rem;
-  border: 1px solid var(--app-border-strong);
-  color: var(--app-text);
-  background: var(--app-surface-soft);
 }
 
 .calendar-week-day-details {
@@ -853,16 +686,6 @@
   border-radius: 0.95rem;
   padding: 0.55rem;
   background: var(--app-surface);
-}
-
-.calendar-week-day-details--desktop .calendar-week-chip {
-  padding: 0.32rem 0.56rem;
-  font-size: 0.64rem;
-}
-
-.calendar-week-day-details--desktop .calendar-month-day__alert-badge {
-  font-size: 0.54rem;
-  padding: 0.22rem 0.44rem;
 }
 
 .calendar-week-mobile {
@@ -911,17 +734,6 @@
   align-items: center;
   gap: 0.45rem;
   margin-top: 0.3rem;
-}
-
-.calendar-week-mobile__today-pill {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 0.2rem 0.5rem;
-  background: var(--app-info-bg);
-  color: var(--app-info-strong-text);
-  font-size: 0.65rem;
-  font-weight: 700;
 }
 
 .calendar-week-mobile__actions,
@@ -1068,17 +880,6 @@
   font-weight: 700;
   line-height: 1;
   color: var(--app-text-strong);
-}
-
-.calendar-week-grid__today-pill {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 0.25rem 0.55rem;
-  background: var(--app-info-bg);
-  color: var(--app-info-strong-text);
-  font-size: 0.66rem;
-  font-weight: 700;
 }
 
 .calendar-week-grid__assignment {
@@ -1260,18 +1061,6 @@
   opacity: 0.88;
 }
 
-.calendar-day-summary__assignment-badge {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  padding: 0.36rem 0.65rem;
-  border: 1px solid var(--app-on-color-border);
-  background: var(--app-on-color-surface);
-  font-size: 0.7rem;
-  font-weight: 700;
-  backdrop-filter: blur(8px);
-}
-
 .calendar-day-summary__dashboard {
   display: grid;
   gap: 0.9rem;
@@ -1324,19 +1113,6 @@
   font-size: 0.84rem;
   line-height: 1.55;
   color: var(--app-text);
-}
-
-.calendar-day-summary__source-pill {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  border: 1px solid var(--app-info-border);
-  border-radius: 999px;
-  padding: 0.42rem 0.8rem;
-  background: var(--app-info-bg);
-  color: var(--app-info-text);
-  font-size: 0.72rem;
-  font-weight: 800;
 }
 
 .calendar-day-summary__macro-grid {

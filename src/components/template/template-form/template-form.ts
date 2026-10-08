@@ -1,3 +1,4 @@
+import { UiStatusBadge } from '../../../app/ui/status-badge/status-badge';
 import { UiEmptyState } from '../../../app/ui/empty-state/empty-state';
 import { UiTableScroll } from '../../../app/ui/table-scroll/table-scroll';
 import { UiTableCell } from '../../../app/ui/table-cell/table-cell';
@@ -49,7 +50,7 @@ export interface TemplateFormSubmittedEvent {
 
 @Component({
   selector: 'app-template-form',
-  imports: [UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiButton,
+  imports: [UiStatusBadge, UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiButton,
     TranslatePipe,
     FormsModule,
     MatCardModule,

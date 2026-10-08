@@ -74,15 +74,6 @@
   }
 }
 
-@mixin summary-pill {
-  border-radius: var(--app-radius-pill);
-  padding: 0.4rem 0.7rem;
-  background: var(--app-surface-muted);
-  color: var(--app-text-strong);
-  font-size: 0.8rem;
-  font-weight: var(--app-font-weight-semibold);
-}
-
 @mixin workspace-card($radius: var(--app-radius-sm)) {
   border: 1px solid var(--app-border);
   border-radius: $radius;

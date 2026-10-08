@@ -66,34 +66,34 @@
                         {{ cycle.title }}
                       </p>
                       @if (cycle.missingDayCount > 0) {
-                        <span class="lc-meta-chip">
+                        <span appBreakdownBadge kind="meta" [expanded]="isSingleSelectMode" class="lc-meta-chip">
                           {{ "{p0} day(s) without a day set" | translate: { p0: (cycle.missingDayCount) } }}
                         </span>
                       }
                       @if (cycle.hasDaySetOverflow) {
-                        <span class="lc-meta-chip"> {{ "Day sets > cycle" | translate }} </span>
+                        <span appBreakdownBadge kind="meta" [expanded]="isSingleSelectMode" class="lc-meta-chip"> {{ "Day sets > cycle" | translate }} </span>
                       }
-                      <span class="lc-meta-chip"
+                      <span appBreakdownBadge kind="meta" [expanded]="isSingleSelectMode" class="lc-meta-chip"
                         >{{ "{p0} day(s)" | translate: { p0: (cycle.durationDays) } }}</span
                       >
-                      <span class="lc-meta-chip">
+                      <span appBreakdownBadge kind="meta" [expanded]="isSingleSelectMode" class="lc-meta-chip">
                         {{ (formatDuration(
                             cycle.durationCount,
                             cycle.durationType
                           )) | translate }}
                       </span>
-                      <span class="lc-meta-chip"
+                      <span appBreakdownBadge kind="meta" [expanded]="isSingleSelectMode" class="lc-meta-chip"
                         >{{ "{p0} linked day set(s)" | translate: { p0: (cycle.daySets.length) } }}</span
                       >
                     </div>
                     <div class="lc-card__alerts mt-2 flex flex-wrap gap-2">
                       @if (cycle.hasSlotOverflow) {
-                        <span class="lc-overview-badge lc-overview-badge-over">
+                        <span appBreakdownBadge kind="overview" status="over" [expanded]="isSingleSelectMode" class="lc-overview-badge lc-overview-badge-over">
                           {{ "Slots > day set" | translate }}
                         </span>
                       }
                       @if (cycle.hasMissingSlotBreakdown) {
-                        <span
+                        <span appBreakdownBadge kind="overview" status="missing" [expanded]="isSingleSelectMode"
                           class="lc-overview-badge lc-overview-badge-missing"
                         >
                           {{ "Partial slot breakdown" | translate }}
@@ -128,9 +128,8 @@
                           >
                             {{ (card.label) | translate }}
                           </p>
-                          <span
+                          <span appBreakdownBadge kind="status" [status]="card.status"
                             class="lc-status-badge"
-                            [class]="getStatusClass(card.status)"
                           >
                             {{ (getStatusLabel(card.status)) | translate }}
                           </span>
@@ -197,16 +196,16 @@
                             >
                               {{ cycle.title }}
                             </p>
-                            <span class="lc-meta-chip"
+                            <span appBreakdownBadge kind="meta" [expanded]="isSingleSelectMode" class="lc-meta-chip"
                               >{{ "{p0} day(s)" | translate: { p0: (cycle.durationDays) } }}</span
                             >
-                            <span class="lc-meta-chip">
+                            <span appBreakdownBadge kind="meta" [expanded]="isSingleSelectMode" class="lc-meta-chip">
                               {{ (formatDuration(
                                   cycle.durationCount,
                                   cycle.durationType
                                 )) | translate }}
                             </span>
-                            <span class="lc-meta-chip"
+                            <span appBreakdownBadge kind="meta" [expanded]="isSingleSelectMode" class="lc-meta-chip"
                               >{{ "{p0} linked day set(s)" | translate: { p0: (cycle.daySets.length) } }}</span
                             >
                           </div>
@@ -214,28 +213,28 @@
                             class="lc-card__alerts mt-2 flex flex-wrap gap-2"
                           >
                             @if (cycle.missingDayCount > 0) {
-                              <span
+                              <span appBreakdownBadge kind="overview" status="missing" [expanded]="isSingleSelectMode"
                                 class="lc-overview-badge lc-overview-badge-missing"
                               >
                                 {{ "{p0} day(s) without a day set" | translate: { p0: (cycle.missingDayCount) } }}
                               </span>
                             }
                             @if (cycle.hasDaySetOverflow) {
-                              <span
+                              <span appBreakdownBadge kind="overview" status="over" [expanded]="isSingleSelectMode"
                                 class="lc-overview-badge lc-overview-badge-over"
                               >
                                 {{ "Day sets > cycle" | translate }}
                               </span>
                             }
                             @if (cycle.hasSlotOverflow) {
-                              <span
+                              <span appBreakdownBadge kind="overview" status="over" [expanded]="isSingleSelectMode"
                                 class="lc-overview-badge lc-overview-badge-over"
                               >
                                 {{ "Slots > day set" | translate }}
                               </span>
                             }
                             @if (cycle.hasMissingSlotBreakdown) {
-                              <span
+                              <span appBreakdownBadge kind="overview" status="missing" [expanded]="isSingleSelectMode"
                                 class="lc-overview-badge lc-overview-badge-missing"
                               >
                                 {{ "Partial slot breakdown" | translate }}
@@ -387,9 +386,8 @@
                                   >
                                     {{ (metric.label) | translate }}
                                   </p>
-                                  <span
+                                  <span appBreakdownBadge kind="status" [status]="metric.status"
                                     class="lc-status-badge"
-                                    [class]="getStatusClass(metric.status)"
                                   >
                                     {{ (getStatusLabel(metric.status)) | translate }}
                                   </span>
@@ -462,7 +460,7 @@
                               >
                                 {{ daySet.title }}
                               </p>
-                              <span class="lc-meta-chip"
+                              <span appBreakdownBadge kind="meta" [expanded]="isSingleSelectMode" class="lc-meta-chip"
                                 >{{ "{p0} slot(s)" | translate: { p0: (daySet.slots.length) } }}</span
                               >
                             </div>
@@ -472,14 +470,14 @@
                           </div>
                           <div class="flex flex-wrap gap-2">
                             @if (daySet.hasSlotOverflow) {
-                              <span
+                              <span appBreakdownBadge kind="overview" status="over" [expanded]="isSingleSelectMode"
                                 class="lc-overview-badge lc-overview-badge-over"
                               >
                                 {{ "Slots > day set" | translate }}
                               </span>
                             }
                             @if (daySet.hasMissingSlotBreakdown) {
-                              <span
+                              <span appBreakdownBadge kind="overview" status="missing" [expanded]="isSingleSelectMode"
                                 class="lc-overview-badge lc-overview-badge-missing"
                               >
                                 {{
@@ -511,9 +509,8 @@
                                     >
                                       {{ (metric.label) | translate }}
                                     </p>
-                                    <span
+                                    <span appBreakdownBadge kind="status" [status]="metric.status"
                                       class="lc-status-badge"
-                                      [class]="getStatusClass(metric.status)"
                                     >
                                       {{ (getStatusLabel(metric.status)) | translate }}
                                     </span>
@@ -564,9 +561,8 @@
                                       >
                                         {{ (metric.label) | translate }}
                                       </p>
-                                      <span
+                                      <span appBreakdownBadge kind="status" [status]="metric.status"
                                         class="lc-status-badge"
-                                        [class]="getStatusClass(metric.status)"
                                       >
                                         {{ (getStatusLabel(metric.status)) | translate }}
                                       </span>
@@ -649,11 +645,8 @@
                                         >
                                           {{ (metric.label) | translate }}
                                         </p>
-                                        <span
+                                        <span appBreakdownBadge kind="status" [status]="metric.status"
                                           class="lc-status-badge"
-                                          [class]="
-                                            getStatusClass(metric.status)
-                                          "
                                         >
                                           {{ (getStatusLabel(metric.status)) | translate }}
                                         </span>

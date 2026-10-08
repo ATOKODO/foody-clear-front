@@ -287,7 +287,7 @@
   box-shadow: var(--app-shadow-sm);
 }
 
-.app-shell__menu-button svg {
+.app-shell__menu-button app-icon {
   width: 1.1rem;
   height: 1.1rem;
 }
@@ -341,7 +341,7 @@
   color: var(--app-text-strong);
 }
 
-.app-theme-toggle__icon svg {
+.app-theme-toggle__icon app-icon {
   width: 1.05rem;
   height: 1.05rem;
 }

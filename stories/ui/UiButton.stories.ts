@@ -1,9 +1,11 @@
-import type { Meta, StoryObj } from '@storybook/angular-vite';
+import { moduleMetadata, type Meta, type StoryObj } from '@storybook/angular-vite';
 import { fn } from 'storybook/test';
+import { UiIcon } from '../../src/app/ui/icon/icon';
 import { UiButton } from '../../src/app/ui/button/button';
 
 const meta = {
   title: 'UI/Button', component: UiButton,
+  decorators: [moduleMetadata({ imports: [UiIcon] })],
   args: { variant: 'primary', size: 'medium', type: 'button', disabled: false, loading: false, activated: fn() },
   render: args => ({ props: args, template: `<button appButton [variant]="variant" [size]="size" [type]="type" [disabled]="disabled" [loading]="loading" (activated)="activated($event)">Save</button>` }),
   parameters: { docs: { description: { component: 'Shared native button used throughout the application. Project content for labels/icons; retain native click, submit/reset, ARIA, dialog and focus behavior. Use plain for specialized layouts whose geometry is owned by the screen (calendar, navigation, selection cards and backdrops).' } } },
@@ -24,10 +26,10 @@ export const Small: Story = { args: { size: 'small' } };
 export const Large: Story = { args: { size: 'large' } };
 export const Icon: Story = {
   args: { variant: 'icon' },
-  render: args => ({ props: args, template: `<button appButton variant="icon" [disabled]="disabled" [loading]="loading" aria-label="Add" (activated)="activated($event)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></button>` }),
+  render: args => ({ props: args, template: `<button appButton variant="icon" [disabled]="disabled" [loading]="loading" aria-label="Add" (activated)="activated($event)"><app-icon name="add" /></button>` }),
 };
 export const WithIcon: Story = {
-  render: args => ({ props: args, template: `<button appButton [variant]="variant" [disabled]="disabled" [loading]="loading" (activated)="activated($event)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>Add</button>` }),
+  render: args => ({ props: args, template: `<button appButton [variant]="variant" [disabled]="disabled" [loading]="loading" (activated)="activated($event)"><app-icon name="add" size="small" />Add</button>` }),
 };
 export const LongLabel: Story = {
   render: args => ({ props: args, template: `<button appButton [variant]="variant" [disabled]="disabled" [loading]="loading" style="max-width: 18rem" (activated)="activated($event)">Save all selected products to the inventory</button>` }),

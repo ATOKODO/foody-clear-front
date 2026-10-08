@@ -1,3 +1,4 @@
+import { UiIcon } from '../../ui/icon/icon';
 import { UiCodePanel } from '../../ui/code-panel/code-panel';
 import { UiAlert } from '../../ui/alert/alert';
 import { UiStatusBadge } from '../../ui/status-badge/status-badge';
@@ -12,7 +13,7 @@ import tokenSource from '../../../styles/_tokens.scss?raw';
 
 @Component({
   selector: 'app-foundations',
-  imports: [UiCodePanel, UiAlert, UiStatusBadge, UiButton, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, MatCardModule],
+  imports: [UiIcon, UiCodePanel, UiAlert, UiStatusBadge, UiButton, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, MatCardModule],
   templateUrl: './foundations.html',
   styleUrl: './foundations.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

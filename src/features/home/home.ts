@@ -1,3 +1,4 @@
+import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
 import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
 import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
@@ -57,7 +58,7 @@ import {
 
 @Component({
   selector: 'app-home',
-  imports: [UiEmptyState, UiButton,
+  imports: [UiStatusBadge, UiEmptyState, UiButton,
     TranslatePipe,
     RouterLink,
     NgClass,
