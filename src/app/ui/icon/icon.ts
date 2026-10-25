@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { IconDefinition, IconName, UI_ICONS } from './glyphs';
 
+export type IconSize = 'small' | 'medium' | 'large';
+
 @Component({
   selector: 'app-icon',
   template: `
@@ -27,7 +29,7 @@ import { IconDefinition, IconName, UI_ICONS } from './glyphs';
 })
 export class UiIcon {
   readonly name = input.required<IconName>();
-  readonly size = input<'small' | 'medium' | 'large'>('medium');
+  readonly size = input<IconSize>('medium');
   readonly label = input('');
   protected readonly accessibleLabel = computed(() => this.label().trim());
   protected readonly glyph = computed<IconDefinition>(() => UI_ICONS[this.name()]);

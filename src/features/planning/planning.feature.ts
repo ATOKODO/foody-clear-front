@@ -1,4 +1,5 @@
 import { UiDateBadge } from '../../app/ui/date-badge/date-badge';
+import { UiActionCard } from '../../app/ui/action-card/action-card';
 import { UiIcon } from '../../app/ui/icon/icon';
 import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
 import { UiButton } from '../../app/ui/button/button';
@@ -83,7 +84,7 @@ import {
 
 @Component({
   selector: 'app-planning',
-  imports: [UiDateBadge, UiIcon, UiStatusBadge, UiButton, TranslatePipe, UiModal,
+  imports: [UiDateBadge, UiActionCard, UiIcon, UiStatusBadge, UiButton, TranslatePipe, UiModal,
     FormsModule,
     Calendar,
     InputDayFeature,

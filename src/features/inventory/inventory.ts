@@ -1,4 +1,6 @@
 import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
+import { UiSelectableCard } from '../../app/ui/selectable-card/selectable-card';
+import { UiWorkspaceCard } from '../../app/ui/workspace-card/workspace-card';
 import { UiTableScroll } from '../../app/ui/table-scroll/table-scroll';
 import { UiTableCell } from '../../app/ui/table-cell/table-cell';
 import { UiTable } from '../../app/ui/table/table';
@@ -61,7 +63,7 @@ import {
 
 @Component({
   selector: 'app-inventory',
-  imports: [UiSummaryPill, UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiStatusBadge, UiButton, TranslatePipe, UiModal,
+  imports: [UiSummaryPill, UiEmptyState, UiSelectableCard, UiWorkspaceCard, UiTableScroll, UiTableCell, UiTable, UiStatusBadge, UiButton, TranslatePipe, UiModal,
     FormsModule,
     MatCardModule,
     MatFormFieldModule,

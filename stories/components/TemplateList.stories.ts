@@ -7,5 +7,6 @@ export default meta;
 type Story = StoryObj<TemplateList>;
 export const Populated: Story = {};
 export const Selected: Story = { args: { selectedTemplateId: 1, selectedTemplate: templates[0], compareDaySetId: 1 } };
+export const Busy: Story = { args: { selectedTemplateId: 1, selectedTemplate: templates[0], busy: true } };
 export const Empty: Story = { args: { templates: [] } };
 export const Loading: Story = { args: { templates: [], loadingTemplates: true } };

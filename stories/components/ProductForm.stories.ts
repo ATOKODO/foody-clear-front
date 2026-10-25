@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<ProductForm>;
 export default meta;
 type Story = StoryObj<ProductForm>;
-export const Create: Story = {};
+export const Create: Story = { args: { mode: 'add' } };
 
 export const Edit: Story = { args: { mode: 'edit', product: { name: 'Banane', barcode: '3017620422003', categoryId: 1, tagIds: [1], genericProductId: 1, unitType: 'Unite', quantityPerUnit: 120, quantityUnit: 'g', price: 0.49, priceUnit: 'unite', nutritionValues: state.products[0].nutritionValues } } };
 export const Saving: Story = { args: { mode: 'edit', product: { name: 'Banane', barcode: '3017620422003', categoryId: 1, tagIds: [1], genericProductId: 1, unitType: 'Unite', quantityPerUnit: 120, quantityUnit: 'g', price: 0.49, priceUnit: 'unite', nutritionValues: state.products[0].nutritionValues }, saving: true } };

@@ -1,4 +1,6 @@
 import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
+import { UiSelectableCard } from '../../app/ui/selectable-card/selectable-card';
+import { UiWorkspaceCard } from '../../app/ui/workspace-card/workspace-card';
 import { UiSummaryPill } from '../../app/ui/summary-pill/summary-pill';
 import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
 import { UiButton } from '../../app/ui/button/button';
@@ -21,7 +23,7 @@ import { ShoppingListStore } from './shopping-list.store';
 @Component({
   selector: 'app-shopping-list',
   standalone: true,
-  imports: [UiSummaryPill, UiEmptyState, UiStatusBadge, UiButton, TranslatePipe, UiModal,
+  imports: [UiSummaryPill, UiEmptyState, UiSelectableCard, UiWorkspaceCard, UiStatusBadge, UiButton, TranslatePipe, UiModal,
     CommonModule,
     FormsModule,
     MatCardModule,

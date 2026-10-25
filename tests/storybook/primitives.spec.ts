@@ -89,7 +89,9 @@ for (const theme of ['light', 'dark']) {
     await page.goto(`/iframe.html?id=ui-date-badge--long-value&viewMode=story&globals=theme:${theme}`);
     await expect(badge.locator('.app-date-badge__value')).toContainText('Europe/Paris');
     expect(await badge.evaluate(element => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
-    await page.goto(`/iframe.html?id=screens-planningfeature--day-actions&viewMode=story&globals=theme:${theme};language:en`);
+    await page.goto(`/iframe.html?id=screens-planningfeature--populated&viewMode=story&globals=theme:${theme};language:en`);
+    await page.getByTestId('planning-view-year').getByRole('radio').click();
+    await page.getByTestId('calendar-year-day-2026-03-25').click();
     await expect(page.getByTestId('planning-modal-actions')).toBeVisible();
     await expect(badge.locator('.planning-actions-modal__date-value')).toHaveText('2026-03-25');
     await expect(badge.locator('.app-date-badge__detail')).toHaveCount(0);
@@ -492,3 +494,25 @@ test('shared disclosures retain keyboard expansion, hidden content and projected
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Use this example', exact: true })).toBeFocused();
 });
+
+for (const theme of ['light', 'dark']) {
+  test(`chart bar variants retain their geometry and semantic palettes (${theme})`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const bar = page.locator('#storybook-root app-chart-bar');
+    for (const [variant, height] of [['expense', '64%'], ['goal', '80%'], ['actual', '48%']] as const) {
+      await page.goto(`/iframe.html?id=ui-chart-bar--${variant === 'goal' ? 'target-goal' : variant === 'actual' ? 'target-actual' : 'expense'}&viewMode=story&globals=theme:${theme}`);
+      await expect(bar).toHaveClass(new RegExp(`app-chart-bar--${variant}`));
+      await expect(bar).toHaveCSS('display', 'block');
+      await expect(bar).toHaveCSS('width', '24px');
+      await expect(bar).toHaveCSS('border-radius', '999px');
+      await expect(bar).toHaveAttribute('style', new RegExp(`height: ${height.replace('%', '\\%')}`));
+      expect(await bar.evaluate(element => element.getBoundingClientRect().height)).toBeGreaterThan(0);
+      await expect(bar).toHaveAttribute('role', 'presentation');
+      const palette = await bar.evaluate(element => {
+        const style = getComputedStyle(element);
+        return `${style.backgroundColor} ${style.backgroundImage}`;
+      });
+      expect(palette).not.toBe('rgba(0, 0, 0, 0) none');
+    }
+  });
+}

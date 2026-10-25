@@ -18,18 +18,18 @@ The integration uses `@storybook/angular-vite` 10.6.1 and Analog 2.8.0, compatib
 | Section | Content |
 | --- | --- |
 | Design system | All `--app-*` tokens, typography, spacing, shape, elevation/motion, breakpoints, Material controls, feedback and icons |
-| UI | Shared buttons, status badges, summary pills, calendar/cycle labels, overview metrics, date summaries, alerts, code panels, native tables/cells/viewports, empty states, local icons, disclosures/summaries, error panel, segmented toggle, PWA instructions and modal focus/keyboard behavior; isolated Material controls |
+| UI | Shared buttons, status badges, summary pills, calendar panels/labels, cycle labels, overview metrics, date summaries, selectable/workspace cards, alerts, code panels, native tables/cells/viewports, empty states, local icons, disclosures/summaries, error panel, segmented toggle, PWA instructions and modal focus/keyboard behavior; isolated Material controls |
 | Components | Forms, lists, calendar, scanner, external-meal dialog and master/detail layout |
 | Screens | Every feature, with populated, empty, loading and error API scenarios |
 | Application | Shell with sidebar, routing, language/theme controls and seeded home screen |
 
-List stories include management and selection modes. Forms include creation, prefilled editing and saving states. Calendar stories include year, month, week and day views. The modal story demonstrates focus trapping, Escape and return-to-trigger focus.
+List stories include explicit management and selection modes; ProductList also covers its single-edit and multi-edit modes. Forms include explicit create and edit modes, saving states and representative validation/dialog cases. DaySetFeature and SlotFeature each include an interaction story that opens their embedded dialog shells. `npm run storybook:check` requires every exported form/list mode value to appear in a story's own args, not only the default meta args. Calendar stories include year, month, week and day views. The modal story demonstrates focus trapping, Escape and return-to-trigger focus.
 
 ## Shared buttons
 
 Every application button uses the real `UiButton` component on its native element: `<button appButton>`. This attribute selector deliberately preserves native form submission/reset, keyboard activation, focus, ARIA, dialog directives and screen layout selectors; it is a component, not a directive. Import `UiButton` in the consuming component.
 
-The `UI/Button` catalog documents primary, secondary, danger, edit, filled, raised, text, icon and plain variants; small/medium/large sizes; disabled/loading states; projected icons and long labels. `loading` disables activation and exposes `aria-busy`. The default type is `button`; use `type="submit"` or `type="reset"` explicitly in forms. Labels remain projected and translated by their owner. Icon-only buttons must have an accessible name (`aria-label` or `aria-labelledby`).
+The `UI/Button` catalog documents primary, secondary, danger, edit, filled, raised, text, icon and plain variants; small/medium/large sizes; button/submit/reset types; disabled/loading states; projected icons and long labels. `loading` disables activation and exposes `aria-busy`. The default type is `button`; use `type="submit"` or `type="reset"` explicitly in forms. Labels remain projected and translated by their owner. Icon-only buttons must have an accessible name (`aria-label` or `aria-labelledby`).
 
 Use `plain` for specialized native buttons (calendar tiles/actions, sidebar controls, language selectors, selection cards and modal backdrops) whose existing geometry and colors are owned by the screen. Their appearance is also exercised by the corresponding screen stories. Do not combine `appButton` with a Material button component on the same element. The inventory gate rejects raw buttons so new actions cannot bypass the shared component.
 
@@ -39,6 +39,10 @@ Use `plain` for specialized native buttons (calendar tiles/actions, sidebar cont
 
 `UI/Material` isolates the existing Material form fields, select, checkbox, date picker, card, tabs, progress bar, toggle group and data table. These controls are already library components in production; they do not need duplicate custom implementations. `MaterialPreview` is a **Storybook-only composition**, excluded from the application build. Its invalid field stories use touched reactive form controls with actual required validators, rather than an error-colored mock. The stories include disabled, long-content, multiple-selection and empty states where relevant, plus native date/time/datetime input types.
 
+`UI/Modal card surface` documents the 13 production `mat-card.app-modal-card` uses: standard, wide and long-content surfaces. The existing Material card stays the component, `app-modal-card` remains its global token-based surface class, and `UiModal` continues to own keyboard/focus/close behavior.
+
+`UiActionCard` is a native `UiButton` composition with local icons and accent/info/neutral surface tones. Its stories cover each planning option, disabled use and long content; `PlanningFeature` continues to own its action handlers.
+
 These additions do **not** prove that every screen-owned visual pattern has a dedicated story. See the [UI coverage audit](./ui-audit.md) for the remaining extraction/coverage work.
 
 `UiSummaryPill` (`span[appSummaryPill]`) owns the shared inventory/shopping/meal-prep summary counts and availability labels. It preserves their 0.4rem vertical/0.7rem horizontal padding, 0.8rem type, semibold weight and strong foreground, independently of status badges. Owners project translated text, numbers and optional rich values; the pill adds no live role or focus target. Its five stories cover counts, zero, availability, long and rich labels. Known summary-container ancestry is tracked by the inventory gate so anonymous styled spans cannot bypass the component; projected rich-value copy is excluded.
@@ -47,11 +51,27 @@ These additions do **not** prove that every screen-owned visual pattern has a de
 
 `UiCalendarTag` (`span[appCalendarTag]`) isolates the calendar's year status/count labels, three Today geometries, regular/compact chips, metadata, assignment/source labels and alert contexts. Set `context="on-color"` for alerts inside assigned-day surfaces; neutral surfaces use `surface`. `compact` preserves the dense desktop-week presentation. Optional `value` and `label` inputs render the year-count anatomy, including zero; otherwise project translated copy. Twenty-two dedicated stories cover all declared variant/tone/context axes. The Calendar component also has a Year story.
 
+`UiCalendarPanel` (`div[appCalendarPanel]`) owns the themed outer surface for the year/month/week/day views: clipping, border, large-to-compact responsive radius, shadow and calendar panel background. It does not own inner summary backgrounds, calendar content or view layout. Its Year overview and Narrow surface stories isolate the shared surface; the Calendar component stories demonstrate all four real layouts and states.
+
 `UiBreakdownBadge` (`span[appBreakdownBadge]`) isolates cycle metadata, overview warnings and nutrition statuses. `kind` is meta/overview/status; `status` is under/exact/over/missing. `expanded` preserves single-selection metadata and overview sizing. Its ten stories cover all declared kinds/statuses and both expanded formats. Owners retain calculations, selection, translation and native semantics. Neither label component adds an automatic announcement role or focus target. The inventory gate rejects known label classes bypassing these components and requires explicit CSF argument coverage for every string variant.
 
 `UiOverviewMetric` (`div[appOverviewMetric]`) owns the calendar's value/label summary surfaces. Pass required `value` (number or already formatted string) and translated `label`. Its six stories include zero, large/formatted values, long labels and grouped metrics. Two-column mobile sizing is an owner layout rule; the component does not count, format, announce or select anything.
 
 `UiDateBadge` (`div[appDateBadge]`) owns a caption, display date and optional `detail` such as a time. `label` and `value` are required; null/empty detail produces no extra row. Its six stories cover optional detail, owner-localized and long content. The Planning day-action story opens the real dialog through the calendar button. Neither component adds a live role or focus target.
+
+`UiSelectableCard` (`div[appSelectableCard]`) owns the common surface and selected-state presentation for inventory, meal-prep, shopping-list and template-selection cards. Its `tone` is `success` or `accent`; the latter preserves the template list's accent surface and compact spacing. It projects selection content into its own shared `UiButton` and projects edit/remove actions separately; owners retain selection behavior, labels, disabled state and action handlers. The root stays a noninteractive `div`, so secondary controls are never nested inside a button. Stories cover both tones, active/inactive, disabled selection, long copy, keyboard selection and independent actions.
+
+`UiWorkspaceCard` (`div[appWorkspaceCard]` / `section[appWorkspaceCard]`) owns the neutral border, small radius and solid background shared by inventory detail, meal-prep detail/editors, and shopping-list detail/editors. It deliberately does not impose display, spacing or padding; those remain with each owner. Its two stories show a detail surface and long projected content.
+
+`UiNutritionMetricCard` (`div[appNutritionMetricCard]`) owns the shared cycle macro-card surface. `prominent` preserves the larger single-selection treatment; consumers retain metric labels, values and typography. Standard and prominent stories expose the two presentations independently.
+
+`UiBreakdownCard` (`article[appBreakdownCard]` / `div[appBreakdownCard]`) owns cycle nutrition breakdown surface status colors and compact/summary density. `prominent` preserves the single-selection treatment. Stories cover all four statuses and both densities while metric copy and calculations remain with `ListCycle`.
+
+`UiRaisedPanel` (`[appRaisedPanel]`) owns the raised border, background and shadow used by the home dashboard hero and its five panels. Native header/article/section semantics and owner layout and padding remain unchanged; stories show header and content uses.
+
+`UiMacroProgressCard` presents each home-dashboard nutrition value with its target, delta, status and progress track. The dashboard retains calculations and localization; the catalog covers below/exact/over/unavailable states and long labels.
+
+`UiModal` observes in-place content changes and restores focus inside the top dialog when an update removes the focused control. Its isolated `FocusAfterContentChange` story and the Planning day-actions story verify that switching from a day action to the editor keeps keyboard focus in the dialog and Escape still closes it.
 
 `UiStatusBadge` also accepts the native `em` host. `size="marker"`, `emphasis="heavy"`, `tone="info"` and `appearance="soft"` preserve the home's external-origin marker geometry, 850 weight and non-italic display without changing its original emphasis markup. The tiny size and heavy weight have explicit stories and remain independent inputs; existing badge defaults are unchanged. The Home external-entry story supplies real domain data to the isolated API rather than simulating the feature with copied HTML.
 

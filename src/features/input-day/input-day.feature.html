@@ -787,20 +787,15 @@
                                   )
                                 }}
                               </p>
-                              <p
-                                class="text-xs font-medium"
-                                [class.input-day-text--success]="
-                                  inventoryStock.enoughStock
-                                "
-                                [class.input-day-text--danger]="
-                                  !inventoryStock.enoughStock
-                                "
-                              >
+                              <p class="text-xs">
+                                <span appStatusBadge size="small" emphasis="medium" appearance="bare"
+                                  [tone]="inventoryStock.enoughStock ? 'success' : 'danger'">
                                 {{
                                   inventoryStock.enoughStock
                                     ? ("OK pour conversion" | translate)
                                     : ("KO pour conversion" | translate)
                                 }}
+                                </span>
                               </p>
                             } @else {
                               <p class="text-xs text-app-text-muted">
@@ -825,15 +820,8 @@
                                         stock.qtyAvailableNormalized
                                       )
                                     }}
-                                    <span
-                                      class="font-medium"
-                                      [class.input-day-text--success]="
-                                        stock.enoughStock
-                                      "
-                                      [class.input-day-text--danger]="
-                                        !stock.enoughStock
-                                      "
-                                    >
+                                    <span appStatusBadge size="small" emphasis="medium" appearance="bare"
+                                      [tone]="stock.enoughStock ? 'success' : 'danger'">
                                       ({{ stock.enoughStock ? ("OK" | translate) : ("KO" | translate) }})
                                     </span>
                                   </p>

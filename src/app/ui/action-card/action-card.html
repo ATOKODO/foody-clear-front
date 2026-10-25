@@ -1,0 +1,23 @@
+<button
+  appButton
+  variant="plain"
+  type="button"
+  class="planning-action-card"
+  [class.planning-action-card--accent]="tone() === 'accent'"
+  [class.planning-action-card--info]="tone() === 'info'"
+  [class.planning-action-card--neutral]="tone() === 'neutral'"
+  [disabled]="disabled()"
+  (activated)="activated.emit($event)"
+>
+  <span class="planning-action-card__icon" aria-hidden="true">
+    <app-icon [name]="icon()" />
+  </span>
+  <span class="planning-action-card__content">
+    <span class="planning-action-card__label">{{ label() }}</span>
+    <span class="planning-action-card__title">{{ title() }}</span>
+    <span class="planning-action-card__text">{{ description() }}</span>
+  </span>
+  <span class="planning-action-card__arrow" aria-hidden="true">
+    <app-icon name="arrow_right" />
+  </span>
+</button>

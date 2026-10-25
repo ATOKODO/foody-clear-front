@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<SlotForm>;
 export default meta;
 type Story = StoryObj<SlotForm>;
-export const Create: Story = {};
+export const Create: Story = { args: { mode: 'add' } };
 
 export const Edit: Story = { args: { mode: 'edit', slot: state.slots[0] } };
 export const Saving: Story = { args: { mode: 'edit', slot: state.slots[0], saving: true } };

@@ -67,8 +67,7 @@
 
 .lc-summary-panel,
 .lc-subsection,
-.lc-embedded-summary,
-.lc-breakdown-card {
+.lc-embedded-summary {
   border: 1px solid var(--app-border);
 }
 
@@ -96,16 +95,6 @@
   @include ds.eyebrow;
 }
 
-.lc-macro-card {
-  border: 1px solid var(--app-border);
-  background: var(--app-surface-soft);
-  color: var(--app-text);
-}
-
-.lc-stat-card {
-  min-height: 4.4rem;
-}
-
 .lc-card__body--embedded {
   display: grid;
   gap: var(--app-space-4);
@@ -115,44 +104,12 @@
   background: var(--app-surface-soft);
 }
 
-.lc-breakdown-card {
-  background: var(--app-surface);
-}
-
-.lc-breakdown-card--summary {
-  min-height: 7.1rem;
-}
-
-.lc-breakdown-card-compact {
-  min-height: 4.9rem;
-}
-
 .lc-breakdown-head {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: flex-start;
   gap: var(--app-space-3);
-}
-
-.lc-breakdown-card.lc-status-under {
-  border-color: var(--app-state-under-border);
-  background: var(--app-state-under-bg);
-}
-
-.lc-breakdown-card.lc-status-exact {
-  border-color: var(--app-state-exact-border);
-  background: var(--app-state-exact-bg);
-}
-
-.lc-breakdown-card.lc-status-over {
-  border-color: var(--app-state-over-border);
-  background: var(--app-state-over-bg);
-}
-
-.lc-breakdown-card.lc-status-missing {
-  border-color: var(--app-state-missing-border);
-  background: var(--app-state-missing-bg);
 }
 
 .lc-status-text.lc-status-under {
@@ -340,13 +297,6 @@
   gap: var(--app-space-4);
 }
 
-.lc-shell--select-single .lc-macro-card {
-  min-height: 5.5rem;
-  border-radius: var(--app-radius-md);
-  background: var(--app-surface);
-  box-shadow: var(--app-shadow-sm);
-}
-
 .lc-shell--select-single .lc-macro-card__label,
 .lc-shell--select-single .lc-breakdown-card__label {
   color: var(--app-text-muted);
@@ -370,13 +320,6 @@
 .lc-shell--select-single .lc-breakdown-grid--select-single {
   grid-template-columns: minmax(0, 1fr);
   gap: var(--app-space-3);
-}
-
-.lc-shell--select-single .lc-breakdown-card--select-single {
-  min-height: 0;
-  padding: var(--app-space-4);
-  border-radius: var(--app-radius-md);
-  box-shadow: var(--app-shadow-sm);
 }
 
 .lc-shell--select-single .lc-breakdown-card__value {
@@ -409,11 +352,6 @@
 }
 
 @include ds.media-down(small) {
-  .lc-stat-card,
-  .lc-breakdown-card-compact {
-    min-height: 0;
-  }
-
   .lc-card__footer > *,
   .lc-toggle-btn {
     width: 100%;

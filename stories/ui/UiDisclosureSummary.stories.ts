@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<UiDisclosureSummary>;
 export default meta;
 type Story = StoryObj<UiDisclosureSummary>;
-export const Standard: Story = {};
+export const Standard: Story = { args: { size: 'medium', emphasis: 'normal' } };
 export const Compact: Story = { args: { size: 'small' } };
 export const Strong: Story = { args: { emphasis: 'strong' } };
 export const RichLabel: Story = {

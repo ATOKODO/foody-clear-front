@@ -65,7 +65,7 @@
       }
 
       @if (shoppingListFeedback) {
-        <p class="meal-prep-feedback">
+        <p appAlert tone="success" role="status">
           {{ (shoppingListFeedback) | translate }}
         </p>
       }
@@ -85,19 +85,18 @@
           [sideAriaLabel]="&quot;Dishes prepares&quot; | translate">
           <div side-content class="meal-prep-stack">
             @for (dish of sortedDishes; track dish.id) {
-              <div
+              <div appSelectableCard
+                [active]="selectedDish?.id === dish.id"
                 class="meal-prep-list-card"
-                [class.is-active]="selectedDish?.id === dish.id"
+                (selectionRequested)="selectDish(dish.id)"
                 >
-                <button appButton variant="plain" type="button" class="meal-prep-list-card__select" (click)="selectDish(dish.id)">
-                  <span class="meal-prep-list-card__title">{{ dish.name }}</span>
-                  <span class="meal-prep-list-card__meta">{{ "{p0} line(s)" | translate: { p0: (dish.items.length) } }}</span>
-                  <span appStatusBadge size="card" appearance="soft" class="meal-prep-list-card__status"
-                    [tone]="dish.availability?.isInStock ? 'success' : 'warning'">
-                    {{ dish.availability?.isInStock ? ("In stock" | translate) : ("Incomplete stock" | translate) }}
-                  </span>
-                </button>
-                <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
+                <span selectable-card-content class="meal-prep-list-card__title">{{ dish.name }}</span>
+                <span selectable-card-content class="meal-prep-list-card__meta">{{ "{p0} line(s)" | translate: { p0: (dish.items.length) } }}</span>
+                <span selectable-card-content appStatusBadge size="card" appearance="soft" class="meal-prep-list-card__status"
+                  [tone]="dish.availability?.isInStock ? 'success' : 'warning'">
+                  {{ dish.availability?.isInStock ? ("In stock" | translate) : ("Incomplete stock" | translate) }}
+                </span>
+                <div selectable-card-actions class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                   <button appButton variant="secondary"
                     type="button"
                     class="meal-prep-action meal-prep-action--secondary"
@@ -135,7 +134,7 @@
                 </button>
               </div>
 
-              <div class="meal-prep-detail-card">
+              <div appWorkspaceCard class="meal-prep-detail-card">
                 <div class="meal-prep-detail-card__header">
                   <div>
                     <h4>{{ "Dish contents" | translate }}</h4>
@@ -169,19 +168,18 @@
           [sideAriaLabel]="&quot;Meals prepares&quot; | translate">
           <div side-content class="meal-prep-stack">
             @for (meal of sortedMeals; track meal.id) {
-              <div
+              <div appSelectableCard
+                [active]="selectedMeal?.id === meal.id"
                 class="meal-prep-list-card"
-                [class.is-active]="selectedMeal?.id === meal.id"
+                (selectionRequested)="selectMeal(meal.id)"
                 >
-                <button appButton variant="plain" type="button" class="meal-prep-list-card__select" (click)="selectMeal(meal.id)">
-                  <span class="meal-prep-list-card__title">{{ meal.name }}</span>
-                  <span class="meal-prep-list-card__meta">{{ "{p0} line(s)" | translate: { p0: (meal.items.length) } }}</span>
-                  <span appStatusBadge size="card" appearance="soft" class="meal-prep-list-card__status"
-                    [tone]="meal.availability?.isInStock ? 'success' : 'warning'">
-                    {{ meal.availability?.isInStock ? ("In stock" | translate) : ("Incomplete stock" | translate) }}
-                  </span>
-                </button>
-                <div class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
+                <span selectable-card-content class="meal-prep-list-card__title">{{ meal.name }}</span>
+                <span selectable-card-content class="meal-prep-list-card__meta">{{ "{p0} line(s)" | translate: { p0: (meal.items.length) } }}</span>
+                <span selectable-card-content appStatusBadge size="card" appearance="soft" class="meal-prep-list-card__status"
+                  [tone]="meal.availability?.isInStock ? 'success' : 'warning'">
+                  {{ meal.availability?.isInStock ? ("In stock" | translate) : ("Incomplete stock" | translate) }}
+                </span>
+                <div selectable-card-actions class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                   <button appButton variant="secondary"
                     type="button"
                     class="meal-prep-action meal-prep-action--secondary"
@@ -219,7 +217,7 @@
                 </button>
               </div>
 
-              <div class="meal-prep-detail-card">
+              <div appWorkspaceCard class="meal-prep-detail-card">
                 <div class="meal-prep-detail-card__header">
                   <div>
                     <h4>{{ "Meal contents" | translate }}</h4>
@@ -281,7 +279,7 @@
 
       <mat-card-content class="space-y-4 pt-2">
         @if (activeView === 'dish') {
-          <div class="meal-prep-editor-card meal-prep-editor-card--modal">
+          <div appWorkspaceCard class="meal-prep-editor-card meal-prep-editor-card--modal">
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>{{ "Dish name" | translate }}</mat-label>
               <input matInput [(ngModel)]="dishDraftName" [placeholder]="&quot;Spaghetti bolognese&quot; | translate" />
@@ -322,7 +320,7 @@
             </div>
           </div>
         } @else {
-          <div class="meal-prep-editor-card meal-prep-editor-card--modal">
+          <div appWorkspaceCard class="meal-prep-editor-card meal-prep-editor-card--modal">
             <mat-form-field appearance="fill" class="w-full">
               <mat-label>{{ "Meal name" | translate }}</mat-label>
               <input matInput [(ngModel)]="mealDraftName" [placeholder]="&quot;Movie night meal&quot; | translate" />

@@ -56,7 +56,7 @@ describe('TemplateList', () => {
     fixture.componentRef.setInput('templates', templates);
     fixture.detectChanges();
 
-    const row = fixture.nativeElement.querySelector('[data-testid="template-select-2"] .template-master__card-select') as HTMLElement;
+    const row = fixture.nativeElement.querySelector('[data-testid="template-select-2"] .app-selectable-card__control') as HTMLElement;
     row.click();
 
     expect(emitted).toEqual([2]);
@@ -86,7 +86,7 @@ describe('TemplateList', () => {
 
     const row = fixture.nativeElement.querySelector('[data-testid="template-select-2"]') as HTMLElement;
 
-    expect(row.classList.contains('is-active')).toBeTrue();
+    expect(row.classList.contains('app-selectable-card--active')).toBeTrue();
   });
 
   it('should render the comparison selector inside the nutrition card', () => {

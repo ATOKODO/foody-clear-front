@@ -1,0 +1,15 @@
+@use "mixins" as ds;
+
+:host {
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-xl);
+  background: var(--app-calendar-panel-bg);
+  box-shadow: var(--app-shadow-sm);
+}
+
+@include ds.media-below(shell) {
+  :host {
+    border-radius: 1.1rem;
+  }
+}

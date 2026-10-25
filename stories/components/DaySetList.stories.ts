@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<DaySetList>;
 export default meta;
 type Story = StoryObj<DaySetList>;
-export const Populated: Story = {};
+export const Populated: Story = { args: { mode: 'manage' } };
 
 export const Empty: Story = { args: { daySets: [] } };
 export const SingleSelection: Story = { args: { mode: 'select-single', selectedIds: ['1'] } };

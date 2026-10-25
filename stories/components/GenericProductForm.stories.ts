@@ -10,7 +10,7 @@ const meta = {
 } satisfies Meta<GenericProductForm>;
 export default meta;
 type Story = StoryObj<GenericProductForm>;
-export const Create: Story = {};
+export const Create: Story = { args: { mode: 'add' } };
 
 export const Edit: Story = { args: { mode: 'edit', genericProduct: { name: 'Fruit', minQuantityUnit: 2, minQuantityUnitType: 'piece', minQuantityMetric: 300, minQuantityMetricType: 'g' } } };
 export const Saving: Story = { args: { mode: 'edit', genericProduct: { name: 'Fruit', minQuantityUnit: 2, minQuantityUnitType: 'piece', minQuantityMetric: 300, minQuantityMetricType: 'g' }, saving: true } };

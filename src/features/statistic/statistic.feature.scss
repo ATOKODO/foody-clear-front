@@ -195,37 +195,8 @@
   padding: 0.35rem 0;
 }
 
-.expense-bar__fill,
-.target-bar__goal,
-.target-bar__actual {
-  display: block;
-  width: 1.5rem;
-  border-radius: 999px;
-  align-self: end;
-}
-
 .expense-bar__rail {
   position: relative;
-}
-
-.expense-bar__fill {
-  background: linear-gradient(
-    180deg,
-    var(--app-accent-strong) 0%,
-    var(--app-data-green-end) 100%
-  );
-}
-
-.target-bar__goal {
-  background: var(--app-info-bg);
-}
-
-.target-bar__actual {
-  background: linear-gradient(
-    180deg,
-    var(--app-info-text) 0%,
-    var(--app-data-blue-end) 100%
-  );
 }
 
 .expense-bar__amount,

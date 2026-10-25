@@ -3,7 +3,6 @@ import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
 import { UiButton } from '../../app/ui/button/button';
 import { TranslatePipe } from '../../app/i18n/translate-pipe';
 import { getTemplateInventoryIds } from '../../utils/template-stock';
-import { NgClass } from '@angular/common';
 import { ChangeDetectorRef, Component, DestroyRef, NgZone, OnInit, inject, signal } from '@angular/core';
 import { LatestRequest } from '../../utils/latest-request';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -11,6 +10,8 @@ import { RouterLink } from '@angular/router';
 import { DateTime } from 'luxon';
 import { Language } from '../../app/i18n/language';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import { UiRaisedPanel } from '../../app/ui/raised-panel/raised-panel';
+import { UiMacroProgressCard } from '../../app/ui/macro-progress-card/macro-progress-card';
 import type {
   InputDayItemSummary,
   InputDayResponse,
@@ -58,10 +59,9 @@ import {
 
 @Component({
   selector: 'app-home',
-  imports: [UiStatusBadge, UiEmptyState, UiButton,
+  imports: [UiStatusBadge, UiEmptyState, UiButton, UiRaisedPanel, UiMacroProgressCard,
     TranslatePipe,
     RouterLink,
-    NgClass,
     MatProgressBarModule,
     UiErrorPanel,
     InputDayFeature,

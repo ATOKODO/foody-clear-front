@@ -82,8 +82,7 @@
   letter-spacing: 0;
 }
 
-.shopping-list-action:focus-visible,
-.shopping-list-list-card__select:focus-visible {
+.shopping-list-action:focus-visible {
   @include ds.focus-ring;
 }
 
@@ -109,7 +108,6 @@
 .shopping-list-table-card,
 .shopping-list-convert-card,
 .shopping-list-template-create {
-  @include feature.workspace-card;
   display: grid;
   gap: 0.875rem;
   padding: 0.875rem;
@@ -164,20 +162,6 @@
 
 .shopping-list-bottom-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.shopping-list-list-card {
-  @include feature.selectable-card;
-}
-
-.shopping-list-list-card__select {
-  @include feature.selectable-card-control;
-}
-
-.shopping-list-list-card:hover,
-.shopping-list-list-card:focus-within,
-.shopping-list-list-card.is-active {
-  @include feature.selectable-card-active;
 }
 
 .shopping-list-list-card__title {
@@ -389,8 +373,7 @@
 }
 
 @include ds.reduced-motion {
-  .shopping-list-action,
-  .shopping-list-list-card {
+  .shopping-list-action {
     transition: none;
   }
 }

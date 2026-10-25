@@ -22,6 +22,12 @@ export const DayActions: Story = {
     const year = await canvas.findByTestId('planning-view-year');
     await userEvent.click(within(year).getByRole('radio'));
     await userEvent.click(await canvas.findByTestId('calendar-year-day-2026-03-25'));
-    await expect(await canvas.findByTestId('planning-modal-actions')).toBeVisible();
+    const actions = await canvas.findByTestId('planning-modal-actions');
+    await expect(actions).toBeVisible();
+    await userEvent.click(await canvas.findByTestId('planning-action-items'));
+    const editor = await canvas.findByTestId('planning-modal-items');
+    await expect(editor.contains(document.activeElement)).toBe(true);
+    await userEvent.keyboard('{Escape}');
+    await expect(editor.isConnected).toBe(false);
   },
 };

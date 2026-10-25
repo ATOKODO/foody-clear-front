@@ -1,0 +1,52 @@
+@use "mixins" as ds;
+
+:host {
+  display: block;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-surface);
+}
+
+:host(.app-breakdown-card--compact) {
+  min-height: 4.9rem;
+  padding: 0.625rem;
+}
+
+:host(.app-breakdown-card--summary) {
+  min-height: 7.1rem;
+  padding: var(--app-space-3);
+  border-radius: var(--app-radius-md);
+}
+
+:host(.app-breakdown-card--prominent) {
+  min-height: 0;
+  padding: var(--app-space-4);
+  border-radius: var(--app-radius-md);
+  box-shadow: var(--app-shadow-sm);
+}
+
+:host(.app-breakdown-card--under) {
+  border-color: var(--app-state-under-border);
+  background: var(--app-state-under-bg);
+}
+
+:host(.app-breakdown-card--exact) {
+  border-color: var(--app-state-exact-border);
+  background: var(--app-state-exact-bg);
+}
+
+:host(.app-breakdown-card--over) {
+  border-color: var(--app-state-over-border);
+  background: var(--app-state-over-bg);
+}
+
+:host(.app-breakdown-card--missing) {
+  border-color: var(--app-state-missing-border);
+  background: var(--app-state-missing-bg);
+}
+
+@include ds.media-down(small) {
+  :host(.app-breakdown-card--compact) {
+    min-height: 0;
+  }
+}

@@ -168,3 +168,118 @@ test('overview metrics, date summaries and emphasis markers cannot restore raw b
     assert.equal(inventory.categories['badge-composition'], undefined);
   }
 });
+
+test('selectable inventory, meal, shopping and template cards share surface and native control presentation', () => {
+  for (const rootClass of ['inventory-list-card', 'meal-prep-list-card', 'shopping-list-list-card', 'template-master__card']) {
+    const [rawRoot] = templateElements(`<div class="${rootClass}">Select</div>`);
+    assert.throws(() => assertSharedPrimitives(rawRoot), /UiSelectableCard/);
+    const [root] = templateElements(`<div appSelectableCard [active]="selected" class="${rootClass}"><span selectable-card-content>Select</span></div>`);
+    assertSharedPrimitives(root);
+    const inventory = uiInventory([{ name: 'Host', storyOnly: false, templateFile: 'host.html', elements: [root] }]);
+    assert.equal(inventory.categories['shared-selectable-card'], 1);
+    assert.equal(inventory.categories['surface-composition'], undefined);
+  }
+});
+
+test('inventory, meal-prep and shopping workspace surfaces share border, radius and background', () => {
+  const roots = [
+    ['div', 'inventory-detail-card'],
+    ['div', 'meal-prep-editor-card meal-prep-editor-card--modal'],
+    ['div', 'meal-prep-detail-card'],
+    ['div', 'shopping-list-editor-card'],
+    ['div', 'shopping-list-table-card'],
+    ['section', 'shopping-list-convert-card'],
+    ['div', 'shopping-list-template-create'],
+  ];
+  for (const [tag, rootClass] of roots) {
+    const [raw] = templateElements(`<${tag} class="${rootClass}">Content</${tag}>`);
+    assert.throws(() => assertSharedPrimitives(raw), /UiWorkspaceCard/);
+    const [shared] = templateElements(`<${tag} appWorkspaceCard class="${rootClass}">Content</${tag}>`);
+    assertSharedPrimitives(shared);
+    const inventory = uiInventory([{ name: 'Host', storyOnly: false, templateFile: 'host.html', elements: [shared] }]);
+    assert.equal(inventory.categories['shared-workspace-card'], 1);
+    assert.equal(inventory.categories['surface-composition'], undefined);
+  }
+});
+
+test('all calendar views share a themed panel surface without bypassing the component', () => {
+  for (const panelClass of ['calendar-year-panel', 'calendar-month-panel', 'calendar-week-panel', 'calendar-day-panel']) {
+    const [raw] = templateElements(`<div class="${panelClass}">Calendar content</div>`);
+    assert.throws(() => assertSharedPrimitives(raw), /UiCalendarPanel/);
+    const [shared] = templateElements(`<div appCalendarPanel class="${panelClass}">Calendar content</div>`);
+    assertSharedPrimitives(shared);
+    const inventory = uiInventory([{ name: 'Calendar', storyOnly: false, templateFile: 'calendar.html', elements: [shared] }]);
+    assert.equal(inventory.categories['shared-calendar-panel'], 1);
+    assert.equal(inventory.categories['surface-composition'], undefined);
+  }
+});
+
+test('cycle nutrition metric surfaces share the standard/prominent card primitive', () => {
+  const [raw] = templateElements('<div class="lc-macro-card">Proteins</div>');
+  assert.throws(() => assertSharedPrimitives(raw), /UiNutritionMetricCard/);
+  const [shared] = templateElements('<div appNutritionMetricCard [prominent]="singleSelect" class="lc-macro-card">Proteins</div>');
+  assertSharedPrimitives(shared);
+  const inventory = uiInventory([{ name: 'ListCycle', storyOnly: false, templateFile: 'list-cycle.html', elements: [shared] }]);
+  assert.equal(inventory.categories['shared-nutrition-metric-card'], 1);
+  assert.equal(inventory.categories['surface-composition'], undefined);
+});
+
+test('cycle breakdown surfaces share their density, status and prominent presentation', () => {
+  const [raw] = templateElements('<article class="lc-breakdown-card lc-breakdown-card--summary">Proteins</article>');
+  assert.throws(() => assertSharedPrimitives(raw), /UiBreakdownCard/);
+  const [shared] = templateElements('<article appBreakdownCard density="summary" [status]="metric.status">Proteins</article>');
+  assertSharedPrimitives(shared);
+  const inventory = uiInventory([{ name: 'ListCycle', storyOnly: false, templateFile: 'list-cycle.html', elements: [shared] }]);
+  assert.equal(inventory.categories['shared-breakdown-card'], 1);
+  assert.equal(inventory.categories['surface-composition'], undefined);
+});
+
+test('home dashboard raised surfaces use the dedicated surface component', () => {
+  const [raw] = templateElements('<article class="home-panel">Dashboard content</article>');
+  assert.throws(() => assertSharedPrimitives(raw), /UiRaisedPanel/);
+  const [shared] = templateElements('<article appRaisedPanel class="home-panel">Dashboard content</article>');
+  assertSharedPrimitives(shared);
+  const inventory = uiInventory([{ name: 'Home', storyOnly: false, templateFile: 'home.html', elements: [shared] }]);
+  assert.equal(inventory.categories['shared-raised-panel'], 1);
+  assert.equal(inventory.categories['surface-composition'], undefined);
+});
+
+test('modal shell variants are cataloged by the shared modal usage story', () => {
+  const [shell] = templateElements('<div class="app-modal-shell" [class.app-modal-shell--embedded-day-set]="embedded">Dialog</div>');
+  const inventory = uiInventory([{ name: 'Host', storyOnly: false, templateFile: 'host.html', elements: [shell] }]);
+  assert.equal(inventory.categories['shared-modal-shell'], 1);
+  assert.equal(inventory.categories['bound-visual-composition'], undefined);
+});
+
+test('layout-only error-panel wrappers are not misreported as surface compositions', () => {
+  const [wrapper] = templateElements('<div class="planning-feature__error-panel"><app-ui-error-panel /></div>');
+  const inventory = uiInventory([{ name: 'Planning', storyOnly: false, templateFile: 'planning.html', elements: [wrapper] }]);
+  assert.equal(inventory.categories['surface-composition'], undefined);
+});
+
+test('dashboard macro progress cards are cataloged as a shared presentational component', () => {
+  const [card] = templateElements('<app-macro-progress-card [status]="status" [progress]="progress" />');
+  const inventory = uiInventory([{ name: 'Home', storyOnly: false, templateFile: 'home.html', elements: [card] }]);
+  assert.equal(inventory.categories['shared-macro-progress-card'], 1);
+  assert(inventory.elements[0].categories.includes('shared-component'));
+});
+
+test('planning action-card compositions must use their cataloged component', () => {
+  const [raw] = templateElements('<button appButton class="planning-action-card planning-action-card--accent">Choose</button>');
+  assert.throws(() => assertSharedPrimitives(raw, 'planning.feature.html:1'), /UiActionCard/);
+  const [shared] = templateElements('<app-action-card data-testid="planning-action-items" />');
+  const inventory = uiInventory([{ name: 'PlanningFeature', storyOnly: false, templateFile: 'planning.feature.html', elements: [shared] }]);
+  assert.equal(inventory.categories['shared-action-card'], 1);
+  assert(inventory.elements[0].categories.includes('shared-component'));
+});
+
+test('surface inventory recognizes card/panel roots and ignores BEM subparts', () => {
+  const elements = templateElements('<article class="template-master__card"><span class="template-master__card-title">Title</span><div class="calendar-day-summary__panel-head">Header</div></article><section class="app-modal-card app-modal-card--wide">Dialog</section><section class="calendar-day-summary__panel calendar-day-summary__panel--pilot">Summary</section>');
+  const inventory = uiInventory([{ name: 'Host', storyOnly: false, templateFile: 'host.html', elements }]);
+  assert.equal(inventory.categories['surface-composition'], 2);
+  assert.equal(inventory.categories['cataloged-modal-card-surface'], 1);
+  assert.deepEqual(inventory.elements.filter(element => element.categories.includes('surface-composition')).map(element => element.attributes.class), [
+    'template-master__card',
+    'calendar-day-summary__panel calendar-day-summary__panel--pilot',
+  ]);
+});

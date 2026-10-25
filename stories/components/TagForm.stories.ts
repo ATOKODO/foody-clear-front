@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<TagForm>;
 export default meta;
 type Story = StoryObj<TagForm>;
-export const Create: Story = {};
+export const Create: Story = { args: { mode: 'add' } };
 
 export const Edit: Story = { args: { mode: 'edit', tag: state.tags[0] } };
 export const Saving: Story = { args: { mode: 'edit', tag: state.tags[0], saving: true } };

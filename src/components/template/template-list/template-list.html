@@ -12,18 +12,16 @@
       @if (sortedTemplates.length > 0) {
         <div class="template-master__stack">
           @for (template of sortedTemplates; track template) {
-            <div
+            <div appSelectableCard tone="accent"
               [attr.data-testid]="'template-select-' + template.id"
               class="template-master__card"
-              [class.is-active]="template.id === selectedTemplateId()"
-              [class.is-disabled]="busy"
-              >
-              <button appButton variant="plain" type="button" class="template-master__card-select" [disabled]="busy" (click)="onTemplateClick(template.id)">
-                <span class="template-master__card-title">{{ template.title }}</span>
-                <span class="template-master__card-meta">{{ "{p0} template line(s)" | translate: { p0: (template.items.length) } }}</span>
-                <span appStatusBadge tone="info" size="small" appearance="soft" class="template-master__card-status">{{ "Template" | translate }}</span>
-              </button>
-              <div class="template-master__card-actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
+              [active]="template.id === selectedTemplateId()"
+              [disabled]="busy"
+              (selectionRequested)="onTemplateClick(template.id)">
+              <span selectable-card-content class="template-master__card-title">{{ template.title }}</span>
+              <span selectable-card-content class="template-master__card-meta">{{ "{p0} template line(s)" | translate: { p0: (template.items.length) } }}</span>
+              <span selectable-card-content appStatusBadge tone="info" size="small" appearance="soft" class="template-master__card-status">{{ "Template" | translate }}</span>
+              <div selectable-card-actions class="template-master__card-actions">
                 <button appButton variant="edit"
                   type="button"
                   class="template-master__action template-master__action--edit"
@@ -110,11 +108,8 @@
                                   >
                                   {{ stock.inventoryName }}:
                                   {{ formatNutritionAmount(stock.qtyAvailableNormalized) }}
-                                  <span
-                                    class="font-medium"
-                                    [class.text-app-success]="stock.enoughStock"
-                                    [class.text-app-danger]="!stock.enoughStock"
-                                    >
+                                  <span appStatusBadge size="small" emphasis="medium" appearance="bare"
+                                    [tone]="stock.enoughStock ? 'success' : 'danger'">
                                     ({{ stock.enoughStock ? ("OK" | translate) : ("KO" | translate) }})
                                   </span>
                                 </p>

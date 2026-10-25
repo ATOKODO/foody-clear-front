@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<SlotList>;
 export default meta;
 type Story = StoryObj<SlotList>;
-export const Populated: Story = {};
+export const Populated: Story = { args: { mode: 'manage' } };
 
 export const Empty: Story = { args: { slots: [] } };
 export const SingleSelection: Story = { args: { mode: 'select-single', selectedIds: ['1'] } };

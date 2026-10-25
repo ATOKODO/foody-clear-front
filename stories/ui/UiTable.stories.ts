@@ -22,7 +22,7 @@ const meta = {
 } satisfies Meta<UiTable>;
 export default meta;
 type Story = StoryObj<UiTable>;
-export const Standard: Story = {};
+export const Standard: Story = { args: { density: 'standard', layout: 'auto' } };
 export const Compact: Story = { args: { density: 'compact' } };
 export const Comfortable: Story = { args: { density: 'comfortable' } };
 export const FixedLayout: Story = { args: { layout: 'fixed' } };

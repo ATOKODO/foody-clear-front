@@ -126,12 +126,8 @@
                 formatCurrency(day.expenses.totalAmount)
               }}</span>
               <span class="expense-bar__rail">
-                <span
-                  class="expense-bar__fill"
-                  [style.height.%]="
-                    getBarHeight(day.expenses.totalAmount, expenseMax)
-                  "
-                ></span>
+                <app-chart-bar variant="expense"
+                  [height]="getBarHeight(day.expenses.totalAmount, expenseMax)" />
               </span>
               <span class="expense-bar__date">{{
                 formatDate(day.dateLocal)
@@ -254,14 +250,8 @@
                 formatDate(day.dateLocal)
               }}</span>
               <span class="target-bar__stacks">
-                <span
-                  class="target-bar__goal"
-                  [style.height.%]="getTargetGoalHeight(day)"
-                ></span>
-                <span
-                  class="target-bar__actual"
-                  [style.height.%]="getTargetActualHeight(day)"
-                ></span>
+                <app-chart-bar variant="goal" [height]="getTargetGoalHeight(day)" />
+                <app-chart-bar variant="actual" [height]="getTargetActualHeight(day)" />
               </span>
               <span class="target-bar__meta">{{
                 formatTargetSource(day.inputs.targetSource)

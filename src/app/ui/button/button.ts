@@ -1,6 +1,8 @@
 import { booleanAttribute, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, input, output } from '@angular/core';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'edit' | 'filled' | 'raised' | 'text' | 'icon' | 'plain';
+export type ButtonSize = 'small' | 'medium' | 'large';
+export type ButtonType = 'button' | 'submit' | 'reset';
 
 @Component({
   selector: 'button[appButton]',
@@ -18,8 +20,8 @@ export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'edit' | 'fille
 })
 export class UiButton {
   readonly variant = input<ButtonVariant>('secondary');
-  readonly size = input<'small' | 'medium' | 'large'>('medium');
-  readonly type = input<'button' | 'submit' | 'reset'>('button');
+  readonly size = input<ButtonSize>('medium');
+  readonly type = input<ButtonType>('button');
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly loading = input(false, { transform: booleanAttribute });
   readonly activated = output<MouseEvent>();

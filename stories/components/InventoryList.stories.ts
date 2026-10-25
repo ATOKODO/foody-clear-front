@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<InventoryList>;
 export default meta;
 type Story = StoryObj<InventoryList>;
-export const Populated: Story = {};
+export const Populated: Story = { args: { mode: 'manage' } };
 
 export const Empty: Story = { args: { inventories: [] } };
 export const SingleSelection: Story = { args: { mode: 'select-single', selectedIds: ['1'] } };

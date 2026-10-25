@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<TagList>;
 export default meta;
 type Story = StoryObj<TagList>;
-export const Populated: Story = {};
+export const Populated: Story = { args: { mode: 'manage' } };
 
 export const Empty: Story = { args: { tags: [] } };
 export const SingleSelection: Story = { args: { mode: 'select-single', selectedIds: ['1'] } };

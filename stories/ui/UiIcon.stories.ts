@@ -13,7 +13,7 @@ const meta = {
 } satisfies Meta<UiIcon>;
 export default meta;
 type Story = StoryObj<UiIcon>;
-export const Day: Story = { args: { name: 'today' } };
+export const Day: Story = { args: { name: 'today', size: 'medium' } };
 export const Cycle: Story = { args: { name: 'autorenew' } };
 export const Entry: Story = { args: { name: 'edit_note' } };
 export const Menu: Story = { args: { name: 'menu' } };

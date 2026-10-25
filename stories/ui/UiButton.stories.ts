@@ -12,10 +12,11 @@ const meta = {
 } satisfies Meta<UiButton>;
 export default meta;
 type Story = StoryObj<UiButton>;
-export const Primary: Story = {};
+export const Primary: Story = { args: { variant: 'primary' } };
 export const Secondary: Story = { args: { variant: 'secondary' } };
 export const Danger: Story = { args: { variant: 'danger' } };
 export const Edit: Story = { args: { variant: 'edit' } };
+export const EditSmall: Story = { args: { variant: 'edit', size: 'small' } };
 export const Filled: Story = { args: { variant: 'filled' } };
 export const Raised: Story = { args: { variant: 'raised' } };
 export const Text: Story = { args: { variant: 'text' } };
@@ -23,7 +24,11 @@ export const Plain: Story = { args: { variant: 'plain' } };
 export const Disabled: Story = { args: { disabled: true } };
 export const Loading: Story = { args: { loading: true } };
 export const Small: Story = { args: { size: 'small' } };
+export const Medium: Story = { args: { size: 'medium' } };
 export const Large: Story = { args: { size: 'large' } };
+export const ButtonType: Story = { args: { type: 'button' } };
+export const SubmitType: Story = { args: { type: 'submit' } };
+export const ResetType: Story = { args: { type: 'reset' } };
 export const Icon: Story = {
   args: { variant: 'icon' },
   render: args => ({ props: args, template: `<button appButton variant="icon" [disabled]="disabled" [loading]="loading" aria-label="Add" (activated)="activated($event)"><app-icon name="add" /></button>` }),

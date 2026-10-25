@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
+export type DisclosureSummarySize = 'small' | 'medium';
+export type DisclosureSummaryEmphasis = 'normal' | 'strong';
+
 @Component({
   selector: 'summary[appDisclosureSummary]',
   template: '<ng-content />',
@@ -12,6 +15,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   },
 })
 export class UiDisclosureSummary {
-  readonly size = input<'small' | 'medium'>('medium');
-  readonly emphasis = input<'normal' | 'strong'>('normal');
+  readonly size = input<DisclosureSummarySize>('medium');
+  readonly emphasis = input<DisclosureSummaryEmphasis>('normal');
 }

@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
+export type DisclosureAppearance = 'inline' | 'panel';
+
 @Component({
   selector: 'details[appDisclosure]',
   template: '<ng-content />',
@@ -11,5 +13,5 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   },
 })
 export class UiDisclosure {
-  readonly appearance = input<'inline' | 'panel'>('inline');
+  readonly appearance = input<DisclosureAppearance>('inline');
 }

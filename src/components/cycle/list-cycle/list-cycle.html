@@ -118,10 +118,7 @@
                       card of getEmbeddedSummaryCards(cycle);
                       track trackByEmbeddedCard($index, card)
                     ) {
-                      <article
-                        class="lc-breakdown-card lc-breakdown-card--summary rounded-2xl p-3"
-                        [class]="getStatusClass(card.status)"
-                      >
+                      <article appBreakdownCard density="summary" [status]="card.status">
                         <div class="lc-breakdown-head">
                           <p
                             class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
@@ -270,7 +267,9 @@
                             "
                           >
                             <div
-                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-app-text"
+                              appNutritionMetricCard
+                              [prominent]="isSingleSelectMode"
+                              class="lc-macro-card px-3 py-2.5"
                             >
                               <p
                                 class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
@@ -284,7 +283,9 @@
                               </p>
                             </div>
                             <div
-                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-app-text"
+                              appNutritionMetricCard
+                              [prominent]="isSingleSelectMode"
+                              class="lc-macro-card px-3 py-2.5"
                             >
                               <p
                                 class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
@@ -298,7 +299,9 @@
                               </p>
                             </div>
                             <div
-                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-app-text"
+                              appNutritionMetricCard
+                              [prominent]="isSingleSelectMode"
+                              class="lc-macro-card px-3 py-2.5"
                             >
                               <p
                                 class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
@@ -312,7 +315,9 @@
                               </p>
                             </div>
                             <div
-                              class="lc-macro-card lc-stat-card rounded-xl px-3 py-2.5 text-sm text-app-text"
+                              appNutritionMetricCard
+                              [prominent]="isSingleSelectMode"
+                              class="lc-macro-card px-3 py-2.5"
                             >
                               <p
                                 class="lc-macro-card__label text-xs uppercase tracking-wide text-app-text-muted"
@@ -374,11 +379,10 @@
                               track trackByMetric($index, metric)
                             ) {
                               <div
-                                class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
-                                [class.lc-breakdown-card--select-single]="
-                                  isSingleSelectMode
-                                "
-                                [class]="getStatusClass(metric.status)"
+                                appBreakdownCard
+                                density="compact"
+                                [prominent]="isSingleSelectMode"
+                                [status]="metric.status"
                               >
                                 <div class="lc-breakdown-head">
                                   <p
@@ -499,10 +503,7 @@
                                 metric of daySet.metrics;
                                 track trackByMetric($index, metric)
                               ) {
-                                <div
-                                  class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
-                                  [class]="getStatusClass(metric.status)"
-                                >
+                                <div appBreakdownCard density="compact" [status]="metric.status">
                                   <div class="lc-breakdown-head">
                                     <p
                                       class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
@@ -551,10 +552,7 @@
                                   metric of daySet.slotMetrics;
                                   track trackByMetric($index, metric)
                                 ) {
-                                  <div
-                                    class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
-                                    [class]="getStatusClass(metric.status)"
-                                  >
+                                  <div appBreakdownCard density="compact" [status]="metric.status">
                                     <div class="lc-breakdown-head">
                                       <p
                                         class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"
@@ -635,10 +633,7 @@
                                     metric of slot.metrics;
                                     track trackByMetric($index, metric)
                                   ) {
-                                    <div
-                                      class="lc-breakdown-card lc-breakdown-card-compact rounded-xl p-2.5"
-                                      [class]="getStatusClass(metric.status)"
-                                    >
+                                    <div appBreakdownCard density="compact" [status]="metric.status">
                                       <div class="lc-breakdown-head">
                                         <p
                                           class="lc-breakdown-card__label text-xs uppercase tracking-wide text-app-text-muted"

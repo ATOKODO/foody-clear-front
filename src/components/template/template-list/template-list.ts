@@ -6,6 +6,7 @@ import { UiTableScroll } from '../../../app/ui/table-scroll/table-scroll';
 import { UiTableCell } from '../../../app/ui/table-cell/table-cell';
 import { UiTable } from '../../../app/ui/table/table';
 import { UiButton } from '../../../app/ui/button/button';
+import { UiSelectableCard } from '../../../app/ui/selectable-card/selectable-card';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
 import { Language } from '../../../app/i18n/language';
 import { KeyValuePipe } from '@angular/common';
@@ -26,7 +27,7 @@ import { Template, TemplateItem } from '../../../interfaces/template.interface';
 
 @Component({
   selector: 'app-template-list',
-  imports: [UiStatusBadge, UiDisclosure, UiDisclosureSummary, UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiButton,
+  imports: [UiStatusBadge, UiDisclosure, UiDisclosureSummary, UiEmptyState, UiTableScroll, UiTableCell, UiTable, UiButton, UiSelectableCard,
     TranslatePipe,
     FormsModule,
     MatCardModule,

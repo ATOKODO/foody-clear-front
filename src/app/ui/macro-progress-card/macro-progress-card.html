@@ -1,0 +1,19 @@
+<article
+  class="home-macro"
+  [class.home-macro--neutral]="status() === 'neutral'"
+  [class.home-macro--under]="status() === 'under'"
+  [class.home-macro--exact]="status() === 'exact'"
+  [class.home-macro--over]="status() === 'over'"
+>
+  <div class="home-macro__top">
+    <span>{{ label() }}</span>
+    <strong>{{ actual() }}</strong>
+  </div>
+  <div class="home-macro__rail" aria-hidden="true">
+    <span class="home-macro__fill" [style.width.%]="progress()"></span>
+  </div>
+  <div class="home-macro__meta">
+    <span>{{ target() }}</span>
+    <span>{{ delta() }}</span>
+  </div>
+</article>

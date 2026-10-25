@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
+export type TableDensity = 'compact' | 'standard' | 'comfortable';
+export type TableLayout = 'auto' | 'fixed';
+
 @Component({
   selector: 'table[appTable]',
   template: '<ng-content />',
@@ -12,8 +15,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   },
 })
 export class UiTable {
-  readonly density = input<'compact' | 'standard' | 'comfortable'>('standard');
-  readonly layout = input<'auto' | 'fixed'>('auto');
+  readonly density = input<TableDensity>('standard');
+  readonly layout = input<TableLayout>('auto');
   protected readonly padding = computed(() => ({
     compact: 'var(--app-space-1) var(--app-space-2)',
     standard: 'var(--app-space-2) var(--app-space-3)',

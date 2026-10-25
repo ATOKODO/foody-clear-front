@@ -1,4 +1,7 @@
 import { UiBreakdownBadge } from '../../../app/ui/breakdown-badge/breakdown-badge';
+import { UiBreakdownCard } from '../../../app/ui/breakdown-card/breakdown-card';
+import type { BreakdownStatus } from '../../../app/ui/breakdown-badge/breakdown-badge';
+import { UiNutritionMetricCard } from '../../../app/ui/nutrition-metric-card/nutrition-metric-card';
 import { UiEmptyState } from '../../../app/ui/empty-state/empty-state';
 import { UiButton } from '../../../app/ui/button/button';
 import { TranslatePipe } from '../../../app/i18n/translate-pipe';
@@ -18,7 +21,7 @@ import { TypeDuree } from '../form-cycle/form-cycle';
 import { resolveCycleToneClass } from '../../shared/cycle-tone';
 
 export type CycleListMode = 'manage' | 'select-single' | 'select-multi';
-export type CycleBreakdownStatus = 'under' | 'exact' | 'over' | 'missing';
+export type CycleBreakdownStatus = BreakdownStatus;
 export type CycleBreakdownMetricKey = 'kcal' | 'proteins' | 'carbs' | 'lipids';
 
 export interface CycleMacroTotals {
@@ -88,7 +91,7 @@ export interface CycleListItem extends CycleMacroTotals {
 
 @Component({
   selector: 'app-list-cycle',
-  imports: [UiBreakdownBadge, UiEmptyState, UiButton, TranslatePipe, MatCardModule, MatCheckboxModule],
+  imports: [UiBreakdownBadge, UiBreakdownCard, UiNutritionMetricCard, UiEmptyState, UiButton, TranslatePipe, MatCardModule, MatCheckboxModule],
   templateUrl: './list-cycle.html',
   styleUrl: './list-cycle.scss',
 })

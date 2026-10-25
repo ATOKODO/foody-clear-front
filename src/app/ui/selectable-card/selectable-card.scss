@@ -1,0 +1,62 @@
+@use "mixins" as ds;
+
+:host {
+  display: grid;
+  min-width: 0;
+  width: 100%;
+  gap: 0.35rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-xs);
+  background: var(--app-surface-solid);
+  text-align: left;
+  transition: var(--app-transition-colors);
+}
+
+:host(:hover),
+:host(:focus-within),
+:host(.app-selectable-card--active) {
+  border-color: var(--app-action-secondary-border);
+  background: var(--app-success-bg);
+  box-shadow: var(--app-shadow-sm);
+}
+
+:host(.app-selectable-card--accent) {
+  gap: var(--app-space-1);
+  padding: var(--app-space-3) var(--app-space-4);
+  background: var(--app-surface);
+}
+
+:host(.app-selectable-card--accent:hover),
+:host(.app-selectable-card--accent:focus-within),
+:host(.app-selectable-card--accent.app-selectable-card--active) {
+  border-color: var(--app-accent);
+  background: var(--app-accent-soft);
+}
+
+.app-selectable-card__control {
+  display: grid;
+  min-width: 0;
+  width: 100%;
+  gap: 0.35rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.app-selectable-card__control:focus-visible {
+  @include ds.focus-ring;
+}
+
+:host(.app-selectable-card--accent) .app-selectable-card__control {
+  gap: var(--app-space-1);
+}
+
+@include ds.reduced-motion {
+  :host {
+    transition: none;
+  }
+}

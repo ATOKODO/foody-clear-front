@@ -1,4 +1,6 @@
 import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
+import { UiSelectableCard } from '../../app/ui/selectable-card/selectable-card';
+import { UiWorkspaceCard } from '../../app/ui/workspace-card/workspace-card';
 import { UiSummaryPill } from '../../app/ui/summary-pill/summary-pill';
 import { UiStatusBadge } from '../../app/ui/status-badge/status-badge';
 import { UiButton } from '../../app/ui/button/button';
@@ -14,6 +16,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import { UiAlert } from '../../app/ui/alert/alert';
 import { SegmentedToggle } from '../../app/ui/segmented-toggle/segmented-toggle';
 import {
   ProductList,
@@ -70,7 +73,7 @@ import {
 @Component({
   selector: 'app-meal-prep',
   standalone: true,
-  imports: [UiSummaryPill, UiEmptyState, UiStatusBadge, UiButton, TranslatePipe, UiModal,
+  imports: [UiSummaryPill, UiEmptyState, UiSelectableCard, UiWorkspaceCard, UiStatusBadge, UiButton, UiAlert, TranslatePipe, UiModal,
     CommonModule,
     FormsModule,
     MatCardModule,

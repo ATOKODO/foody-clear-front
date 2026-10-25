@@ -74,44 +74,6 @@
   }
 }
 
-@mixin workspace-card($radius: var(--app-radius-sm)) {
-  border: 1px solid var(--app-border);
-  border-radius: $radius;
-  background: var(--app-surface-solid);
-}
-
-@mixin selectable-card {
-  display: grid;
-  gap: 0.35rem;
-  width: 100%;
-  padding: 0.85rem 0.9rem;
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-xs);
-  background: var(--app-surface-solid);
-  text-align: left;
-  transition: var(--app-transition-colors);
-}
-
-@mixin selectable-card-control {
-  display: grid;
-  min-width: 0;
-  width: 100%;
-  gap: 0.35rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-@mixin selectable-card-active {
-  border-color: var(--app-action-secondary-border);
-  background: var(--app-success-bg);
-  box-shadow: var(--app-shadow-sm);
-}
-
 @mixin section-heading {
   color: var(--app-text-strong);
   font-size: var(--app-font-size-md);

@@ -65,8 +65,7 @@
     }
 
     @if (currentView === 'year' && !loading) {
-      <div
-        class="calendar-year-panel overflow-hidden rounded-[1.5rem] border border-app-border shadow-app-sm">
+      <div appCalendarPanel class="calendar-year-panel">
         <div class="calendar-year-summary border-b border-app-border p-4 sm:p-5">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -161,8 +160,7 @@
     }
 
     @if (currentView === 'month' && !loading) {
-      <div
-        class="calendar-month-panel overflow-hidden rounded-[1.5rem] border border-app-border shadow-app-sm">
+      <div appCalendarPanel class="calendar-month-panel">
         <div class="calendar-month-summary border-b border-app-border p-4 sm:p-5">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -355,7 +353,7 @@
     }
 
     @if (currentView === 'week' && !loading) {
-      <div class="calendar-week-panel overflow-hidden rounded-[1.5rem] border border-app-border shadow-app-sm">
+      <div appCalendarPanel class="calendar-week-panel">
         <div class="calendar-week-summary border-b border-app-border p-4 sm:p-5">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -634,8 +632,7 @@
     }
 
     @if (currentView === 'day' && !loading) {
-      <div
-        class="calendar-day-panel overflow-hidden rounded-[1.5rem] border border-app-border shadow-app-sm">
+      <div appCalendarPanel class="calendar-day-panel">
         <div class="calendar-day-summary border-b border-app-border p-4 sm:p-5">
           <div class="calendar-day-summary__top">
             <div>
@@ -913,9 +910,9 @@
                                 </span>
                               </button>
                               @if (product.templateItemId !== null) {
-                                <button appButton variant="plain"
+                                <button appButton variant="edit" size="small"
                                   type="button"
-                                  class="mt-2 rounded-full border border-app-warning-border bg-app-warning-surface px-2 py-1 text-[0.64rem] font-bold text-app-warning disabled:cursor-not-allowed disabled:opacity-60"
+                                  class="calendar-day-revert-template"
                                   [attr.data-testid]="'calendar-day-revert-template-' + product.id"
                                   [disabled]="loadingDayItems()"
                                   (click)="onDayTemplateItemRevert(product, $event)">

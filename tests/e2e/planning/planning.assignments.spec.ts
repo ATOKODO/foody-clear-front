@@ -61,7 +61,10 @@ test('keeps the selected date when opening a day-action dialog and its entry edi
   await expect(date.locator('.app-date-badge__detail')).toHaveCount(0);
   await actions.getByTestId('planning-action-items').click();
   await expect(actions).toHaveCount(0);
-  await expect(page.getByTestId('planning-modal-items')).toBeVisible();
-  await page.getByTestId('planning-modal-items').getByRole('button', { name: 'Close', exact: true }).click();
-  await expect(page.getByTestId('planning-modal-items')).toHaveCount(0);
+  const editor = page.getByTestId('planning-modal-items');
+  await expect(editor).toBeVisible();
+  await expect.poll(() => page.evaluate(() => document.activeElement instanceof HTMLElement && !!document.activeElement.closest('[data-testid="planning-modal-items"]'))).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(editor).toHaveCount(0);
+  await expect(page.getByTestId('calendar-year-day-2026-03-25')).toBeFocused();
 });

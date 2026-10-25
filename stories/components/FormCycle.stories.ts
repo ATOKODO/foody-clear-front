@@ -11,7 +11,9 @@ const meta = {
 } satisfies Meta<FormCycle>;
 export default meta;
 type Story = StoryObj<FormCycle>;
-export const Create: Story = {};
+export const Create: Story = { args: { mode: 'add' } };
 
 export const Edit: Story = { args: { mode: 'edit', cycle: { titre: 'Maintenance', couleur: 'green', nutritionValues: state.cycles[0].nutritionValues, nombre: 7, typeDuree: 'jour', durationDays: 7, slotIds: [1, 2], daySetOrder: [1, 2, 1, 2, 1, 2, 1], daySetIds: [1, 2], defaultTemplateId: 1 } } };
 export const Saving: Story = { args: { mode: 'edit', cycle: { titre: 'Maintenance', couleur: 'green', nutritionValues: state.cycles[0].nutritionValues, nombre: 7, typeDuree: 'jour', durationDays: 7, slotIds: [1, 2], daySetOrder: [1, 2, 1, 2, 1, 2, 1], daySetIds: [1, 2], defaultTemplateId: 1 }, saving: true } };
+export const Overflow: Story = { args: { mode: 'edit', cycle: { titre: 'Maintenance', couleur: 'green', nutritionValues: state.cycles[0].nutritionValues, nombre: 1, typeDuree: 'jour', durationDays: 1, slotIds: [1, 2], daySetOrder: [0, 1], daySetIds: [1], defaultTemplateId: 1 } } };
+export const InDialog: Story = { args: { ...Edit.args, inDialog: true } };

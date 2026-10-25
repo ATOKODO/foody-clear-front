@@ -42,14 +42,30 @@ export class UiModal implements AfterViewInit, OnDestroy {
   private readonly factory = inject(ConfigurableFocusTrapFactory);
   private readonly stack = inject(ModalStack);
   private focusTrap: ConfigurableFocusTrap | null = null;
+  private contentObserver: MutationObserver | null = null;
   private previousFocus: HTMLElement | null = null;
 
   ngAfterViewInit(): void {
     this.previousFocus = this.document.activeElement as HTMLElement | null;
     this.focusTrap = this.factory.create(this.element);
     this.stack.open(this);
+    const MutationObserverCtor = this.document.defaultView?.MutationObserver;
+    if (MutationObserverCtor) {
+      this.contentObserver = new MutationObserverCtor(() => this.restoreFocusAfterContentChange());
+      this.contentObserver.observe(this.element, { childList: true, subtree: true });
+    }
     void this.focusTrap.focusInitialElementWhenReady().then((focused) => {
       if (!focused && this.element.isConnected && this.stack.isTop(this)) this.element.focus();
+    });
+  }
+
+  private restoreFocusAfterContentChange(): void {
+    if (!this.element.isConnected || !this.stack.isTop(this) || this.element.contains(this.document.activeElement)) return;
+    const focusBeforeRestore = this.document.activeElement;
+    void this.focusTrap?.focusFirstTabbableElementWhenReady().then((focused) => {
+      if (!this.element.isConnected || !this.stack.isTop(this) || this.element.contains(this.document.activeElement)) return;
+      if (this.document.activeElement !== focusBeforeRestore) return;
+      if (!focused) this.element.focus();
     });
   }
 
@@ -61,6 +77,7 @@ export class UiModal implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.contentObserver?.disconnect();
     this.focusTrap?.destroy();
     this.stack.close(this);
     if (this.previousFocus?.isConnected) this.previousFocus.focus();

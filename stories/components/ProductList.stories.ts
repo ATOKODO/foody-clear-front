@@ -11,9 +11,11 @@ const meta = {
 } satisfies Meta<ProductList>;
 export default meta;
 type Story = StoryObj<ProductList>;
-export const Populated: Story = {};
+export const Populated: Story = { args: { mode: 'manage' } };
 
 export const Empty: Story = { args: { products: [] } };
 export const SingleSelection: Story = { args: { mode: 'select-single', selectedIds: ['1'] } };
 export const MultipleSelection: Story = { args: { mode: 'select-multi', selectedIds: ['1'] } };
+export const SingleEdit: Story = { args: { mode: 'single-edit', selectedIds: ['1'] } };
+export const MultiEdit: Story = { args: { mode: 'multi-edit', selectedIds: ['1'] } };
 export const Embedded: Story = { args: { embedded: true } };

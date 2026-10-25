@@ -1,4 +1,5 @@
 import { UiOverviewMetric } from '../../app/ui/overview-metric/overview-metric';
+import { UiCalendarPanel } from '../../app/ui/calendar-panel/calendar-panel';
 import { UiCalendarTag } from '../../app/ui/calendar-tag/calendar-tag';
 import { UiIcon } from '../../app/ui/icon/icon';
 import { UiEmptyState } from '../../app/ui/empty-state/empty-state';
@@ -171,7 +172,7 @@ function formatCalendarAssignmentProgress(assignment: CalendarAssignment): strin
 
 @Component({
   selector: 'app-calendar',
-  imports: [UiOverviewMetric, UiCalendarTag, UiIcon, UiEmptyState, UiButton, TranslatePipe, MatButtonToggleModule, DecimalPipe, NgTemplateOutlet],
+  imports: [UiOverviewMetric, UiCalendarPanel, UiCalendarTag, UiIcon, UiEmptyState, UiButton, TranslatePipe, MatButtonToggleModule, DecimalPipe, NgTemplateOutlet],
   templateUrl: './calendar.html',
   styleUrl: './calendar.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

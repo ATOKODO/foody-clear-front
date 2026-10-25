@@ -65,15 +65,6 @@
 }
 
 :is(
-  .calendar-year-panel,
-  .calendar-month-panel,
-  .calendar-week-panel,
-  .calendar-day-panel
-) {
-  background: var(--app-calendar-panel-bg);
-}
-
-:is(
   .calendar-year-summary,
   .calendar-month-summary,
   .calendar-week-summary,
@@ -1605,6 +1596,10 @@
   gap: 0.4rem;
 }
 
+.calendar-day-revert-template {
+  margin-top: var(--app-space-2);
+}
+
 .calendar-week-block__item {
   width: 100%;
   text-align: left;
@@ -1691,32 +1686,16 @@
 }
 
 @include ds.media-below(shell) {
-  .calendar-year-panel {
-    border-radius: 1.1rem;
-  }
-
   .calendar-year-summary {
     padding-inline: 0.9rem;
-  }
-
-  .calendar-month-panel {
-    border-radius: 1.1rem;
   }
 
   .calendar-month-summary {
     padding-inline: 0.9rem;
   }
 
-  .calendar-week-panel {
-    border-radius: 1.1rem;
-  }
-
   .calendar-week-summary {
     padding-inline: 0.9rem;
-  }
-
-  .calendar-day-panel {
-    border-radius: 1.1rem;
   }
 
   .calendar-day-summary {

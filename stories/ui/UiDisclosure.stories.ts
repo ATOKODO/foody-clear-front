@@ -13,7 +13,7 @@ const meta = {
 } satisfies Meta<UiDisclosure>;
 export default meta;
 type Story = StoryObj<UiDisclosure>;
-export const Collapsed: Story = {};
+export const Collapsed: Story = { args: { appearance: 'inline' } };
 export const Panel: Story = { args: { appearance: 'panel' } };
 export const Expanded: Story = {
   render: args => ({ props: args, template: '<details appDisclosure [appearance]="appearance" open><summary appDisclosureSummary>Inventory details</summary><p style="margin-top: var(--app-space-2)">Fridge: 400 g available.</p></details>' }),

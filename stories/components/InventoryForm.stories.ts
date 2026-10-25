@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<InventoryForm>;
 export default meta;
 type Story = StoryObj<InventoryForm>;
-export const Create: Story = {};
+export const Create: Story = { args: { mode: 'add' } };
 
 export const Edit: Story = { args: { mode: 'edit', inventory: state.inventories[0] } };
 export const Saving: Story = { args: { mode: 'edit', inventory: state.inventories[0], saving: true } };

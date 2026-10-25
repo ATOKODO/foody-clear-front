@@ -1,5 +1,5 @@
 <section class="app-page app-page--wide home-dashboard" data-testid="home-dashboard">
-  <header class="home-dashboard__hero">
+  <header appRaisedPanel class="home-dashboard__hero">
     <div class="home-dashboard__hero-copy">
       <p class="home-dashboard__eyebrow">Foody Clear</p>
       <h1 class="home-dashboard__title">{{ "Dashboard" | translate }}</h1>
@@ -50,7 +50,7 @@
 
 
   <section class="home-dashboard__main-grid">
-    <article class="home-panel home-panel--schedule">
+    <article appRaisedPanel class="home-panel home-panel--schedule">
       <div class="home-panel__header">
         <div>
           <p class="home-panel__eyebrow">{{ "Day planning" | translate }}</p>
@@ -84,12 +84,10 @@
                           <em>{{ getTemplateSlotLabel(item) }}</em>
                         </span>
                         <span class="home-schedule__item-actions">
-                          <small
-                            [class.is-ok]="item.stockAvailability.enoughStock || isConvertedTemplateItem(item)"
-                            [class.is-warning]="!item.stockAvailability.enoughStock && !isConvertedTemplateItem(item)"
-                          >
+                          <span appStatusBadge size="small" emphasis="medium" appearance="bare"
+                            [tone]="item.stockAvailability.enoughStock || isConvertedTemplateItem(item) ? 'success' : 'warning'">
                             {{ (getTemplateStockLabel(item)) | translate }}
-                          </small>
+                          </span>
                           @if (isConvertedTemplateItem(item)) {
                             <button appButton variant="plain"
                               type="button"
@@ -141,7 +139,7 @@
     </article>
 
     <aside class="home-dashboard__side-stack">
-      <article class="home-panel home-panel--day-entries">
+      <article appRaisedPanel class="home-panel home-panel--day-entries">
         <div class="home-panel__header">
           <div>
             <p class="home-panel__eyebrow">{{ "Quick summary" | translate }}</p>
@@ -177,7 +175,7 @@
         }
       </article>
 
-      <article class="home-panel">
+      <article appRaisedPanel class="home-panel">
         <div class="home-panel__header">
           <div>
             <p class="home-panel__eyebrow">{{ "Goals" | translate }}</p>
@@ -192,24 +190,19 @@
         </div>
         <div class="home-macro-grid">
           @for (macro of macroCards; track macro.key) {
-            <article class="home-macro" [ngClass]="'home-macro--' + macro.status">
-              <div class="home-macro__top">
-                <span>{{ (macro.label) | translate }}</span>
-                <strong>{{ macro.actual }}</strong>
-              </div>
-              <div class="home-macro__rail" aria-hidden="true">
-                <span class="home-macro__fill" [style.width.%]="macro.progress"></span>
-              </div>
-              <div class="home-macro__meta">
-                <span>{{ "Target {p0}" | translate: { p0: (macro.target) } }}</span>
-                <span>{{ "Delta {p0}" | translate: { p0: (macro.delta) } }}</span>
-              </div>
-            </article>
+            <app-macro-progress-card
+              [label]="macro.label | translate"
+              [actual]="macro.actual"
+              [target]="'Target {p0}' | translate: { p0: (macro.target) }"
+              [delta]="'Delta {p0}' | translate: { p0: (macro.delta) }"
+              [progress]="macro.progress"
+              [status]="macro.status"
+            />
           }
         </div>
       </article>
 
-      <article class="home-panel">
+      <article appRaisedPanel class="home-panel">
         <div class="home-panel__header">
           <div>
             <p class="home-panel__eyebrow">{{ "Purchases" | translate }}</p>
@@ -241,7 +234,7 @@
     </aside>
   </section>
 
-  <section class="home-panel home-panel--editor">
+  <section appRaisedPanel class="home-panel home-panel--editor">
     <div class="home-panel__header">
       <div>
         <p class="home-panel__eyebrow">{{ "Quick entry" | translate }}</p>

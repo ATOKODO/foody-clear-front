@@ -20,8 +20,10 @@ test('every component group has generated API metadata without extraction errors
       documented.add(id);
     }
   }
-  // UiModal is a directive usage template, not a component meta entry.
-  for (const group of groups) if (group !== 'ui-modal') expect(documented.has(group), group).toBe(true);
+  // These are standalone UI compositions rather than component meta entries:
+  // UiModal is a directive usage template, and the card story catalogs a shared Material surface.
+  const compositionGroups = new Set(['ui-modal', 'ui-modal-card-surface']);
+  for (const group of groups) if (!compositionGroups.has(group)) expect(documented.has(group), group).toBe(true);
 });
 
 for (const variant of variants) {
@@ -128,6 +130,62 @@ test('recipe editing saves through the isolated API', async ({ page }) => {
   await expect(editor).toHaveCount(0);
   await expect(page.locator('.meal-prep-list-card__title').filter({ hasText: 'Storybook recipe' })).toBeVisible();
   await expect(page.locator('app-ui-error-panel')).toHaveCount(0);
+});
+
+test('meal prep shopping-list success uses the shared status notice', async ({ page }) => {
+  await page.goto('/iframe.html?id=screens-mealprepfeature--populated&viewMode=story&globals=language:en');
+  await page.getByRole('button', { name: 'Shopping list', exact: true }).first().click();
+  const status = page.getByRole('status');
+  await expect(status).toContainText('List created:');
+  await expect(status).toHaveClass(/app-alert--success/);
+});
+
+test('cycle warning copy is documented in the warning-context component story', async ({ page }) => {
+  await page.goto('/iframe.html?id=components-listcycle--warning-context&viewMode=story&globals=language:en');
+  const card = page.locator('.lc-card').first();
+  await card.locator('.lc-toggle-btn').click();
+  await expect(card.getByText('1 day(s) without a day set use the cycle target directly.')).toBeVisible();
+  await expect(card.getByText('Slot breakdown is unavailable for this day set.').first()).toBeVisible();
+});
+
+test('calendar template revert action uses the shared compact edit button', async ({ page }) => {
+  await page.goto('/iframe.html?id=components-calendar--template-revert-action&viewMode=story&globals=language:en');
+  const button = page.getByTestId(/^calendar-day-revert-template-/);
+  await expect(button).toBeVisible();
+  await expect(button).toHaveClass(/app-ui-button--edit/);
+  await expect(button).toHaveClass(/app-ui-button--small/);
+});
+
+test('cycle form overflow story exposes the blocking visual state', async ({ page }) => {
+  await page.goto('/iframe.html?id=components-formcycle--overflow&viewMode=story&globals=language:en');
+  const items = page.locator('.fc-order-item');
+  await expect(items).toHaveCount(2);
+  await expect(items.nth(1)).toHaveClass(/border-app-danger-border/);
+  await expect(items.nth(1)).toHaveClass(/bg-app-danger-surface/);
+  await expect(items.nth(1)).toContainText('Position is outside the cycle duration. Move this day set before saving.');
+  await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+});
+
+test('calendar today story marks the real current date after using the Today action', async ({ page }) => {
+  await page.goto('/iframe.html?id=components-calendar--today&viewMode=story&globals=language:en');
+  const today = page.locator('.calendar-month-day--today');
+  await expect(today).toBeVisible();
+  await expect(today.locator('.calendar-month-day__today-pill')).toHaveText('Today');
+});
+
+test('form components have explicit compact dialog-spacing stories', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/iframe.html?id=components-formcycle--in-dialog&viewMode=story');
+  const cycleForm = page.locator('#storybook-root app-form-cycle > section');
+  await expect(cycleForm).toHaveClass(/px-3/);
+  await expect(cycleForm).toHaveClass(/py-5/);
+  await expect(cycleForm).not.toHaveClass(/py-10/);
+
+  await page.goto('/iframe.html?id=components-daysetform--in-dialog&viewMode=story');
+  const daySetForm = page.locator('#storybook-root app-day-set-form > section');
+  await expect(daySetForm).toHaveClass(/px-3/);
+  await expect(daySetForm).toHaveClass(/py-4/);
+  await expect(daySetForm).not.toHaveClass(/py-8/);
 });
 
 test('shell navigation stays inside the canvas and uses isolated data', async ({ page }) => {

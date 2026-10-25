@@ -67,20 +67,20 @@
         [detailAriaLabel]="&quot;Inventory details&quot; | translate">
         <div side-content class="inventory-stack">
           @for (inventory of inventoryListItems; track inventory.id) {
-            <div
+            <div appSelectableCard
+              [active]="selectedInventory?.id === inventory.id"
+              [disabled]="saving"
               class="inventory-list-card"
-              [class.is-active]="selectedInventory?.id === inventory.id"
               [attr.data-testid]="'inventory-select-' + inventory.id"
+              (selectionRequested)="selectInventory(inventory.id)"
               >
-              <button appButton variant="plain" type="button" class="inventory-list-card__select" [disabled]="saving" (click)="selectInventory(inventory.id)">
-                <span class="inventory-list-card__title">{{ inventory.name }}</span>
-                <span class="inventory-list-card__meta">{{ "{p0} linked product(s)" | translate: { p0: (inventory.productCount) } }}</span>
-                <span appStatusBadge size="card" appearance="soft" class="inventory-list-card__status"
-                  [tone]="inventory.productCount === 0 ? 'warning' : 'success'">
-                  {{ inventory.productCount === 0 ? ("Empty" | translate) : ("Stocked" | translate) }}
-                </span>
-              </button>
-              <div class="inventory-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
+              <span selectable-card-content class="inventory-list-card__title">{{ inventory.name }}</span>
+              <span selectable-card-content class="inventory-list-card__meta">{{ "{p0} linked product(s)" | translate: { p0: (inventory.productCount) } }}</span>
+              <span selectable-card-content appStatusBadge size="card" appearance="soft" class="inventory-list-card__status"
+                [tone]="inventory.productCount === 0 ? 'warning' : 'success'">
+                {{ inventory.productCount === 0 ? ("Empty" | translate) : ("Stocked" | translate) }}
+              </span>
+              <div selectable-card-actions class="inventory-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                 <button appButton variant="secondary"
                   type="button"
                   class="inventory-action inventory-action--secondary"
@@ -111,7 +111,7 @@
               </div>
             </div>
 
-            <div class="inventory-detail-card">
+            <div appWorkspaceCard class="inventory-detail-card">
               <div class="inventory-detail-card__header">
                 <div>
                   <h4>{{ "Current stock" | translate }}</h4>

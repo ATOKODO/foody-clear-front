@@ -51,8 +51,7 @@
   @include ds.action-base(var(--app-font-weight-medium));
 }
 
-.inventory-action:focus-visible,
-.inventory-list-card__select:focus-visible {
+.inventory-action:focus-visible {
   @include ds.focus-ring;
 }
 
@@ -94,20 +93,6 @@
   gap: var(--app-space-3);
 }
 
-.inventory-list-card {
-  @include feature.selectable-card;
-}
-
-.inventory-list-card__select {
-  @include feature.selectable-card-control;
-}
-
-.inventory-list-card:hover,
-.inventory-list-card:focus-within,
-.inventory-list-card.is-active {
-  @include feature.selectable-card-active;
-}
-
 .inventory-list-card__title {
   color: var(--app-text-strong);
   font-weight: var(--app-font-weight-bold);
@@ -129,7 +114,6 @@
 }
 
 .inventory-detail-card {
-  @include feature.workspace-card;
   display: grid;
   gap: 0.875rem;
   padding: 0.875rem;
@@ -236,8 +220,7 @@
 }
 
 @include ds.reduced-motion {
-  .inventory-action,
-  .inventory-list-card {
+  .inventory-action {
     transition: none;
   }
 }

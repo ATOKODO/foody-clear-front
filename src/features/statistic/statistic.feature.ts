@@ -23,6 +23,7 @@ import {
 import { Product, ProductService } from '../../services/product-service';
 import { StatisticService } from '../../services/statistic-service';
 import { UiErrorPanel } from '../../app/ui/error-panel/error-panel';
+import { UiChartBar } from '../../app/ui/chart-bar/chart-bar';
 import {
   buildStatisticPriceCorrectionDto,
   buildStatisticTimelineRequestKey,
@@ -65,7 +66,7 @@ import {
     MatInputModule,
     MatProgressBarModule,
     MatSelectModule,
-    UiErrorPanel,
+    UiErrorPanel, UiChartBar,
   ],
   templateUrl: './statistic.feature.html',
   styleUrl: './statistic.feature.scss',

@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<CategoryForm>;
 export default meta;
 type Story = StoryObj<CategoryForm>;
-export const Create: Story = {};
+export const Create: Story = { args: { mode: 'add' } };
 
 export const Edit: Story = { args: { mode: 'edit', category: state.categories[0] } };
 export const Saving: Story = { args: { mode: 'edit', category: state.categories[0], saving: true } };

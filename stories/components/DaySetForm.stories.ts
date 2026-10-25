@@ -11,7 +11,8 @@ const meta = {
 } satisfies Meta<DaySetForm>;
 export default meta;
 type Story = StoryObj<DaySetForm>;
-export const Create: Story = {};
+export const Create: Story = { args: { mode: 'add' } };
 
 export const Edit: Story = { args: { mode: 'edit', daySet: state.daySets[0] } };
 export const Saving: Story = { args: { mode: 'edit', daySet: state.daySets[0], saving: true } };
+export const InDialog: Story = { args: { ...Edit.args, inDialog: true } };

@@ -1,0 +1,15 @@
+:host {
+  display: block;
+  min-height: 4.4rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-xl);
+  background: var(--app-surface-soft);
+  color: var(--app-text);
+}
+
+:host(.app-nutrition-metric-card--prominent) {
+  min-height: 5.5rem;
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-sm);
+}

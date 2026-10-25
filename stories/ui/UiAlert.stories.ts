@@ -15,7 +15,7 @@ const meta = {
 } satisfies Meta<UiAlert>;
 export default meta;
 type Story = StoryObj<UiAlert>;
-export const Warning: Story = {};
+export const Warning: Story = { args: { tone: 'warning' } };
 export const Error: Story = { args: { tone: 'error' } };
 export const Info: Story = { args: { tone: 'info' } };
 export const Success: Story = { args: { tone: 'success' } };

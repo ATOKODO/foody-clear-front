@@ -74,20 +74,19 @@
           [detailAriaLabel]="&quot;Shopping list details&quot; | translate">
           <div side-content class="shopping-list-stack">
             @for (list of store.shoppingLists; track list.id) {
-              <div
+              <div appSelectableCard
+                [active]="store.selectedList?.id === list.id"
                 class="shopping-list-list-card"
-                [class.is-active]="store.selectedList?.id === list.id"
+                (selectionRequested)="store.selectList(list.id)"
                 >
-                <button appButton variant="plain" type="button" class="shopping-list-list-card__select" (click)="store.selectList(list.id)">
-                  <span class="shopping-list-list-card__title">{{ list.name }}</span>
-                  <span class="shopping-list-list-card__meta">
-                    {{ "{p0} line(s) - {p1} checked" | translate: { p0: (list.items.length), p1: (store.countChecked(list)) } }}
-                  </span>
-                  <span appStatusBadge tone="warning" size="card" appearance="soft" class="shopping-list-list-card__status">
-                    {{ list.items.length === 0 ? ("Empty" | translate) : ("In progress" | translate) }}
-                  </span>
-                </button>
-                <div class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
+                <span selectable-card-content class="shopping-list-list-card__title">{{ list.name }}</span>
+                <span selectable-card-content class="shopping-list-list-card__meta">
+                  {{ "{p0} line(s) - {p1} checked" | translate: { p0: (list.items.length), p1: (store.countChecked(list)) } }}
+                </span>
+                <span selectable-card-content appStatusBadge tone="warning" size="card" appearance="soft" class="shopping-list-list-card__status">
+                  {{ list.items.length === 0 ? ("Empty" | translate) : ("In progress" | translate) }}
+                </span>
+                <div selectable-card-actions class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                   <button appButton variant="secondary"
                     type="button"
                     class="shopping-list-action shopping-list-action--secondary"
@@ -118,7 +117,7 @@
                 </div>
               </div>
 
-              <div class="shopping-list-table-card">
+              <div appWorkspaceCard class="shopping-list-table-card">
                 <div class="shopping-list-table-card__header">
                   <div>
                     <h4>{{ "List items" | translate }}</h4>
@@ -151,16 +150,15 @@
           [detailAriaLabel]="&quot;Shopping template details&quot; | translate">
           <div side-content class="shopping-list-stack">
             @for (template of store.templates; track template.id) {
-              <div
+              <div appSelectableCard
+                [active]="store.selectedTemplate?.id === template.id"
                 class="shopping-list-list-card"
-                [class.is-active]="store.selectedTemplate?.id === template.id"
+                (selectionRequested)="store.selectTemplate(template.id)"
                 >
-                <button appButton variant="plain" type="button" class="shopping-list-list-card__select" (click)="store.selectTemplate(template.id)">
-                  <span class="shopping-list-list-card__title">{{ template.name }}</span>
-                  <span class="shopping-list-list-card__meta">{{ "{p0} produit(s)" | translate: { p0: (template.items.length) } }}</span>
-                  <span appStatusBadge tone="info" size="card" appearance="soft" class="shopping-list-list-card__status">{{ "Template" | translate }}</span>
-                </button>
-                <div class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
+                <span selectable-card-content class="shopping-list-list-card__title">{{ template.name }}</span>
+                <span selectable-card-content class="shopping-list-list-card__meta">{{ "{p0} produit(s)" | translate: { p0: (template.items.length) } }}</span>
+                <span selectable-card-content appStatusBadge tone="info" size="card" appearance="soft" class="shopping-list-list-card__status">{{ "Template" | translate }}</span>
+                <div selectable-card-actions class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
                   <button appButton variant="secondary"
                     type="button"
                     class="shopping-list-action shopping-list-action--secondary"
@@ -191,7 +189,7 @@
                 </div>
               </div>
 
-              <div class="shopping-list-table-card">
+              <div appWorkspaceCard class="shopping-list-table-card">
                 <div class="shopping-list-table-card__header">
                   <div>
                     <h4>{{ "Template items" | translate }}</h4>
@@ -272,7 +270,7 @@
               {{ "Save name" | translate }}
             </button>
 
-            <div class="shopping-list-editor-card">
+            <div appWorkspaceCard class="shopping-list-editor-card">
               <div class="shopping-list-editor-card__header">
                 <div>
                   <h4>{{ "Add product" | translate }}</h4>
@@ -317,7 +315,7 @@
               </div>
             </div>
 
-            <div class="shopping-list-table-card">
+            <div appWorkspaceCard class="shopping-list-table-card">
               <div class="shopping-list-table-card__header">
                 <div>
                   <h4>{{ "List items" | translate }}</h4>
@@ -393,7 +391,7 @@
             </div>
 
               <div class="shopping-list-bottom-grid">
-                <section class="shopping-list-convert-card">
+                <section appWorkspaceCard class="shopping-list-convert-card">
                   <div>
                     <h4>{{ "Envoyer vers inventory" | translate }}</h4>
                     <p>{{ "Convertis les lignes cochees ou toute la liste." | translate }}</p>
@@ -424,7 +422,7 @@
                   </div>
                 </section>
 
-                <section class="shopping-list-convert-card">
+                <section appWorkspaceCard class="shopping-list-convert-card">
                   <div>
                     <h4>{{ "Save as template" | translate }}</h4>
                     <p>{{ "Conserve cette liste pour la recreer plus vite." | translate }}</p>
@@ -489,7 +487,7 @@
               {{ "Save template" | translate }}
             </button>
 
-            <div class="shopping-list-template-create">
+            <div appWorkspaceCard class="shopping-list-template-create">
               <div>
                 <h4>{{ "Create une liste depuis this template" | translate }}</h4>
                 <p>{{ "Tu peux personnaliser le nom avant de generer la liste." | translate }}</p>

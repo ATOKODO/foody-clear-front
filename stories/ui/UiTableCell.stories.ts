@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<UiTableCell>;
 export default meta;
 type Story = StoryObj<UiTableCell>;
-export const Start: Story = {};
+export const Start: Story = { args: { contentAlign: 'start' } };
 export const Center: Story = { args: { contentAlign: 'center' } };
 export const End: Story = { args: { contentAlign: 'end' } };
 export const RowHeader: Story = { render: args => ({ props: args, template: '<table appTable><tbody><tr><th appTableCell scope="row" [contentAlign]="contentAlign">Product</th><td appTableCell>Banana</td></tr></tbody></table>' }) };

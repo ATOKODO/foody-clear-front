@@ -1,0 +1,26 @@
+:host {
+  display: block;
+  width: 1.5rem;
+  align-self: end;
+  border-radius: 999px;
+}
+
+:host(.app-chart-bar--expense) {
+  background: linear-gradient(
+    180deg,
+    var(--app-accent-strong) 0%,
+    var(--app-data-green-end) 100%
+  );
+}
+
+:host(.app-chart-bar--goal) {
+  background: var(--app-info-bg);
+}
+
+:host(.app-chart-bar--actual) {
+  background: linear-gradient(
+    180deg,
+    var(--app-info-text) 0%,
+    var(--app-data-blue-end) 100%
+  );
+}

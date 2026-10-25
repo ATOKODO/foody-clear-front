@@ -1,0 +1,114 @@
+@use "mixins" as ds;
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.planning-action-card {
+  appearance: none;
+  display: grid;
+  width: 100%;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: flex-start;
+  min-width: 0;
+  min-height: 10rem;
+  padding: 1rem;
+  border: 1px solid var(--app-border);
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, var(--app-surface-raised), var(--app-surface));
+  box-shadow: var(--app-shadow-sm);
+  color: var(--app-text-strong);
+  text-align: left;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.planning-action-card:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--app-border-strong);
+  box-shadow: var(--app-shadow-lg);
+}
+
+.planning-action-card--accent {
+  background:
+    radial-gradient(circle at top right, var(--app-accent-soft), transparent 40%),
+    linear-gradient(180deg, var(--app-surface-raised), var(--app-surface));
+}
+
+.planning-action-card--info {
+  background:
+    radial-gradient(circle at top right, var(--app-info-bg), transparent 40%),
+    linear-gradient(180deg, var(--app-surface-raised), var(--app-surface));
+}
+
+.planning-action-card__icon,
+.planning-action-card__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+}
+
+.planning-action-card__icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface-muted);
+  color: var(--app-text-strong);
+  box-shadow: inset 0 1px 0 var(--app-border-soft);
+}
+
+.planning-action-card__icon app-icon,
+.planning-action-card__arrow app-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.planning-action-card__content {
+  display: grid;
+  gap: 0.38rem;
+  min-width: 0;
+}
+
+.planning-action-card__label {
+  color: var(--app-text-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.planning-action-card__title {
+  color: var(--app-text-strong);
+  font-size: 1.02rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.planning-action-card__text {
+  color: var(--app-text);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.planning-action-card__arrow {
+  width: 2rem;
+  height: 2rem;
+  color: var(--app-text-muted);
+}
+
+@include ds.media-down(small) {
+  .planning-action-card {
+    min-height: 0;
+  }
+}
+
+@include ds.reduced-motion {
+  .planning-action-card {
+    transition: none;
+  }
+}

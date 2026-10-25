@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<UiEmptyState>;
 export default meta;
 type Story = StoryObj<UiEmptyState>;
-export const Text: Story = {};
+export const Text: Story = { args: { appearance: 'text', size: 'medium', tone: 'muted' } };
 export const Panel: Story = { args: { appearance: 'panel' } };
 export const Large: Story = { args: { appearance: 'large' } };
 export const Small: Story = { args: { appearance: 'panel', size: 'small' } };

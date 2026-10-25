@@ -11,7 +11,7 @@ const meta = {
 } satisfies Meta<GenericProductList>;
 export default meta;
 type Story = StoryObj<GenericProductList>;
-export const Populated: Story = {};
+export const Populated: Story = { args: { mode: 'manage' } };
 
 export const Empty: Story = { args: { genericProducts: [] } };
 export const SingleSelection: Story = { args: { mode: 'select-single', selectedIds: ['1'] } };

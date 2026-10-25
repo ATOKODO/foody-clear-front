@@ -1,0 +1,67 @@
+@use "mixins" as ds;
+
+:host {
+  display: block;
+}
+
+.home-macro {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.75rem;
+  border: 1px solid var(--app-border-soft);
+  border-radius: 0.5rem;
+  background: var(--app-surface);
+}
+
+.home-macro__top,
+.home-macro__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.home-macro__top span,
+.home-macro__meta {
+  color: var(--app-text-muted);
+  font-size: 0.78rem;
+}
+
+.home-macro__top strong {
+  color: var(--app-text-strong);
+  font-size: 1rem;
+}
+
+.home-macro__rail {
+  height: 0.55rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--app-surface-muted);
+}
+
+.home-macro__fill {
+  display: block;
+  height: 100%;
+  min-width: 0.35rem;
+  border-radius: inherit;
+  background: var(--app-info-text);
+}
+
+.home-macro--exact .home-macro__fill {
+  background: var(--app-success-text);
+}
+
+.home-macro--over .home-macro__fill {
+  background: var(--app-warning-text);
+}
+
+.home-macro--neutral .home-macro__fill {
+  background: var(--app-border-strong);
+}
+
+@include ds.media-down(medium) {
+  .home-macro__meta {
+    align-items: start;
+    flex-direction: column;
+  }
+}
