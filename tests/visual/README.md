@@ -37,8 +37,18 @@ Service workers are blocked to keep API mocking independent of caches.
 - Calendar month/year/week/day, product creation dialog, nested inventory product picker.
 - Shopping list empty/error states and the mobile navigation drawer.
 - French home/calendar pages, product creation dialog and shopping list error state,
-  alongside the English route baselines in all four viewport/theme combinations.
-- Desktop 1440 × 1000 and mobile 390 × 844, each in light and dark mode (DPR 1).
+  alongside the English route baselines in all ten viewport/theme combinations.
+- Five viewport profiles, each in light and dark mode (DPR 1):
+
+  | Project prefix | Viewport (CSS pixels) | Input emulation |
+  | --- | --- | --- |
+  | `desktop` | 1440 × 1000 | Desktop |
+  | `mobile` | 390 × 844 | Mobile/touch |
+  | `iphone16pro` | 402 × 874 | Mobile/touch |
+  | `ipadpro11` | 834 × 1194 | Mobile/touch |
+  | `macbookpro14` | 1512 × 982 | Desktop |
+
+  Project names append `-light` or `-dark`, for example `ipadpro11-dark`.
 - A fresh browser context and cloned API state per test; date fixed at 25 March 2026,
   locale `en-GB`, timezone `Europe/Paris`, reduced motion and hidden text carets.
 - Screenshots wait for completed API calls, Angular testability when available, loading indicators and fonts.
@@ -47,15 +57,19 @@ Service workers are blocked to keep API mocking independent of caches.
   client-side cancellation of sibling XHRs.
 
 Desktop page/state captures are full-page; dialogs and the navigation drawer use viewport size.
-Mobile pages use successive overlapping 390 × 844 viewport captures (`*-scroll-N.png`)
+Phone and tablet pages use successive overlapping viewport captures (`*-scroll-N.png`)
 to cover content below the fold without Chromium's unstable very tall full-page rasterization.
-The overlap accounts for the sticky app header. The two desktop drawer cases are intentionally skipped.
-The long mobile annual calendar uses two actual 390 × 844 viewport captures: its overview
+The overlap accounts for the sticky app header. Drawer cases are intentionally skipped
+above the 1024px shell breakpoint, including both desktop and MacBook profiles.
+The long phone/tablet annual calendar uses two actual viewport captures: its overview
 and the current month after scrolling. This avoids mixing visible/offscreen text raster
-caches in a very tall screenshot while checking the real mobile presentation.
-The mobile planning calendar likewise captures its overview and today's cell after scrolling.
-This is an emulated responsive Chromium viewport, not validation on a real phone or
-Safari. Offscreen content inside independently scrolling elements and every interaction
+caches in a very tall screenshot while checking the responsive presentation.
+The phone/tablet planning calendar likewise captures its overview and today's cell after scrolling.
+Calendar icon/text actions and stacked/grid week assertions follow CSS breakpoints,
+not the `isMobile` input flag: an iPad can be touch-enabled while showing a wider layout.
+Device names identify viewport sizes; these remain emulated Chromium captures, not
+real-device, Retina-DPR, Safari or macOS rendering validation. Offscreen content inside
+independently scrolling elements and every interaction
 state are not exhaustive; add targeted captures when introducing new UI states.
 
 The comparison allows **zero differing pixels** after a per-pixel color threshold of
@@ -70,6 +84,8 @@ ordinary runs too: tests must never silently create or approve a baseline.
 
    ```sh
    npm run e2e:vrt:update -- --grep 'product' --project=desktop-light
+   # Generate or update only the iPhone 16 Pro references:
+   npm run e2e:vrt:update -- --project=iphone16pro-light --project=iphone16pro-dark
    # For an intentional global redesign:
    npm run e2e:vrt:update
    ```

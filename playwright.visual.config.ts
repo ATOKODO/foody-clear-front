@@ -55,5 +55,11 @@ export default defineConfig({
     { name: 'desktop-dark', use: { viewport: { width: 1440, height: 1000 }, colorScheme: 'dark' } },
     { name: 'mobile-light', use: { viewport: { width: 390, height: 844 }, colorScheme: 'light', isMobile: true, hasTouch: true } },
     { name: 'mobile-dark', use: { viewport: { width: 390, height: 844 }, colorScheme: 'dark', isMobile: true, hasTouch: true } },
+    { name: 'iphone16pro-light', use: { viewport: { width: 402, height: 874 }, colorScheme: 'light', isMobile: true, hasTouch: true } },
+    { name: 'iphone16pro-dark', use: { viewport: { width: 402, height: 874 }, colorScheme: 'dark', isMobile: true, hasTouch: true } },
+    { name: 'ipadpro11-light', use: { viewport: { width: 834, height: 1194 }, colorScheme: 'light', isMobile: true, hasTouch: true } },
+    { name: 'ipadpro11-dark', use: { viewport: { width: 834, height: 1194 }, colorScheme: 'dark', isMobile: true, hasTouch: true } },
+    { name: 'macbookpro14-light', use: { viewport: { width: 1512, height: 982 }, colorScheme: 'light' } },
+    { name: 'macbookpro14-dark', use: { viewport: { width: 1512, height: 982 }, colorScheme: 'dark' } },
   ],
 });

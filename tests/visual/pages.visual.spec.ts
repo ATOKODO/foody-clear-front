@@ -24,6 +24,7 @@ for (const [path, landmark] of pages) {
     await visual.open(`/${path}`, landmark);
     await expect(page.locator('app-ui-error-panel')).toHaveCount(0);
     if (path === 'calendar' || path === 'planning') {
+      const compactActions = await page.evaluate(() => matchMedia('(max-width: 40rem)').matches);
       const actions = [
         ['open-day', 'Open day view', 'today'],
         ['manage-cycle', 'Manage cycle', 'autorenew'],
@@ -34,7 +35,7 @@ for (const [path, landmark] of pages) {
         await expect(button).toHaveAccessibleName(`${label} for 2026-03-25`);
         const glyph = button.locator(`svg[data-icon="${icon}"]`);
         const text = button.locator('.calendar-month-day__quick-action-label');
-        if (isMobile) {
+        if (compactActions) {
           await expect(glyph).toBeVisible();
           await expect(text).toBeHidden();
           const buttonBox = (await button.boundingBox())!;
@@ -63,9 +64,10 @@ for (const view of ['year', 'week', 'day'] as const) {
   test(`calendar — ${view} view`, async ({ page, visual, isMobile }) => {
     await visual.open('/calendar', 'calendar-root');
     await page.getByTestId(`calendar-view-${view}`).click();
+    const stackedWeek = await page.evaluate(() => !matchMedia('(min-width: 48rem)').matches);
     const landmark = view === 'day'
       ? 'calendar-day-manage-items'
-      : `calendar-${view === 'week' && isMobile ? 'week-mobile' : view}-day-2026-03-25`;
+      : `calendar-${view === 'week' && stackedWeek ? 'week-mobile' : view}-day-2026-03-25`;
     await expect(page.getByTestId(landmark)).toBeVisible();
     await visual.ready();
     // Very tall mobile full-page captures mix visible/offscreen text raster caches.
@@ -120,8 +122,8 @@ test('inventory — nested product picker', async ({ page, visual }) => {
   await expect(page).toHaveScreenshot('inventory-product-picker.png', { fullPage: false });
 });
 
-test('mobile — navigation drawer', async ({ page, visual, isMobile }) => {
-  test.skip(!isMobile, 'Drawer is only present below the mobile breakpoint');
+test('mobile — navigation drawer', async ({ page, visual, viewport }) => {
+  test.skip(!viewport || viewport.width > 1024, 'Drawer is only present at or below the 64rem shell breakpoint');
   await visual.open('/home', 'home-dashboard');
   await page.getByRole('button', { name: 'Open navigation', exact: true }).click();
   await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible();
