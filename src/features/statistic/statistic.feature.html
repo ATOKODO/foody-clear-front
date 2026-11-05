@@ -68,7 +68,7 @@
         <input matInput [(ngModel)]="timezone" />
       </mat-form-field>
 
-      <button appButton variant="filled"
+      <button appButton variant="secondary"
         type="button"
         data-testid="stat-load"
         [disabled]="loadingTimeline"
@@ -370,7 +370,7 @@
           {{ "Recalculer les achats" | translate }}
         </mat-checkbox>
 
-        <button appButton variant="filled"
+        <button appButton variant="primary"
           type="button"
           data-testid="stat-price-correction-submit"
           [disabled]="correctingPrice || selectedPriceProductId === null"

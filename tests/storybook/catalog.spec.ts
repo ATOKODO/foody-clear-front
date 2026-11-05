@@ -119,6 +119,20 @@ test('production creation actions are primary and utility actions are secondary'
 
   await page.goto('/iframe.html?id=screens-statisticfeature--populated&viewMode=story&globals=language:en');
   await expect(page.getByTestId('stat-refresh')).toHaveClass(/app-ui-button--secondary/);
+  await expect(page.getByTestId('stat-load')).toHaveClass(/app-ui-button--secondary/);
+  await page.getByTestId('stat-view-prices').click();
+  await expect(page.getByTestId('stat-price-correction-submit')).toHaveClass(/app-ui-button--primary/);
+
+  await page.goto('/iframe.html?id=components-calendar--week&viewMode=story&globals=language:en');
+  const desktopAdd = page.getByTestId('calendar-week-add-2026-03-25');
+  await expect(desktopAdd).toBeVisible();
+  await expect(desktopAdd).toHaveClass(/app-ui-button--primary/);
+  await expect(desktopAdd).toHaveAccessibleName('Add an item for 2026-03-25');
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobileAdd = page.getByTestId('calendar-week-mobile-add-2026-03-25');
+  await expect(mobileAdd).toBeVisible();
+  await expect(mobileAdd).toHaveClass(/app-ui-button--primary/);
+  await expect(mobileAdd).toHaveAccessibleName('Add an item for 2026-03-25');
 
   await page.goto('/iframe.html?id=components-product-scanner--manual-lookup&viewMode=story&globals=language:en');
   const search = page.getByRole('button', { name: 'Search for the product', exact: true });

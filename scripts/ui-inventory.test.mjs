@@ -27,14 +27,14 @@ test('rejects component bypasses and all conflicting Material button spellings',
   for (const element of templateElements('<button appButton>Save</button><input matInput /><span appStatusBadge>Saved</span><p appAlert>Notice</p><pre appCodePanel>Code</pre>')) assertSharedPrimitives(element);
 });
 
-test('production actions use primary or secondary instead of raised buttons', () => {
+test('production actions use primary or secondary instead of raised or filled buttons', () => {
   const components = componentTemplates().filter(component => !component.storyOnly);
   const buttons = components.flatMap(component => component.elements
     .filter(element => element.tag === 'button')
     .map(element => ({ ...element, owner: component.name })));
 
-  const raised = buttons.filter(button => button.attributes.variant === 'raised' || /^\s*['"]raised['"]\s*$/.test(button.inputs.variant ?? ''));
-  assert.deepEqual(raised.map(button => `${button.owner}:${button.line}`), []);
+  const legacyVariants = buttons.filter(button => ['raised', 'filled'].includes(button.attributes.variant) || /^\s*['"](?:raised|filled)['"]\s*$/.test(button.inputs.variant ?? ''));
+  assert.deepEqual(legacyVariants.map(button => `${button.owner}:${button.line}`), []);
 
   for (const id of ['category-add', 'generic-product-add', 'inventory-add', 'product-add', 'slot-add', 'day-set-add', 'tag-add', 'cycle-add', 'template-save', 'template-item-save', 'external-entry-submit', 'input-day-submit-item', 'input-day-create-items']) {
     const matches = buttons.filter(button => button.attributes['data-testid'] === id);
@@ -43,6 +43,15 @@ test('production actions use primary or secondary instead of raised buttons', ()
   }
   const refresh = buttons.find(button => button.attributes['data-testid'] === 'stat-refresh');
   assert.equal(refresh?.attributes.variant, 'secondary');
+  const load = buttons.find(button => button.attributes['data-testid'] === 'stat-load');
+  assert.equal(load?.attributes.variant, 'secondary');
+  const priceCorrection = buttons.find(button => button.attributes['data-testid'] === 'stat-price-correction-submit');
+  assert.equal(priceCorrection?.attributes.variant, 'primary');
+  for (const id of ['calendar-week-mobile-add-', 'calendar-week-add-']) {
+    const button = buttons.find(candidate => candidate.owner === 'Calendar' && candidate.inputs['data-testid']?.includes(id));
+    assert.equal(button?.attributes.variant, 'primary', `${id} must use the primary variant`);
+    assert.equal(button?.attributes.size, 'small');
+  }
   for (const owner of ['Category', 'GenericProduct', 'Tag']) {
     const refreshButton = buttons.find(button => button.owner === owner && button.text.includes('Refresh'));
     assert.equal(refreshButton?.attributes.variant, 'secondary', `${owner} refresh must use the secondary variant`);
