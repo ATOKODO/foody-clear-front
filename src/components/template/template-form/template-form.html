@@ -5,7 +5,7 @@
       <input matInput [(ngModel)]="draftTitle" [placeholder]="&quot;Training day&quot; | translate" />
     </mat-form-field>
 
-    <button appButton variant="raised"
+    <button appButton variant="primary"
       type="button"
       data-testid="template-save"
       (click)="onTemplateSave()"
@@ -171,7 +171,7 @@
           >
             {{ "Reset" | translate }}
           </button>
-          <button appButton variant="raised"
+          <button appButton variant="primary"
             type="button"
             data-testid="template-item-save"
             (click)="onItemSave()"

@@ -27,6 +27,32 @@ test('rejects component bypasses and all conflicting Material button spellings',
   for (const element of templateElements('<button appButton>Save</button><input matInput /><span appStatusBadge>Saved</span><p appAlert>Notice</p><pre appCodePanel>Code</pre>')) assertSharedPrimitives(element);
 });
 
+test('production actions use primary or secondary instead of raised buttons', () => {
+  const components = componentTemplates().filter(component => !component.storyOnly);
+  const buttons = components.flatMap(component => component.elements
+    .filter(element => element.tag === 'button')
+    .map(element => ({ ...element, owner: component.name })));
+
+  const raised = buttons.filter(button => button.attributes.variant === 'raised' || /^\s*['"]raised['"]\s*$/.test(button.inputs.variant ?? ''));
+  assert.deepEqual(raised.map(button => `${button.owner}:${button.line}`), []);
+
+  for (const id of ['category-add', 'generic-product-add', 'inventory-add', 'product-add', 'slot-add', 'day-set-add', 'tag-add', 'cycle-add', 'template-save', 'template-item-save', 'external-entry-submit', 'input-day-submit-item', 'input-day-create-items']) {
+    const matches = buttons.filter(button => button.attributes['data-testid'] === id);
+    assert(matches.length > 0, `Missing action ${id}`);
+    assert(matches.every(button => button.attributes.variant === 'primary'), `${id} must use the primary variant`);
+  }
+  const refresh = buttons.find(button => button.attributes['data-testid'] === 'stat-refresh');
+  assert.equal(refresh?.attributes.variant, 'secondary');
+  for (const owner of ['Category', 'GenericProduct', 'Tag']) {
+    const refreshButton = buttons.find(button => button.owner === owner && button.text.includes('Refresh'));
+    assert.equal(refreshButton?.attributes.variant, 'secondary', `${owner} refresh must use the secondary variant`);
+  }
+  const scannerSearch = buttons.find(button => button.owner === 'ProductScanner' && button.text.includes('Rechercher le produit'));
+  assert.equal(scannerSearch?.attributes.variant, 'secondary');
+  const scannerApply = buttons.find(button => button.owner === 'ProductScanner' && button.text.includes('Utiliser ces informations'));
+  assert.equal(scannerApply?.attributes.variant, 'primary');
+});
+
 test('includes inline production templates but excludes previews from the production report', () => {
   const components = componentTemplates();
   assert(components.find(component => component.name === 'UiErrorPanel').elements.some(element => element.tag === 'pre'));

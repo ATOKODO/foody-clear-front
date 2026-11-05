@@ -12,7 +12,7 @@ import { UiButton } from './button';
 class TestHost {
   readonly disabled = signal(false);
   readonly loading = signal(false);
-  readonly variant = signal<'primary' | 'danger'>('primary');
+  readonly variant = signal<'primary' | 'secondary' | 'danger'>('primary');
   readonly type = signal<'button' | 'submit' | 'reset'>('button');
   clicks = 0;
   activations = 0;
@@ -35,6 +35,10 @@ describe('UiButton', () => {
     expect(button.classList.contains('screen-action')).toBeTrue();
     expect(button.classList.contains('app-ui-button--primary')).toBeTrue();
     expect(button.getAttribute('aria-label')).toBe('Save item');
+    host.variant.set('secondary');
+    await fixture.whenStable();
+    expect(button.classList.contains('app-ui-button--secondary')).toBeTrue();
+    expect(button.classList.contains('app-ui-button--primary')).toBeFalse();
     host.variant.set('danger');
     await fixture.whenStable();
     expect(button.classList.contains('app-ui-button--danger')).toBeTrue();

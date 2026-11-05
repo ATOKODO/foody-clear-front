@@ -20,7 +20,7 @@
         [disabled]="disabled()" />
       <mat-hint>{{ "Vous pouvez aussi saisir les chiffres sous le code-barres." | translate }}</mat-hint>
     </mat-form-field>
-    <button appButton variant="raised" type="submit" [disabled]="disabled() || loading() || !barcode().trim()">
+    <button appButton variant="secondary" type="submit" [disabled]="disabled() || loading() || !barcode().trim()">
       {{ loading() ? ("Recherche…" | translate) : ("Rechercher le produit" | translate) }}
     </button>
   </form>
@@ -62,7 +62,7 @@
         @if (product.imageUrl) { {{ "Photos :" | translate }} <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">{{ "CC BY-SA" | translate }}</a>. }
       </p>
       <p>{{ "Vérifiez les informations sur l’emballage avant d’ajouter le produit." | translate }}</p>
-      <button appButton variant="raised" type="button" [disabled]="disabled()" (click)="useProduct()">{{ "Utiliser ces informations" | translate }}</button>
+      <button appButton variant="primary" type="button" [disabled]="disabled()" (click)="useProduct()">{{ "Utiliser ces informations" | translate }}</button>
     </article>
   }
 </section>

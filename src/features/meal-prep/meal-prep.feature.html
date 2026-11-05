@@ -392,14 +392,14 @@
           <button appButton variant="secondary" type="button" (click)="addDishLine()" [disabled]="saving">
             {{ "Add line" | translate }}
           </button>
-          <button appButton variant="raised" type="button" (click)="saveDish()" [disabled]="!canSaveDish() || saving">
+          <button appButton variant="primary" type="button" (click)="saveDish()" [disabled]="!canSaveDish() || saving">
             {{ editingDishId === null ? ("Create dish" | translate) : ("Save dish" | translate) }}
           </button>
         } @else {
           <button appButton variant="secondary" type="button" (click)="addMealLine()" [disabled]="saving">
             {{ "Add line" | translate }}
           </button>
-          <button appButton variant="raised" type="button" (click)="saveMeal()" [disabled]="!canSaveMeal() || saving">
+          <button appButton variant="primary" type="button" (click)="saveMeal()" [disabled]="!canSaveMeal() || saving">
             {{ editingMealId === null ? ("Create meal" | translate) : ("Save meal" | translate) }}
           </button>
         }

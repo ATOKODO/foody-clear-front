@@ -20,7 +20,7 @@
       </div>
 
       <div class="mt-6 w-50 flex items-start md:col-span-4 md:items-end">
-        <button appButton variant="raised" type="submit" class="w-full" [disabled]="saving()">
+        <button appButton variant="primary" type="submit" class="w-full" [disabled]="saving()">
           {{ mode() === 'edit' ? ("Update" | translate) : ("Create" | translate) }}
         </button>
       </div>

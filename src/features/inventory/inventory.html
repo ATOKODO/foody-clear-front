@@ -165,7 +165,7 @@
           (submitted)="onFormSubmitted($event)"
           (menuClicked)="onMenuClicked()">
           @if (formMode === 'edit') {
-            <button appButton variant="raised"
+            <button appButton variant="primary"
               inventory-form-header-actions
               type="button"
               (click)="openAddProductsModal()"
@@ -271,7 +271,7 @@
                   [disabled]="saving || editingInventoryProducts.length === 0">
                   {{ "Empty inventory" | translate }}
                 </button>
-                <button appButton variant="raised"
+                <button appButton variant="primary"
                   type="button"
                   (click)="saveManagedProducts()"
                   [disabled]="!canSaveManagedProducts">
@@ -508,7 +508,7 @@
         <button appButton variant="secondary" type="button" (click)="closeActiveModal()" [disabled]="saving">
           {{ "Cancel" | translate }}
         </button>
-        <button appButton variant="raised"
+        <button appButton variant="primary"
           type="button"
           (click)="onAddSelectedProducts()"
           [disabled]="!canAddSelectedProducts">

@@ -267,7 +267,7 @@
     </div>
 
     <div class="flex justify-center pt-2">
-      <button appButton variant="raised" type="submit" [disabled]="saving()" class="rounded-full px-8">
+      <button appButton variant="primary" type="submit" [disabled]="saving()" class="rounded-full px-8">
         {{ "Valider" | translate }}
       </button>
     </div>
@@ -347,7 +347,7 @@
               }
             </section>
             <div class="flex justify-center pt-2">
-              <button appButton variant="raised" type="submit"
+              <button appButton variant="primary" type="submit"
                 [disabled]="!jsonResult().value || saving()">{{ saving() ? ("Ajout en cours…" | translate) : ("Ajouter le produit" | translate) }}</button>
             </div>
           </form>

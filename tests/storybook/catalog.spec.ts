@@ -108,6 +108,26 @@ test('manual scanner lookup also works inside the product creation form', async 
   expect(external).toEqual([]);
 });
 
+test('production creation actions are primary and utility actions are secondary', async ({ page }) => {
+  await page.goto('/iframe.html?id=screens-category--populated&viewMode=story&globals=language:en');
+  const refresh = page.getByRole('button', { name: 'Refresh', exact: true });
+  await expect(refresh).toHaveClass(/app-ui-button--secondary/);
+  const addCategory = page.getByTestId('category-add');
+  await expect(addCategory).toHaveClass(/app-ui-button--primary/);
+  await addCategory.click();
+  await expect(page.getByRole('dialog').getByRole('button', { name: 'Create', exact: true })).toHaveClass(/app-ui-button--primary/);
+
+  await page.goto('/iframe.html?id=screens-statisticfeature--populated&viewMode=story&globals=language:en');
+  await expect(page.getByTestId('stat-refresh')).toHaveClass(/app-ui-button--secondary/);
+
+  await page.goto('/iframe.html?id=components-product-scanner--manual-lookup&viewMode=story&globals=language:en');
+  const search = page.getByRole('button', { name: 'Search for the product', exact: true });
+  await expect(search).toHaveClass(/app-ui-button--secondary/);
+  await page.getByLabel('Product barcode', { exact: true }).fill('3017620422003');
+  await search.click();
+  await expect(page.getByRole('button', { name: 'Use this information', exact: true })).toHaveClass(/app-ui-button--primary/);
+});
+
 test('shopping list creation persists in memory and reload resets the story', async ({ page }) => {
   await page.goto('/iframe.html?id=screens-shoppinglist--populated&viewMode=story&globals=language:en');
   await page.getByRole('button', { name: 'Add', exact: true }).click();
