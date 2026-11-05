@@ -19,7 +19,12 @@
 }
 
 .product-list__search-field {
-  width: min(100%, 30rem);
+  width: 100%;
+  min-width: 0;
+}
+
+.product-list__search-field .mat-mdc-text-field-wrapper {
+  border-radius: var(--app-radius-full);
 }
 
 .product-table [mat-header-row] {
