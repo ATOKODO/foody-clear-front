@@ -62,6 +62,17 @@ test('production actions use primary or secondary instead of raised or filled bu
   assert.equal(scannerApply?.attributes.variant, 'primary');
 });
 
+test('all Edit actions use the shared edit variant without green tone overrides', () => {
+  const buttons = componentTemplates().filter(component => !component.storyOnly)
+    .flatMap(component => component.elements.filter(element => element.tag === 'button' && /["']Edit["']/.test(element.text))
+      .map(button => ({ ...button, owner: component.name })));
+  assert(buttons.length > 0);
+  for (const button of buttons) {
+    assert.equal(button.attributes.variant, 'edit', `${button.owner}:${button.line} must use edit`);
+    assert(!/--(?:primary|secondary)\b/.test(button.attributes.class ?? ''), `${button.owner}:${button.line} overrides the edit tone`);
+  }
+});
+
 test('includes inline production templates but excludes previews from the production report', () => {
   const components = componentTemplates();
   assert(components.find(component => component.name === 'UiErrorPanel').elements.some(element => element.tag === 'pre'));

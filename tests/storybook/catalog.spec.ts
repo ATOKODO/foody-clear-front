@@ -72,6 +72,46 @@ test('every component group has generated API metadata without extraction errors
   for (const group of groups) if (!compositionGroups.has(group)) expect(documented.has(group), group).toBe(true);
 });
 
+for (const theme of ['light', 'dark']) {
+  for (const width of [390, 1440]) {
+    for (const screen of [
+      { story: 'screens-shoppinglist--populated', alternate: 'Shopping template' },
+      { story: 'screens-inventory--populated', alternate: null },
+      { story: 'screens-mealprepfeature--populated', alternate: 'Meals' },
+      { story: 'screens-cyclefeature--populated', alternate: null },
+    ]) {
+      test(`shared blue Edit actions: ${screen.story} ${theme} ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 960 });
+        const globals = `viewMode=story&globals=theme:${theme};language:en`;
+        await page.goto(`/iframe.html?id=ui-button--edit&${globals}`);
+        const reference = page.locator('button.app-ui-button--edit');
+        await expect(reference).toBeVisible();
+        const colors = await reference.evaluate(element => {
+          const style = getComputedStyle(element);
+          return { background: style.backgroundColor, border: style.borderTopColor, text: style.color };
+        });
+        await page.goto(`/iframe.html?id=${screen.story}&${globals}`);
+        const checkEditButtons = async () => {
+          const buttons = page.getByRole('button', { name: 'Edit', exact: true });
+          await expect(buttons.first()).toBeVisible();
+          for (const button of await buttons.all()) {
+            if (!await button.isVisible()) continue;
+            await expect(button).toHaveClass(/app-ui-button--edit/);
+            await expect(button).toHaveCSS('background-color', colors.background);
+            await expect(button).toHaveCSS('border-top-color', colors.border);
+            await expect(button).toHaveCSS('color', colors.text);
+          }
+        };
+        await checkEditButtons();
+        if (screen.alternate) {
+          await page.getByRole('radio', { name: screen.alternate, exact: true }).click();
+          await checkEditButtons();
+        }
+      });
+    }
+  }
+}
+
 for (const variant of variants) {
   for (const story of entries) {
     test(`${variant.theme}/${variant.language}: ${story.title}/${story.name}`, async ({ page }) => {

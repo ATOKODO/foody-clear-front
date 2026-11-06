@@ -81,9 +81,9 @@
                 {{ inventory.productCount === 0 ? ("Empty" | translate) : ("Stocked" | translate) }}
               </span>
               <div selectable-card-actions class="inventory-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                <button appButton variant="secondary"
+                <button appButton variant="edit"
                   type="button"
-                  class="inventory-action inventory-action--secondary"
+                  class="inventory-action"
                   (click)="onEditRequested(inventory)"
                   [disabled]="saving">
                   {{ "Edit" | translate }}

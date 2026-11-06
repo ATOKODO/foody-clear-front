@@ -97,9 +97,9 @@
                   {{ dish.availability?.isInStock ? ("In stock" | translate) : ("Incomplete stock" | translate) }}
                 </span>
                 <div selectable-card-actions class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                  <button appButton variant="secondary"
+                  <button appButton variant="edit"
                     type="button"
-                    class="meal-prep-action meal-prep-action--secondary"
+                    class="meal-prep-action"
                     (click)="openSelectedDishEditor(dish.id)"
                     [disabled]="saving">
                     {{ "Edit" | translate }}
@@ -180,9 +180,9 @@
                   {{ meal.availability?.isInStock ? ("In stock" | translate) : ("Incomplete stock" | translate) }}
                 </span>
                 <div selectable-card-actions class="meal-prep-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                  <button appButton variant="secondary"
+                  <button appButton variant="edit"
                     type="button"
-                    class="meal-prep-action meal-prep-action--secondary"
+                    class="meal-prep-action"
                     (click)="openSelectedMealEditor(meal.id)"
                     [disabled]="saving">
                     {{ "Edit" | translate }}

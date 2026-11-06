@@ -423,7 +423,7 @@
                       class="flex flex-wrap items-center gap-2 xl:max-w-xs xl:justify-end"
                     >
                       @if (isManageMode) {
-                        <button appButton variant="secondary"
+                        <button appButton variant="edit"
                           type="button"
                           [attr.data-testid]="'cycle-edit-' + cycle.id"
                           (click)="stopPropagation($event); onEdit(cycle)"
@@ -698,9 +698,9 @@
                 >
                   {{ (getToggleLabel(cycle.id)) | translate }}
                 </button>
-                <button appButton variant="secondary"
+                <button appButton variant="edit"
                   type="button"
-                  class="lc-footer-action"
+                  class="lc-footer-action lc-footer-action--edit"
                   [attr.data-testid]="'cycle-edit-' + cycle.id"
                   (click)="stopPropagation($event); onEdit(cycle)"
                 >

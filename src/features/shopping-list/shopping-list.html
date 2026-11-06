@@ -87,9 +87,9 @@
                   {{ list.items.length === 0 ? ("Empty" | translate) : ("In progress" | translate) }}
                 </span>
                 <div selectable-card-actions class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                  <button appButton variant="secondary"
+                  <button appButton variant="edit"
                     type="button"
-                    class="shopping-list-action shopping-list-action--secondary"
+                    class="shopping-list-action"
                     (click)="store.openSelectedListEditor(list.id)"
                     [disabled]="store.saving">
                     {{ "Edit" | translate }}
@@ -159,9 +159,9 @@
                 <span selectable-card-content class="shopping-list-list-card__meta">{{ "{p0} produit(s)" | translate: { p0: (template.items.length) } }}</span>
                 <span selectable-card-content appStatusBadge tone="info" size="card" appearance="soft" class="shopping-list-list-card__status">{{ "Template" | translate }}</span>
                 <div selectable-card-actions class="shopping-list-list-card__actions" tabindex="-1" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" (keydown.space)="$event.stopPropagation()">
-                  <button appButton variant="secondary"
+                  <button appButton variant="edit"
                     type="button"
-                    class="shopping-list-action shopping-list-action--secondary"
+                    class="shopping-list-action"
                     (click)="store.openSelectedTemplateEditor(template.id)"
                     [disabled]="store.saving">
                     {{ "Edit" | translate }}
@@ -368,9 +368,9 @@
                     </mat-form-field>
 
                     <div class="shopping-list-line-card__actions">
-                      <button appButton variant="secondary"
+                      <button appButton variant="edit"
                         type="button"
-                        class="shopping-list-action shopping-list-action--secondary"
+                        class="shopping-list-action"
                         (click)="store.saveItem(item)"
                         [disabled]="store.saving">
                         {{ "Edit" | translate }}

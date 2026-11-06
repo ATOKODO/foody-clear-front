@@ -218,6 +218,10 @@
   @include outlined-action-tone(danger);
 }
 
+.lc-footer-action--edit {
+  @include outlined-action-tone(edit);
+}
+
 .lc-toggle-btn:focus-visible,
 .lc-footer-action:focus-visible,
 .lc-card--select-single:focus-visible {
