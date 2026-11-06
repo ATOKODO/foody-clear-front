@@ -25,17 +25,6 @@
 } @else {
   <section class="app-page" data-testid="generic-product-page">
     <mat-card class="overflow-hidden rounded-2xl">
-      <div class="flex items-center justify-between bg-app-hero px-6 py-5 text-app-on-color">
-        <div>
-          <h2 class="text-xl font-semibold">{{ "Produits generics" | translate }}</h2>
-          <p class="mt-1 text-sm text-app-on-color-muted">
-            {{ "Referentiel minimal pour les equivalences de stock." | translate }}
-          </p>
-        </div>
-        <button appButton variant="secondary" type="button" (click)="onRefreshRequested()">
-          {{ "Refresh" | translate }}
-        </button>
-      </div>
       <div class="space-y-4 p-4 sm:p-6">
         <div class="app-status-row">
           @if (loading()) {
@@ -56,7 +45,13 @@
           [genericProducts]="genericProductListItems"
           (addRequested)="onAddRequested()"
           (editRequested)="onEditRequested($event)"
-          (deleteRequested)="onDeleteRequested($event)" />
+          (deleteRequested)="onDeleteRequested($event)">
+          <button appButton variant="secondary" generic-product-list-actions
+            type="button" data-testid="generic-product-refresh"
+            (click)="onRefreshRequested()">
+            {{ "Refresh" | translate }}
+          </button>
+        </app-generic-product-list>
       </div>
     </mat-card>
   </section>

@@ -460,11 +460,14 @@
 }
 
 .calendar-month-day__quick-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   appearance: none;
   min-width: 0;
   border: 1px solid var(--app-border-strong);
   border-radius: 999px;
-  padding: 0.42rem 0.5rem;
+  padding: 0.42rem 0;
   background: var(--app-surface);
   color: var(--app-text-strong);
   font-size: 0.66rem;
@@ -472,6 +475,10 @@
   line-height: 1.1;
   text-align: center;
   transition: var(--app-transition-interactive);
+}
+
+.calendar-month-day__quick-action-label {
+  flex: 0 0 auto;
 }
 
 .calendar-month-day__quick-action:hover {
@@ -492,11 +499,11 @@
   flex-direction: column;
   justify-content: flex-start;
   gap: 0.65rem;
-  border: 1px solid var(--app-tone-border, var(--app-border-soft));
+  border: 1px solid color-mix(in srgb, var(--app-tone-color, var(--app-accent)) 50%, var(--app-border));
   border-radius: 1rem;
   padding: 0.7rem 0.75rem;
-  background: var(--app-tone-background, linear-gradient(135deg, var(--app-text), var(--app-text)));
-  color: var(--app-text-on-color);
+  background: color-mix(in srgb, var(--app-tone-color, var(--app-accent)) 12%, var(--app-surface-solid));
+  color: var(--app-text-strong);
   box-shadow: var(--app-shadow-sm);
 }
 
@@ -545,23 +552,23 @@
   opacity: 0.9;
 }
 
-.calendar-month-day__assignment:not(
-    .calendar-month-day__assignment--insight-only
-  )
-  .calendar-month-day__assignment-type,
-.calendar-month-day__assignment:not(
-    .calendar-month-day__assignment--insight-only
-  )
-  .calendar-month-day__assignment-progress,
-.calendar-month-day__assignment:not(
-    .calendar-month-day__assignment--insight-only
-  )
-  .calendar-month-day__assignment-meta,
 .calendar-week-mobile__assignment-progress,
 .calendar-week-grid__assignment-progress,
 .calendar-day-summary__assignment-progress {
   color: var(--app-surface);
   opacity: 1;
+}
+
+.calendar-month-day__assignment .calendar-month-day__assignment-type,
+.calendar-month-day__assignment .calendar-month-day__assignment-progress,
+.calendar-month-day__assignment .calendar-month-day__assignment-meta {
+  color: var(--app-text);
+  opacity: 1;
+}
+
+.calendar-month-day__assignment-chips .calendar-week-chip,
+.calendar-month-day__alert-list .calendar-month-day__alert-badge {
+  background: var(--app-surface-solid);
 }
 
 .calendar-month-day__assignment--insight-only

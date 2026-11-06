@@ -268,6 +268,116 @@ test('cycle warning copy is documented in the warning-context component story', 
   await expect(card.getByText('Slot breakdown is unavailable for this day set.').first()).toBeVisible();
 });
 
+test('day sets keeps the list and add action without a redundant hero banner', async ({ page }) => {
+  await page.goto('/iframe.html?id=screens-daysetfeature--populated&viewMode=story&globals=language:en');
+  await expect(page.getByTestId('day-set-list')).toBeVisible();
+  await expect(page.getByTestId('day-set-add')).toBeVisible();
+  await expect(page.locator('.bg-app-hero')).toHaveCount(0);
+});
+
+test('slots keeps the list and add action without a redundant hero banner', async ({ page }) => {
+  await page.goto('/iframe.html?id=screens-slotfeature--populated&viewMode=story&globals=language:en');
+  await expect(page.getByTestId('slot-list')).toBeVisible();
+  await expect(page.getByTestId('slot-add')).toBeVisible();
+  await expect(page.locator('.bg-app-hero')).toHaveCount(0);
+});
+
+for (const theme of ['light', 'dark']) {
+  for (const width of [390, 834, 1440]) {
+    test(`calendar item counters stay on one centered line in ${theme} at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 960 });
+      await page.goto(`/iframe.html?id=components-calendar--day&viewMode=story&globals=theme:${theme};language:en`);
+      const counters = page.locator('.calendar-week-meta-pill').filter({ hasText: /\bitems$/ });
+      await expect(counters).toHaveCount(2);
+      for (const counter of await counters.all()) {
+        await expect(counter).toHaveCSS('white-space', 'nowrap');
+        const text = await counter.evaluate(element => {
+          const range = document.createRange();
+          range.selectNodeContents(element);
+          const text = range.getBoundingClientRect();
+          const pill = element.getBoundingClientRect();
+          return { lines: range.getClientRects().length, centerOffset: (text.left + text.right - pill.left - pill.right) / 2 };
+        });
+        expect(text.lines).toBe(1);
+        expect(Math.abs(text.centerOffset)).toBeLessThanOrEqual(1);
+      }
+    });
+  }
+
+  test(`monthly cycle cards retain readable text and tags in ${theme} mode`, async ({ page }) => {
+    await page.goto(`/iframe.html?id=components-calendar--month&viewMode=story&globals=theme:${theme};language:en`);
+    const card = page.getByTestId('calendar-month-day-2026-03-25').locator('.calendar-month-day__assignment');
+    await expect(card).toBeVisible();
+    for (const tone of ['blue', 'green', 'red', 'orange', 'violet', 'pink', 'amber']) {
+      const contrasts = await card.evaluate((element, tone) => {
+        element.classList.remove(...Array.from(element.classList).filter(name => name.startsWith('app-tone--')));
+        element.classList.add(`app-tone--${tone}`);
+        const context = document.createElement('canvas').getContext('2d')!;
+        const luminance = () => {
+          const rgb = Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3)
+            .map(value => value / 255)
+            .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+          return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+        };
+        const background = getComputedStyle(element).backgroundColor;
+        const nodes = element.querySelectorAll('.calendar-month-day__assignment-type, .calendar-month-day__assignment-title, .calendar-month-day__assignment-progress, .calendar-month-day__assignment-meta, .app-calendar-tag');
+        return Array.from(nodes, node => {
+          const style = getComputedStyle(node);
+          context.fillStyle = background;
+          context.fillRect(0, 0, 1, 1);
+          context.fillStyle = style.backgroundColor;
+          context.fillRect(0, 0, 1, 1);
+          const bg = luminance();
+          context.fillStyle = style.color;
+          context.fillRect(0, 0, 1, 1);
+          const fg = luminance();
+          return { text: node.textContent?.trim(), contrast: (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05) };
+        });
+      }, tone);
+      expect(contrasts.length).toBeGreaterThan(2);
+      for (const result of contrasts) expect(result.contrast, `${tone}: ${result.text}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+}
+
+for (const width of [390, 1440]) {
+  test(`generic products groups Refresh and Add without a hero at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 960 });
+    await page.goto('/iframe.html?id=screens-genericproduct--populated&viewMode=story&globals=language:en');
+    const refresh = page.getByTestId('generic-product-refresh');
+    const add = page.getByTestId('generic-product-add');
+    await expect(refresh).toBeVisible();
+    await expect(add).toBeVisible();
+    await expect(page.locator('.bg-app-hero')).toHaveCount(0);
+    await expect(add.locator('..')).toContainText('Refresh');
+    await refresh.click();
+    await expect(page.getByTestId('generic-product-list')).toBeVisible();
+    await add.click();
+    await expect(page.getByTestId('generic-product-dialog')).toBeVisible();
+  });
+}
+
+for (const width of [834, 1440, 1512]) {
+  test(`French calendar Entry label is centered at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto('/iframe.html?id=components-calendar--month&viewMode=story&globals=language:fr');
+    const button = page.getByTestId('calendar-month-manage-items-2026-03-25');
+    const label = button.locator('.calendar-month-day__quick-action-label');
+    await expect(label).toBeVisible();
+    await expect(label).toHaveText('Entrée');
+    const bounds = await label.evaluate(element => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const text = range.getBoundingClientRect();
+      const button = element.closest('button')!.getBoundingClientRect();
+      return { offsetX: (text.left + text.right - button.left - button.right) / 2,
+        offsetY: (text.top + text.bottom - button.top - button.bottom) / 2 };
+    });
+    expect(Math.abs(bounds.offsetX)).toBeLessThanOrEqual(1);
+    expect(Math.abs(bounds.offsetY)).toBeLessThanOrEqual(2);
+  });
+}
+
 test('calendar template revert action uses the shared compact edit button', async ({ page }) => {
   await page.goto('/iframe.html?id=components-calendar--template-revert-action&viewMode=story&globals=language:en');
   const button = page.getByTestId(/^calendar-day-revert-template-/);

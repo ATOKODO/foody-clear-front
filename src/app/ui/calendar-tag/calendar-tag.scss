@@ -101,6 +101,9 @@
 }
 
 :host(.app-calendar-tag--meta) {
+  flex: 0 0 auto;
+  justify-content: center;
+  white-space: nowrap;
   padding: 0.36rem 0.68rem;
   border: 1px solid var(--app-border-strong);
 }

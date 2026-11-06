@@ -314,7 +314,7 @@
                                     [attr.data-testid]="'calendar-month-alerts-' + day.date"
                                     class="calendar-month-day__alert-list">
                                     @for (badge of alertBadges; track trackByMonthAlertBadge($index, badge)) {
-                                      <span appCalendarTag variant="alert" [tone]="badge.tone" [context]="day.assignment ? 'on-color' : 'surface'"
+                                      <span appCalendarTag variant="alert" [tone]="badge.tone" context="surface"
                                         class="calendar-month-day__alert-badge">
                                         {{ (badge.text) | translate }}
                                       </span>

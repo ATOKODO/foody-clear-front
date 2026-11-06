@@ -83,16 +83,19 @@
     class="w-full"
     [class]="compact() ? '' : 'mx-auto max-w-6xl px-4 py-6'">
     <mat-card class="overflow-hidden rounded-2xl" [class.shadow-none]="compact()">
-      <div class="flex items-center justify-between gap-3 border-b border-app-border bg-app-surface-soft px-4 py-3 sm:px-6">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-app-border bg-app-surface-soft px-4 py-3 sm:px-6">
         <h2 class="text-base font-semibold text-app-text-strong">{{ "Generic Products" | translate }}</h2>
         @if (isManageMode) {
-          <button appButton variant="primary"
-            type="button"
-            data-testid="generic-product-add"
-            class="add-btn"
-            (click)="onAddClick()">
-            {{ "Add" | translate }}
-          </button>
+          <div class="flex flex-wrap items-center gap-2">
+            <ng-content select="[generic-product-list-actions]" />
+            <button appButton variant="primary"
+              type="button"
+              data-testid="generic-product-add"
+              class="add-btn"
+              (click)="onAddClick()">
+              {{ "Add" | translate }}
+            </button>
+          </div>
         }
       </div>
       @if (hasItems) {
