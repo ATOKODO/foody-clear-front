@@ -218,13 +218,10 @@ $breakpoints: (
   --app-action-secondary-bg: var(--mat-sys-secondary-container);
   --app-action-secondary-border: var(--mat-sys-secondary);
   --app-action-secondary-text: var(--mat-sys-on-secondary-container);
-  --app-action-edit-bg: color-mix(
-    in srgb,
-    var(--app-warning-color) 24%,
-    var(--app-surface-solid)
-  );
-  --app-action-edit-border: var(--app-warning-color);
-  --app-action-edit-text: light-dark(#544600, #fff8eb);
+  // Use the theme's azure palette to distinguish editing from destructive red.
+  --app-action-edit-bg: var(--mat-sys-tertiary-container);
+  --app-action-edit-border: var(--mat-sys-tertiary);
+  --app-action-edit-text: var(--mat-sys-on-tertiary-container);
   --app-action-danger-bg: var(--mat-sys-error-container);
   --app-action-danger-border: var(--mat-sys-error);
   --app-action-danger-text: var(--mat-sys-on-error-container);

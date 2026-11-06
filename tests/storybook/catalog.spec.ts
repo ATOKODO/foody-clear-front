@@ -9,6 +9,52 @@ const variants = [
   { theme: 'dark', language: 'fr', width: 390, height: 844 },
 ];
 
+for (const theme of ['light', 'dark']) {
+  test(`edit button keeps readable blue styling in ${theme} mode`, async ({ page }) => {
+    await page.goto(`/iframe.html?id=ui-button--edit&viewMode=story&globals=theme:${theme};language:en`);
+    const button = page.locator('button.app-ui-button--edit');
+    await expect(button).toBeVisible();
+    const colors = await button.evaluate(element => {
+      const context = document.createElement('canvas').getContext('2d')!;
+      const luminance = (color: string) => {
+        context.fillStyle = color;
+        context.fillRect(0, 0, 1, 1);
+        const rgb = Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3)
+          .map(value => value / 255)
+          .map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+        return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+      };
+      const style = getComputedStyle(element);
+      const text = luminance(style.color);
+      const background = luminance(style.backgroundColor);
+      context.fillStyle = style.backgroundColor;
+      context.fillRect(0, 0, 1, 1);
+      const [red, , blue] = context.getImageData(0, 0, 1, 1).data;
+      return { contrast: (Math.max(text, background) + 0.05) / (Math.min(text, background) + 0.05), red, blue };
+    });
+    expect(colors.contrast).toBeGreaterThanOrEqual(4.5);
+    expect(colors.blue).toBeGreaterThan(colors.red);
+  });
+
+  for (const width of [390, 1440]) {
+    test(`catalogue has no decorative gradient in ${theme} mode at ${width}px`, async ({ page }, testInfo) => {
+      await page.setViewportSize({ width, height: 960 });
+      await page.goto(`/iframe.html?id=screens-product--populated&viewMode=story&globals=theme:${theme};language:en`);
+      const catalogue = page.getByTestId('product-page');
+      await expect(catalogue).toBeVisible();
+      await expect(catalogue).toHaveCSS('background-image', 'none');
+      await expect(catalogue).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      const decoration = await catalogue.evaluate(element => {
+        const style = getComputedStyle(element, '::before');
+        return { content: style.content, backgroundImage: style.backgroundImage };
+      });
+      expect(decoration).toEqual({ content: 'none', backgroundImage: 'none' });
+      await expect(page.getByTestId('catalogue-view-toggle')).toBeVisible();
+      await page.screenshot({ path: testInfo.outputPath('catalogue.png') });
+    });
+  }
+}
+
 test('every component group has generated API metadata without extraction errors', () => {
   const groups = new Set(entries.map(entry => entry.id.split('--')[0]));
   const directory = 'dist/storybook/services/core/docgen';
