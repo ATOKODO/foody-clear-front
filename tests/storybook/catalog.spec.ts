@@ -163,6 +163,28 @@ test('segmented control updates selection and modal restores focus', async ({ pa
   await expect(trigger).toBeFocused();
 });
 
+for (const width of [390, 834, 1024, 1440, 1512]) {
+  test(`planning view options remain pill-shaped at ${width}px`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: 982 });
+    await page.goto('/iframe.html?id=screens-planningfeature--populated&viewMode=story&globals=language:en');
+    const group = page.getByTestId('planning-view-toggle');
+    await expect(group).toBeVisible();
+    const buttons = group.locator('mat-button-toggle');
+    await expect(buttons).toHaveCount(4);
+    const groupBounds = (await group.boundingBox())!;
+    for (const button of await buttons.all()) {
+      const bounds = (await button.boundingBox())!;
+      expect(bounds.width / bounds.height).toBeGreaterThanOrEqual(1.5);
+      expect(bounds.x).toBeGreaterThanOrEqual(groupBounds.x);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(groupBounds.x + groupBounds.width);
+      await expect(button).toHaveCSS('border-radius', '999px');
+    }
+    await group.screenshot({ path: testInfo.outputPath('planning-view-toggle.png') });
+    await group.getByRole('radio', { name: 'Week', exact: true }).click();
+    await expect(group.getByRole('radio', { name: 'Week', exact: true })).toBeChecked();
+  });
+}
+
 test('Controls update inputs, Actions record outputs and Autodocs exposes the API', async ({ page }) => {
   await page.goto('/?path=/story/ui-segmented-toggle--interactive');
   await page.getByRole('tab', { name: 'Controls' }).click();

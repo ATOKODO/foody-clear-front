@@ -95,6 +95,8 @@
 }
 
 .planning-feature__view-toggle {
+  --app-segmented-toggle-height: 2.5rem;
+  --app-segmented-toggle-min-width: 4.5rem;
   width: 100%;
   display: block;
 }
@@ -328,6 +330,10 @@
 }
 
 @include ds.media-up(shell) {
+  .planning-feature__view-toggle {
+    min-width: 22rem;
+  }
+
   .planning-feature__header {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;

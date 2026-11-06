@@ -12,7 +12,7 @@
 }
 
 .segmented-toggle {
-  --segmented-toggle-height: 3.25rem;
+  --segmented-toggle-height: var(--app-segmented-toggle-height, 3.25rem);
 
   @include mat.button-toggle-overrides(
     (
@@ -42,7 +42,7 @@
 .segmented-toggle mat-button-toggle {
   display: block;
   flex: 1 1 0;
-  min-width: 0;
+  min-width: min(100%, var(--app-segmented-toggle-min-width, 0px));
   min-height: var(--segmented-toggle-height);
   overflow: hidden;
   border: 2px solid var(--app-action-secondary-border);
