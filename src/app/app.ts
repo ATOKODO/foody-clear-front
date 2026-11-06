@@ -3,7 +3,7 @@ import { UiAlert } from './ui/alert/alert';
 import { UiButton } from './ui/button/button';
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Component, DestroyRef, inject } from '@angular/core';
+import { afterNextRender, Component, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
 import {
   NavigationEnd,
   Params,
@@ -32,10 +32,13 @@ import { TranslatePipe } from './i18n/translate-pipe';
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {
+    '[style.--app-shell-header-height.px]': 'headerHeight()',
     '(document:keydown.escape)': 'onEscapeKey()',
   },
 })
 export class App {
+  protected readonly headerHeight = signal<number | null>(null);
+  private readonly shellHeader = viewChild.required<ElementRef<HTMLElement>>('shellHeader');
   readonly language = inject(Language);
   readonly pwa = inject(PwaService);
   readonly navigationGroups = APP_SIDEBAR_NAVIGATION;
@@ -49,6 +52,15 @@ export class App {
   private readonly themeService = inject(ThemeService);
 
   constructor() {
+    afterNextRender(() => {
+      const header = this.shellHeader().nativeElement;
+      const updateHeight = () => this.headerHeight.set(header.getBoundingClientRect().height);
+      const observer = new ResizeObserver(updateHeight);
+      observer.observe(header, { box: 'border-box' });
+      updateHeight();
+      this.destroyRef.onDestroy(() => observer.disconnect());
+    });
+
     this.syncNavigationContext(this.router.url);
 
     this.router.events

@@ -1,6 +1,7 @@
 @use "mixins";
 
 :host {
+  --app-shell-header-height: 6.25rem;
   display: block;
   min-height: 100%;
 }
@@ -398,12 +399,25 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+@include mixins.media-up(shell) {
+  .app-shell__sidebar {
+    padding-top: 0;
+  }
+
+  .app-shell__brand {
+    min-height: var(--app-shell-header-height);
+    flex-shrink: 0;
+    padding-block: 1rem;
+  }
+}
+
 @include mixins.media-down(shell) {
   .app-shell {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .app-shell__sidebar {
+    padding-top: max(1.25rem, env(safe-area-inset-top));
     position: fixed;
     left: 0;
     width: min(20rem, calc(100vw - 2.5rem));
@@ -413,6 +427,12 @@
 
   .app-shell__sidebar--open {
     transform: translateX(0);
+  }
+
+  .app-shell__brand {
+    min-height: auto;
+    flex-shrink: 1;
+    padding-block: 0.35rem 0.8rem;
   }
 
   .app-shell__menu-button {

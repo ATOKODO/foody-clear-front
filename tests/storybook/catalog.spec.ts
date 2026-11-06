@@ -451,6 +451,32 @@ test('shell navigation stays inside the canvas and uses isolated data', async ({
   await expect(page.locator('app-ui-error-panel')).toHaveCount(0);
 });
 
+for (const theme of ['light', 'dark']) {
+  for (const width of [1100, 1440, 1512]) {
+    test(`shell divider lines stay aligned in ${theme} at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 982 });
+      await page.goto(`/iframe.html?id=application-shell--home&viewMode=story&globals=theme:${theme};language:en`);
+      const header = page.locator('.app-shell__header');
+      const brand = page.locator('.app-shell__brand');
+      await expect(header).toBeVisible();
+      const checkAlignment = async () => {
+        await expect.poll(async () => {
+          const [headerBox, brandBox] = await Promise.all([header.boundingBox(), brand.boundingBox()]);
+          return Math.abs(headerBox!.y + headerBox!.height - brandBox!.y - brandBox!.height);
+        }).toBeLessThanOrEqual(1);
+      };
+      await checkAlignment();
+      await page.getByTestId('language-fr').click();
+      await checkAlignment();
+      await page.locator('a[href="/shopping-list"]').click();
+      await expect(page.getByTestId('shopping-list-page')).toBeVisible();
+      await checkAlignment();
+      await page.setViewportSize({ width: width === 1100 ? 1512 : 1100, height: 982 });
+      await checkAlignment();
+    });
+  }
+}
+
 test('shared buttons support keyboard activation, disabled/loading states and accessible icons', async ({ page }) => {
   await page.goto('/iframe.html?id=ui-button--primary&viewMode=story');
   const button = page.getByRole('button', { name: 'Save', exact: true });
