@@ -24,7 +24,7 @@ The suite starts its own development server at **127.0.0.1:4400** and does not r
 
 ## Coverage and profiles
 
-All 16 registered routes have populated-page scenarios. Additional cases cover calendar year/week/day views, product creation, the nested inventory product picker, shopping-list empty/error states and mobile navigation. French cases cover Home, Calendar, product creation and the shopping-list error state.
+All 16 registered routes use the full household mock: 31 products, five stock locations, five training/recovery cycles and 45 days of recorded food. Shopping and meal-prep responses come from the same shared handlers as Storybook, including stock-based recipe availability. Additional cases cover calendar year/week/day views, product creation, the nested inventory product picker, shopping-list empty/error states and mobile navigation. French cases cover Home, Calendar, product creation and the shopping-list error state.
 
 Each viewport runs in both light and dark themes:
 

@@ -1,6 +1,5 @@
 import type { Page, Request } from '@playwright/test';
-import type { PreparedDish, PreparedMeal } from '../../src/interfaces/meal-prep.interface';
-import type { ShoppingList, ShoppingListTemplate } from '../../src/interfaces/shopping-list.interface';
+import { createRealisticMockApiState } from '../mocks/realistic-state';
 import { expect, test as base } from '../fixtures/test';
 
 type VisualFixtures = {
@@ -63,38 +62,7 @@ export const test = base.extend<VisualFixtures>({
       errors.push(`Unexpected external dependency: ${route.request().url()}`);
       return route.abort();
     });
-    mockApi.state.cycles.forEach((cycle) => { cycle.color = 'blue'; });
-
-    // These read-only endpoints are not part of the existing CRUD mock backend.
-    // Keep their visual data typed against the application's API contracts.
-    const products = mockApi.state.products;
-    const shoppingLists: ShoppingList[] = [{ id: 1, name: 'Weekly groceries', items: [
-      { id: 1, productId: 1, product: products[0], qty: 6, qtyUnit: 'unit', checked: true },
-      { id: 2, productId: 2, product: products[1], qty: 500, qtyUnit: 'g', checked: false },
-    ] }];
-    const templates: ShoppingListTemplate[] = [{ id: 1, name: 'Pantry essentials', items: [
-      { id: 1, productId: 3, product: products[2], qty: 1, qtyUnit: 'unit' },
-    ] }];
-    const dishes: PreparedDish[] = [{ id: 1, name: 'Chicken and rice', items: [
-      { id: 1, productId: 2, product: products[1], qty: 125, qtyUnit: 'g' },
-      { id: 2, productId: 3, product: products[2], qty: 100, qtyUnit: 'g' },
-    ], availability: { isInStock: true, maxPreparations: 4, missingProducts: [] } }];
-    const meals: PreparedMeal[] = [{ id: 1, name: 'Training lunch', items: [
-      { id: 1, itemType: 'dish', dishId: 1, dish: dishes[0], qty: 1, qtyUnit: 'unit' },
-    ], availability: { isInStock: false, maxPreparations: 0, missingProducts: [
-      { productId: 2, productName: 'Chicken breast', requiredQtyNormalized: 2500, availableQtyNormalized: 2000, missingQtyNormalized: 500 },
-    ] } }];
-    const extra: Record<string, unknown> = {
-      '/shopping-list': shoppingLists,
-      '/shopping-list/templates': templates,
-      '/meal-prep/dishes': dishes,
-      '/meal-prep/meals': meals,
-    };
-    await page.route('http://localhost:3000/**', (route) => {
-      const path = new URL(route.request().url()).pathname;
-      if (route.request().method() === 'GET' && path in extra) return route.fulfill({ json: extra[path] });
-      return route.fallback();
-    });
+    mockApi.reset(createRealisticMockApiState());
 
     await use({
       open: async (path, testId) => {

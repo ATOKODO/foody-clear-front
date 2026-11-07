@@ -446,7 +446,7 @@ test('shell navigation stays inside the canvas and uses isolated data', async ({
   await expect(page.locator('.app-shell__header-title')).toHaveText('Home');
   await page.locator('.app-shell__nav-link').filter({ hasText: 'Shopping list' }).click();
   await expect(page.getByTestId('shopping-list-page')).toBeVisible();
-  await expect(page.locator('.shopping-list-list-card__title').first()).toHaveText('Weekly groceries');
+  await expect(page.locator('.shopping-list-list-card__title').filter({ hasText: 'Weekly groceries — recovery & training' })).toBeVisible();
   await expect(page).toHaveURL(/\/iframe\.html\?/);
   await expect(page.locator('app-ui-error-panel')).toHaveCount(0);
 });

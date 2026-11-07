@@ -165,6 +165,7 @@ export type MockNutritionKeyMeta = {
 };
 
 export type MockApiState = {
+  profile?: 'minimal' | 'realistic';
   timezone: string;
   quantityUnits: MockQuantityUnitMeta[];
   nutritionKeys: MockNutritionKeyMeta[];
@@ -216,6 +217,7 @@ function priceHistory(
 
 export function createMockApiState(): MockApiState {
   return {
+    profile: 'minimal',
     timezone: 'Europe/Paris',
     quantityUnits: [
       { key: 'MG', value: 'mg', label: 'Milligram (mg)', dimension: 'mass', factor: 0.001 },

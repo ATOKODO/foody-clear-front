@@ -11,7 +11,8 @@ import { PwaService } from '../../src/services/pwa-service';
 import { OpenFoodFactsService } from '../../src/services/open-food-facts-service';
 import { demoFoodFactsProduct } from './food-facts';
 import { routes } from '../../src/app/app.routes';
-import { createMockApiState, type MockApiState } from '../../tests/mocks/state';
+import type { MockApiState } from '../../tests/mocks/state';
+import { createRealisticMockApiState } from '../../tests/mocks/realistic-state';
 import type { MockApiRequestContext } from '../../tests/mocks/shared';
 import { handleCatalogRequest } from '../../tests/mocks/handlers/catalog';
 import { handlePlanningRequest } from '../../tests/mocks/handlers/planning';
@@ -53,7 +54,7 @@ const storyApi: HttpInterceptorFn = (request) => {
 };
 
 function scenarioState(scenario: Scenario): MockApiState {
-  const state = createMockApiState();
+  const state = createRealisticMockApiState();
   if (scenario === 'empty') {
     for (const key of Object.keys(state) as (keyof MockApiState)[]) {
       if (Array.isArray(state[key]) && key !== 'quantityUnits' && key !== 'nutritionKeys') {

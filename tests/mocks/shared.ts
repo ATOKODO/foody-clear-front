@@ -274,23 +274,20 @@ export function getActiveAssignmentForDate(
 
   for (let index = 0; index < sortedAssignments.length; index += 1) {
     const assignment = sortedAssignments[index];
-    const nextAssignment = sortedAssignments[index + 1] ?? null;
     const cycle = getCycle(state, assignment.cycleId);
     if (!cycle) {
       continue;
     }
 
     const start = DateTime.fromISO(assignment.startDateLocal);
-    const end = nextAssignment
-      ? DateTime.fromISO(nextAssignment.startDateLocal).minus({ days: 1 })
-      : start.plus({ days: 365 });
+    const end = start.plus({ days: Math.max(1, cycle.durationDays) - 1 });
     const current = DateTime.fromISO(dateLocal);
     if (current < start || current > end) {
       continue;
     }
 
     const diffDays = Math.max(0, Math.floor(current.diff(start, 'days').days));
-    const dayIndex = cycle.durationDays > 0 ? (diffDays % cycle.durationDays) + 1 : 1;
+    const dayIndex = diffDays + 1;
 
     return {
       assignment,
@@ -356,14 +353,7 @@ export function hydrateCycleAssignment(
     return null;
   }
 
-  const sortedAssignments = [...state.cycleAssignments].sort((left, right) =>
-    left.startDateLocal.localeCompare(right.startDateLocal),
-  );
-  const currentIndex = sortedAssignments.findIndex((entry) => entry.id === assignment.id);
-  const nextAssignment = currentIndex >= 0 ? sortedAssignments[currentIndex + 1] ?? null : null;
-  const endDateLocal = nextAssignment
-    ? DateTime.fromISO(nextAssignment.startDateLocal).minus({ days: 1 }).toISODate()
-    : dateLocalPlus(assignment.startDateLocal, 365);
+  const endDateLocal = dateLocalPlus(assignment.startDateLocal, Math.max(1, cycle.durationDays) - 1);
 
   return {
     id: assignment.id,

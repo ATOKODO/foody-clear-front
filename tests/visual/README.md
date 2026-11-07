@@ -8,6 +8,12 @@ language. French scenarios translate the interface while keeping those sample na
 The VitePress [visual regression guide](../../docs/development/visual-regression.md)
 also documents this workflow in the development section of the documentation site.
 
+Populated scenarios use `createRealisticMockApiState()` from `tests/mocks/realistic-state.ts`:
+31 products, five inventories, five recovery/bulking/cutting/maintenance cycles,
+multiple templates and assignments, and 45 days of food history. Shopping and recipes
+share `tests/mocks/supplementary.ts` with Storybook, including real stock availability
+calculations. The small CRUD fixture remains available for focused functional tests.
+
 ## Run
 
 The reference environment is **Ubuntu 24.04, Node 24, Playwright 1.58.2 and its bundled

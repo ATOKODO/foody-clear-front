@@ -48,13 +48,21 @@ The application tests and visual suite use an in-memory API; they do not need th
 | Location | Responsibility |
 | --- | --- |
 | `tests/mocks/state.ts` | English sample products, inventories, slots, plans and metadata |
+| `tests/mocks/realistic-state.ts` | Full household scenario used by screen previews and visual comparisons |
 | `tests/mocks/backend.ts` and `tests/mocks/handlers/` | Playwright request interception and in-memory CRUD responses |
+| `tests/mocks/supplementary.ts` | Shared shopping, recipe availability and external-entry handlers |
 | `tests/mocks/factories/` | Builders for additional test records |
 | `tests/fixtures/test.ts` | Fresh mock state, default English interface and fixed clock per test |
-| `tests/visual/fixture.ts` | Visual readiness checks and extra shopping/meal-prep responses |
-| `stories/support/environment.ts` and `supplementary-api.ts` | Storybook HTTP adapter and extra feature scenarios |
+| `tests/visual/fixture.ts` | Realistic mock setup and visual readiness checks |
+| `stories/support/environment.ts` and `supplementary-api.ts` | Storybook HTTP adapter and re-export of the shared supplementary API |
 
 Import `test` and `expect` from `tests/fixtures/test.ts` in application tests. The automatic fixture installs the mock and provides `mockApi`; change its state before opening a page when a scenario needs different data. Requests to unhandled application API paths return 501 rather than reaching the real backend. Add a typed fixture and handler for a new endpoint.
+
+Functional CRUD tests start with the small `createMockApiState()` fixture. Storybook's populated screens and the visual suite use `createRealisticMockApiState()`: **31 products, 10 categories, nine tags, five stock locations, six time slots, six daily templates, eight day sets, five cycles and nine assignments**. The cycles cover recovery/deload, lean bulking, cutting, maintenance and plant-based recovery. A deterministic 45-day history contains 450 food entries; shopping and meal prep add eight dishes, six meals, four shopping lists and three shopping templates.
+
+This fictional dataset includes long names, mass/volume/portion quantities, multiple price versions, incomplete product metadata, low ingredient stocks, an empty inventory and partially checked lists. It is checked into the repository and does not read or import a personal database. To use it in an application test, call `mockApi.reset(createRealisticMockApiState())` before navigation, importing the factory from `tests/mocks/realistic-state.ts`. Resetting also rebuilds the supplementary state and mutation IDs.
+
+To explore it interactively, run `npm run storybook` and open **Application → Shell → Home** or any **Screens → Populated** story. Theme, language, component controls and the viewport toolbar remain available. Mutations stay in the story's memory, and a reload restores the seed.
 
 Sample names stay in English when the interface switches to French. UI translation applies to application labels, not stored product or inventory names. Contract values such as `Paquet`, `Unite`, `unite` and `jour` retain their API spelling; see [Units and nutrition](../reference/units-nutrition.md).
 
