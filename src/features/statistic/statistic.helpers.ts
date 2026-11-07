@@ -174,6 +174,7 @@ export function formatStatisticMetricValue(
 export function formatStatisticDateTime(
   value: string | null | undefined,
   timezone: string,
+  locale = 'en-GB',
 ): string {
   if (!value) {
     return '--';
@@ -184,12 +185,14 @@ export function formatStatisticDateTime(
     return value;
   }
 
-  return parsed.setZone(timezone).toFormat('dd/LL HH:mm');
+  return parsed.setZone(timezone).setLocale(locale).toLocaleString(DateTime.DATETIME_SHORT);
 }
 
-export function formatStatisticDate(value: string): string {
+export function formatStatisticDate(value: string, locale = 'en-GB', style: 'compact' | 'full' = 'compact'): string {
   const parsed = DateTime.fromISO(value);
-  return parsed.isValid ? parsed.toFormat('dd/LL') : value;
+  return parsed.isValid
+    ? parsed.setLocale(locale).toLocaleString(style === 'full' ? DateTime.DATE_MED : { day: '2-digit', month: '2-digit' })
+    : value;
 }
 
 export function formatStatisticPriceChangeUnit(

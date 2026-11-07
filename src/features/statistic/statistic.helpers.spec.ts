@@ -25,6 +25,14 @@ import { STATISTIC_METRIC_OPTIONS } from './statistic.models';
 import type { StatisticsTimelineDay, StatisticsTimelineResponse } from '../../interfaces/statistics.interface';
 
 describe('statistic helpers', () => {
+  it('formats full local dates in the selected language and timestamps in the requested timezone', () => {
+    expect(formatStatisticDate('2026-02-24', 'en-GB', 'full')).toBe('24 Feb 2026');
+    expect(formatStatisticDate('2026-02-24', 'fr-FR', 'full')).toBe('24 févr. 2026');
+    expect(formatStatisticDate('invalid', 'fr-FR', 'full')).toBe('invalid');
+    expect(formatStatisticDateTime('2026-03-29T01:30:00Z', 'Europe/Paris', 'fr-FR')).toContain('29/03/2026');
+    expect(formatStatisticDateTime('2026-03-29T01:30:00Z', 'Europe/Paris', 'fr-FR')).toContain('03:30');
+  });
+
   const day: StatisticsTimelineDay = {
     dateLocal: '2026-02-16',
     expenses: { totalAmount: 12.5, purchaseCount: 2, incompletePurchaseCount: 0, events: [] },

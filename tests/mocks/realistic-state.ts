@@ -48,6 +48,7 @@ const productSeeds: ProductSeed[] = [
 ];
 
 const targets = (protein: number, carbs: number, fat: number) => [
+  { nutritionKey: 'ENERGY_KCAL', amount: protein * 4 + carbs * 4 + fat * 9, unit: 'KCAL', reference: 'PER_100G' as const },
   { nutritionKey: 'PROTEIN', amount: protein, unit: 'G', reference: 'PER_100G' as const },
   { nutritionKey: 'CARBOHYDRATE', amount: carbs, unit: 'G', reference: 'PER_100G' as const },
   { nutritionKey: 'FAT', amount: fat, unit: 'G', reference: 'PER_100G' as const },

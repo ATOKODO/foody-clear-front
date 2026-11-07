@@ -107,7 +107,7 @@
           <div>
             <h2>{{ "Timeline des spending" | translate }}</h2>
             <p>
-              {{ "{p0} au {p1} | {p2}" | translate: { p0: (timeline.fromDateLocal), p1: (timeline.toDateLocal), p2: (timeline.timezone) } }}
+              {{ "{p0} au {p1} | {p2}" | translate: { p0: (formatFullDate(timeline.fromDateLocal)), p1: (formatFullDate(timeline.toDateLocal)), p2: (timeline.timezone) } }}
             </p>
           </div>
         </div>
@@ -144,7 +144,7 @@
       <mat-card appearance="outlined" class="stat-card">
         <div class="stat-card__head">
           <div>
-            <h2>{{ "Detail du {p0}" | translate: { p0: (day.dateLocal) } }}</h2>
+            <h2>{{ "Detail du {p0}" | translate: { p0: (formatFullDate(day.dateLocal)) } }}</h2>
             <p>
               {{ "{p0} evenement(s) | {p1}" | translate: { p0: (day.expenses.events.length), p1: (selectedDayExpenseTotal) } }}
             </p>
@@ -262,10 +262,10 @@
       }
     </mat-card>
     @if (selectedTimelineDay; as day) {
-      <mat-card appearance="outlined" class="stat-card">
+      <mat-card appearance="outlined" class="stat-card" data-testid="stat-target-details">
         <div class="stat-card__head">
           <div>
-            <h2>{{ "Detail du {p0}" | translate: { p0: (day.dateLocal) } }}</h2>
+            <h2>{{ "Detail du {p0}" | translate: { p0: (formatFullDate(day.dateLocal)) } }}</h2>
             <p>{{ "{p0} | source {p1}" | translate: { p0: (metricLabel | translate), p1: (formatTargetSource(day.inputs.targetSource)) } }}</p>
           </div>
         </div>

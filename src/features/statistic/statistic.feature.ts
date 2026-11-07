@@ -288,11 +288,15 @@ export class StatisticFeature implements OnInit {
   }
 
   formatDateTime(value: string | null | undefined): string {
-    return formatStatisticDateTime(value, this.timezone);
+    return formatStatisticDateTime(value, this.timezone, this.language.locale());
   }
 
   formatDate(value: string): string {
-    return formatStatisticDate(value);
+    return formatStatisticDate(value, this.language.locale());
+  }
+
+  formatFullDate(value: string): string {
+    return formatStatisticDate(value, this.language.locale(), 'full');
   }
 
   formatPriceChangeUnit(value: ProductPriceUnit | null | undefined): string {

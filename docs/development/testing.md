@@ -62,6 +62,8 @@ Functional CRUD tests start with the small `createMockApiState()` fixture. Story
 
 This fictional dataset includes long names, mass/volume/portion quantities, multiple price versions, incomplete product metadata, low ingredient stocks, an empty inventory and partially checked lists. It is checked into the repository and does not read or import a personal database. To use it in an application test, call `mockApi.reset(createRealisticMockApiState())` before navigation, importing the factory from `tests/mocks/realistic-state.ts`. Resetting also rebuilds the supplementary state and mutation IDs.
 
+The realistic planning fixtures include explicit `ENERGY_KCAL` targets alongside protein, carbohydrate and fat targets. The mock preserves those calorie values and computes deltas only for defined targets. An absent target remains unavailable rather than being interpreted as zero.
+
 To explore it interactively, run `npm run storybook` and open **Application → Shell → Home** or any **Screens → Populated** story. Theme, language, component controls and the viewport toolbar remain available. Mutations stay in the story's memory, and a reload restores the seed.
 
 Sample names stay in English when the interface switches to French. UI translation applies to application labels, not stored product or inventory names. Contract values such as `Paquet`, `Unite`, `unite` and `jour` retain their API spelling; see [Units and nutrition](../reference/units-nutrition.md).

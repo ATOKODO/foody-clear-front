@@ -231,10 +231,23 @@
 }
 
 .target-detail-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
   padding: 0.9rem 1rem;
   border-radius: 1rem;
   background: var(--app-surface);
   border: 1px solid var(--stat-border);
+}
+
+.target-detail-box strong {
+  margin-inline-start: auto;
+  min-width: 0;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 .target-detail-meta {

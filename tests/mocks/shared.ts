@@ -166,9 +166,9 @@ export function hydrateNutritionValue(value: MockNutritionValue): MockNutritionV
 }
 
 export function macrosFromCycleNutritionValues(
-  values: Array<{ nutritionKey: string; amount: number }>,
-): { proteins: number; carbs: number; lipids: number } {
-  return values.reduce(
+  values: Array<{ nutritionKey: string; amount: number; unit?: string }>,
+): { proteins: number; carbs: number; lipids: number; energyKcal?: number } {
+  return values.reduce<{ proteins: number; carbs: number; lipids: number; energyKcal?: number }>(
     (totals, value) => {
       const key = value.nutritionKey.toUpperCase();
       if (key === 'PROTEIN') {
@@ -177,6 +177,9 @@ export function macrosFromCycleNutritionValues(
         totals.carbs += value.amount;
       } else if (key === 'FAT') {
         totals.lipids += value.amount;
+      } else if (key === 'ENERGY_KCAL') {
+        const amount = value.unit?.toUpperCase() === 'KJ' ? value.amount / 4.184 : value.amount;
+        totals.energyKcal = round((totals.energyKcal ?? 0) + amount);
       }
       return totals;
     },
@@ -394,11 +397,11 @@ export function subtractNutrition(
   left: Record<string, number> | null,
   right: Record<string, number> | null,
 ): Record<string, number> | null {
-  if (!left && !right) {
+  if (!right) {
     return null;
   }
 
-  const keys = new Set<string>([...Object.keys(left ?? {}), ...Object.keys(right ?? {})]);
+  const keys = Object.keys(right);
   const delta: Record<string, number> = {};
   keys.forEach((key) => {
     delta[key] = round((left?.[key] ?? 0) - (right?.[key] ?? 0));

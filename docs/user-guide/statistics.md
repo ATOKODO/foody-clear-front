@@ -24,6 +24,8 @@ The nutrition view compares actual recorded intake against daily targets. Choose
 
 The detail view identifies the cycle, active day set, target source, entered item count and incomplete nutrition keys. A template is intended food until converted; actual consumption must be recorded to appear as actual intake.
 
+The summary cards show **Actual**, **Target** and **Delta** (actual minus target). A negative delta is below the target. A metric without a configured target displays `--` for its target and delta. Detail headings include the full date in the selected interface language; timestamps use the analysis timezone.
+
 Targets come from your planning configuration. An absent target or an unknown product value has a different meaning from a target or nutrition value explicitly set to zero.
 
 ## Product price history
