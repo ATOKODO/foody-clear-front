@@ -22,11 +22,19 @@ test('serves an installable manifest and a working offline mobile shell', async 
       await new Promise<void>((resolve) => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }));
     }
   });
-  // Wait for the worker's complete app version, including lazy route chunks.
-  await expect.poll(() => page.evaluate(async () => {
-    const names = await caches.keys();
-    return names.some((name) => name.includes('app-shell'));
-  })).toBe(true);
+  // Cache creation starts before prefetch finishes. Wait for every shell asset,
+  // including routes that have not been visited, before disconnecting.
+  const shellAssets = await page.evaluate(async () => {
+    const manifest = await (await fetch('/ngsw.json')).json() as {
+      assetGroups: { installMode: string; urls: string[] }[];
+    };
+    return manifest.assetGroups.filter(group => group.installMode === 'prefetch').flatMap(group => group.urls);
+  });
+  expect(shellAssets.length).toBeGreaterThan(0);
+  await expect.poll(() => page.evaluate(async assets => {
+    const cached = await Promise.all(assets.map(asset => caches.match(new URL(asset, location.origin).href)));
+    return cached.every(response => response?.ok);
+  }, shellAssets), { message: 'All prefetched app-shell assets must be cached before going offline' }).toBe(true);
   const cdp = await context.newCDPSession(page);
   const { installabilityErrors } = await cdp.send('Page.getInstallabilityErrors');
   // Playwright's isolated contexts are private browsing sessions.
@@ -34,13 +42,13 @@ test('serves an installable manifest and a working offline mobile shell', async 
   await context.setOffline(true);
   await page.reload();
   await expect(page.locator('.app-shell')).toBeVisible();
-  await expect(page.getByRole('status')).toContainText('Hors connexion');
+  await expect(page.getByRole('status')).toContainText('Offline.');
   await page.goto('/product');
   await expect(page.getByTestId('product-page')).toBeVisible();
   await expect(page.locator('.app-shell__header-title')).toHaveText('Catalog');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await context.setOffline(false);
-  await expect(page.getByText(/Hors connexion/)).toHaveCount(0);
+  await expect(page.getByRole('status').filter({ hasText: 'Offline.' })).toHaveCount(0);
 });
 
 test('offers installation instructions on a mobile browser', async ({ page }) => {

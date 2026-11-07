@@ -39,6 +39,8 @@ See `playwright.config.ts`, `playwright.pwa.config.ts`, `playwright.visual.confi
 
 Browser tests cover navigation, CRUD/editor behavior, stock-backed planning, keyboard interaction, scanner behavior and production app installation/offline shell behavior. Use the PWA configuration for service-worker behavior rather than assuming the development server tests it.
 
+The PWA offline test waits until every prefetched shell asset from the generated `ngsw.json` is cached before disconnecting. Creating a cache alone does not mean installation has finished. Offline UI assertions use the default English interface.
+
 See [Visual regression](./visual-regression.md) for the reference Linux environment, all ten viewport/theme profiles, screenshot review and CI artifacts. See [Storybook](./storybook.md) for the isolated component catalog, seeded scenarios and design-system maintenance.
 
 ## Mock API for development and tests

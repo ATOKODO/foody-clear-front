@@ -89,10 +89,7 @@ describe('SlotFeature', () => {
     const requestAnimationFrame = spyOn(
       window,
       'requestAnimationFrame',
-    ).and.callFake((callback: FrameRequestCallback) => {
-      callback(0);
-      return 1;
-    });
+    ).and.returnValue(1);
     const header = document.createElement('header');
     header.className = 'app-shell__header';
     spyOn(header, 'getBoundingClientRect').and.returnValue({
@@ -102,6 +99,9 @@ describe('SlotFeature', () => {
 
     component.onWindowResize();
     expect(requestAnimationFrame).toHaveBeenCalled();
+    expect(component.embeddedDialogTopOffset()).toBe(0);
+    // Run this frame after scheduling, as the browser does.
+    requestAnimationFrame.calls.mostRecent().args[0](0);
     expect(component.embeddedDialogTopOffset()).toBe(37);
 
     header.remove();

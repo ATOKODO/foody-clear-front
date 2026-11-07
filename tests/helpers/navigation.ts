@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 
 export async function gotoRoute(page: Page, route: string): Promise<void> {
   await page.goto(route);
-  await expect(page.locator('main')).toBeVisible();
+  await expect(page.locator('main.app-shell__content')).toBeVisible();
 }
 
 export async function expectShellTitle(page: Page, title: string): Promise<void> {
