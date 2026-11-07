@@ -24,7 +24,7 @@ test.describe('Input day - day', () => {
   test('creates a single item in the day composer', async ({ page }) => {
     await loadInputDay(page);
 
-    await selectMatOptionByLabel(page, page, 'Inventories', 'Frigo maison (#1)');
+    await selectMatOptionByLabel(page, page, 'Inventories', 'Home fridge (#1)');
     const bananaRow = page.getByTestId('product-row-1');
     await expect(bananaRow).toBeVisible();
 
@@ -36,7 +36,7 @@ test.describe('Input day - day', () => {
     await page.getByTestId('input-day-create-items').click();
 
     await expect(page.locator('[data-testid^="input-day-item-"]')).toHaveCount(3);
-    await expect(page.getByTestId('input-day-item-3')).toContainText('Banane');
+    await expect(page.getByTestId('input-day-item-3')).toContainText('Banana');
   });
 
   test('edits and deletes an existing day item', async ({ page }) => {

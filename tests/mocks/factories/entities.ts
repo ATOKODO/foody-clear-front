@@ -13,7 +13,7 @@ import type {
 export function categoryFactory(overrides: Partial<MockCategory> = {}): MockCategory {
   return {
     id: 999,
-    name: 'Nouvelle categorie',
+    name: 'New category',
     warnBeforeDays: 2,
     recentlyExpiredDays: 3,
     minQuantity: 1,
@@ -24,7 +24,7 @@ export function categoryFactory(overrides: Partial<MockCategory> = {}): MockCate
 export function tagFactory(overrides: Partial<MockTag> = {}): MockTag {
   return {
     id: 999,
-    name: 'Nouveau tag',
+    name: 'New tag',
     ...overrides,
   };
 }
@@ -34,7 +34,7 @@ export function genericProductFactory(
 ): MockGenericProduct {
   return {
     id: 999,
-    name: 'Produit generique',
+    name: 'Generic product',
     minQuantityUnit: 1,
     minQuantityUnitType: 'unit',
     minQuantityMetric: 100,
@@ -46,7 +46,7 @@ export function genericProductFactory(
 export function productFactory(overrides: Partial<MockProduct> = {}): MockProduct {
   return {
     id: 999,
-    name: 'Nouveau produit',
+    name: 'New product',
     barcode: null,
     categoryId: null,
     tagIds: [],

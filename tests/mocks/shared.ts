@@ -516,7 +516,7 @@ export function buildTemplateResponse(
     return {
       id: item.id,
       productId: item.productId,
-      productName: product?.name ?? `Produit #${item.productId}`,
+      productName: product?.name ?? `Product #${item.productId}`,
       qty: item.qty,
       qtyUnit: item.qtyUnit,
       qtyNormalized,
@@ -593,7 +593,7 @@ export function hydrateInputDayItem(state: MockApiState, item: MockInputDayItem)
   return {
     id: item.id,
     productId: item.productId,
-    productName: product?.name ?? `Produit #${item.productId}`,
+    productName: product?.name ?? `Product #${item.productId}`,
     inventoryId: item.inventoryId,
     inventoryAllocations: item.inventoryAllocations,
     qty: item.qty,
@@ -623,7 +623,7 @@ export function hydrateInputDayTemplateItem(
   return {
     id: item.id,
     productId: item.productId,
-    productName: product?.name ?? `Produit #${item.productId}`,
+    productName: product?.name ?? `Product #${item.productId}`,
     qty: item.qty,
     qtyUnit: item.qtyUnit,
     qtyNormalized,
@@ -840,7 +840,7 @@ export function buildStatisticsTimeline(
         inventoryId: inventory?.id ?? null,
         inventoryName: inventory?.name ?? null,
         productId: product?.id ?? null,
-        productName: product?.name ?? `Produit #${item.productId}`,
+        productName: product?.name ?? `Product #${item.productId}`,
         qty: item.qty,
         qtyUnit: item.qtyUnit ?? 'unit',
         qtyNormalized: item.qtyNormalized,

@@ -20,7 +20,7 @@ test('creates a cycle assignment from the planning calendar', async ({ page, moc
   await expect.poll(() =>
     mockApi.state.cycleAssignments.some((assignment) => assignment.startDateLocal === '2026-03-22'),
   ).toBe(true);
-  await expect(page.getByTestId('calendar-month-day-2026-03-22')).toContainText('Cycle training');
+  await expect(page.getByTestId('calendar-month-day-2026-03-22')).toContainText('Training cycle');
 });
 
 test('edits and removes an assignment from planning', async ({ page, mockApi }) => {

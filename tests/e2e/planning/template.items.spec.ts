@@ -25,10 +25,10 @@ test('adds, updates and deletes template items', async ({ page, mockApi }) => {
   const dialog = page.getByTestId('template-dialog');
   await expect(dialog).toBeVisible();
 
-  await selectLabeledOption(page, dialog, 'Product', 'Riz basmati');
+  await selectLabeledOption(page, dialog, 'Product', 'Basmati rice');
   await fillLabeledInput(dialog, 'Quantity', '2');
   await selectLabeledOption(page, dialog, 'Unit', "g (Gram)");
-  await selectLabeledOption(page, dialog, 'Explicit slot', '2. Dejeuner (lunch)');
+  await selectLabeledOption(page, dialog, 'Explicit slot', '2. Lunch (lunch)');
   await dialog.getByTestId('template-item-save').click();
 
   await expect.poll(() =>
@@ -44,12 +44,12 @@ test('adds, updates and deletes template items', async ({ page, mockApi }) => {
   const itemId = createdItem?.id;
   expect(itemId).toBeTruthy();
 
-  await expect(dialog.getByTestId(`template-item-edit-row-${itemId}`)).toContainText('Riz basmati');
+  await expect(dialog.getByTestId(`template-item-edit-row-${itemId}`)).toContainText('Basmati rice');
 
   await clickTestId(dialog, `template-item-edit-${itemId}`);
-  await selectLabeledOption(page, dialog, 'Product', 'Riz basmati');
+  await selectLabeledOption(page, dialog, 'Product', 'Basmati rice');
   await fillLabeledInput(dialog, 'Quantity', '3');
-  await selectLabeledOption(page, dialog, 'Explicit slot', '1. Petit dejeuner (breakfast)');
+  await selectLabeledOption(page, dialog, 'Explicit slot', '1. Breakfast (breakfast)');
   await dialog.getByTestId('template-item-save').click();
 
   await expect.poll(() =>

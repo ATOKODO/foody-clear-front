@@ -13,7 +13,7 @@ const meta = {
       <div class="app-modal-backdrop"></div><div class="app-modal-shell">
         <section class="app-modal-card" appModal aria-labelledby="story-modal-title" [appModalDisableClose]="disableClose" (appModalClose)="open = false; closed()">
           <header class="app-dialog-header"><h2 id="story-modal-title" class="app-dialog-title">Day entries</h2><button appButton variant="plain" type="button" (click)="open = false; closed()">Close</button></header>
-          <div class="app-dialog-content"><p>Focus is trapped inside this dialog. Escape closes it and restores focus to the trigger.</p><label>Product <input value="Banane" /></label><button appButton variant="plain" type="button">Save</button></div>
+          <div class="app-dialog-content"><p>Focus is trapped inside this dialog. Escape closes it and restores focus to the trigger.</p><label>Product <input value="Banana" /></label><button appButton variant="plain" type="button">Save</button></div>
         </section>
       </div>
     }
@@ -35,7 +35,7 @@ export const FocusAfterContentChange: Story = {
           @if (showAction) {
             <button appButton variant="secondary" type="button" data-testid="replace-focused-action" (click)="showAction = false">Open entry editor</button>
           } @else {
-            <label>Product <input data-testid="replacement-editor-input" value="Banane" /></label>
+            <label>Product <input data-testid="replacement-editor-input" value="Banana" /></label>
           }
         </section>
       </div>

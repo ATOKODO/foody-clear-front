@@ -2,6 +2,8 @@
 
 The dedicated Playwright suite compares the rendered UI with committed PNG references.
 It is independent of the existing functional/PWA suites and does not need a backend.
+The shared mock API uses English sample data, independent of the selected interface
+language. French scenarios translate the interface while keeping those sample names.
 
 ## Run
 

@@ -5,7 +5,7 @@ import { expectShellTitle, gotoRoute } from '../../helpers/navigation';
 async function openInventoryEdit(page: Page, inventoryId: number): Promise<void> {
   await gotoRoute(page, '/inventory');
   await expectShellTitle(page, 'Inventories');
-  await expect(page.getByTestId('inventory-panel')).toContainText('Frigo maison');
+  await expect(page.getByTestId('inventory-panel')).toContainText('Home fridge');
   await page.getByTestId(`inventory-select-${inventoryId}`).getByRole('button', { name: 'Edit', exact: true }).click();
   await expect(page.getByTestId('inventory-dialog')).toBeVisible();
 }
@@ -25,13 +25,13 @@ test.describe('Inventory products', () => {
     const selectableProductRow = addDialog.getByTestId('product-row-3');
     await expect(selectableProductRow).toBeVisible();
     await selectableProductRow.getByRole('checkbox').check();
-    const selectedRow = addDialog.locator('table').nth(1).locator('tbody tr').filter({ hasText: 'Riz basmati' });
+    const selectedRow = addDialog.locator('table').nth(1).locator('tbody tr').filter({ hasText: 'Basmati rice' });
     await expect(selectedRow).toBeVisible();
     await selectedRow.locator('input[type="number"]').fill('2');
 
     await addDialog.getByRole('button', { name: 'Add', exact: true }).click();
 
-    await expect(dialog).toContainText('Riz basmati');
+    await expect(dialog).toContainText('Basmati rice');
     await expect(page.getByTestId('inventory-select-1')).toContainText('3 linked product(s)');
   });
 
@@ -41,7 +41,7 @@ test.describe('Inventory products', () => {
     await openInventoryEdit(page, 1);
 
     const dialog = page.getByTestId('inventory-dialog');
-    await expect(dialog).toContainText('Banane');
+    await expect(dialog).toContainText('Banana');
 
     await dialog.getByRole('button', { name: 'Empty inventory' }).click();
 

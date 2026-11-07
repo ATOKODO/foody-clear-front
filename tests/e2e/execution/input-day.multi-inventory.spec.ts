@@ -11,8 +11,8 @@ test('consumes split stocks and restores each source after editing and deleting 
     ],
   });
   await loadStandaloneInputDay(page);
-  await selectMatOptionByLabel(page, page, 'Inventories', 'Frigo maison (#1)');
-  await selectMatOptionByLabel(page, page, 'Inventories', 'Placard (#2)');
+  await selectMatOptionByLabel(page, page, 'Inventories', 'Home fridge (#1)');
+  await selectMatOptionByLabel(page, page, 'Inventories', 'Pantry (#2)');
   await page.getByTestId('product-row-1').getByRole('checkbox').check();
   const selected = page.getByTestId('input-day-selected-product-1');
   await selected.locator('input[type="number"]').fill('100');
@@ -21,7 +21,7 @@ test('consumes split stocks and restores each source after editing and deleting 
   await page.getByTestId('input-day-create-items').click();
   expect((await creation).postDataJSON().items[0].inventoryIds).toEqual([1, 2]);
   const row = page.getByTestId('input-day-item-3');
-  await expect(row).toContainText('Banane');
+  await expect(row).toContainText('Banana');
   expect(mockApi.state.inventoryProducts.map((stock) => stock.qtyOnHandNormalized)).toEqual([0, 10]);
   await row.getByRole('button', { name: 'Edit', exact: true }).click();
   await page.locator('input[formcontrolname="qty"]').fill('105');

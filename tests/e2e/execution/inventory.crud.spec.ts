@@ -16,7 +16,7 @@ test.describe('Inventory CRUD', () => {
       await page.keyboard.press(index % 2 === 0 ? 'Shift+Tab' : 'Tab');
       await expect.poll(() => picker.evaluate((element) => element.contains(document.activeElement))).toBe(true);
     }
-    await picker.getByRole('checkbox', { name: 'Select Banane', exact: true }).focus();
+    await picker.getByRole('checkbox', { name: 'Select Banana', exact: true }).focus();
     await page.keyboard.press('Escape');
     await expect(picker).toBeHidden();
     await expect(editor).toBeVisible();
@@ -30,7 +30,7 @@ test.describe('Inventory CRUD', () => {
     await gotoRoute(page, '/inventory');
     await page.getByTestId('inventory-add-action').click();
     const dialog = page.getByRole('dialog', { name: 'Inventory editor' });
-    const checkbox = dialog.getByRole('checkbox', { name: 'Select Banane', exact: true });
+    const checkbox = dialog.getByRole('checkbox', { name: 'Select Banana', exact: true });
     await checkbox.click();
     await expect(checkbox).toBeChecked();
     await expect(dialog.getByText('1 selected', { exact: true })).toBeVisible();
@@ -47,7 +47,7 @@ test.describe('Inventory CRUD', () => {
   test('creates a new inventory from the dialog', async ({ page, mockApi }) => {
     await gotoRoute(page, '/inventory');
     await expectShellTitle(page, 'Inventories');
-    await expect(page.getByTestId('inventory-panel')).toContainText('Frigo maison');
+    await expect(page.getByTestId('inventory-panel')).toContainText('Home fridge');
 
     await page.getByTestId('inventory-add-action').click();
     const dialog = page.getByTestId('inventory-dialog');
@@ -65,8 +65,8 @@ test.describe('Inventory CRUD', () => {
 
     await gotoRoute(page, '/inventory');
     await expectShellTitle(page, 'Inventories');
-    await expect(page.getByTestId('inventory-panel')).toContainText('Frigo maison');
-    await expect(page.getByTestId('inventory-panel')).toContainText('Placard');
+    await expect(page.getByTestId('inventory-panel')).toContainText('Home fridge');
+    await expect(page.getByTestId('inventory-panel')).toContainText('Pantry');
 
     await page.getByTestId('inventory-select-1').getByRole('button', { name: 'Edit', exact: true }).click();
     const dialog = page.getByTestId('inventory-dialog');
@@ -74,10 +74,10 @@ test.describe('Inventory CRUD', () => {
 
     const nameInput = dialog.getByLabel('Name *', { exact: true });
     await nameInput.fill('');
-    await nameInput.fill('Frigo principal');
+    await nameInput.fill('Main fridge');
     await dialog.getByRole('button', { name: 'Update' }).click();
 
-    await expect(page.getByTestId('inventory-select-1')).toContainText('Frigo principal');
+    await expect(page.getByTestId('inventory-select-1')).toContainText('Main fridge');
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog).toBeHidden();
 

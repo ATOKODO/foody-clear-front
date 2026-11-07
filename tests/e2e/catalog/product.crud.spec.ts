@@ -15,8 +15,8 @@ test('creates, edits and deletes a product', async ({ page, mockApi }) => {
 
   await dialog.getByLabel('Name *').fill('E2E Product');
   await dialog.getByLabel("Quantity per unit *").fill('250');
-  await selectMatOptionByLabel(page, dialog, 'Category', 'Fruits');
-  await selectMatOptionByLabel(page, dialog, 'Generic product', 'Banane');
+  await selectMatOptionByLabel(page, dialog, 'Category', 'Fruit');
+  await selectMatOptionByLabel(page, dialog, 'Generic product', 'Banana');
   await selectMatOptionByLabel(page, dialog, "Container type *", "Unit");
   await selectMatOptionByLabel(page, dialog, "Quantity unit *", 'Gram (g)');
   await dialog.getByRole('button', { name: "Confirm" }).click();

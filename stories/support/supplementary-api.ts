@@ -14,20 +14,20 @@ export interface SupplementaryState {
 }
 
 export function createSupplementaryState(base: MockApiState, empty: boolean): SupplementaryState {
-  const dishes: PreparedDish[] = [{ id: 1, name: 'Poulet et riz', items: [
+  const dishes: PreparedDish[] = [{ id: 1, name: 'Chicken and rice', items: [
     { id: 1, productId: 2, product: base.products[1], qty: 125, qtyUnit: 'g' },
     { id: 2, productId: 3, product: base.products[2], qty: 100, qtyUnit: 'g' },
   ] }];
-  const meals: PreparedMeal[] = [{ id: 1, name: 'Déjeuner training', items: [
+  const meals: PreparedMeal[] = [{ id: 1, name: 'Training lunch', items: [
     { id: 3, itemType: 'dish', dishId: 1, dish: dishes[0], qty: 1, qtyUnit: 'unit' },
   ] }];
   return {
     dishes: empty ? [] : dishes, meals: empty ? [] : meals,
-    shoppingLists: empty ? [] : [{ id: 1, name: 'Courses de la semaine', items: [
+    shoppingLists: empty ? [] : [{ id: 1, name: 'Weekly groceries', items: [
       { id: 1, productId: 1, product: base.products[0], qty: 6, qtyUnit: 'unit', checked: true },
       { id: 2, productId: 2, product: base.products[1], qty: 500, qtyUnit: 'g', checked: false },
     ] }],
-    shoppingTemplates: empty ? [] : [{ id: 1, name: 'Essentiels du placard', items: [
+    shoppingTemplates: empty ? [] : [{ id: 1, name: 'Pantry essentials', items: [
       { id: 1, productId: 3, product: base.products[2], qty: 1, qtyUnit: 'unit' },
     ] }],
     externalEntries: new Map(), nextId: 100,

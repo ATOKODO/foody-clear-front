@@ -22,7 +22,7 @@ test.describe('Input day - template', () => {
 
     await loadInputDay(page);
 
-    await selectMatOption(page, page.getByTestId('input-day-inventory-select'), 'Frigo maison (#1)');
+    await selectMatOption(page, page.getByTestId('input-day-inventory-select'), 'Home fridge (#1)');
 
     await selectMatOption(page, page.getByTestId('input-day-template-select'), 'Template E2E');
 
@@ -34,7 +34,7 @@ test.describe('Input day - template', () => {
     await templateRow.getByTestId('input-day-convert-template-4').click();
 
     await expect.poll(() => mockApi.state.templateConversions.length).toBe(1);
-    await expect(page.getByTestId('input-day-item-3')).toContainText('Banane');
+    await expect(page.getByTestId('input-day-item-3')).toContainText('Banana');
     await expect(page.getByTestId('input-day-template-item-4')).toContainText('Converted');
     await expect(templateRow.getByText('Converted', { exact: true })).toHaveClass(/app-status-pill--success/);
     await expect(page.getByTestId('input-day-item-3').getByText('Effective from template', { exact: true })).toHaveClass(/app-status-pill--compact/);

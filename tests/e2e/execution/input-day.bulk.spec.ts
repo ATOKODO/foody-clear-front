@@ -12,7 +12,7 @@ test.describe('Input day - bulk', () => {
   test('creates multiple items in a single bulk request', async ({ page }) => {
     await loadInputDay(page);
 
-    await selectMatOptionByLabel(page, page, 'Inventories', 'Frigo maison (#1)');
+    await selectMatOptionByLabel(page, page, 'Inventories', 'Home fridge (#1)');
     await page.getByTestId('product-row-1').getByRole('checkbox').check();
     await page.getByTestId('product-row-2').getByRole('checkbox').check();
 
@@ -28,7 +28,7 @@ test.describe('Input day - bulk', () => {
     await page.getByTestId('input-day-create-items').click();
 
     await expect(page.locator('[data-testid^="input-day-item-"]')).toHaveCount(4);
-    await expect(page.getByTestId('input-day-item-3')).toContainText('Banane');
-    await expect(page.getByTestId('input-day-item-4')).toContainText('Blanc de poulet');
+    await expect(page.getByTestId('input-day-item-3')).toContainText('Banana');
+    await expect(page.getByTestId('input-day-item-4')).toContainText('Chicken breast');
   });
 });

@@ -218,33 +218,33 @@ export function createMockApiState(): MockApiState {
   return {
     timezone: 'Europe/Paris',
     quantityUnits: [
-      { key: 'MG', value: 'mg', label: 'Milligramme (mg)', dimension: 'mass', factor: 0.001 },
-      { key: 'G', value: 'g', label: 'Gramme (g)', dimension: 'mass', factor: 1 },
-      { key: 'KG', value: 'kg', label: 'Kilogramme (kg)', dimension: 'mass', factor: 1000 },
+      { key: 'MG', value: 'mg', label: 'Milligram (mg)', dimension: 'mass', factor: 0.001 },
+      { key: 'G', value: 'g', label: 'Gram (g)', dimension: 'mass', factor: 1 },
+      { key: 'KG', value: 'kg', label: 'Kilogram (kg)', dimension: 'mass', factor: 1000 },
       { key: 'ML', value: 'ml', label: 'Millilitre (ml)', dimension: 'volume', factor: 1 },
       { key: 'L', value: 'l', label: 'Litre (l)', dimension: 'volume', factor: 1000 },
-      { key: 'UNIT', value: 'unit', label: 'Unite (unit)', dimension: 'count', factor: 1 },
+      { key: 'UNIT', value: 'unit', label: 'Unit (unit)', dimension: 'count', factor: 1 },
       { key: 'PACK', value: 'pack', label: 'Pack (pack)', dimension: 'count', factor: 1 },
     ],
     nutritionKeys: [
-      { key: 'ENERGY_KCAL', value: 'ENERGY_KCAL', label: 'Energie', allowedUnits: ['KCAL'] },
-      { key: 'PROTEIN', value: 'PROTEIN', label: 'Proteines', allowedUnits: ['G'] },
-      { key: 'CARBOHYDRATE', value: 'CARBOHYDRATE', label: 'Glucides', allowedUnits: ['G'] },
-      { key: 'FAT', value: 'FAT', label: 'Lipides', allowedUnits: ['G'] },
+      { key: 'ENERGY_KCAL', value: 'ENERGY_KCAL', label: 'Energy', allowedUnits: ['KCAL'] },
+      { key: 'PROTEIN', value: 'PROTEIN', label: 'Protein', allowedUnits: ['G'] },
+      { key: 'CARBOHYDRATE', value: 'CARBOHYDRATE', label: 'Carbohydrates', allowedUnits: ['G'] },
+      { key: 'FAT', value: 'FAT', label: 'Fat', allowedUnits: ['G'] },
     ],
     categories: [
-      { id: 1, name: 'Fruits', warnBeforeDays: 2, recentlyExpiredDays: 3, minQuantity: 2 },
-      { id: 2, name: 'Proteines', warnBeforeDays: 3, recentlyExpiredDays: 5, minQuantity: 1 },
+      { id: 1, name: 'Fruit', warnBeforeDays: 2, recentlyExpiredDays: 3, minQuantity: 2 },
+      { id: 2, name: 'Protein', warnBeforeDays: 3, recentlyExpiredDays: 5, minQuantity: 1 },
     ],
     tags: [
-      { id: 1, name: 'Bio' },
+      { id: 1, name: 'Organic' },
       { id: 2, name: 'Batch' },
-      { id: 3, name: 'Petit dej' },
+      { id: 3, name: 'Breakfast' },
     ],
     genericProducts: [
       {
         id: 1,
-        name: 'Banane',
+        name: 'Banana',
         minQuantityUnit: 6,
         minQuantityUnitType: 'piece',
         minQuantityMetric: 900,
@@ -252,7 +252,7 @@ export function createMockApiState(): MockApiState {
       },
       {
         id: 2,
-        name: 'Poulet',
+        name: 'Chicken',
         minQuantityUnit: 1,
         minQuantityUnitType: 'pack',
         minQuantityMetric: 1000,
@@ -262,7 +262,7 @@ export function createMockApiState(): MockApiState {
     products: [
       {
         id: 1,
-        name: 'Banane',
+        name: 'Banana',
         barcode: '200000000001',
         categoryId: 1,
         tagIds: [1, 3],
@@ -276,7 +276,7 @@ export function createMockApiState(): MockApiState {
         price: 0.49,
         priceUnit: 'unite',
         url: null,
-        memo: 'Reference fruits',
+        memo: 'Reference fruit',
         nutritionValues: [
           nutritionValue(1, 'ENERGY_KCAL', 89, 'KCAL'),
           nutritionValue(2, 'PROTEIN', 1.1),
@@ -290,7 +290,7 @@ export function createMockApiState(): MockApiState {
       },
       {
         id: 2,
-        name: 'Blanc de poulet',
+        name: 'Chicken breast',
         barcode: '200000000002',
         categoryId: 2,
         tagIds: [2],
@@ -304,7 +304,7 @@ export function createMockApiState(): MockApiState {
         price: 8.4,
         priceUnit: 'kg',
         url: null,
-        memo: 'Batch proteine',
+        memo: 'Batch protein',
         nutritionValues: [
           nutritionValue(5, 'ENERGY_KCAL', 165, 'KCAL'),
           nutritionValue(6, 'PROTEIN', 31),
@@ -318,7 +318,7 @@ export function createMockApiState(): MockApiState {
       },
       {
         id: 3,
-        name: 'Riz basmati',
+        name: 'Basmati rice',
         barcode: '200000000003',
         categoryId: null,
         tagIds: [2],
@@ -332,7 +332,7 @@ export function createMockApiState(): MockApiState {
         price: 2.9,
         priceUnit: 'kg',
         url: null,
-        memo: 'Sec',
+        memo: 'Dry',
         nutritionValues: [
           nutritionValue(9, 'ENERGY_KCAL', 360, 'KCAL'),
           nutritionValue(10, 'PROTEIN', 7),
@@ -349,7 +349,7 @@ export function createMockApiState(): MockApiState {
       {
         id: 1,
         key: 'breakfast',
-        title: 'Petit dejeuner',
+        title: 'Breakfast',
         sortOrder: 1,
         startTime: '08:00',
         endTime: '09:00',
@@ -362,7 +362,7 @@ export function createMockApiState(): MockApiState {
       {
         id: 2,
         key: 'lunch',
-        title: 'Dejeuner',
+        title: 'Lunch',
         sortOrder: 2,
         startTime: '12:00',
         endTime: '13:30',
@@ -375,7 +375,7 @@ export function createMockApiState(): MockApiState {
       {
         id: 3,
         key: 'dinner',
-        title: 'Diner',
+        title: 'Dinner',
         sortOrder: 3,
         startTime: '19:00',
         endTime: '20:30',
@@ -389,7 +389,7 @@ export function createMockApiState(): MockApiState {
     templates: [
       {
         id: 1,
-        title: 'Jour training',
+        title: 'Training day',
         items: [
           { id: 1, productId: 1, qty: 1, qtyUnit: 'piece', slotId: 1, slotKey: null },
           { id: 2, productId: 2, qty: 1, qtyUnit: 'portion', slotId: 2, slotKey: null },
@@ -424,7 +424,7 @@ export function createMockApiState(): MockApiState {
     cycles: [
       {
         id: 1,
-        title: 'Cycle training',
+        title: 'Training cycle',
         color: 'bg-sky-500',
         nutritionValues: [
           macroValue('PROTEIN', 120),
@@ -442,8 +442,8 @@ export function createMockApiState(): MockApiState {
       { id: 1, cycleId: 1, startDateLocal: '2026-03-23' },
     ],
     inventories: [
-      { id: 1, name: 'Frigo maison' },
-      { id: 2, name: 'Placard' },
+      { id: 1, name: 'Home fridge' },
+      { id: 2, name: 'Pantry' },
     ],
     inventoryProducts: [
       { id: 1, inventoryId: 1, productId: 1, qtyOnHandInUnits: 8, qtyOnHandNormalized: 960 },

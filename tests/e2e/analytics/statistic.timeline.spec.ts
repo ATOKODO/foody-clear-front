@@ -12,8 +12,8 @@ test.describe('Statistics timeline', () => {
 
     await expect(page.getByText("Details for 2026-03-25")).toBeVisible();
     await expect(page.getByText('2 events')).toBeVisible();
-    await expect(page.getByText('Banane')).toBeVisible();
-    await expect(page.getByText('Blanc de poulet')).toBeVisible();
+    await expect(page.getByText('Banana')).toBeVisible();
+    await expect(page.getByText('Chicken breast')).toBeVisible();
 
     await page.getByTestId('stat-view-targets').click();
     await expect(page.getByTestId('stat-target-timeline')).toBeVisible();

@@ -7,8 +7,8 @@ test('creates a product from JSON with name-based links and a live preview', asy
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('tab', { name: 'JSON', exact: true }).click();
   const product = {
-    name: 'JSON Oats', barcode: '0012345678901', category: 'Fruits',
-    genericProduct: 'Banane', tags: ['Bio', 'Batch'], unitType: 'Paquet',
+    name: 'JSON Oats', barcode: '0012345678901', category: 'Fruit',
+    genericProduct: 'Banana', tags: ['Organic', 'Batch'], unitType: 'Paquet',
     quantityPerUnit: 0.5, quantityUnit: 'kg', portionCount: 10, portionUnit: 'portion',
     portionQuantity: 0.05, price: 2.5, priceUnit: 'paquet',
     url: 'https://example.com/oats', memo: 'Store in a dry place',

@@ -68,21 +68,21 @@ export const test = base.extend<VisualFixtures>({
     // These read-only endpoints are not part of the existing CRUD mock backend.
     // Keep their visual data typed against the application's API contracts.
     const products = mockApi.state.products;
-    const shoppingLists: ShoppingList[] = [{ id: 1, name: 'Courses de la semaine', items: [
+    const shoppingLists: ShoppingList[] = [{ id: 1, name: 'Weekly groceries', items: [
       { id: 1, productId: 1, product: products[0], qty: 6, qtyUnit: 'unit', checked: true },
       { id: 2, productId: 2, product: products[1], qty: 500, qtyUnit: 'g', checked: false },
     ] }];
-    const templates: ShoppingListTemplate[] = [{ id: 1, name: 'Essentiels du placard', items: [
+    const templates: ShoppingListTemplate[] = [{ id: 1, name: 'Pantry essentials', items: [
       { id: 1, productId: 3, product: products[2], qty: 1, qtyUnit: 'unit' },
     ] }];
-    const dishes: PreparedDish[] = [{ id: 1, name: 'Poulet et riz', items: [
+    const dishes: PreparedDish[] = [{ id: 1, name: 'Chicken and rice', items: [
       { id: 1, productId: 2, product: products[1], qty: 125, qtyUnit: 'g' },
       { id: 2, productId: 3, product: products[2], qty: 100, qtyUnit: 'g' },
     ], availability: { isInStock: true, maxPreparations: 4, missingProducts: [] } }];
-    const meals: PreparedMeal[] = [{ id: 1, name: 'Dejeuner training', items: [
+    const meals: PreparedMeal[] = [{ id: 1, name: 'Training lunch', items: [
       { id: 1, itemType: 'dish', dishId: 1, dish: dishes[0], qty: 1, qtyUnit: 'unit' },
     ], availability: { isInStock: false, maxPreparations: 0, missingProducts: [
-      { productId: 2, productName: 'Blanc de poulet', requiredQtyNormalized: 2500, availableQtyNormalized: 2000, missingQtyNormalized: 500 },
+      { productId: 2, productName: 'Chicken breast', requiredQtyNormalized: 2500, availableQtyNormalized: 2000, missingQtyNormalized: 500 },
     ] } }];
     const extra: Record<string, unknown> = {
       '/shopping-list': shoppingLists,

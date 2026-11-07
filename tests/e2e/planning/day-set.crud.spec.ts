@@ -14,7 +14,7 @@ test('creates, updates and deletes a day set', async ({ page, mockApi }) => {
   await expect(dialog).toBeVisible();
 
   await fillLabeledInput(dialog, 'Title', createdTitle);
-  await selectLabeledOption(page, dialog, 'Associated template', 'Jour training');
+  await selectLabeledOption(page, dialog, 'Associated template', 'Training day');
   await dialog.getByTestId('slot-row-1').getByRole('checkbox').click();
   await dialog.getByTestId('slot-row-2').getByRole('checkbox').click();
   await dialog.getByRole('button', { name: 'Save' }).click();

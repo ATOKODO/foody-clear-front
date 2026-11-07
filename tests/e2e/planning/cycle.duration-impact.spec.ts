@@ -10,7 +10,7 @@ test('prompts for impact when cycle duration changes', async ({ page, mockApi })
   const dialog = page.getByTestId('cycle-dialog');
   await expect(dialog).toBeVisible();
 
-  await fillLabeledInput(dialog, 'Title', 'Cycle training');
+  await fillLabeledInput(dialog, 'Title', 'Training cycle');
   await selectLabeledOption(page, dialog, 'Color', 'Blue');
   await fillLabeledInput(dialog, 'Number of days', '10');
   await dialog.getByRole('button', { name: 'Save' }).click();
