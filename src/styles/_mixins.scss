@@ -46,6 +46,15 @@
   outline-offset: 2px;
 }
 
+@mixin table-row-hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover,
+    &:hover > [mat-cell] {
+      background: var(--app-list-row-hover-bg);
+    }
+  }
+}
+
 @mixin surface-card($radius: var(--app-radius-md), $shadow: var(--app-shadow-sm)) {
   border: 1px solid var(--app-border);
   border-radius: $radius;

@@ -80,8 +80,8 @@
   @include ds.focus-ring;
 }
 
-.day-set-table [mat-row].dsl-active {
-  background: var(--app-surface-strong);
+.day-set-table [mat-row] {
+  @include ds.table-row-hover;
 }
 
 .day-set-table [mat-row].dsl-disabled {

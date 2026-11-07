@@ -29,8 +29,8 @@
   @include ds.focus-ring;
 }
 
-.category-table [mat-row].cl-active {
-  background: var(--app-info-bg);
+.category-table [mat-row] {
+  @include ds.table-row-hover;
 }
 
 .category-table [mat-cell].category-table__actions-cell {

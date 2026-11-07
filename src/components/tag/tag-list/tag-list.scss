@@ -29,8 +29,8 @@
   @include ds.focus-ring;
 }
 
-.tag-table [mat-row].tl-active {
-  background: var(--app-info-bg);
+.tag-table [mat-row] {
+  @include ds.table-row-hover;
 }
 
 .tag-table [mat-cell].tag-table__actions-cell {

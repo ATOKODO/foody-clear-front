@@ -99,9 +99,9 @@ export class TagList implements OnInit, OnChanges {
     return this.selectedIdSet.has(id);
   }
 
-  isRowActive(item: TagListItem, index: number): boolean {
+  isRowActive(item: TagListItem): boolean {
     if (this.isManageMode) {
-      return index === 0;
+      return false;
     }
 
     return this.isSelected(item.id);

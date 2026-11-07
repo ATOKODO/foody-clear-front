@@ -103,8 +103,8 @@ describe('list and form component branches', () => {
     expect(component.displayedColumns).toContain('actions');
     expect(component.hasItems).toBeTrue();
     expect(component.trackById(0, categories[0])).toBe('1');
-    expect(component.isRowActive(categories[0], 0)).toBeTrue();
-    expect(component.isRowActive(categories[1], 1)).toBeFalse();
+    expect(component.isRowActive(categories[0])).toBeFalse();
+    expect(component.isRowActive(categories[1])).toBeFalse();
     expect(component.getNumberDisplay(null)).toBe('-');
     expect(component.getNumberDisplay(Infinity)).toBe('-');
     expect(component.getNumberDisplay(2)).toBe('2');
@@ -168,8 +168,8 @@ describe('list and form component branches', () => {
     expect(component.hasItems).toBeTrue();
     expect(component.resolvedTags).toEqual(component.defaultTags);
     expect(component.displayedColumns).toEqual(['name', 'actions']);
-    expect(component.isRowActive(component.resolvedTags[0], 0)).toBeTrue();
-    expect(component.isRowActive(component.resolvedTags[1], 1)).toBeFalse();
+    expect(component.isRowActive(component.resolvedTags[0])).toBeFalse();
+    expect(component.isRowActive(component.resolvedTags[1])).toBeFalse();
 
     fixture.componentRef.setInput('tags', tags);
     fixture.componentRef.setInput('mode', 'select-single');

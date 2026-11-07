@@ -47,9 +47,9 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr
         mat-row
-        *matRowDef="let item; let i = index; columns: displayedColumns"
+        *matRowDef="let item; columns: displayedColumns"
         [attr.data-testid]="'inventory-row-' + item.id"
-        [class.il-active]="isRowActive(item, i)"
+        [class.il-active]="isRowActive(item)"
         [class.il-selectable]="isSingleSelectMode || isMultiSelectMode"
         [attr.tabindex]="isSingleSelectMode ? 0 : null"
         [attr.role]="isSingleSelectMode ? 'button' : null"

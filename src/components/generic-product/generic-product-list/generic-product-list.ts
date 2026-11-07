@@ -122,9 +122,9 @@ export class GenericProductList implements OnInit, OnChanges {
     return this.selectedIdSet.has(id);
   }
 
-  isRowActive(item: GenericProductListItem, index: number): boolean {
+  isRowActive(item: GenericProductListItem): boolean {
     if (this.isManageMode) {
-      return index === 0;
+      return false;
     }
 
     return this.isSelected(item.id);

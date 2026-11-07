@@ -107,9 +107,9 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr
           mat-row
-          *matRowDef="let item; let i = index; columns: displayedColumns"
+          *matRowDef="let item; columns: displayedColumns"
           [attr.data-testid]="'day-set-row-' + item.id"
-          [class.dsl-active]="isRowActive(item, i)"
+          [class.dsl-active]="isRowActive(item)"
           [class.dsl-disabled]="isSelectionDisabled(item)"
           [class.dsl-selectable]="isSingleSelectMode || isMultiSelectMode"
           [attr.tabindex]="isSingleSelectMode ? 0 : null"

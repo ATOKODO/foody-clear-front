@@ -134,8 +134,8 @@ describe('InventoryList', () => {
     fixture.componentRef.setInput('inventories', inventories);
     fixture.detectChanges();
     expect(component.trackById(0, inventories[0])).toBe('10');
-    expect(component.isRowActive(inventories[0], 0)).toBeTrue();
-    expect(component.isRowActive(inventories[1], 1)).toBeFalse();
+    expect(component.isRowActive(inventories[0])).toBeFalse();
+    expect(component.isRowActive(inventories[1])).toBeFalse();
 
     component.onRowClick(inventories[0]);
     component.onRowKeydown(

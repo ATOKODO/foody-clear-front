@@ -1,7 +1,101 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+import { expectProductSearchContained } from '../helpers/product-search';
 
 interface StoryEntry { id: string; type: string; title: string; name: string }
+
+for (const theme of ['light', 'dark']) {
+  for (const language of ['en', 'fr']) {
+    for (const width of [320, 390, 834, 1440]) {
+      test(`product search stays contained in ${theme}/${language} at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 1000 });
+        const checkSearch = async () => {
+          const input = page.getByTestId('product-list-search');
+          await expect(input).toBeVisible();
+          await expectProductSearchContained(page);
+          await input.fill('A deliberately long product search that must remain inside the field');
+          await expect(input).toHaveValue('A deliberately long product search that must remain inside the field');
+          await expectProductSearchContained(page);
+          await input.fill('');
+          await expectProductSearchContained(page);
+        };
+        await page.goto(`/iframe.html?id=screens-product--populated&viewMode=story&globals=theme:${theme};language:${language}`);
+        await checkSearch();
+        await page.goto(`/iframe.html?id=screens-inventory--populated&viewMode=story&globals=theme:${theme};language:${language}`);
+        await page.getByTestId('inventory-select-1').getByRole('button', { name: language === 'fr' ? 'Modifier' : 'Edit', exact: true }).click();
+        await page.getByTestId('inventory-dialog').getByRole('button', { name: language === 'fr' ? 'Ouvrir l’ajout de produits' : 'Open add products', exact: true }).click();
+        await expect(page.getByTestId('inventory-add-products-dialog')).toBeVisible();
+        await checkSearch();
+      });
+    }
+  }
+}
+
+for (const theme of ['light', 'dark']) {
+  for (const component of ['productlist', 'categorylist', 'taglist', 'genericproductlist', 'inventorylist', 'slotlist', 'daysetlist']) {
+    test(`${component} uses a hover-only row highlight in ${theme}`, async ({ page }) => {
+      await page.goto(`/iframe.html?id=components-${component}--populated&viewMode=story&globals=theme:${theme};language:en`);
+      await page.mouse.move(0, 0);
+      const rows = page.locator('tr[mat-row]');
+      await expect(rows.nth(1)).toBeVisible();
+      const idle = await rows.first().evaluate(row => getComputedStyle(row).backgroundColor);
+      await expect(rows.first()).not.toHaveClass(/\b(?:pl|cl|tl|gpl|il|sl|dsl)-active\b/);
+      await expect(rows.nth(1)).toHaveCSS('background-color', idle);
+      const hoverColor = await page.evaluate(() => {
+        const probe = document.createElement('span');
+        probe.style.backgroundColor = 'var(--app-list-row-hover-bg)';
+        document.body.append(probe);
+        const color = getComputedStyle(probe).backgroundColor;
+        probe.remove();
+        return color;
+      });
+      expect(hoverColor).not.toBe(idle);
+      expect(hoverColor).not.toBe('rgba(0, 0, 0, 0)');
+      await rows.nth(1).hover();
+      await expect(rows.nth(1)).toHaveCSS('background-color', hoverColor);
+      await expect(rows.first()).toHaveCSS('background-color', idle);
+      await page.mouse.move(0, 0);
+      await expect(rows.nth(1)).toHaveCSS('background-color', idle);
+
+      await page.goto(`/iframe.html?id=components-${component}--multiple-selection&viewMode=story&globals=theme:${theme};language:en`);
+      await page.mouse.move(0, 0);
+      await expect(page.getByRole('checkbox').first()).toBeChecked();
+      const selectedIdle = await rows.first().evaluate(row => getComputedStyle(row).backgroundColor);
+      await expect(rows.nth(1)).toHaveCSS('background-color', selectedIdle);
+      await rows.first().hover();
+      await expect(rows.first()).toHaveCSS('background-color', hoverColor);
+      await page.mouse.move(0, 0);
+      await expect(rows.first()).toHaveCSS('background-color', selectedIdle);
+      await expect(page.getByRole('checkbox').first()).toBeChecked();
+      await rows.nth(1).getByRole('checkbox').check();
+      await page.mouse.move(0, 0);
+      await expect(rows.nth(1).getByRole('checkbox')).toBeChecked();
+      await expect(rows.nth(1)).toHaveCSS('background-color', selectedIdle);
+    });
+  }
+
+  test(`cycle list does not activate its first card automatically in ${theme}`, async ({ page }) => {
+    await page.goto(`/iframe.html?id=components-listcycle--populated&viewMode=story&globals=theme:${theme};language:en`);
+    await expect(page.locator('.lc-card').first()).toBeVisible();
+    await expect(page.locator('.lc-card').first()).not.toHaveClass(/lc-card-active/);
+  });
+
+  test(`touch selection does not leave a row highlight in ${theme}`, async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+    try {
+      const page = await context.newPage();
+      await page.goto(`/iframe.html?id=components-productlist--multiple-selection&viewMode=story&globals=theme:${theme};language:en`);
+      const row = page.locator('tr[mat-row]').first();
+      await expect(row).toBeVisible();
+      const idle = await row.evaluate(element => getComputedStyle(element).backgroundColor);
+      await row.getByRole('checkbox').uncheck();
+      await expect(row.getByRole('checkbox')).not.toBeChecked();
+      await expect(row).toHaveCSS('background-color', idle);
+    } finally {
+      await context.close();
+    }
+  });
+}
 const index = JSON.parse(readFileSync('dist/storybook/index.json', 'utf8')) as { entries: Record<string, StoryEntry> };
 const entries = Object.values(index.entries).filter(entry => entry.type === 'story');
 const variants = [

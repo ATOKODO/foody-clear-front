@@ -63,6 +63,7 @@ Service workers are blocked to keep API mocking independent of caches.
 - A fresh browser context and cloned API state per test; date fixed at 25 March 2026,
   locale `en-GB`, timezone `Europe/Paris`, reduced motion and hidden text carets.
 - Screenshots wait for completed API calls, Angular testability when available, loading indicators and fonts.
+- Visible product-search fields, inputs and labels must fit within their clipping ancestors and viewport before a capture or reference update. Shared geometry checks live in `tests/helpers/product-search.ts`.
 - Unexpected API/browser errors or external network dependencies fail tests. Only the
   explicit error-state scenario allows its deliberate 503 response and consequent
   client-side cancellation of sibling XHRs.

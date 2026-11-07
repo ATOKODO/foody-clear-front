@@ -29,8 +29,8 @@
   @include ds.focus-ring;
 }
 
-.generic-product-table [mat-row].gpl-active {
-  background: var(--app-info-bg);
+.generic-product-table [mat-row] {
+  @include ds.table-row-hover;
 }
 
 .generic-product-table [mat-cell].generic-product-table__actions-cell {

@@ -1,7 +1,9 @@
+@use "@angular/material" as mat;
 @use "mixins" as ds;
 
 :host {
   @include ds.host-block;
+  min-width: 0;
 }
 
 .product-list--embedded {
@@ -14,17 +16,21 @@
 
 .product-list__search-row {
   display: flex;
+  width: 100%;
+  min-width: 0;
   align-items: center;
   margin-bottom: var(--app-space-4);
 }
 
 .product-list__search-field {
+  flex: 1 1 auto;
   width: 100%;
+  max-width: 100%;
   min-width: 0;
-}
-
-.product-list__search-field .mat-mdc-text-field-wrapper {
-  border-radius: var(--app-radius-full);
+  // Material also uses this shape for horizontal padding and notch geometry.
+  @include mat.form-field-overrides((
+    outlined-container-shape: calc(var(--mat-form-field-container-height, 56px) / 2),
+  ));
 }
 
 .product-table [mat-header-row] {
@@ -44,8 +50,8 @@
   @include ds.focus-ring;
 }
 
-.product-table [mat-row].pl-active {
-  background: var(--app-info-bg);
+.product-table [mat-row] {
+  @include ds.table-row-hover;
 }
 
 .product-table [mat-cell].product-table__actions-cell {

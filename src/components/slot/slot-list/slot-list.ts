@@ -151,9 +151,9 @@ export class SlotList implements OnInit, OnChanges {
     return this.selectedIdSet.has(id);
   }
 
-  isRowActive(item: SlotListItem, index: number): boolean {
+  isRowActive(item: SlotListItem): boolean {
     if (this.isManageMode) {
-      return index === 0;
+      return false;
     }
 
     return this.isSelected(item.id);

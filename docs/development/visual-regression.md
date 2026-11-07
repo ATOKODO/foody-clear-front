@@ -44,6 +44,8 @@ The mobile drawer scenario is skipped above the 1024px shell breakpoint. Desktop
 
 Each test starts with a fresh browser context and cloned API state. Time is fixed at **25 March 2026, 12:00 Europe/Paris**, with locale `en-GB`, reduced motion and hidden text carets. The fixture waits for API requests, Angular testability when available, loading indicators and fonts before capturing.
 
+Before capturing, visible product-search fields are checked horizontally against the viewport and any ancestor that could clip them. The input and label must fit inside the field, with no horizontal overflow. These geometry assertions also run during reference updates, so a horizontally clipped search control cannot be accepted merely by regenerating its PNG. Storybook checks the catalog and nested inventory picker at 320, 390, 834 and 1440 pixels in both themes and languages, with empty and long focused searches.
+
 Unexpected browser errors, failing API requests and external network dependencies fail the test. Only explicit error-state cases allow their deliberate API failure. Ordinary runs fail if a reference is missing.
 
 The comparison allows **zero differing pixels** after a per-pixel color threshold of 0.1. There are no retries or automatically approved references. A changed sample name is still an intentional visual change because it can alter wrapping and layout.

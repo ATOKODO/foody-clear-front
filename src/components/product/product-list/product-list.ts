@@ -173,9 +173,9 @@ export class ProductList implements OnInit, OnChanges {
     return this.selectedIdSet.has(id);
   }
 
-  isRowActive(item: ProductListItem, index: number): boolean {
+  isRowActive(item: ProductListItem): boolean {
     if (this.isManageMode) {
-      return index === 0;
+      return false;
     }
 
     return this.isSelected(item.id);

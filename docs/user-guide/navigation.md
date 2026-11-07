@@ -36,6 +36,8 @@ Many management screens show a selectable list on the left and details on the ri
 
 Use product search to find a name, barcode, category, generic product or tag. Checkboxes select or check the relevant rows, depending on the screen.
 
+Table rows stay neutral until hovered with a mouse or similar pointer, when a soft blue background helps track the row. The first row is not highlighted automatically. Checked boxes indicate actual selections, and keyboard focus keeps its visible outline. Touch selection does not leave a hover background behind.
+
 Modal editors keep keyboard focus inside the active dialog. `Tab` and `Shift+Tab` move between controls; `Escape` closes the current dialog when no save is in progress. A nested product picker closes before the underlying editor. Saves disable repeated submission until the request finishes.
 
 ## Appearance and language

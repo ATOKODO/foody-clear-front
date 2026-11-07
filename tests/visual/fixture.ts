@@ -1,5 +1,6 @@
 import type { Page, Request } from '@playwright/test';
 import { createRealisticMockApiState } from '../mocks/realistic-state';
+import { expectProductSearchContained } from '../helpers/product-search';
 import { expect, test as base } from '../fixtures/test';
 
 type VisualFixtures = {
@@ -25,6 +26,7 @@ async function settle(page: Page, pending: Set<Request>): Promise<void> {
     await document.fonts.ready;
     await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
   });
+  await expectProductSearchContained(page);
 }
 
 export const test = base.extend<VisualFixtures>({

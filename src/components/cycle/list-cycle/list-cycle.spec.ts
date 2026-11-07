@@ -273,7 +273,7 @@ describe('ListCycle', () => {
     expect(component.trackByDaySetId(0, cycles[0].daySets[0])).toBe(1);
     expect(component.trackBySlotId(0, cycles[0].daySets[0].slots[0])).toContain('breakfast');
     expect(component.trackByEmbeddedCard(0, component.getEmbeddedSummaryCards(cycles[0])[0])).toBe('kcal');
-    expect(component.isRowActive(cycles[1], 1)).toBeTrue();
+    expect(component.isRowActive(cycles[1])).toBeTrue();
     expect(component.hasSlotMetrics(cycles[0].daySets[0])).toBeTrue();
     expect(component.hasSlotMetrics({ ...cycles[0].daySets[0], slotMetrics: [] })).toBeFalse();
     expect(component.formatAmount(2)).toBe('2');

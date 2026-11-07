@@ -157,9 +157,9 @@ export class DaySetList implements OnInit, OnChanges {
     );
   }
 
-  isRowActive(item: DaySetListItem, index: number): boolean {
+  isRowActive(item: DaySetListItem): boolean {
     if (this.isManageMode) {
-      return index === 0;
+      return false;
     }
 
     return this.isSelected(item.id);

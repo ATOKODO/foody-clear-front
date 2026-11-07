@@ -179,14 +179,14 @@ export class ListCycle implements OnInit, OnChanges {
     return this.expandedIdSet.has(id);
   }
 
-  isRowActive(cycle: CycleListItem, index: number): boolean {
+  isRowActive(cycle: CycleListItem): boolean {
     if (this.isManageMode) {
       const activeCycleId = this.activeCycleId();
       if (activeCycleId !== null) {
         return cycle.id === activeCycleId;
       }
 
-      return index === 0;
+      return false;
     }
 
     return this.isSelected(cycle.id);

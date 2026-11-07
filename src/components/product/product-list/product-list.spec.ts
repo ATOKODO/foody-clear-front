@@ -253,8 +253,8 @@ describe('ProductList', () => {
     fixture.componentRef.setInput('products', products);
     fixture.detectChanges();
     expect(component.trackById(0, products[0])).toBe('10');
-    expect(component.isRowActive(products[0], 0)).toBeTrue();
-    expect(component.isRowActive(products[1], 1)).toBeFalse();
+    expect(component.isRowActive(products[0])).toBeFalse();
+    expect(component.isRowActive(products[1])).toBeFalse();
     expect(component.getUnitDisplay(products[0])).toBe('500 g (2 slice)');
     expect(component.getUnitDisplay(products[1])).toBe('Piece');
     expect(component.getPriceDisplay(products[0])).toBe('2.35 / kg');

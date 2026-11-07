@@ -152,6 +152,11 @@ $breakpoints: (
   );
 
   // Feedback colors
+  --app-list-row-hover-bg: color-mix(
+    in srgb,
+    var(--app-action-edit-border) 10%,
+    var(--app-surface)
+  );
   --app-success-bg: color-mix(
     in srgb,
     var(--mat-sys-primary) 14%,

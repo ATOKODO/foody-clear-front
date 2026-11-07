@@ -110,9 +110,9 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr
         mat-row
-        *matRowDef="let item; let i = index; columns: displayedColumns"
+        *matRowDef="let item; columns: displayedColumns"
         [attr.data-testid]="'product-row-' + item.id"
-        [class.pl-active]="isRowActive(item, i)"
+        [class.pl-active]="isRowActive(item)"
         [class.pl-selectable]="isSingleEditMode || isMultiEditMode"
         [attr.tabindex]="isSingleEditMode ? 0 : null"
         [attr.role]="isSingleEditMode ? 'button' : null"

@@ -98,9 +98,9 @@ export class CategoryList implements OnInit, OnChanges {
     return this.selectedIdSet.has(id);
   }
 
-  isRowActive(item: CategoryListItem, index: number): boolean {
+  isRowActive(item: CategoryListItem): boolean {
     if (this.isManageMode) {
-      return index === 0;
+      return false;
     }
 
     return this.isSelected(item.id);

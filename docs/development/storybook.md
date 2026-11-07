@@ -25,6 +25,8 @@ The integration uses `@storybook/angular-vite` 10.6.1 and Analog 2.8.0, compatib
 
 List stories include explicit management and selection modes; ProductList also covers its single-edit and multi-edit modes. Forms include explicit create and edit modes, saving states and representative validation/dialog cases. DaySetFeature and SlotFeature each include an interaction story that opens their embedded dialog shells. `npm run storybook:check` requires every exported form/list mode value to appear in a story's own args, not only the default meta args. Calendar stories include year, month, week and day views. The modal story demonstrates focus trapping, Escape and return-to-trigger focus.
 
+Tabular list rows use the shared `table-row-hover` mixin and `--app-list-row-hover-bg` token. The tint is limited to fine pointers with hover support; checked selections remain visible through their checkbox rather than a persistent row fill. Management lists do not mark their first row active automatically. Browser checks cover resting, hover, pointer-leave and checked-selection states in both themes.
+
 ## Shared buttons
 
 Every application button uses the real `UiButton` component on its native element: `<button appButton>`. This attribute selector deliberately preserves native form submission/reset, keyboard activation, focus, ARIA, dialog directives and screen layout selectors; it is a component, not a directive. Import `UiButton` in the consuming component.

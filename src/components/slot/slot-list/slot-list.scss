@@ -80,8 +80,8 @@
   @include ds.focus-ring;
 }
 
-.slot-table [mat-row].sl-active {
-  background: var(--app-surface-strong);
+.slot-table [mat-row] {
+  @include ds.table-row-hover;
 }
 
 @include ds.reduced-motion {
