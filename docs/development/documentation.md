@@ -40,6 +40,10 @@ Equivalent commands from `docs` are `npm ci` and `npm run dev`. The root scripts
 
 Use relative `.md` links between source pages, and quote real app labels when necessary. Keep documented workflows aligned with both frontend behavior and backend rules. Distinguish current behavior from planned features.
 
+User guides use the English interface labels. Check the English result in `src/app/i18n/messages.ts` when a template still contains an older French source string. Preserve stored enum values and JSON identifiers. Explain mocks, test clocks and baseline maintenance in `development/`, keeping application workflows in `user-guide/`.
+
+When changing browser profiles, mock data or snapshot rules, update [Testing](./testing.md), [Visual regression](./visual-regression.md), [Storybook](./storybook.md) and the repository's `tests/visual/README.md` as applicable. Compare command examples with `package.json` and the Playwright configurations. Date audit snapshots and validation results; retain earlier results as history rather than presenting them as checks of newer code.
+
 The local search index is generated from the documentation. No hosted search service, token or external account is required.
 
 ## Build and host

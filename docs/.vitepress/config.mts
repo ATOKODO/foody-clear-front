@@ -68,6 +68,7 @@ export default defineConfig({
       { text: 'Development', collapsed: true, items: [
         { text: 'Architecture', link: '/development/architecture' },
         { text: 'Testing', link: '/development/testing' },
+        { text: 'Visual regression', link: '/development/visual-regression' },
         { text: 'Storybook & design system', link: '/development/storybook' },
         { text: 'UI coverage audit', link: '/development/ui-audit' },
         { text: 'Maintain these docs', link: '/development/documentation' },

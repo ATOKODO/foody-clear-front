@@ -11,12 +11,18 @@ From `foody-clear-front`:
 | `npm run build` | Angular production compilation and bundle budgets |
 | `npm run lint` | Angular TypeScript/template linting |
 | `npm run style:check` | Repository style conventions |
+| `npm run test:i18n` | Static coverage of translated application copy |
 | `npm test -- --no-watch --browsers=ChromeHeadlessNoSandbox` | Unit tests using the configured headless browser launcher |
 | `npm run test:coverage` | Unit tests with coverage; requires ChromeHeadless |
 | `npm run typecheck:e2e` | Playwright TypeScript compilation |
 | `npm run e2e` | Application browser tests |
+| `npm run e2e:headed` | Application tests with a visible browser |
 | `npm run e2e:smoke` | Tests marked `@smoke` |
+| `npm run e2e:report` | Last application browser report |
 | `npm run e2e:pwa` | Production build plus PWA/virtual-camera tests |
+| `npm run e2e:vrt` | Compare the UI against committed screenshot references |
+| `npm run e2e:vrt:update` | Generate references for reviewed, intentional visual changes |
+| `npm run e2e:vrt:report` | Visual comparison report with expected/actual/diff images |
 | `npm run storybook:check` | Coverage of every production component and story TypeScript compilation |
 | `npm run build-storybook` | Static component/design-system workbench |
 | `npm run storybook:test` | All built stories, themes/languages, network isolation and key interactions |
@@ -24,14 +30,37 @@ From `foody-clear-front`:
 Install browser binaries if your environment does not already supply them:
 
 ```sh
-npx playwright install chromium
+npx playwright install --with-deps chromium firefox webkit
 ```
 
-See `playwright.config.ts` and `playwright.pwa.config.ts` for web-server and browser configuration. Karma needs a Chrome/Chromium executable; set `CHROME_BIN` when it is not discovered automatically. The no-sandbox launcher is intended for environments where the ordinary launcher cannot run.
+The default application suite uses Chromium for all cases and Firefox/WebKit for `@smoke` cases. To run only Chromium, install it with `npx playwright install --with-deps chromium` and use `npm run e2e -- --project=chromium`. This installs the headless shell needed by the application and PWA configurations. The visual and Storybook suites use the full Chromium binary through `channel: 'chromium'`; their `--no-shell` installation alone does not prepare the default application suite.
+
+See `playwright.config.ts`, `playwright.pwa.config.ts`, `playwright.visual.config.ts` and `playwright.storybook.config.ts` for the separate servers and browser settings. Karma needs a Chrome/Chromium executable; set `CHROME_BIN` when it is not discovered automatically. The no-sandbox launcher is intended for environments where the ordinary launcher cannot run.
 
 Browser tests cover navigation, CRUD/editor behavior, stock-backed planning, keyboard interaction, scanner behavior and production app installation/offline shell behavior. Use the PWA configuration for service-worker behavior rather than assuming the development server tests it.
 
-See [Storybook](./storybook.md) for the isolated component catalog, seeded scenarios and design-system maintenance.
+See [Visual regression](./visual-regression.md) for the reference Linux environment, all ten viewport/theme profiles, screenshot review and CI artifacts. See [Storybook](./storybook.md) for the isolated component catalog, seeded scenarios and design-system maintenance.
+
+## Mock API for development and tests
+
+The application tests and visual suite use an in-memory API; they do not need the application backend or PostgreSQL. These fixtures are included in the repository, so a fork can run the same scenarios and customize the sample data.
+
+| Location | Responsibility |
+| --- | --- |
+| `tests/mocks/state.ts` | English sample products, inventories, slots, plans and metadata |
+| `tests/mocks/backend.ts` and `tests/mocks/handlers/` | Playwright request interception and in-memory CRUD responses |
+| `tests/mocks/factories/` | Builders for additional test records |
+| `tests/fixtures/test.ts` | Fresh mock state, default English interface and fixed clock per test |
+| `tests/visual/fixture.ts` | Visual readiness checks and extra shopping/meal-prep responses |
+| `stories/support/environment.ts` and `supplementary-api.ts` | Storybook HTTP adapter and extra feature scenarios |
+
+Import `test` and `expect` from `tests/fixtures/test.ts` in application tests. The automatic fixture installs the mock and provides `mockApi`; change its state before opening a page when a scenario needs different data. Requests to unhandled application API paths return 501 rather than reaching the real backend. Add a typed fixture and handler for a new endpoint.
+
+Sample names stay in English when the interface switches to French. UI translation applies to application labels, not stored product or inventory names. Contract values such as `Paquet`, `Unite`, `unite` and `jour` retain their API spelling; see [Units and nutrition](../reference/units-nutrition.md).
+
+The shared Playwright fixture fixes time at **25 March 2026, 12:00 Europe/Paris** and clones the API state for each test. Storybook uses the same sample date with its own preview clock. These are test/preview settings: `npm start` uses the configured real backend and normal browser time. The PWA suite has its own production-shell setup.
+
+Mocked UI tests verify frontend behavior. Use the backend and PostgreSQL checks below to verify persistence, transactions and the real HTTP contract.
 
 ## Backend unit and build checks
 

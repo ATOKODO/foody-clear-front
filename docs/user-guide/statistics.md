@@ -14,7 +14,7 @@ The spending view shows the total amount, tracked purchases, incomplete purchase
 
 Stock additions create purchase events using the product's applicable price. Free and excluded additions have different accounting statuses; missing price information remains visible as incomplete. Paid external meals also contribute spending.
 
-Use **Refunded** to exclude a purchase event from counted spending. **Reintegrer** restores an excluded event to accounting. This changes reporting, not inventory stock. The API also accepts an exclusion reason; see [HTTP API](../reference/api.md#statistics).
+Use **Refunded** to exclude a purchase event from counted spending. **Include again** restores an excluded event to accounting. This changes reporting, not inventory stock. The API also accepts an exclusion reason; see [HTTP API](../reference/api.md#statistics).
 
 Review purchase quantity, quantity unit, inventory and event time when a total is unexpected. Enter a product price with its correct price unit before adding stock if you want complete purchase accounting.
 

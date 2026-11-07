@@ -1,6 +1,6 @@
 # Product JSON format
 
-The **JSON** tab in **Catalog → Add** creates one product from a single JSON object. It is a user-facing, name-based format; it is different from the backend product DTO, which refers to related records by ID.
+The **JSON** tab in **Catalog → Add product** creates one product from a single JSON object. It is a user-facing, name-based format; it is different from the backend product DTO, which refers to related records by ID.
 
 ## Minimal example
 
@@ -13,7 +13,7 @@ The **JSON** tab in **Catalog → Add** creates one product from a single JSON o
 }
 ```
 
-Paste the object, inspect the preview and choose **Ajouter le produit** (add the product). You can also choose **Utiliser cet exemple** to load the dialog's built-in example.
+Paste the object, inspect the preview and choose **Add product**. You can also choose **Use this example** to load the dialog's built-in example.
 
 ## Full example
 

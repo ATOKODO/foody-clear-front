@@ -39,7 +39,8 @@ features:
 | Install on a phone or scan a barcode | [Mobile guide](./user-guide/mobile.md) · [Barcode lookup](./user-guide/barcode.md) |
 | Configure or integrate the backend | [Configuration](./reference/configuration.md) · [HTTP API](./reference/api.md) |
 | Resolve a problem | [Troubleshooting](./troubleshooting.md) |
+| Develop or test the app | [Architecture](./development/architecture.md) · [Testing](./development/testing.md) · [Storybook](./development/storybook.md) |
 
 ::: info About this release
-This documentation describes **1.0.0-alpha.1**. The application is intended for local self-hosting and has no account or authentication system. Some interface labels are still in French; the guides explain them in English. See [project status](./project.md) for current limits and planned work.
+This documentation describes **1.0.0-alpha.1**. The application is intended for local self-hosting and has no account or authentication system. These guides use the English interface labels; **EN / FR** beside the theme control switches the app language. Stored names and technical API identifiers keep their original values. See [project status](./project.md) for current limits and planned work.
 :::

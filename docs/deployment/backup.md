@@ -62,7 +62,7 @@ docker compose -f compose.yml logs --tail=100 back
 ```
 
 5. Check Catalog, inventory quantities, a planning day and statistics.
-6. Activate the frontend update if the mobile app shows **Mettre à jour l’app**.
+6. Activate the frontend update if the mobile app shows **Update app**.
 
 The backend runs migrations on existing databases when `RUN_MIGRATIONS=true`. Keep `SYNC=false`; startup behavior is described in [Configuration](../reference/configuration.md#database-startup-behavior).
 

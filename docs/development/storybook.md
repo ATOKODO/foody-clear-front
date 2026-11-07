@@ -95,7 +95,9 @@ An icon is decorative by default and adds no focus target. A named button keeps 
 
 `stories/support/environment.ts` intercepts Angular HTTP calls and runs the same seeded handlers as the Playwright application tests. Each story gets a fresh state. CRUD updates are in memory only, including when navigating within the shell. Unsupported requests fail with a visible `Unmocked Storybook request` error; they never fall through to the real backend. Reloading a story resets its data.
 
-Screens select `apiScenario: 'populated' | 'empty' | 'loading' | 'error'` through their parameters. The date-sensitive previews use **25 March 2026, Europe/Paris**, matching the seeded calendar/consumption data. This clock override exists only in Storybook.
+The shared sample data and supplementary shopping/meal-prep records use English names. Changing the language toolbar translates the interface while leaving those names intact. See [Mock API for development and tests](./testing.md#mock-api-for-development-and-tests) for fixture locations and the boundary with the real application.
+
+Screens select `apiScenario: 'populated' | 'empty' | 'loading' | 'error'` through their parameters. The date-sensitive previews use **25 March 2026, Europe/Paris**, matching the seeded calendar/consumption data. `.storybook/preview.ts` sets Luxon's clock and default zone for previews; the shared Playwright fixture fixes the browser clock independently for application and visual tests. Normal application builds use the real clock.
 
 `apiExternalEntries` optionally seeds external entries by local date for focused business states. Each fixture is cloned into the story's own supplementary API state; it does not change the default stories or mutate a shared fixture. The Home external-entry story uses this to exercise its actual row and origin badge. This row-specific seed does not recompute the shared mock's nutrition totals; use it for row/marker presentation, not to certify external-meal aggregation or goal-progress arithmetic.
 
@@ -106,11 +108,13 @@ PWA controls do not install an app, reload the browser or register a service wor
 ```sh
 npm run storybook:check
 npm run build-storybook
-npx playwright install --no-shell chromium
+npx playwright install --with-deps --no-shell chromium
 npm run storybook:test
 ```
 
 The build output is **`dist/storybook`**, separate from the application artifact. `storybook:test` serves that output at **127.0.0.1:6007** and checks every canvas in desktop light/English and mobile dark/French, runtime errors, theme/language application, real design-token resolution and absence of external HTTP calls. Each catalog check also waits for Storybook's `STORY_FINISHED` event for the requested story and requires a successful result; initial canvas content alone does not prove that an asynchronous `play` interaction passed. The preview exposes this completion result as test-only data attributes on `#storybook-root`. The suite also checks generated APIs, Controls/Actions/Autodocs, segmented-control interaction, modal focus restoration, nested scanner lookup, in-memory shopping/recipe updates, reset on reload and shell navigation without changing the canvas URL. A dedicated CI workflow runs the same gates and uploads the build and browser report; it does not publish anything externally.
+
+Rebuild after changing stories, shared mock data or application components: `storybook:test` serves the last static artifact and does not rebuild it. These browser checks verify canvases and interactions; screenshot baselines belong to the separate [visual regression suite](./visual-regression.md).
 
 ## Maintaining coverage
 

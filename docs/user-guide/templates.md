@@ -6,7 +6,7 @@ A daily template is a reusable list of food you intend to consume. It can contai
 
 1. Open **Templates**, choose the add action and enter a title.
 2. Create the template, then add food lines.
-3. For each line, choose **Product**, **Plat** (dish) or **Meals**, and select the item.
+3. For each line, choose **Product**, **Dish** or **Meals**, and select the item.
 4. Enter a positive quantity and, for a product, a compatible unit. **Default unit** keeps the product's default basis.
 5. Optionally select an explicit slot, enter a free `slotKey` or set a preferred time.
 6. Add the line. Use **Edit**, **Update** or **Remove** to maintain it.

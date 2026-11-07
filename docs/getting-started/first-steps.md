@@ -4,7 +4,7 @@ This walkthrough starts from an empty installation. It creates a product, adds s
 
 ## 1. Add a product
 
-Open **Catalog**, choose **Add**, and use the **Formulaire** tab (the product form).
+Open **Catalog**, choose **Add product**, and use the **Form** tab.
 
 Create an example product:
 
@@ -20,7 +20,7 @@ Create an example product:
 
 These numbers are walkthrough data, not a nutritional recommendation. Use the packaging values for real products. Leave unknown nutrition rows absent rather than entering zero.
 
-Save with **Valider**. Categories, generic products and tags are optional; you can add them later. You can also use [barcode lookup](../user-guide/barcode.md) or the [JSON tab](../reference/product-json.md).
+Save with **Confirm**. Categories, generic products and tags are optional; you can add them later. You can also use [barcode lookup](../user-guide/barcode.md) or the [JSON tab](../reference/product-json.md).
 
 ## 2. Create an inventory
 

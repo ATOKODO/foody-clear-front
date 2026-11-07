@@ -4,11 +4,11 @@ The **Scanner** tab in the product creation dialog retrieves product information
 
 ## Look up a product
 
-1. Open **Catalog → Add → Scanner**.
-2. Choose **Scanner avec la caméra** (scan with camera), or type the barcode and run the search.
+1. Open **Catalog → Add product → Scanner**.
+2. Choose **Scan with camera**, or type the barcode and choose **Search for the product**.
 3. If asked, allow the browser to use the camera. Point it at a clear, well-lit barcode.
 4. Review the returned name, brand, package quantity, ingredients, declared allergens, Nutri-Score, image and nutrition values.
-5. Choose **Utiliser ces informations** (use this information) to fill the product form.
+5. Choose **Use this information** to fill the product form.
 6. Check the values, complete missing required fields and save the product.
 
 A lookup does not create a catalog product automatically. Importing a result fills the editable form, and saving still requires your confirmation.

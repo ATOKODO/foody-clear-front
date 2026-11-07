@@ -8,6 +8,8 @@ Use the calendar view selector to switch between year, month, week and day. The 
 
 The day view shows slots, goals, template items and recorded entries. Week and month views summarize days. Select a day or a more precise time to open its actions or editor.
 
+Month cells also offer **Day**, **Cycle** and **Entry** shortcuts to open that day's view, manage its assignment or edit its entries. On narrow screens these use icons with the same accessible names and tooltips: **Open day view**, **Manage cycle** and **Manage entries**.
+
 The URL can carry the selected view and date:
 
 ```text

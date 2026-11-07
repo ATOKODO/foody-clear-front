@@ -14,9 +14,9 @@ The main detail view shows list contents read-only. Open **Edit** to change quan
 
 ## Check and transfer purchases
 
-1. In the list editor, check the collected lines. **Tout cocher** checks all; **Tout decocher** unchecks all.
-2. In **Envoyer vers inventory**, select the destination inventory.
-3. Choose **Convertir cochees** to transfer checked lines, or **Convertir tout** to transfer the whole list.
+1. In the list editor, check the collected lines. **Check all** checks all; **Uncheck all** unchecks all.
+2. In **Send to inventory**, select the destination inventory.
+3. Choose **Convert checked items** to transfer checked lines, or **Convert all** to transfer the whole list.
 4. Review the destination in **Inventories** after conversion.
 
 Conversion creates the relevant stock additions and purchase accounting. Do not also add the same purchase manually to inventory. If the product lacks a usable price, reporting can show the purchase as incomplete rather than inventing a price.
@@ -27,7 +27,7 @@ Inventory must already exist. Create it in [Inventories](./inventories.md) if th
 
 Use **Save as template** in a list editor and give the template a name. Switch to the shopping template view to inspect or edit it.
 
-To make a fresh list, open the template editor, enter the new list name and choose **Create la liste**. The new list gets copied contents and can be changed independently for that shopping trip.
+To make a fresh list, open the template editor, enter the new list name and choose **Create list**. The new list gets copied contents and can be changed independently for that shopping trip.
 
 You can also generate a recipe list from [Meal prep](./meal-prep.md). Review it against existing stock: current generation covers the full recipe requirements.
 

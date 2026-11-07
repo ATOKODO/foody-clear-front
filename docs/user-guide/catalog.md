@@ -5,10 +5,10 @@ The catalog describes products independently of where you keep them. Editing a p
 ## Create or edit a product
 
 1. Open **Catalog** (`/product`).
-2. Choose **Add**, or select a product and choose **Edit**.
+2. Choose **Add product**, or select a product and choose **Edit**.
 3. Enter a name, package/container type (`unitType`), positive package quantity (`quantityPerUnit`) and quantity unit (`quantityUnit`).
 4. Optionally add a barcode, category, generic product, tags, portions, price, URL and memo.
-5. Add the nutrition values you know and save with **Valider**.
+5. Add the nutrition values you know and save with **Confirm**.
 
 The creation dialog also offers **JSON** and **Scanner** tabs. See [Product JSON](../reference/product-json.md) and [Barcode lookup](./barcode.md).
 

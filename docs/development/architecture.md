@@ -29,9 +29,14 @@ Production Nginx serves the frontend and proxies `/api` to the backend. The curr
 | `src/utils/` | Quantity, availability, date and latest-request helpers |
 | `src/styles/` | Theme tokens, primitives and Material/Tailwind integration |
 | `tests/e2e/` | Playwright application tests |
+| `tests/mocks/` and `tests/fixtures/` | Shared in-memory API, sample data and Playwright setup |
+| `tests/visual/` | Visual scenarios, readiness fixture and committed screenshot references |
+| `stories/` and `.storybook/` | Isolated component/screen previews and their mock HTTP adapter |
 | `docs/` | Independent VitePress site and package |
 
 Angular signals and feature state coordinate the UI. Replaceable read requests use cancellation to prevent an older response overwriting a newer selection. Save guards prevent repeated mutations while a request is in flight.
+
+The mock API is activated by the test fixtures and Storybook providers. The ordinary development server and production app call the configured backend. See [Testing](./testing.md#mock-api-for-development-and-tests) and [Visual regression](./visual-regression.md) for the development tools.
 
 ## Backend source map
 

@@ -5,6 +5,9 @@ It is independent of the existing functional/PWA suites and does not need a back
 The shared mock API uses English sample data, independent of the selected interface
 language. French scenarios translate the interface while keeping those sample names.
 
+The VitePress [visual regression guide](../../docs/development/visual-regression.md)
+also documents this workflow in the development section of the documentation site.
+
 ## Run
 
 The reference environment is **Ubuntu 24.04, Node 24, Playwright 1.58.2 and its bundled

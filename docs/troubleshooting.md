@@ -45,7 +45,7 @@ For local Caddy, install and trust the exported CA on the phone. If Caddy's data
 
 Use a production build, a supported browser and a trusted origin. On iOS, use Safari's share menu. A browser may hide its install prompt if the app is already installed or an earlier prompt was dismissed.
 
-For updates, check that `ngsw.json` and `ngsw-worker.js` are served fresh. Finish edits, then use **Mettre à jour l’app** when available. A cached interface loading offline does not imply catalog data or saves can work offline.
+For updates, check that `ngsw.json` and `ngsw-worker.js` are served fresh. Finish edits, then use **Update app** when available. A cached interface loading offline does not imply catalog data or saves can work offline.
 
 See [Mobile app and offline access](./user-guide/mobile.md) for the supported boundary.
 
@@ -84,6 +84,14 @@ Missing nutrition and pricing are reported as incomplete; do not fill unknown va
 ## Product JSON is rejected
 
 Use one object and the supported [JSON-tab format](./reference/product-json.md). Match enum spelling, use numeric amounts, remove unknown fields and create related names first. Backend response objects and ID-based DTOs are different formats.
+
+## Browser tests cannot start or show old data
+
+An error mentioning a missing browser executable usually means the installed binaries do not match the pinned Playwright version or the suite's browser configuration. Run `npm ci`, then install the browsers required by [Testing](./development/testing.md). The default application suite includes Firefox and WebKit smoke cases; Storybook and visual tests use full Chromium, while ordinary Chromium/PWA tests also need its headless shell.
+
+If Storybook still displays old sample names or component behavior, run `npm run build-storybook` before `npm run storybook:test`: the tests serve the last static build. Normal application startup does not activate the mock API.
+
+For screenshot differences, use the [visual reference environment and review workflow](./development/visual-regression.md#review-and-update-references). Check the browser, fonts and operating system before accepting new references.
 
 ## Documentation commands fail
 

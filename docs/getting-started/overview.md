@@ -26,7 +26,7 @@ Planning a meal does not reserve or consume ingredients. Inventory changes happe
 
 ## Current boundaries
 
-The release is an alpha. There are no accounts, user profiles, cloud synchronization or queued offline writes. PostgreSQL is the durable store; browser preferences include theme selection. The installable mobile app caches its application shell, while data operations require the backend.
+The release is an alpha. There are no accounts, user profiles, cloud synchronization or queued offline writes. PostgreSQL is the durable store; browser preferences include theme and interface language. Use **EN / FR** beside the theme control to switch languages; these guides use English labels. The installable mobile app caches its application shell, while data operations require the backend.
 
 The barcode lookup uses Open Food Facts over the internet and needs a separate connection even when your application server is local. Read [barcode lookup](../user-guide/barcode.md) for the current upstream host and manual fallback.
 
