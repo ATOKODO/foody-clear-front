@@ -17,7 +17,7 @@
   padding: 1rem;
   border: 1px solid var(--app-border);
   border-radius: 1.25rem;
-  background: linear-gradient(180deg, var(--app-surface-raised), var(--app-surface));
+  background: var(--app-surface-raised);
   box-shadow: var(--app-shadow-sm);
   color: var(--app-text-strong);
   text-align: left;
@@ -34,15 +34,11 @@
 }
 
 .planning-action-card--accent {
-  background:
-    radial-gradient(circle at top right, var(--app-accent-soft), transparent 40%),
-    linear-gradient(180deg, var(--app-surface-raised), var(--app-surface));
+  background: color-mix(in srgb, var(--app-accent) 8%, var(--app-surface-raised));
 }
 
 .planning-action-card--info {
-  background:
-    radial-gradient(circle at top right, var(--app-info-bg), transparent 40%),
-    linear-gradient(180deg, var(--app-surface-raised), var(--app-surface));
+  background: color-mix(in srgb, var(--app-info-text) 8%, var(--app-surface-raised));
 }
 
 .planning-action-card__icon,
