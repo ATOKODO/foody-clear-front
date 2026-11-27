@@ -22,7 +22,7 @@ type Story = StoryObj<UiBreakdownCard>;
 const metric = (args: Record<string, unknown>) => ({ props: args, template: `
   <div style="max-width: 28rem; padding: 1rem; background: var(--app-surface-soft)">
     <article appBreakdownCard [density]="density" [prominent]="prominent" [status]="status" style="display: grid; gap: 0.5rem">
-      <div style="display: flex; justify-content: space-between; gap: 1rem">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem">
         <strong style="color: var(--app-text-strong)">Proteins</strong>
         <span appBreakdownBadge kind="status" [status]="status">{{ status }}</span>
       </div>
