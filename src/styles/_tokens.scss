@@ -249,16 +249,8 @@ $breakpoints: (
     var(--app-hero-middle) 56%,
     var(--app-hero-end) 100%
   );
-  --app-calendar-panel-bg:
-    radial-gradient(circle at top right, var(--app-info-bg), transparent 26%),
-    linear-gradient(
-      180deg,
-      var(--app-surface-soft) 0%,
-      var(--app-surface-solid) 24rem
-    );
-  --app-calendar-summary-bg:
-    linear-gradient(135deg, var(--app-surface), var(--app-surface-soft)),
-    linear-gradient(120deg, var(--app-border-soft), var(--app-info-bg));
+  --app-calendar-panel-bg: var(--app-surface-solid);
+  --app-calendar-summary-bg: var(--app-surface-soft);
   --app-overlay-start: color-mix(
     in srgb,
     var(--mat-sys-scrim) 58%,
