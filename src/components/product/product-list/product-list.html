@@ -34,9 +34,7 @@
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>{{ "Product" | translate }}</th>
         <td mat-cell *matCellDef="let item">
-          <div class="product-table__name">
-            <strong>{{ item.name }}</strong>
-          </div>
+          <strong class="product-table__name" [matTooltip]="item.name" tabindex="0">{{ item.name }}</strong>
         </td>
       </ng-container>
 
@@ -49,11 +47,6 @@
       <ng-container matColumnDef="genericProduct">
         <th mat-header-cell *matHeaderCellDef>{{ "Generic product" | translate }}</th>
         <td mat-cell *matCellDef="let item">{{ getLinkedEntityDisplay(item.genericProduct) }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="barcode">
-        <th mat-header-cell *matHeaderCellDef>{{ "Barcode" | translate }}</th>
-        <td mat-cell *matCellDef="let item" class="product-table__barcode">{{ item.barcode || '-' }}</td>
       </ng-container>
 
       <ng-container matColumnDef="unit">
@@ -74,11 +67,6 @@
       <ng-container matColumnDef="tags">
         <th mat-header-cell *matHeaderCellDef>{{ "Tags" | translate }}</th>
         <td mat-cell *matCellDef="let item" class="product-table__tags">{{ getTagNamesDisplay(item) }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="nutritionValues">
-        <th mat-header-cell *matHeaderCellDef>{{ "NV" | translate }}</th>
-        <td mat-cell *matCellDef="let item">{{ item.nutritionValuesCount ?? 0 }}</td>
       </ng-container>
 
       <ng-container matColumnDef="actions">

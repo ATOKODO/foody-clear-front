@@ -80,12 +80,20 @@
   @include ds.action-tone(danger);
 }
 
-.product-table__name strong {
+.product-table__name {
+  display: block;
+  max-width: clamp(8rem, 18vw, 16rem);
+  overflow: hidden;
   color: var(--app-text-strong);
   font-size: var(--app-font-size-md);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.product-table__barcode,
+.product-table__name:focus-visible {
+  @include ds.focus-ring;
+}
+
 .product-table__tags {
   overflow-wrap: anywhere;
 }

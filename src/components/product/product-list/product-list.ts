@@ -18,6 +18,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProductListItem } from './product-list-item.model';
 import { createSelection, deselectItem, getSelectedItems, selectItem } from '../../shared/list-selection';
 
@@ -38,6 +39,7 @@ export type { ProductListItem } from './product-list-item.model';
     MatFormFieldModule,
     MatInputModule,
     MatTableModule,
+    MatTooltipModule,
     NgTemplateOutlet
 ],
   templateUrl: './product-list.html',
@@ -149,19 +151,17 @@ export class ProductList implements OnInit, OnChanges {
         'name',
         'category',
         'genericProduct',
-        'barcode',
         'unit',
         'price',
         'tags',
-        'nutritionValues',
         'actions',
       ]);
     }
 
     return withAvailability(
       this.isMultiEditMode
-        ? ['select', 'name', 'category', 'genericProduct', 'barcode', 'unit', 'price', 'tags', 'nutritionValues']
-        : ['name', 'category', 'genericProduct', 'barcode', 'unit', 'price', 'tags', 'nutritionValues'],
+        ? ['select', 'name', 'category', 'genericProduct', 'unit', 'price', 'tags']
+        : ['name', 'category', 'genericProduct', 'unit', 'price', 'tags'],
     );
   }
 

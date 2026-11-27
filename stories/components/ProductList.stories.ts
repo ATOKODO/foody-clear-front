@@ -12,6 +12,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<ProductList>;
 export const Populated: Story = { args: { mode: 'manage' } };
+export const LongName: Story = {
+  args: { products: listProducts.map((product, index) => index === 0
+    ? { ...product, name: 'Biscotte blé complet et céréales croquantes – recette originale' }
+    : product) },
+};
 
 export const Empty: Story = { args: { products: [] } };
 export const SingleSelection: Story = { args: { mode: 'select-single', selectedIds: ['1'] } };
