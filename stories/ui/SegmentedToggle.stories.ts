@@ -4,7 +4,16 @@ import { SegmentedToggle } from '../../src/app/ui/segmented-toggle/segmented-tog
 const meta = {
   title: 'UI/Segmented toggle', component: SegmentedToggle,
   args: { value: 'day', ariaLabel: 'Calendar view', options: [{ value: 'day', label: 'Day' }, { value: 'week', label: 'Week' }, { value: 'month', label: 'Month' }], valueChange: fn() },
-  render: args => ({ props: args, template: '<app-segmented-toggle [value]="value" [options]="options" [ariaLabel]="ariaLabel" [maxWidth]="maxWidth" (valueChange)="value = $event; valueChange($event)" />' }),
+  parameters: { layout: 'fullscreen' },
+  render: args => ({
+    props: args,
+    template: `
+      <div style="background: var(--app-bg); padding: var(--app-space-4);">
+        <app-segmented-toggle [value]="value" [options]="options" [ariaLabel]="ariaLabel" [maxWidth]="maxWidth"
+          (valueChange)="value = $event; valueChange($event)" />
+      </div>
+    `,
+  }),
 } satisfies Meta<SegmentedToggle>;
 export default meta;
 type Story = StoryObj<SegmentedToggle>;
